@@ -28,6 +28,7 @@
 | `Voice` | 发送语音 | `str` \| `bytes` | 必须（基类已内置；平台不支持语音时按 §2.1.5 降级） |
 | `Video` | 发送视频 | `str` \| `bytes` | 必须（基类已内置；平台不支持视频时按 §2.1.5 降级） |
 | `File` | 发送文件 | `str` \| `bytes`，`filename: str \| None = None` | 必须（基类已内置） |
+| `Location` | 发送位置消息 | `float` (latitude/longitude)，`title: str = ""`，`content: str = ""` | 必须（基类已内置） |
 | `At` | @用户/群组 | `str` (user_id) | 修饰方法，按需 |
 | `Face` | 发送表情 | `str` (emoji) | 可以 |
 | `Reply` | 回复消息 | `str` (message_id) | 修饰方法，按需 |
@@ -36,7 +37,7 @@
 | `HTML` | 发送 HTML 消息 | `str` | 可以 |
 | `Card` | 发送卡片消息 | `dict` | 可以 |
 
-> 标准方法（`Text`/`Image`/`Voice`/`Video`/`File`）由基类 `SendDSL` 内置并默认委托 `Raw_ob12`，适配器**无需重复实现**即可获得类型签名；仅当平台需要特殊逻辑时才覆盖单个方法（见 §6.4）。
+> 标准方法（`Text`/`Image`/`Voice`/`Video`/`File`/`Location`）由基类 `SendDSL` 内置并默认委托 `Raw_ob12`，适配器**无需重复实现**即可获得类型签名；仅当平台需要特殊逻辑时才覆盖单个方法（见 §6.4）。
 
 ### 1.2 链式修饰方法
 
@@ -430,7 +431,7 @@ class Send(SendDSL):
         """核心实现：OneBot12 消息段 → 平台 API（必须实现）"""
         return asyncio.create_task(self._send_ob12(message_segments))
 
-    # Text/Image/Voice/Video/File 已从基类继承，自动委托 Raw_ob12
+    # Text/Image/Voice/Video/File/Location 已从基类继承，自动委托 Raw_ob12
     # 如需平台特定逻辑，可覆盖单个方法：
     # def Text(self, text: str) -> asyncio.Task:
     #     return self.Raw_ob12([{"type": "text", "data": {"text": text}}])
@@ -581,4 +582,4 @@ info = adapter.send_info("myplatform", "Form")
 **同一适配器的其它侧**：
 - [事件转换标准](event-conversion.md) - 完整的事件转换规范、扩展命名和消息段标准
 - [会话类型标准](session-types.md) - 会话类型定义和映射关系
-- [请求操作规范](request-action-spec.md) - 请求事件字段要求、HandleRequest DSL 及适配器实现要求
+- [请求操作规范](request-action-spec.md) - 请求事件字段要求、Request DSL（approve/reject）及适配器实现要求

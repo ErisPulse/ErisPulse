@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "a21c6fa33809a55a0912c14b3f33d40a",
-  "file_hash": "a21c6fa33809a55a0912c14b3f33d40a",
-  "translated_at": "2026-10-22T12:42:21.459889",
+  "hash": "c9acf1cc80d0f434dc24b1b6e4ba5ca6",
+  "file_hash": "c9acf1cc80d0f434dc24b1b6e4ba5ca6",
+  "translated_at": "2026-11-10T06:32:29.004791",
   "target_lang": "zh-TW",
   "chunks": [
     {
@@ -10,8 +10,8 @@
       "translation": "# 技術標準\n\n> [!TIP]\n> **什麼時候需要讀這篇**：當你在開發或修改適配器，需要確認事件轉換、API 回應、傳送方法等是否符合 ErisPulse 跨平台標準時，從本目錄找對應規範對照。不確定從哪篇開始時，先讀下方總綱。\n\n> **總綱**：[適配器標準化指南](standardization-guide.md) —— 標準化原則、標準地圖、命名規則、差異處理模式與開發者 Checklist。新適配器/新能力請先讀它。\n\n本文件包含 ErisPulse 的技術標準規範，確保各元件間的一致性和相容性。"
     },
     {
-      "hash": "82a3fbcbf39b81ff7f1498f70f1d79f4",
-      "translation": "## 標準文件列表\n\n\n1. [會話類型標準](session-types.md) - ErisPulse 會話類型定義和映射規範\n2. [事件轉換標準](event-conversion.md) - 平台事件轉換規範、擴充命名規範、訊息段標準\n3. [API 回應標準](api-response.md) - 適配器 API 回應格式標準及擴充要求\n4. [傳送方法規範](send-method-spec.md) - Send 類別方法命名、參數規範及反向轉換要求\n5. [請求操作規範](request-action-spec.md) - 請求事件欄位要求、HandleRequest DSL 及適配器實作要求\n6. [API 動作標準](api-action-spec.md) - OneBot12 標準 API 動作統一介面（使用者/群組/頻道/訊息管理/檔案含分片/元動作）\n7. [適配器標準化指南（總綱）](standardization-guide.md) - 標準化原則/工作流程/命名規則 + 互動元件標準（按鈕鍵盤/互動回呼事件）與各平台映射"
+      "hash": "d3745560be59bd629718554a99e8e677",
+      "translation": "## 標準文件列表\n\n1. [會話類型標準](session-types.md) - ErisPulse 會話類型定義和映射規範\n2. [事件轉換標準](event-conversion.md) - 平台事件轉換規範、擴展命名規範、訊息段標準\n3. [API 回應標準](api-response.md) - 適配器 API 回應格式標準及擴展要求\n4. [發送方法規範](send-method-spec.md) - Send 類方法命名、參數規範及反向轉換要求\n5. [請求操作規範](request-action-spec.md) - 請求事件欄位要求、Request DSL（approve/reject）、異構端點的請求類型上下文留存及適配器實現要求\n6. [API 動作標準](api-action-spec.md) - OneBot12 標準 API 動作統一介面（使用者/群組/頻道/訊息管理/檔案含分片/元動作）\n7. [適配器標準化指南（總綱）](standardization-guide.md) - 標準化原則/工作流程/命名規則 + 互動元件標準（按鈕鍵盤/互動回調事件）與各平台映射"
     },
     {
       "hash": "305a62f045da78c28cfb14b8fa4afbc2",
@@ -26,8 +26,8 @@
       "translation": "## 遵循標準的好處\n\n\n### 對適配器開發者\n\n\n- 清晰的轉換規則\n- 統一的回應格式\n- 易於偵錯和測試\n\n### 對模組開發者\n\n\n- 一致的事件介面\n- 可預測的 API 行為\n- 簡化的跨平台開發\n\n### 對最終使用者\n\n\n- 穩定的系統行為\n- 統一的訊息格式\n- 良好的相容性"
     },
     {
-      "hash": "8bc57903cb9a682e327f7646024e5aad",
-      "translation": "## 標準遵循檢查清單\n\n\n### 事件轉換\n\n\n- [ ] 所有標準欄位已正確映射\n- [ ] 平台特有欄位已加上前綴\n- [ ] 時間戳已轉換為 10 位秒級\n- [ ] 原始資料保存在 {platform}_raw\n- [ ] 原始事件類型保存在 {platform}_raw_type\n- [ ] 訊息段的 alt_message 已產生\n- [ ] 請求事件包含 request_id 欄位\n\n### API 回應\n\n\n- [ ] 包含 status 欄位\n- [ ] 包含 retcode 欄位\n- [ ] 包含 data 欄位\n- [ ] 包含 message_id 欄位\n- [ ] 包含 message 欄位\n- [ ] 回傳碼遵循 OneBot12 規範\n\n### 傳送方法命名\n\n\n- [ ] 使用大駝峰命名法（PascalCase）\n- [ ] 回傳 Task 物件\n- [ ] 修飾方法回傳 self\n- [ ] 參數命名符合規範\n\n### 媒體傳送（Image / Voice / Video / File）\n\n\n- [ ] `file` 參數必須支援所有形態：HTTP(S) URL / 本機路徑 / `bytes`\n- [ ] `file` 參數應盡量支援各種形態：`file://` URI / Base64 / Data URI（無法支援時按降級階梯回傳 `retcode=10002`）\n- [ ] 形態判定順序符合規範（bytes → URL → `file://` → 路徑）\n- [ ] `File` 的檔案名稱按推導順序產生（明確指定的 `filename` > URL basename > 路徑 basename > 平台預設）\n- [ ] 平台媒體限制已在適配器文件中聲明\n- [ ] 不支援的媒體類型按降級階梯處理（近緣類型降級或 `retcode=10002`，不拋出例外、不靜默捨棄）\n\n> 詳細協定見 [傳送方法規範 §2.1](send-method-spec.md#21-媒體訊息傳送協定image--voice--video--file)\n\n### 請求操作\n\n\n- [ ] HandleRequest 類別已實作 _do_accept / _do_reject\n- [ ] 操作回傳標準 API 回應格式\n- [ ] 不支援的操作回傳 retcode=10002"
+      "hash": "f8e69396b1771e4c57ef4ff48fb42ac1",
+      "translation": "## 標準遵循檢查清單\n\n### 事件轉換\n\n- [ ] 所有標準字段已正確映射\n- [ ] 平台特有字段已添加前綴\n- [ ] 時間戳已轉換為10位秒級\n- [ ] 原始數據保存在 {platform}_raw\n- [ ] 原始事件類型保存在 {platform}_raw_type\n- [ ] 消息段的 alt_message 已生成\n- [ ] 請求事件包含 request_id 字段\n\n### API 响應\n\n- [ ] 包含 status 字段\n- [ ] 包含 retcode 字段\n- [ ] 包含 data 字段\n- [ ] 包含 message_id 字段\n- [ ] 包含 message 字段\n- [ ] 返回碼遵循 OneBot12 規範\n\n### 發送方法命名\n\n- [ ] 使用大駝峰命名法（PascalCase）\n- [ ] 返回 Task 對象\n- [ ] 修飾方法返回 self\n- [ ] 參數命名符合規範\n\n### 媒體發送（Image / Voice / Video / File）\n\n- [ ] `file` 參數必須形態全部支援：HTTP(S) URL / 本地路徑 / `bytes`\n- [ ] `file` 參數應當形態盡量支援：`file://` URI / Base64 / Data URI（無法支援時按降級階梯返回 `retcode=10002`）\n- [ ] 形態判定順序符合規範（bytes → URL → `file://` → 路徑）\n- [ ] `File` 的檔案名按推導順序生成（顯式 `filename` > URL basename > 路徑 basename > 平台預設）\n- [ ] 平台媒體限制已在適配器文件中聲明\n- [ ] 不支援的媒體類型按降級階梯處理（近緣類型降級或 `retcode=10002`，不拋異常、不靜默丟棄）\n\n> 詳細協議見 [發送方法規範 §2.1](send-method-spec.md#21-%E5%AA%92%E9%AB%94%E6%B6%88%E6%81%AF%E5%8F%91%E9%80%81%E5%8D%8F%E8%AE%AEimage--voice--video--file)\n\n### 請求操作\n\n- [ ] Request 內部類已重寫 _do_accept / _do_reject（公開入口 accept()/reject() 勿重寫）\n- [ ] 操作返回標準 API 响應格式\n- [ ] 不支援的操作返回 retcode=10002"
     },
     {
       "hash": "e3c1e79fb398b2f460229813e0179b94",

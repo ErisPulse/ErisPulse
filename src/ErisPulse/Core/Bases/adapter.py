@@ -21,6 +21,7 @@ if TYPE_CHECKING:
 
     from .send_builder import SendBuilder
 
+from ...runtime.context import get_current_event_account
 from ..config import config as config_mgr
 from ..constants import (
     DEFAULT_SEND_METHOD,
@@ -430,14 +431,14 @@ class SendDSL:
     用于实现 Send.To(...).Func(...) 风格的链式调用接口
 
     内置支持 At/AtAll/Reply 修饰器，适配器子类无需重复实现。
-    内置标准发送方法（Text/Image/Voice/Video/File），默认委托给 Raw_ob12，
+    内置标准发送方法（Text/Image/Voice/Video/File/Location），默认委托给 Raw_ob12，
     适配器只需实现 Raw_ob12 即可获得全部标准发送能力，也可覆盖单个方法以提供平台特定逻辑。
     通过 send_context 属性可显式获取发送上下文（目标类型、目标ID、发送账号）。
     通过 _apply_modifiers() 方法可自动将修饰器状态合并到消息段。
 
     {!--< tips >!--}
     1. 适配器必须实现 Raw_ob12（OneBot12 消息段 → 平台 API 的统一入口）
-    2. 标准发送方法（Text/Image/Voice/Video/File）已内置并委托给 Raw_ob12，无需子类重复实现
+    2. 标准发送方法（Text/Image/Voice/Video/File/Location）已内置并委托给 Raw_ob12，无需子类重复实现
     3. 子类可覆盖标准方法以提供平台特定逻辑，也可添加平台特有方法（如 Sticker）
     4. At/AtAll/Reply 已内置实现，无需子类覆盖
     5. 使用 self.send_context 获取发送上下文
@@ -674,10 +675,15 @@ class SendDSL:
         >>>     **kwargs
         >>> )
         """
+        # 显式 .Using() 优先；未指定时兜底绑定当前事件分发链路的触发账户
+        # （处理事件时发送无需显式 Using；定时器等无事件上下文场景为 None）
+        account_id = self._account_id
+        if account_id is None:
+            account_id = get_current_event_account() or None
         return {
             "target_type": self._target_type,
             "target_id": self._target_id,
-            "account_id": self._account_id,
+            "account_id": account_id,
         }
 
     def Raw_ob12(self, message: "dict | list[dict]", **kwargs) -> Awaitable[Any]:
@@ -791,6 +797,34 @@ class SendDSL:
         if filename is not None:
             data["filename"] = filename
         return self.Raw_ob12([{"type": "file", "data": data}])
+
+    def Location(
+        self,
+        latitude: float,
+        longitude: float,
+        title: str = "",
+        content: str = "",
+    ) -> Awaitable[Any]:
+        """
+        发送位置消息
+
+        默认实现委托给 :meth:`Raw_ob12`，适配器可覆盖以提供平台特定逻辑。
+
+        :param latitude: 纬度
+        :param longitude: 经度
+        :param title: 位置标题（可选）
+        :param content: 位置地址内容（可选）
+        :return: asyncio.Task，await 后返回标准响应格式
+
+        :example:
+        >>> await adapter.Send.To("group", "123").Location(39.9, 116.4, "北京")
+        """
+        data: dict = {"latitude": latitude, "longitude": longitude}
+        if title:
+            data["title"] = title
+        if content:
+            data["content"] = content
+        return self.Raw_ob12([{"type": "location", "data": data}])
 
     def To(self, target_type: str | None = None, target_id: str | int | None = None) -> "Self":
         """
@@ -1243,11 +1277,17 @@ class RequestDSL:
         """
         获取当前请求操作上下文
 
+        account_id 优先取显式 ``Using()`` 指定值；未指定时兜底当前事件分发
+        链路的触发账户（无事件上下文时为 None）。
+
         :return: 包含 request_id, account_id 的字典
         """
+        account_id = self._account_id
+        if account_id is None:
+            account_id = get_current_event_account() or None
         return {
             "request_id": self._request_id,
-            "account_id": self._account_id,
+            "account_id": account_id,
         }
 
 
@@ -1259,7 +1299,7 @@ class BaseAdapter(ABC):
 
     {!--< tips >!--}
     1. 必须实现call_api, start和shutdown方法
-    2. Send 子类只需实现 Raw_ob12，即可获得全部标准发送方法（Text/Image/Voice/Video/File）
+    2. Send 子类只需实现 Raw_ob12，即可获得全部标准发送方法（Text/Image/Voice/Video/File/Location）
     3. 可以自定义Request类实现平台特定的请求操作逻辑
     4. 通过on装饰器注册事件处理器
     5. 支持OneBot12协议的事件处理
@@ -1323,7 +1363,7 @@ class BaseAdapter(ABC):
 
         {!--< tips >!--}
         1. 必须重写 Raw_ob12 方法（OneBot12 消息段 → 平台 API）
-        2. 标准方法（Text/Image/Voice/Video/File）已从 SendDSL 基类继承，默认委托 Raw_ob12
+        2. 标准方法（Text/Image/Voice/Video/File/Location）已从 SendDSL 基类继承，默认委托 Raw_ob12
         3. 如需平台特定逻辑，可覆盖单个标准方法（如 Text）
         4. 可添加平台特有的发送方法（如 Sticker）
         {!--< /tips >!--}
@@ -1435,6 +1475,9 @@ class BaseAdapter(ABC):
 
         self._config_instance = None
         self._accounts_data = None
+        # 运行期 bot_id 注册表（bot_id → 账户名）：事件到达即回填，
+        # 解析链第一优先级使用；持久化经 update_bot_id 落配置
+        self._bot_id_registry: dict[str, str] = {}
 
         # 注册 I18nClass 中声明的翻译键（在生成配置之前）
         self._ensure_i18n_registered()
@@ -1590,6 +1633,23 @@ class BaseAdapter(ABC):
         # 不再自动生成 "default" 账户模板（避免默认配置静默建立连接）
         data = config_mgr.getConfig(key) or {}
 
+        # 旧版配置使用 .bots 键名：accounts 缺失而存量 .bots 非空时一次性迁移，
+        # 避免旧格式用户升级后账户全部丢失（表现为「保存成功但 0 账户」）
+        if not data:
+            legacy_key = f"{self._get_config_key()}.bots"
+            legacy = config_mgr.getConfig(legacy_key)
+            if isinstance(legacy, dict) and legacy:
+                config_mgr.setConfig(key, legacy, immediate=True)
+                config_mgr.setConfig(legacy_key, {}, immediate=True)
+                self._get_logger().info(
+                    i18n.t(
+                        "core.adapter.legacy_bots_migrated",
+                        key=key,
+                        count=len(legacy),
+                    )
+                )
+                data = legacy
+
         accounts = {}
         for name, account_data in data.items():
             if not isinstance(account_data, dict):
@@ -1615,8 +1675,14 @@ class BaseAdapter(ABC):
             key = f"{self._get_config_key()}.accounts"
             try:
                 config_mgr.setConfig(key, {name: asdict(cfg) for name, cfg in value.items()})
-            except Exception:
-                pass
+            except Exception as e:
+                self._get_logger().warning(
+                    i18n.t(
+                        "core.adapter.accounts_set_failed",
+                        key=key,
+                        error=str(e),
+                    )
+                )
 
     @property
     def enabled_accounts(self) -> dict:
@@ -1740,6 +1806,43 @@ class BaseAdapter(ABC):
                 exc_info=True,
             )
 
+    def update_bot_id(self, account_name: str, bot_id: str) -> None:
+        """
+        运行期识别 bot_id 并持久化到账户配置
+
+        适配器在连接建立 / 事件到达时调用（协议事件的 self.user_id 即 bot_id）。
+        框架维护 bot_id → 账户名注册表（本进程解析链第一优先级），并在配置值
+        变化时把 ``accounts.<账户名>.bot_id`` 写入配置存储（无损路径）——
+        重启后账户实例重建即自带 bot_id，解析不再依赖账户活动回填。
+
+        :param account_name: 账户名（accounts 配置键）
+        :param bot_id: 协议侧机器人标识
+        """
+        bot_id = str(bot_id or "")
+        if not account_name or not bot_id:
+            return
+        old = self._bot_id_registry.get(bot_id)
+        if old == account_name:
+            return
+        if old is not None:
+            self._get_logger().warning(
+                i18n.t("core.adapter.bot_id_changed", old_account=old, account=account_name, bot_id=bot_id)
+            )
+        else:
+            self._get_logger().info(
+                i18n.t("core.adapter.bot_id_recognized", account=account_name, bot_id=bot_id)
+            )
+        self._bot_id_registry[bot_id] = account_name
+        # 快照同步（accounts property 重建实例，setattr 仅对当前快照有效）
+        account = (self._accounts_data or {}).get(account_name)
+        if account is not None and getattr(account, "bot_id", None) != bot_id:
+            account.bot_id = bot_id
+        # 配置持久化（仅值变化时写一次；无损路径保留注释与顺序）
+        key = f"{self._get_config_key()}.accounts.{account_name}"
+        current = config_mgr.getConfig(key)
+        if isinstance(current, dict) and current.get("bot_id") != bot_id:
+            config_mgr.setConfig(f"{key}.bot_id", bot_id)
+
     def _resolve_account(self, account_id: str | None = None) -> tuple:
         """
         解析目标账户
@@ -1747,7 +1850,8 @@ class BaseAdapter(ABC):
         - account_id 为 None → 返回第一个启用的账户
         - account_id 匹配账户名 → 返回该账户
         - account_id 匹配 bot_id 等字段 → 返回该账户
-        - 未找到 → 抛出 ValueError
+        - account_id 非 None 但无法匹配 → 记录 WARNING 并返回第一个启用的账户
+        - 没有任何启用账户 → 抛出 ValueError
 
         匹配字段优先级：账户名 > dataclass 中名为 bot_id 的字段 > 任意 str 类型字段
 
@@ -1767,6 +1871,11 @@ class BaseAdapter(ABC):
             if account_id in accounts:
                 return account_id, accounts[account_id]
 
+            # 运行期注册表反查（事件到达即回填，覆盖快照未刷新 / 重启窗口）
+            reg_name = self._bot_id_registry.get(str(account_id))
+            if reg_name and reg_name in accounts:
+                return reg_name, accounts[reg_name]
+
             for name, cfg in accounts.items():
                 if hasattr(cfg, "bot_id") and cfg.bot_id == account_id:
                     return name, cfg
@@ -1781,6 +1890,16 @@ class BaseAdapter(ABC):
 
         for name, cfg in accounts.items():
             if cfg.enabled:
+                if account_id is not None:
+                    self._get_logger().warning(
+                        i18n.t(
+                            "core.adapter.account_unresolved_fallback",
+                            platform=getattr(self, "_platform", "")
+                            or self.__class__.__name__,
+                            account_id=account_id,
+                            account=name,
+                        )
+                    )
                 return name, cfg
 
         raise ValueError(i18n.t("core.adapter.account_not_found", account_id=account_id))

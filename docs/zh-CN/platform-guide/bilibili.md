@@ -6,8 +6,9 @@ BilibiliAdapter 是基于 bilibili-api-python 的 B 站私信适配器，支持 
 
 ## 文档信息
 
-- 对应模块版本: 0.1.0
+- 对应模块版本: 0.3.1
 - 维护者: ErisPulse
+- 最后更新: 2026-11-10
 
 ## 基本信息
 
@@ -43,6 +44,41 @@ enabled = true
 **扫码登录流程**：`login_mode = "qrcode"` 保存后，在 Dashboard → 组件配置 → 添加账户向导中选择「扫码登录 B 站」→ B 站 APP 扫码 → 手机确认 → 适配器轮询登录状态（scan → confirm → done），凭据自动写入该账户配置并生效。
 
 > 适配器同时注册 `POST /bilibili/qr/start`（获取二维码，返回图片 URL + 会话令牌）与 `POST /bilibili/qr/poll`（轮询登录状态）端点，第三方前端也可直接对接。轮询请求需携带 start 返回的 `poll_token`，防止未授权轮询。
+
+## 标准化对齐
+
+本节说明适配器与 ErisPulse 标准化规范对齐的行为。规范详情参见 SDK 文档《API 响应规范》（`docs/zh-CN/standards/api-response.md`）。
+
+### Api.Using() 账户路由修复（0.3.1）
+
+`Api` DSL 各方法此前未正确消费 `Using()` 指定的账户，现已修复：显式 `Using()` 传入的 `_account_id` 与事件链路的 `api_context`（事件来源账户）均能正确路由到对应账户的 runtime，失效时回退首个账户。
+
+### 消息事件补顶层 message_id
+
+消息事件补充顶层 `message_id` 字段（取自 `msg_key`），与标准响应结构一致，可直接用于 `Reply()` 链式修饰。
+
+### 错误码规范化（0.3.1）
+
+bilibili_api 异常按类归类：网络类异常（`NetworkException` 等）返回 `33001`，平台接口错误返回 `34100`（原 34000/10004 不再使用），原始响应保留在 `bilibili_raw`。
+
+| retcode | 说明 |
+|---------|------|
+| 0 | 成功 |
+| 10002 | 不支持的动作/消息段 |
+| 10003 | 参数/目标错误 |
+| 33001 | 网络错误（连接异常、超时） |
+| 34100 | B 站接口错误（原始响应保留在 `bilibili_raw`） |
+
+### 元动作标准化
+
+- `get_self_info` / `get_user_info` 的 `data` 含标准字段：`user_id` / `user_name` / `user_displayname` / `user_remark`（B 站无备注概念，`user_remark` 恒为空）及 `avatar`
+- `get_version` 返回 `{"impl": "ErisPulse-BilibiliAdapter", "version": "...", "onebot_version": "12"}`
+- `get_supported_actions` 返回支持的动作名列表
+
+### 其他
+
+- `call_api` 同时接受标准字段 `account_id` 与旧字段名 `_account_id`（标准名优先）；框架 ApiDSL 自动适配
+- Converter 继承框架 `BaseConverter`，公共字段（id/time/platform/self/raw）由框架统一构建
 
 ## 消息发送
 
@@ -125,7 +161,8 @@ result = await bili.Api.Using("account2").get_self_info()
 | `get_user_info(user_id)` | 用户公开信息（昵称/头像） | Web API（用户信息卡） |
 | `get_session_msgs(talker_id, begin_seqno)` | 会话历史消息 | Web 私信接口（session_msgs） |
 | `get_status()` | 适配器运行状态 | 本地 |
-| `get_version()` | 适配器版本 | 本地 |
+| `get_version()` | 适配器版本（impl/version/onebot_version） | 本地 |
+| `get_supported_actions()` | 支持的动作名列表 | 本地 |
 
 ### 不支持的标准动作
 
@@ -141,10 +178,20 @@ result = await bili.Api.Using("account2").get_self_info()
 # send_message：文本与图片段组合发送（等价于 Send 链）
 result = await bili.call_api(
     "send_message",
-    _account_id="default",
+    account_id="default",
     target_id="123456789",
     message=[{"type": "text", "data": {"text": "hi"}}],
 )
+```
+
+### 内容浏览扩展动作（供生态模块使用）
+
+通过 `Api.call()` / `call_api()` 提供内容浏览扩展（供 `call_adapter_api` 等生态模块使用）：
+
+```python
+result = await bili.Api.call("get_user_dynamics", uid="123456789")   # 用户动态（简化条目）
+result = await bili.Api.call("search_video", keyword="关键词", page=1)  # 视频搜索
+result = await bili.Api.call("get_popular")                          # 热门内容
 ```
 
 ## 返回值格式
@@ -154,7 +201,7 @@ result = await bili.call_api(
 ```python
 {
     "status": "ok",              # ok / failed
-    "retcode": 0,                # 0 成功；10002 不支持；10003 参数/目标错误；34000 B 站接口错误
+    "retcode": 0,                # 0 成功；10002 不支持；10003 参数/目标错误；33001 网络错误；34100 B 站接口错误
     "data": {...},               # 响应数据（send_msg 原始返回）
     "self": {"platform": "bilibili", "user_id": "..."},
     "message_id": "123456",      # B 站 msg_key

@@ -143,7 +143,12 @@ SQLite 存储管理器（aiosqlite 异步原生实现）
 
 ##### `async _begin_txn(conn: Any) -> None`
 
-**内部方法** BEGIN TRANSACTION
+**内部方法** BEGIN IMMEDIATE TRANSACTION
+
+IMMEDIATE 在事务开始时即取写锁（busy_timeout 正常生效），避免
+deferred 事务「先读后写」升级写锁时的 SQLITE_BUSY_SNAPSHOT——
+该 busy 错误不重试、直接抛 locked，WAL + busy_timeout 均无法缓解
+（高频读写混合下表现为间歇性 database is locked）。
 
 ---
 

@@ -6,9 +6,10 @@ OneBot12Adapter 是基于 OneBot V12 协议构建的适配器，作为 ErisPulse
 
 ## 文档信息
 
-- 对应模块版本: 4.4.0
+- 对应模块版本: 4.6.2
 - 维护者: ErisPulse
 - 协议版本: OneBot V12
+- 最后更新: 2026-11-10
 
 ## 基本信息
 
@@ -21,13 +22,48 @@ OneBot12Adapter 是基于 OneBot V12 协议构建的适配器，作为 ErisPulse
 
 本适配器已完成 v5 范式对齐（增量升级，API 兼容）：
 
-- **BaseConverter 继承**：转换器公共字段（id/time/platform/self/raw）由框架 uild_base_event 构建，按 OB11 字段名（echo/time/self_id）覆盖
-- **spawn_background 任务归属**：Client 模式连接任务改用 
-untime.spawn_background（owner 归属，shutdown 自动回收）
+- **BaseConverter 继承**：转换器公共字段（id/time/platform/self/raw）由框架 build_base_event 构建，按 OB11 字段名（echo/time/self_id）覆盖
+- **spawn_background 任务归属**：Client 模式连接任务改用 Runtime.spawn_background（owner 归属，shutdown 自动回收）
 - **框架软依赖**：安装适配器不再声明 ErisPulse 硬依赖，避免 pip 解析时调整框架版本；运行时检测 ErisPulse>=2.7.1 并在版本过低时打日志提示
-- **启动版本日志**：初始化时输出 OneBotAdapter v4.3.0 已加载
+- **启动版本日志**：初始化时输出 OneBot12Adapter vX.Y.Z 已加载
 
 已有能力（4.2.0 起支持）：多账户、Api DSL 标准动作映射（get_self_info→get_login_info 等）、Request DSL（好友/群请求审批：event.approve() / event.reject()）、EventMixin、i18n。
+
+## 标准化对齐
+
+本节说明适配器与 ErisPulse 标准化规范对齐的行为。规范详情参见 SDK 文档《请求操作规范》（`docs/zh-CN/standards/request-action-spec.md`）与《API 响应规范》（`docs/zh-CN/standards/api-response.md`）。
+
+### 请求事件与 Request DSL
+
+- **request_id 保障**：请求事件透传时保障顶层 `request_id` 字段（优先原生 `request_id`，OB11 风格实现回退映射 `flag` 字段；两者皆无时不合成），供 Request DSL 使用
+- **缺省账户回退**：`Request` DSL（基于 `handle_quick_request` 动作）未显式 `Using()` 指定账户时，回退使用请求事件的来源账户（`request_context`），确保事件链内 `event.approve()`/`event.reject()` 正确路由
+
+### call_api 错误处理
+
+- 账户未连接或连接已关闭时，`call_api` 不再抛出 `ConnectionError`，而是返回标准失败响应（`status="failed"`、`retcode=33001`）
+- API 调用超时同样返回标准失败响应（`retcode=33001`）
+
+### 账户字段双兼容与 send_context
+
+- `call_api` 同时接受标准字段 `account_id` 与旧字段名 `_account_id`（标准名优先）；框架 ApiDSL 自动适配，模块代码推荐使用 `account_id`
+- `Send`/`Recall`/`Edit`/`Batch` 全方法读取 `send_context`：事件链内自动使用当前事件来源账户，显式 `Using()` 指定的账户优先
+
+### 事件字段注入
+
+- 所有事件注入 `self.account_id`（来源账户名），多账户模式下事件可正确回路由到来源账户
+- 所有事件必含 `onebot12_raw_type` 字段（原始事件类型，符合事件转换规范）
+- 表情包/贴纸消息段名为 `onebot12_sticker`（`.Sticker()` 方法内部发送该段）
+
+### 错误码规范
+
+| retcode | 含义 | 触发场景 |
+|---------|------|----------|
+| 0 | 成功 | 动作执行成功 |
+| 33001 | 网络错误 | 账户未连接、连接已关闭、API 调用超时 |
+| 10002 | 不支持的动作 | 后端不支持的动作请求 |
+| 10003 | 参数错误 | 缺少必要参数 |
+
+> 后端返回的原始响应数据保留在 `onebot12_raw` 字段。
 
 ---
 ## 标准Api动作（Api DSL）
@@ -145,7 +181,7 @@ result = await onebot12.Send.To("user", 123).UnsupportedMethod("test")
 
 ### 其他消息类型
 
-- `.Sticker(file_id: str)`：发送表情包/贴纸
+- `.Sticker(file_id: str)`：发送表情包/贴纸（`onebot12_sticker` 消息段）
 - `.Location(latitude: float, longitude: float, title: str = "", content: str = "")`：发送位置
 
 ### 管理功能
@@ -252,6 +288,7 @@ OneBot12适配器完全遵循OneBot12标准，事件格式无需转换，直接�
     "self": {"user_id": "bot-id"},
     "user_id": "user-id",
     "comment": "申请消息",
+    "request_id": "request-flag",
     "flag": "request-flag",
     "time": 1234567890
 }
@@ -266,6 +303,7 @@ OneBot12适配器完全遵循OneBot12标准，事件格式无需转换，直接�
     "group_id": "group-id",
     "user_id": "user-id",
     "comment": "申请消息",
+    "request_id": "request-flag",
     "flag": "request-flag",
     "sub_type": "invite",
     "time": 1234567890
@@ -436,8 +474,8 @@ OneBot12适配器采用异步非阻塞设计：
 适配器提供完善的错误处理机制：
 
 1. 网络连接异常自动重连（支持每个账户独立重连，间隔30秒）
-2. API调用超时处理（固定30秒超时）
-3. 消息发送失败自动重试（最多3次重试）
+2. API调用超时处理（固定30秒超时，超时返回 `retcode=33001` 标准失败响应）
+3. 账户未连接/连接已关闭时 `call_api` 返回 `retcode=33001` 标准失败响应，不再抛出 `ConnectionError`
 4. 不支持的方法调用会返回友好的文本提示
 
 ## 事件处理增强

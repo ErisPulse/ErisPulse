@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "ee8557c547de397deadad8ce1801aeba",
-  "file_hash": "ee8557c547de397deadad8ce1801aeba",
-  "translated_at": "2026-10-22T13:08:58.348726",
+  "hash": "b0076fe2aee6a6f4e1814de2bc9b99ab",
+  "file_hash": "b0076fe2aee6a6f4e1814de2bc9b99ab",
+  "translated_at": "2026-11-10T06:28:04.176916",
   "target_lang": "zh-TW",
   "chunks": [
     {
@@ -14,8 +14,8 @@
       "translation": "## 1. 標準化原則\n\n1. **命名一致**：同一概念在所有平台使用同一命名（如撤回統一 `delete_message`，\n   按鈕段統一 `keyboard`），不因平台而異\n2. **參數一致**：標準動作/段/方法的參數結構在所有平台保持一致；平台特有參數\n   以**可選擴充參數**或**擴充欄位**提供，不污染標準簽名\n3. **回傳一致**：所有 API/發送呼叫回傳標準回應結構（`status/retcode/data/message_id/message`），\n   `data` 內的標準欄位（如 `user_id/user_name`）語義一致；平台原始資料放 `{platform}_raw`\n4. **擴充有據**：平台特有能力按 `{platform}_` 前綴命名（段：`yunhu_form`；\n   動作：`yunhu.board`；事件欄位：`qqbot_button_id`），明確標識非跨平台\n5. **差異在適配器層吸收**：模組程式碼面向標準編程，平台差異由適配器轉換\n   （參數映射、欄位標準化、能力降級），不要求模組寫平台分支\n6. **能力降級不報錯**：平台不支援某標準能力時，優雅降級（回傳 `retcode=10002`、\n   元件文字化進 `alt_message`），不擲出例外中斷模組邏輯"
     },
     {
-      "hash": "d6f949b779b410115d1897461b6b4b90",
-      "translation": "## 2. 標準地圖\n\n| 領域 | 標準文件 | 涵蓋內容 |\n|------|---------|---------|\n| 事件轉換 | [事件轉換標準](event-conversion.md) | 事件結構、標準訊息段（text/image/mention/reply/keyboard 等）、平台擴充段規範 |\n| 互動元件 | **本文件 §5** | 按鈕/鍵盤、下拉選擇、卡片、互動回呼事件標準欄位、修飾器約定、各平台映射 |\n| API 動作 | [API 動作標準](api-action-spec.md) | OneBot12 標準動作（使用者/群組/頻道/訊息管理/元動作）的統一介面與 `ApiDSL` |\n| 請求操作 | [請求操作規範](request-action-spec.md) | 請求事件欄位（request_id）與 Request DSL（approve/reject） |\n| 發送方法 | [發送方法規範](send-method-spec.md) | Send 類別方法命名、參數、修飾器、反向轉換（OB12→平台） |\n| 會話類型 | [會話類型標準](session-types.md) | user/group/channel/guild/dms 等會話類型定義與映射 |\n| API 回應 | [API 回應標準](api-response.md) | 標準回應結構與 retcode 約定 |"
+      "hash": "f3ad9b918935431b1d8f9669b158a49a",
+      "translation": "## 2. 標準地圖\n\n| 領域 | 標準文件 | 覆蓋內容 |\n|------|---------|---------|\n| 事件轉換 | [事件轉換標準](event-conversion.md) | 事件結構、標準訊息段（text/image/mention/reply/keyboard 等）、平台擴展段規範 |\n| 互動元件 | **本文檔 §5** | 按鈕/鍵盤、下拉選擇、卡片、互動回調事件標準欄位、修飾器約定、各平台映射 |\n| API 動作 | [API 動作標準](api-action-spec.md) | OneBot12 標準動作（使用者/群組/頻道/訊息/管理/元動作）的統一介面與 `ApiDSL` |\n| 請求操作 | [請求操作規範](request-action-spec.md) | 請求事件欄位（request_id）、Request DSL（approve/reject）與請求類型上下文留存 |\n| 發送方法 | [發送方法規範](send-method-spec.md) | Send 類方法命名、參數、修飾器、反向轉換（OB12→平台） |\n| 會話類型 | [會話類型標準](session-types.md) | user/group/channel/guild/dms 等會話類型定義與映射 |\n| API 回應 | [API 回應標準](api-response.md) | 標準回應結構與 retcode 約定 |"
     },
     {
       "hash": "508499b212138c4b2bc44c77135a4d1d",
@@ -34,8 +34,8 @@
       "translation": "## 6. 未來候選（Roadmap）\n\n以下能力已在 ≥2 平台出現或預期出現，按優先級推進標準化：\n\n| 候選 | 涉及平台 | 優先級 | 備註 |\n|------|---------|--------|------|\n| select 下拉選擇 | Discord / Telegram | 高 | 結構草案見 §5.4 |\n| 表態/表情回應（reactions） | QQBot / Telegram / Discord / Kook | 高 | 動作 + 事件兩側標準化 |\n| 群管理動作（禁言/踢人/審批） | QQBot / 雲湖 / OB11 | 高 | 多數已實作為平台動作，待抽取標準簽名 |\n| 公告/看板 | 雲湖 / Telegram / Discord | 中 | `set_announcement` 類動作 |\n| 檔案資源模型（file_id 兩段式） | 各平台 | 低（暫緩） | 發送直傳 `SendDSL.File(file, filename)` 已是標準路徑（URL/路徑/bytes 直傳，見[發送方法規範 §2.1](send-method-spec.md)）；file_id 模型僅當後端天然具備時透傳，見 [API 動作標準 §3.5](api-action-spec.md) |\n| 卡片 card | Kook / 雲湖 | 低 | 結構差異大，見 §5.5 |\n| 表單 form | 雲湖 | 低 | 平台特有，保持 `{platform}_` 前綴 |\n| 媒體轉碼/大小偵測 | 各平台 | 低 | 適配器內部實作，不對外標準化 |"
     },
     {
-      "hash": "8b6a6f33a6be5ea1e3cf3b3358a8354f",
-      "translation": "## 7. 新適配器開發者的標準 Checklist\n\n開發新適配器時，按此清單對照實作（★ 為必須，其餘建議）：\n\n- [ ] ★ 事件轉換為 OneBot12 標準結構，繼承 `BaseConverter`\n- [ ] ★ 標準訊息段收發支援（text/image/mention/reply/keyboard…；媒體段按\n      [發送方法規範 §2.1](send-method-spec.md) 的形態分級與降級階梯處理）\n- [ ] ★ 實作 `Raw_ob12`（含標準段 → 平台結構轉換；標準 `keyboard` 段必做）\n- [ ] ★ 回傳標準回應結構（`make_response`/`make_error`）\n- [ ] ★ 多帳戶：`AccountConfigClass(BotAccountConfig)` + `_resolve_account`\n- [ ] ★ Send 類別繼承 `BaseAdapter.Send`，用 `_apply_modifiers`/`send_context`\n- [ ] ☆ Api DSL：標準動作映射到平台API（見 API 動作標準）\n- [ ] ☆ Request DSL：請求事件含 `request_id` + `accept/reject`\n- [ ] ☆ 互動元件：`keyboard` 段轉換 + 互動回呼標準欄位 + `.Keyboard()`/`.Buttons()` 修飾器（適配器 Send 類別實作）\n- [ ] ☆ EventMixin：`get_raw_event()` / `get_button_data()` 等平台擴充方法\n- [ ] ☆ 生命週期任務用 `runtime.spawn_background`\n- [ ] ☆ 設定讀取用 `self.cfg`\n- [ ] ☆ 框架軟依賴：不宣告 ErisPulse 硬依賴 + 執行時版本偵測\n- [ ] ☆ i18n：設定欄位與日誌多語言\n- [ ] ☆ platform-guide 平台文件 + 適配器儲存庫 platform-features.md"
+      "hash": "520ef031b0ec5e7b34626612b31ff589",
+      "translation": "## 7. 新適配器開發者的標準 Checklist\n\n開發新適配器時，請依照此清單對照實現（★ 為必須，其餘推薦）：\n\n- [ ] ★ 將事件轉換為 OneBot12 標準結構，繼承 `BaseConverter`\n- [ ] ★ 支援標準訊息段的收發（text/image/mention/reply/keyboard…；媒體段依照\n      [發送方法規範 §2.1](send-method-spec.md) 的形態分級與降級階梯處理）\n- [ ] ★ 實現 `Raw_ob12`（包含標準段 → 平台結構轉換；標準 `keyboard` 段必做）\n- [ ] ★ 回傳標準回應結構（`make_response`/`make_error`）\n- [ ] ★ 多帳戶：`AccountConfigClass(BotAccountConfig)` + 帳戶解析（帳戶名 / `bot_id` 匹配）\n- [ ] ★ Send 類繼承 `BaseAdapter.Send`，使用 `_apply_modifiers`/`send_context`\n- [ ] ☆ Api DSL：標準動作映射到平台 API（參見 API 動作標準）\n- [ ] ☆ Request DSL：請求事件包含 `request_id` + `accept/reject`（異構端點平台包含請求類型上下文留存）\n- [ ] ☆ 互動組件：`keyboard` 段轉換 + 互動回調標準欄位 + `.Keyboard()`/`.Buttons()` 修飾器（適配器 Send 類實現）\n- [ ] ☆ EventMixin：`get_raw_event()` / `get_button_data()` 等平台擴展方法\n- [ ] ☆ 生命週期任務使用 `runtime.spawn_background`\n- [ ] ☆ 配置讀取使用 `self.cfg`\n- [ ] ☆ 框架軟依賴：不宣告 ErisPulse 硬依賴 + 運行時版本檢測\n- [ ] ☆ i18n：配置欄位與日誌多語言\n- [ ] ☆ platform-guide 平台文件 + 適配器倉庫 platform-features.md"
     },
     {
       "hash": "7c2360dddb2189e6661a320598451106",

@@ -17,7 +17,7 @@ ErisPulse 框架本身僅提供核心能力（事件系統、模組系統、配�
 
 ### ErisPulse-Dashboard：瀏覽器裡的管理面板
 
-機器人掛在伺服器上，啟停模組、改設定、看日誌還得登終端機？Dashboard 把這些搬進瀏覽器：模組啟停、設定編輯、日誌查看、事件監控；其他模組還能向側邊欄註冊自訂視窗，管理頁面集中在同一處。
+機器人掛在伺服器上，啟停模組、改配置、看日誌還得登終端機？Dashboard 把這些搬進瀏覽器：模組啟停、配置編輯、日誌查看、事件監控；其他模組還能向側邊欄註冊自訂視窗，管理頁面集中在同一處。
 
 ```bash
 epsdk install Dashboard
@@ -25,29 +25,29 @@ epsdk install Dashboard
 
 文件：[Dashboard 使用與視窗註冊](dashboard.md) ｜ 專案主頁：[PyPI](https://pypi.org/project/ErisPulse-Dashboard/)
 
-### ErisPulse-Cron：排程任務
+### ErisPulse-Cron：定時任務
 
-要每天定時發簽到提醒、按 Cron 表達式跑週期任務、每隔幾分鐘輪詢一次資料？Cron 提供一次性 / 間隔 / Cron 表達式三種任務類型，回呼傳參數，SQLite 持久化（重新啟動不丟任務）。
+要每天定時發簽到提醒、按 Cron 表達式跑週期任務、每隔幾分鐘輪詢一次資料？Cron 提供一次性 / 間隔 / Cron 表達式三種任務類型，回呼傳參，SQLite 持久化（重啟不丟任務）。
 
 ```bash
 epsdk install Cron
 ```
 
-文件：[Cron 排程任務](cron.md) ｜ 專案主頁：[GitHub](https://github.com/wsu2059q/ErisPulse-Cron)
+文件：[Cron 定時任務](cron.md) ｜ 專案主頁：[GitHub](https://github.com/wsu2059q/ErisPulse-Cron)
 
-### ErisPulse-QvQChat：通用智慧代理
+### ErisPulse-QvQChat：通用智慧代理人
 
-想讓群組裡有一個會做事的 AI 助手，而不是只會關鍵字回覆？QvQChat 是通用智慧代理：工具循環涵蓋收發訊息 / 程式碼執行 / 電腦操作 / 生圖 / 語音 / MCP / 子代理，支援串流對話與序列工具回放，內建 Dashboard 視窗。還有 QvQStalker（旁聽插話）、QvQMemes（表情包）、QvQCompanion（擬人陪伴）三個配套外掛。
+想讓群裡有一個會做事的 AI 助手，而不是只會關鍵字回覆？QvQChat 是通用智慧代理人：工具循環涵蓋收發訊息 / 程式碼執行 / 電腦操作 / 生圖 / 語音 / MCP / 子代理人，支援串流對話與序列工具回放，內建 Dashboard 視窗。還有 QvQStalker（旁聽插話）、QvQMemes（表情包）、QvQCompanion（擬人陪伴）三個配套外掛。
 
 ```bash
 epsdk install ErisPulse-QvQChat
 ```
 
-文件：[QvQChat 智慧代理](qvqchat.md) ｜ 專案主頁：[GitHub](https://github.com/wsu2059q/ErisPulse-QvQChat)
+文件：[QvQChat 智慧代理人](qvqchat.md) ｜ 專案主頁：[GitHub](https://github.com/wsu2059q/ErisPulse-QvQChat)
 
 ### ErisPulse-ApiMCP：讓 AI 用戶端操控機器人
 
-在用 Claude Desktop、Claude Code 這類支援 MCP 的 AI 用戶端？ApiMCP 把機器人執行環境反向開放成 14 個 MCP 工具：AI 可以直接替你收發訊息、呼叫已裝模組、查看平台狀態、訂閱群聊事件——機器人變成 AI 的「手和眼」。
+在用 Claude Desktop、Claude Code 這類支援 MCP 的 AI 用戶端？ApiMCP 把機器人執行環境反向開放成 17 個 MCP 工具：AI 可以直接替你收發訊息、呼叫已安裝的模組、檢視平台狀態、訂閱群聊事件——機器人變成 AI 的「手和眼」。
 
 ```bash
 epsdk install ErisPulse-ApiMCP
@@ -57,7 +57,7 @@ epsdk install ErisPulse-ApiMCP
 
 ### ErisPulse-Takumi：圖片渲染
 
-排行榜、戰報、日程卡這類要「發圖」的場景，寫個範本渲染成圖片發進群組即可：支援 HTML / 節點樹 / Jinja / SVG / 動畫（基於 [takumi-py](https://github.com/BalconyJH/takumi-py)），內建中英文字型，開箱即用。
+排行榜、戰報、日程卡這類要「發圖」的場景，寫個模板渲染成圖片發進群裡即可：支援 HTML / 節點樹 / Jinja / SVG / 動畫（基於 [takumi-py](https://github.com/BalconyJH/takumi-py)），內建中英文字體，開箱即用。
 
 ```bash
 epsdk install Takumi

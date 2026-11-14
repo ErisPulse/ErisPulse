@@ -6,9 +6,10 @@ DiscordAdapter 是基于 Discord Gateway (WebSocket) 和 REST API v10 协议构�
 
 ## 文档信息
 
-- 对应模块版本: 4.3.0
+- 对应模块版本: 4.4.3
 - 维护者: ErisPulse
 - Discord API 版本: v10
+- 最后更新: 2026-11-10
 
 ## 基本信息
 
@@ -66,6 +67,34 @@ Intents 使用位掩码，计算方式为各 Intent 值按位或（`|`）：
 - Discord REST API 基础地址：`https://discord.com/api/v10`
 - Gateway WebSocket 地址：通过 `GET /gateway/bot` 动态获取，通常为 `wss://gateway.discord.gg/?v=10&encoding=json`
 
+## 标准化对齐（4.4.3）
+
+### 事件变更
+
+1. **事件 id 唯一性**：MESSAGE_UPDATE / MESSAGE_DELETE、REACTION_ADD / REMOVE（含 REMOVE_ALL / REMOVE_EMOJI）等衍生事件的 `id` 改为 `"事件名:原始id"`（如 `MESSAGE_UPDATE:123456`），不再与 CREATE 事件撞 id 而被框架去重
+2. **事件 `self.account_id` 注入**：所有事件携带产生它的账户名，多账户下 `event.reply()` 自动按该账户受理发送
+3. **INTERACTION_CREATE 事件修正**：原误标为 `type="request"`（detail_type `interaction`），现改为 `type="notice"`、`detail_type="discord_interaction"`；交互数据保留在 `discord_interaction` 字段
+
+### Api 签名对齐
+
+| 动作 | 签名 | 说明 |
+|------|------|------|
+| get_channel_info | `(guild_id, channel_id)` | 新签名 guild_id 首参；仅传一个位置参数时兼容旧签名（视为 channel_id） |
+| get_channel_list | `(guild_id, joined_only=False)` | 新增 joined_only 关键字参数 |
+| get_guild_info / get_guild_list | - | data 使用 `guild_id` / `guild_name`（旧 `group_id` / `group_name` 字段保留，避免破坏已有调用方） |
+
+### 错误码规范
+
+错误码已按 SDK 标准化（原 `34000` 不再使用）：
+
+| retcode | 说明 |
+|---------|------|
+| 0 | 成功 |
+| 33001 | 网络错误（连接失败、超时等） |
+| 34100 | 平台拒绝（原始响应保留在 `discord_raw` 字段） |
+| 10002 | 不支持的动作（`get_guild_member_list` / `set_guild_name` / `get_channel_member_info` / `get_channel_member_list` / `leave_channel` 显式返回，Discord REST 无对应语义） |
+| 10003 | 参数错误（如消息登记表中无对应上下文导致无法撤回） |
+
 ## v5 范式更新（4.2.0）
 
 本适配器已完成 v5 范式对齐（增量升级，API 兼容）：
@@ -73,9 +102,8 @@ Intents 使用位掩码，计算方式为各 Intent 值按位或（`|`）：
 - **BaseConverter 继承**：转换器公共字段由框架 `build_base_event` 构建
 - **Api DSL**：标准Api动作映射（见下）
 - **标准 keyboard 段**：转换为 Discord components（action row + buttons）；.Keyboard(rows) 修饰器接受通用结构
-- **交互回调标准字段**：INTERACTION_CREATE 事件包含 interaction_id / utton_data
-- **spawn_background 任务归属**：连接任务改用 
-untime.spawn_background
+- **交互回调标准字段**：INTERACTION_CREATE 事件包含 interaction_id / button_data
+- **spawn_background 任务归属**：连接任务改用 runtime.spawn_background
 - **框架软依赖**：运行时检测 ErisPulse>=2.7.1 并提示；启动输出版本日志
 
 ### 标准Api动作
@@ -86,8 +114,9 @@ discord = sdk.adapter.get("discord")
 
 result = await discord.Api.get_self_info()                # GET /users/@me
 result = await discord.Api.get_user_info(user_id)         # GET /users/{id}
-result = await discord.Api.get_guild_info(guild_id)       # GET /guilds/{id}
+result = await discord.Api.get_guild_info(guild_id)       # GET /guilds/{id}（data 用 guild_id / guild_name）
 result = await discord.Api.get_guild_list()               # GET /users/@me/guilds
+result = await discord.Api.get_channel_info(guild_id, channel_id)  # GET /channels/{id}（新签名 guild_id 首参）
 result = await discord.Api.get_channel_list(guild_id)     # GET /guilds/{id}/channels
 result = await discord.Api.get_guild_member_info(gid, uid)
 await discord.Api.delete_message(message_id)              # 登记表自动补全 channel_id
@@ -215,7 +244,9 @@ await discord.Send.To("group", channel_id).Raw_ob12(ob12_msg)
 |---------|------|
 | 0 | 成功 |
 | 33001 | 网络错误（连接失败、超时等） |
-| 34000 | Discord API 返回错误（权限不足、参数错误等） |
+| 34100 | 平台拒绝（权限不足、参数错误等，原始响应保留在 `discord_raw` 字段） |
+| 10002 | 不支持的动作（见「标准化对齐（4.4.3）」错误码规范） |
+| 10003 | 参数错误（如撤回时无对应消息上下文） |
 
 ## 特有事件类型
 
@@ -236,6 +267,7 @@ await discord.Send.To("group", channel_id).Raw_ob12(ob12_msg)
 - `discord_raw_type`：原始事件类型名（如 `MESSAGE_CREATE`）
 - `discord_guild_id`：服务器 ID
 - `discord_channel_id`：频道 ID
+- `discord_interaction`：交互事件数据（INTERACTION_CREATE）
 
 ### detail_type 映射
 
@@ -249,8 +281,10 @@ await discord.Send.To("group", channel_id).Raw_ob12(ob12_msg)
 | Discord 事件 | OneBot12 type | detail_type | 说明 |
 |---|---|---|---|
 | MESSAGE_CREATE | message | channel/private | 消息创建 |
-| MESSAGE_UPDATE | message | channel/private | 消息编辑 |
-| MESSAGE_DELETE | notice | group_message_delete / private_message_delete | 消息删除 |
+| MESSAGE_UPDATE | message | channel/private | 消息编辑（id 为 `MESSAGE_UPDATE:原始id`） |
+| MESSAGE_DELETE | notice | group_message_delete / private_message_delete | 消息删除（id 为 `MESSAGE_DELETE:原始id`） |
+| MESSAGE_REACTION_ADD | notice | group_message_reaction_add | 表情回应添加（id 为 `MESSAGE_REACTION_ADD:原始id`） |
+| MESSAGE_REACTION_REMOVE | notice | group_message_reaction_remove | 表情回应移除（id 为 `MESSAGE_REACTION_REMOVE:原始id`） |
 | GUILD_MEMBER_ADD | notice | group_member_increase | 成员加入 |
 | GUILD_MEMBER_REMOVE | notice | group_member_decrease | 成员离开 |
 | GUILD_MEMBER_UPDATE | notice | group_member_update | 成员信息更新 |
@@ -258,7 +292,10 @@ await discord.Send.To("group", channel_id).Raw_ob12(ob12_msg)
 | GUILD_ROLE_DELETE | notice | group_role_delete | 角色删除 |
 | CHANNEL_CREATE | notice | channel_create | 频道创建 |
 | CHANNEL_DELETE | notice | channel_delete | 频道删除 |
-| INTERACTION_CREATE | request | interaction | 交互（按钮、命令等） |
+| INTERACTION_CREATE | notice | discord_interaction | 交互（按钮、命令等） |
+
+> 4.4.3 起，MESSAGE_UPDATE / MESSAGE_DELETE、REACTION_ADD / REMOVE 等非创建类事件的
+> `id` 均改为 `"事件名:原始id"`，避免与 MESSAGE_CREATE 事件 id 冲突而被框架去重。
 
 ### 特殊字段示例
 
@@ -271,6 +308,11 @@ await discord.Send.To("group", channel_id).Raw_ob12(ob12_msg)
   "user_nickname": "用户名",
   "group_id": "频道ID",
   "message_id": "消息ID",
+  "self": {
+    "platform": "discord",
+    "user_id": "BotID",
+    "account_id": "default"
+  },
   "discord_raw": {...},
   "discord_raw_type": "MESSAGE_CREATE",
   "discord_guild_id": "服务器ID",
@@ -441,7 +483,7 @@ embed = {
     "description": "欢迎使用 ErisPulse Discord 适配器",
     "color": 3447003,
     "fields": [
-        {"name": "版本", "value": "4.0.0", "inline": True},
+        {"name": "版本", "value": "4.4.3", "inline": True},
         {"name": "框架", "value": "ErisPulse", "inline": True},
     ],
     "footer": {"text": "Powered by ErisPulse"},
@@ -472,15 +514,19 @@ async def handle(event):
 
 ### 处理交互事件
 
-```python
-from ErisPulse.Core.Event import request
+4.4.3 起 INTERACTION_CREATE 按 `notice` / `discord_interaction` 分发：
 
-@request.on_request()
+```python
+from ErisPulse.Core.Event import notice
+
+@notice.on_notice()
 async def handle_interaction(event):
     if event.get("platform") != "discord":
         return
+    if event.get("detail_type") != "discord_interaction":
+        return
 
-    interaction = event.get_interaction_data()
+    interaction = event.get_interaction_data()  # 等价于 event["discord_interaction"]
     if interaction.get("type") == 3:  # MESSAGE_COMPONENT
         await event.reply("按钮已点击！")
 ```

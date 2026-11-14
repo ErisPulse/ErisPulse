@@ -13,31 +13,32 @@
 
 ---
 
-## プラットフォーム固有機能
+## プラットフォーム固有の機能
 
-このセクションは各アダプター開発者によって保守されており、そのアダプターとOneBot12標準との差分および拡張機能について説明するものです。以下の各プラットフォームの詳細ドキュメントを参照してください：
+このセクションは、各アダプターの開発者が保守し、OneBot12 標準との差異と拡張機能を説明するためのものです。以下の各プラットフォームの詳細ドキュメントを参照してください：
 
-- [メンテナンスガイド](maintain-notes.md)
+- [保守説明](maintain-notes.md)
 
-- [Yunhuプラットフォーム特性](yunhu.md)
-- [Yunhuユーザープラットフォーム特性](yunhu_user.md)
-- [Telegramプラットフォーム特性](telegram.md)
-- [OneBot11プラットフォーム特性](onebot11.md)
-- [OneBot12プラットフォーム特性](onebot12.md)
-- [SnowLumaプラットフォーム特性](snowluma.md)
-- [メールプラットフォーム特性](email.md)
-- [Kookプラットフォーム特性](kook.md)
-- [Matrixプラットフォーム特性](matrix.md)
-- [WeCom（企業向けWeChat）プラットフォーム特性](wecom.md)
-- [Bilibili プラットフォーム特性](bilibili.md)
-- [Minecraft プラットフォーム特性](minecraft.md)
-- [QQ公式ボットプラットフォーム特性](qqbot.md)
-- [花楓珈琲館](ideaura.md)
+- [雲湖プラットフォームの特徴](yunhu.md)
+- [雲湖ユーザープラットフォームの特徴](yunhu_user.md)
+- [Oopzプラットフォームの特徴](oopz.md)
+- [Telegramプラットフォームの特徴](telegram.md)
+- [OneBot11プラットフォームの特徴](onebot11.md)
+- [OneBot12プラットフォームの特徴](onebot12.md)
+- [SnowLumaプラットフォームの特徴](snowluma.md)
+- [メールプラットフォームの特徴](email.md)
+- [Kook(開黒啦)プラットフォームの特徴](kook.md)
+- [Matrixプラットフォームの特徴](matrix.md)
+- [企業微信プラットフォームの特徴](wecom.md)
+- [Bilibiliプラットフォームの特徴](bilibili.md)
+- [Minecraftプラットフォームの特徴](minecraft.md)
+- [QQ公式ロボットプラットフォームの特徴](qqbot.md)
+- [花楓コーヒーハウス](ideaura.md)
 - [Discord](discord.md)
 - [Webhookプロトコルブリッジ](webhook.md)
 - [WeChat公式アカウント](wechatmp.md)
 
-> また `sandbox` アダプターもありますが、このアダプターにはプラットフォーム特性ドキュメントの保守は不要です
+> さらに `sandbox` アダプターもありますが、このアダプターにはプラットフォーム特有のドキュメントを保守する必要はありません。
 
 ---
 

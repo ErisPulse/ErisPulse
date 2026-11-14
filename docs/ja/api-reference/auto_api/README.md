@@ -19,10 +19,10 @@
 
 ## 统计信息
 
-- **模块总数**: 139
-- **类总数**: 194（包括 5 个嵌套类）
-- **函数总数**: 377
-- **方法总数**: 1753
+- **模块总数**: 143
+- **类总数**: 198（包括 5 个嵌套类）
+- **函数总数**: 410
+- **方法总数**: 1802
 
 ---
 
@@ -56,12 +56,12 @@
 
 ### [ErisPulse.CLI.commands.create](ErisPulse/CLI/commands/create.md)
 
-1 个类 | 7 个方法 | 5 个函数
+1 个类 | 7 个方法 | 6 个函数
 
 
 ### [ErisPulse.CLI.commands.doctor](ErisPulse/CLI/commands/doctor.md)
 
-1 个类 | 9 个方法
+1 个类 | 10 个方法
 
 
 ### [ErisPulse.CLI.commands.init](ErisPulse/CLI/commands/init.md)
@@ -91,12 +91,12 @@
 
 ### [ErisPulse.CLI.commands.run](ErisPulse/CLI/commands/run.md)
 
-3 个类 | 18 个方法 | 1 个函数
+2 个类 | 10 个方法 | 1 个函数
 
 
 ### [ErisPulse.CLI.commands.runtime](ErisPulse/CLI/commands/runtime.md)
 
-2 个类 | 2 个函数
+2 个类 | 3 个函数
 
 
 ### [ErisPulse.CLI.commands.self_update](ErisPulse/CLI/commands/self_update.md)
@@ -221,7 +221,7 @@
 
 ### [ErisPulse.Core.Bases.adapter](ErisPulse/Core/Bases/adapter.md)
 
-3 个类 | 66 个方法 | 7 个函数
+3 个类 | 68 个方法 | 7 个函数
 
 
 ### [ErisPulse.Core.Bases.adapter_patterns](ErisPulse/Core/Bases/adapter_patterns.md)
@@ -231,7 +231,7 @@
 
 ### [ErisPulse.Core.Bases.api_dsl](ErisPulse/Core/Bases/api_dsl.md)
 
-1 个类 | 39 个方法
+1 个类 | 39 个方法 | 4 个函数
 
 
 ### [ErisPulse.Core.Bases.client](ErisPulse/Core/Bases/client.md)
@@ -251,7 +251,7 @@
 
 ### [ErisPulse.Core.Bases.errors](ErisPulse/Core/Bases/errors.md)
 
-25 个类
+26 个类
 
 
 ### [ErisPulse.Core.Bases.i18n_schema](ErisPulse/Core/Bases/i18n_schema.md)
@@ -271,7 +271,7 @@
 
 ### [ErisPulse.Core.Bases.model](ErisPulse/Core/Bases/model.md)
 
-8 个类 | 43 个方法 | 5 个函数
+8 个类 | 51 个方法 | 5 个函数
 
 
 ### [ErisPulse.Core.Bases.module](ErisPulse/Core/Bases/module.md)
@@ -296,7 +296,7 @@
 
 ### [ErisPulse.Core.Bases.sql_base](ErisPulse/Core/Bases/sql_base.md)
 
-5 个类 | 73 个方法 | 3 个函数
+5 个类 | 74 个方法 | 3 个函数
 
 
 ### [ErisPulse.Core.Bases.storage](ErisPulse/Core/Bases/storage.md)
@@ -346,7 +346,7 @@
 
 ### [ErisPulse.Core.Event.interaction](ErisPulse/Core/Event/interaction.md)
 
-5 个类 | 32 个方法
+5 个类 | 33 个方法
 
 
 ### [ErisPulse.Core.Event.message](ErisPulse/Core/Event/message.md)
@@ -406,7 +406,7 @@
 
 ### [ErisPulse.Core.adapter](ErisPulse/Core/adapter.md)
 
-1 个类 | 69 个方法
+1 个类 | 71 个方法
 
 
 ### [ErisPulse.Core.assets.__init__](ErisPulse/Core/assets/__init__.md)
@@ -496,17 +496,17 @@
 
 ### [ErisPulse.Core.module](ErisPulse/Core/module.md)
 
-1 个类 | 73 个方法
+1 个类 | 77 个方法
 
 
 ### [ErisPulse.Core.ownership](ErisPulse/Core/ownership.md)
 
-1 个类 | 10 个方法 | 1 个函数
+1 个类 | 17 个方法 | 1 个函数
 
 
 ### [ErisPulse.Core.router](ErisPulse/Core/router.md)
 
-3 个类 | 84 个方法 | 3 个函数
+3 个类 | 85 个方法 | 3 个函数
 
 
 ### [ErisPulse.Core.scope](ErisPulse/Core/scope.md)
@@ -516,7 +516,7 @@
 
 ### [ErisPulse.Core.shadow](ErisPulse/Core/shadow.md)
 
-3 个类 | 16 个方法 | 1 个函数
+3 个类 | 26 个方法 | 1 个函数
 
 
 ### [ErisPulse.Core.storage.__init__](ErisPulse/Core/storage/__init__.md)
@@ -601,7 +601,7 @@
 
 ### [ErisPulse.loaders.module](ErisPulse/loaders/module.md)
 
-4 个类 | 60 个方法 | 5 个函数
+4 个类 | 61 个方法 | 5 个函数
 
 
 ### [ErisPulse.loaders.plugin_folder](ErisPulse/loaders/plugin_folder.md)
@@ -631,7 +631,12 @@
 
 ### [ErisPulse.runtime.context](ErisPulse/runtime/context.md)
 
-6 个函数
+8 个函数
+
+
+### [ErisPulse.runtime.dev_watch](ErisPulse/runtime/dev_watch.md)
+
+2 个类 | 12 个方法
 
 
 ### [ErisPulse.runtime.diagnostics](ErisPulse/runtime/diagnostics.md)
@@ -674,6 +679,11 @@
 4 个函数
 
 
+### [ErisPulse.runtime.metrics](ErisPulse/runtime/metrics.md)
+
+1 个类 | 5 个方法
+
+
 ### [ErisPulse.runtime.owner_cleanup](ErisPulse/runtime/owner_cleanup.md)
 
 4 个函数
@@ -691,12 +701,22 @@
 
 ### [ErisPulse.runtime.process_state](ErisPulse/runtime/process_state.md)
 
-5 个函数
+7 个函数
 
 
 ### [ErisPulse.runtime.reload_ops](ErisPulse/runtime/reload_ops.md)
 
 1 个类 | 7 个方法 | 3 个函数
+
+
+### [ErisPulse.runtime.reload_target](ErisPulse/runtime/reload_target.md)
+
+1 个类 | 12 个函数
+
+
+### [ErisPulse.runtime.resource_track](ErisPulse/runtime/resource_track.md)
+
+6 个函数
 
 
 ### [ErisPulse.runtime.sdk_initializer](ErisPulse/runtime/sdk_initializer.md)
@@ -706,7 +726,7 @@
 
 ### [ErisPulse.runtime.tasks](ErisPulse/runtime/tasks.md)
 
-15 个函数
+20 个函数
 
 
 ### [ErisPulse.runtime.troubleshoot](ErisPulse/runtime/troubleshoot.md)
@@ -721,5 +741,5 @@
 
 ### [ErisPulse.sdk](ErisPulse/sdk.md)
 
-1 个类 | 33 个方法 | 1 个函数
+1 个类 | 35 个方法 | 1 个函数
 

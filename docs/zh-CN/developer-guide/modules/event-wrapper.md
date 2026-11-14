@@ -8,7 +8,7 @@
 
 ## 为 event 参数添加类型注解
 
-事件处理器的 `event` 参数是 **Event 包装类**（dict 子类）。强烈建议为它添加类型注解：
+事件处理器的 `event` 参数是 **Event 包装类**（dict 子类）。**强烈建议**为它添加 `Event` 类型注解（运行时无注解也能跑，注解服务于 IDE 补全与静态检查）：
 
 ```python
 from ErisPulse.Core.Event import Event
@@ -33,7 +33,7 @@ async def handler(event: Event):
 ## 核心字段方法
 
 ```python
-from ErisPulse.Core.Event import command
+from ErisPulse.Core.Event import command, Event
 
 @command("info")
 async def info_command(event: Event):
@@ -46,7 +46,7 @@ async def info_command(event: Event):
 ## 消息事件方法
 
 ```python
-from ErisPulse.Core.Event import message
+from ErisPulse.Core.Event import message, Event
 
 @message.on_private_message()
 async def private_handler(event: Event):
@@ -59,7 +59,7 @@ async def private_handler(event: Event):
 ## 消息类型判断
 
 ```python
-from ErisPulse.Core.Event import message
+from ErisPulse.Core.Event import message, Event
 
 @message.on_group_message()
 async def group_handler(event: Event):
@@ -72,7 +72,7 @@ async def group_handler(event: Event):
 ## 回复功能
 
 ```python
-from ErisPulse.Core.Event import command
+from ErisPulse.Core.Event import command, Event
 
 @command("ask")
 async def ask_command(event: Event):
@@ -90,6 +90,18 @@ async def price_command(event: Event):
     if reply:
         await event.reply(f"收到金额：{reply.get_text()}")
 ```
+
+#### reply 之外：send_chain
+
+`reply()` 覆盖不了的场景——平台专有修饰方法（如 Expire/Board 类）、连续多个修饰、
+无内容参数的动作型发送——用 `event.send_chain` 获取已设置好目标与发送账号的发送链，
+自由追加修饰后发送：
+
+```python
+await event.send_chain.At(event.user_id).Text("内容")     # 链式修饰 + 发送
+```
+
+修饰方法清单见 [发送方法规范](../../standards/send-method-spec.md)。
 
 ## 交互会话进阶
 
@@ -129,7 +141,7 @@ async with event.message_tx():
 ## 命令信息获取
 
 ```python
-from ErisPulse.Core.Event import command
+from ErisPulse.Core.Event import command, Event
 
 @command("cmdinfo")
 async def cmdinfo_command(event: Event):
@@ -141,7 +153,7 @@ async def cmdinfo_command(event: Event):
 ## 通知事件方法
 
 ```python
-from ErisPulse.Core.Event import notice
+from ErisPulse.Core.Event import notice, Event
 
 @notice.on_friend_add()
 async def friend_add_handler(event: Event):
@@ -223,6 +235,42 @@ async def friend_add_handler(event: Event):
 - `is_friend_request()` - 是否为好友请求
 - `is_group_request()` - 是否为群组请求
 
+#### 请求审批（approve / reject）
+
+注册请求处理器并对请求做出决策：
+
+```python
+from ErisPulse.Core.Event import request
+
+@request.on_friend_request()
+async def handle_friend(event):
+    request_id = event.get_request_id()   # 请求标识（缺失时 approve/reject 抛 ValueError）
+    if event.get_comment() == "暗号":
+        result = await event.approve()    # 同意（可带备注：approve(comment="欢迎")）
+    else:
+        result = await event.reject()     # 拒绝
+    if result.get("status") != "ok":
+        # 标准响应格式，失败时 message 说明原因（如 34001 请求已过期）
+        pass
+
+@request.on_group_request()               # 群申请 / 群邀请
+async def handle_group(event):
+    await event.approve()
+```
+
+> 审批动作经适配器 `Request` DSL 执行；返回值、错误码与适配器实现要求见
+> [请求操作规范](../../standards/request-action-spec.md)。通用注册器
+> `request.on_request()`（不区分类型）同样可用。
+
+#### 链路控制（done / is_processed / is_stopped）
+
+- `done(claim=True)` - 认领（默认）或仅阻断后续低优先级处理器
+- `is_processed()` - 当前事件是否已被认领
+- `is_stopped()` - 当前事件处理链是否已被阻断
+
+认领与阻断的完整语义（优先级交互、命令认领）见
+[事件处理入门 · 链路控制：认领与阻断](../../getting-started/event-handling.md#链路控制认领与阻断)。
+
 ### 回复功能
 
 #### 基础回复
@@ -253,6 +301,15 @@ adapter = sdk.adapter.get(event.get_platform())
 target_id = event.get_group_id()  # 或指定其他群组ID
 await adapter.Send.To("group", target_id).Text(event.get_text())
 ```
+
+> **多账户部署**：处理事件的链路内发送**无需显式指定账户**——框架在事件分发入口把触发事件的账户标识注入调用上下文，`Send` / `Api` / `Request` 链路未显式指定时自动绑定触发事件的账户（显式 `Using()` 永远优先；定时器等无事件上下文场景走默认账户）。即上例转发会从「收到这条事件的账户」发出，无需额外代码。
+
+#### 跨账户重复受理
+
+多账户同群时，同一物理消息可能经多个账户各收到一遍。框架按 `ErisPulse.framework.cross_account_policy` 处理（默认 `off` 不关联）：
+
+- `mark`：后续副本照常分发，但事件顶层注入 `multi_receipt` 字段（`{"event_id": 首个受理事件id, "self_id": 首个受理账户}`）——模块读取该字段自行裁决是否跳过响应
+- `drop`：副本在分发入口直接丢弃，模块无感
 
 ### 等待回复功能
 
@@ -310,6 +367,7 @@ await adapter.Send.To("group", target_id).Text(event.get_text())
 **confirm() - 确认对话：**
 
 ```python
+from ErisPulse.Core.Event import Event
 @command("delete", help="删除数据")
 async def delete_handler(event: Event):
     if await event.confirm("确定要删除所有数据吗？"):
@@ -331,6 +389,7 @@ if await event.confirm("确定继续？", hint=True):
 **choose() - 选择菜单：**
 
 ```python
+from ErisPulse.Core.Event import Event
 @command("color", help="选择颜色")
 async def color_handler(event: Event):
     choice = await event.choose("请选择颜色：", ["红色", "绿色", "蓝色"])
@@ -389,6 +448,7 @@ choice = await event.choose(
 **collect() - 表单收集：**
 
 ```python
+from ErisPulse.Core.Event import Event
 @command("register", help="注册")
 async def register_handler(event: Event):
     data = await event.collect([

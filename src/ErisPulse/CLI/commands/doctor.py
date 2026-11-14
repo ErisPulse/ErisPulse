@@ -315,6 +315,9 @@ class DoctorCommand(Command):
                 )
             )
 
+        # 7. 安全体检（默认值警示，不计入失败项）
+        rows.extend(self._security_rows(fix_context["config_path"]))
+
         return rows, failed, fix_context
 
     # 框架自身的配置节名（游离节检测的白名单；新增框架节时同步）
@@ -335,6 +338,68 @@ class DoctorCommand(Command):
             "router",
         }
     )
+
+    # 框架默认监听地址（Core/constants.DEFAULT_SERVER_HOST；此处字面量同步，
+    # 避免新增内部导入抬升导入分层基线）
+    _DEFAULT_SERVER_HOST = "0.0.0.0"
+
+    def _security_rows(self, config_path: Path) -> "list[tuple[str, str, str]]":
+        """
+        安全默认值体检（只读警示，不计入失败项）
+
+        检查项：服务监听地址（0.0.0.0 全网卡警示）与 API 文档端点默认开启提示。
+
+        :param config_path: [Path] 配置文件路径
+        :return: [(状态, 标签, 详情)] 行列表
+        """
+        rows: list[tuple[str, str, str]] = []
+        label = i18n.t("cli.doctor.security")
+        host = self._DEFAULT_SERVER_HOST
+        if config_path.exists():
+            import tomlclass
+
+            try:
+                data = tomlclass.load_path(str(config_path)).unwrap()
+                host = ((data.get("ErisPulse") or {}).get("server") or {}).get(
+                    "host", host
+                )
+            except Exception as e:
+                rows.append(
+                    (
+                        self._warn(),
+                        label,
+                        i18n.t("cli.doctor.security_skipped", error=e),
+                    )
+                )
+                return rows
+        public = host == self._DEFAULT_SERVER_HOST
+        rows.append(
+            (
+                self._warn() if public else self._status(True),
+                label,
+                i18n.t(
+                    "cli.doctor.security_host_all"
+                    if public
+                    else "cli.doctor.security_host_ok",
+                    host=host,
+                ),
+            )
+        )
+        rows.append(
+            (
+                self._warn() if public else self._status(True),
+                label,
+                i18n.t(
+                    "cli.doctor.security_docs_warn"
+                    if public
+                    else "cli.doctor.security_docs_info"
+                ),
+            )
+        )
+        return rows
+
+    def _warn(self) -> str:
+        return f"[warning]{i18n.t('cli.doctor.status_warn')}[/]"
 
     def _scan_config_pollution(self, config_path: Path) -> "list[tuple[str, str, str]]":
         """

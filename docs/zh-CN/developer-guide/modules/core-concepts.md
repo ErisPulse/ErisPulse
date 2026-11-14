@@ -75,7 +75,7 @@ async def on_unload(self, event):
 async def on_before_unload(self, event):
     # event["reason"] 标注来意：unload / reload / disable / cascade / dormant
     if event["reason"] in ("reload", "dormant"):
-        await self.sdk.storage.aset(f"{self._module_name}:state", self.collect_state())
+        await self.state.aset("snapshot", self.collect_state())
 ```
 
 钩子失败仅告警，不阻塞卸载流程；未声明该钩子的模块行为不变。归眠 / 唤醒语义详见
@@ -160,6 +160,13 @@ from ErisPulse import sdk
 # 通过 sdk 对象访问所有核心模块
 sdk.logger.info("日志")
 sdk.storage.set("key", "value")
+
+# 模块自有小状态（计数器/开关/上次运行时间）优先用 self.state——
+# 键自动带 module.state.<模块名>. 前缀，模块卸载重载后仍在：
+count = self.state.get("runs", 0) + 1
+self.state.set("runs", count)            # 同步（任意上下文）
+await self.state.aset("runs", count)     # 异步路径
+await self.state.aget("runs", 0)
 config = sdk.config.getConfig("MyModule")
 ```
 
@@ -258,6 +265,37 @@ class MyModule(BaseModule):
 - **docstring 自动生成字段描述**：未声明 metadata `description` 时，自动从 docstring 的 `:ivar 字段: 说明` 或 `Attributes:` 段提取兜底
 - **嵌套 dataclass 配置**：字段类型为嵌套 dataclass 时，schema/模板/校验递归处理，WebUI 渲染为嵌套分组
 - **`example` 不落盘字段**：`metadata={"example": True}` 的字段不写入 config.toml，仅记录在 `config.full.example`（适合冗杂又很少触碰的高级配置项），用户手动设置后正常持久化
+
+### 配置热更新（on_config_update）
+
+模块与适配器实现 `on_config_update(old, new)` 方法后，框架在**本模块相关配置实际变化**
+时自动路由调用（无需自行订阅配置事件），改 token / 开关 / 限流参数**免重启**生效：
+
+```python
+class MyModule(BaseModule):
+    ConfigClass = MyModuleConfig
+
+    def on_config_update(self, old_config, new_config):
+        # 声明了 ConfigClass 时为类型安全配置对象（未声明则为 dict）；
+        # 运行时 setConfig() 触发时 old_config 为 None（仅 new 有值）
+        if old_config is None or new_config.api_key != old_config.api_key:
+            self.logger.info("API key 已更新，重建客户端")
+            self._client = build_client(new_config.api_key)
+```
+
+触发来源与路由规则：
+
+- **运行时写入**（代码或 Dashboard 调用 `setConfig()`）：按配置键前缀匹配路由——只有
+  落在本模块配置键（或其子键）内的写入才触发，此时 `old_config` 为 `None`
+- **配置文件编辑**（文件监听触发整树对比）：新旧配置节不相等才触发，此时 `old` / `new`
+  分别为变更前后的配置对象
+- 回调内抛出的异常被框架捕获记录，不影响配置写入本身
+
+使用口径：
+
+- `self.cfg` 是实时读取——不需要重建状态的简单参数（如超时秒数）在下一行代码就是新值，
+  无需在此钩子手动同步
+- 需要重建的**有状态资源**（客户端连接、连接池、定时器）才在此钩子处理
 
 ### 声明式翻译键（v2.7.0+）
 

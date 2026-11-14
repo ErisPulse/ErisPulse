@@ -1,37 +1,37 @@
 {
   "version": 2,
-  "hash": "8916c18a07dcac34b05189f0e6153895",
-  "file_hash": "8916c18a07dcac34b05189f0e6153895",
-  "translated_at": "2026-10-30T14:49:47.188756",
+  "hash": "26050d5e8390366dfed069f3f417cf86",
+  "file_hash": "26050d5e8390366dfed069f3f417cf86",
+  "translated_at": "2026-11-11T15:25:46.821854",
   "target_lang": "ja",
   "chunks": [
     {
       "hash": "27bf7be1e26a07d8b4a373978d55c550",
-      "translation": "# 開発者ガイド\n\n> [!TIP]\n> **このドキュメントを読むべきタイミング**：ErisPulse 向けの拡張機能——ボットに機能を追加する（モジュール）や、新しいプラットフォームに接続する（アダプター）——を開発しようとしているとき。ボットを使いたいだけの場合はスキップして、[クイックスタート](../quick-start.md) を直接ご覧ください。\n\nここから自分の開発パスを見つけましょう：**モジュール開発**では、コマンドやメッセージハンドラーでボットの機能を拡張できます。**アダプター開発**では、ボットを新しいメッセージプラットフォームに接続できます。どちらのパスも、プロジェクトの作成からテスト、公開までの完全なフローをカバーしています。"
+      "translation": "# 開発者ガイド\n\n> [!TIP]\n> **このドキュメントをいつ読むべきか**：ErisPulse 向けの拡張機能——ボットに機能（モジュール）を追加する、または新しいプラットフォーム（アダプター）に接続する——を開発する準備をしている時に読んでください。ボットを利用するだけなら読み飛ばして、[クイックスタート](../quick-start.md)を直接ご覧ください。\n\nここからあなたの開発パスを見つけましょう：**モジュール開発**ではコマンドやメッセージハンドラーでボットの機能を拡張でき、**アダプター開発**ではボットを新しいメッセージプラットフォームに接続できます。どちらのパスも、プロジェクトの作成からテスト、公開までの完全な流れを網羅しています。"
     },
     {
       "hash": "860797686803cd935ffe55c811ac3e29",
-      "translation": "## 内容リスト\n\n### モジュール開発\n\n1. [モジュール開発入門](modules/getting-started.md) - 初めてのモジュールを作成する\n2. [モジュールのコアコンセプト](modules/core-concepts.md) - モジュールのコアコンセプトとアーキテクチャ\n3. [Event パッケージの詳細](modules/event-wrapper.md) - Event オブジェクトの完全な説明\n4. [モジュールのベストプラクティス](modules/best-practices.md) - 高品質なモジュールを開発するための提案\n5. [データモデル層（ORM）](orm.md) - モジュール開発の進階：宣言的モデル、自動テーブル作成、CRUD 操作\n\n### アダプタ開発\n\n1. [アダプタ開発入門](adapters/getting-started.md) - 初めてのアダプタを作成する\n2. [アダプタのコアコンセプト](adapters/core-concepts.md) - アダプタのコアコンセプト（start() の2つの書き方と、PollingAdapter / WebhookAdapter による接続モードの基底クラスを含む）\n3. [SendDSL 詳解](adapters/send-dsl.md) - Send メッセージ送信 DSL の完全な説明\n4. [イベントコンバーター](adapters/converter.md) - イベントコンバーターの実装\n5. [アダプタのベストプラクティス](adapters/best-practices.md) - 高品質なアダプタを開発するための提案\n\n### テストとトラブルシューティング\n\n1. [モジュールテスト（ErisPulse-Testing）](testing.md) - TestBot、イベントファクトリー、アサーションの概要\n\n### 一般的な規格\n\n1. [設定と UI メタデータ](configuration.md) - 宣言的設定：widget / 条件付き表示 / 値の形態 / 兼容性契約（アダプタとモジュール共通）\n\n### リリースガイド\n\n- [リリースとモジュールストアガイド](publishing.md) - あなたの作品を PyPI と ErisPulse モジュールストアに公開する方法"
+      "translation": "## 目次\n\n### モジュール開発\n\n1. [モジュール開発入門](modules/getting-started.md) - 最初のモジュールを作成する\n2. [モジュールのコア概念](modules/core-concepts.md) - モジュールの核心的な概念とアーキテクチャ\n3. [Event ラッパークラス詳解](modules/event-wrapper.md) - Event オブジェクトの完全な説明\n4. [モジュールのベストプラクティス](modules/best-practices.md) - 高品質なモジュールを開発するための提案\n5. [データモデル層（ORM）](orm.md) - モジュール開発の応用編：宣言的モデル、自動テーブル作成と CRUD\n\n### アダプター開発\n\n1. [アダプター開発入門](adapters/getting-started.md) - 最初のアダプターを作成する\n2. [アダプターのコア概念](adapters/core-concepts.md) - アダプターの核心的な概念（start() の2つの書き方と PollingAdapter / WebhookAdapter 接続モード基底クラスを含む）\n3. [SendDSL 詳解](adapters/send-dsl.md) - Send メッセージ送信 DSL の完全な説明\n4. [イベントコンバーター](adapters/converter.md) - イベントコンバーターの実装\n5. [アダプターのベストプラクティス](adapters/best-practices.md) - 高品質なアダプターを開発するための提案\n\n### テストとトラブルシューティング\n\n1. [モジュールテスト（ErisPulse-Testing）](testing.md) - TestBot、イベントファクトリとアサーションインターフェース\n\n### 一般的な規格\n\n1. [設定と UI メタデータ](configuration.md) - 宣言的設定：widget / 条件付き表示・非表示 / 値の形式 / 互換性契約（アダプターとモジュール共通）\n\n### 公開ガイド\n\n- [公開とモジュールストアガイド](publishing.md) - あなたの作品を PyPI と ErisPulse モジュールストアに公開する"
     },
     {
       "hash": "a69f12905cab94d5d7c997a0184db083",
-      "translation": "## 開発の準備\n\n開発を始める前に、以下を確認してください：\n\n1. [基本概念](../getting-started/basic-concepts.md) を読んでいること\n2. [イベント処理](../getting-started/event-handling.md) に慣れていること\n3. 開発環境（Python >= 3.10）をインストールしていること\n4. ErisPulse SDK をインストールしていること"
+      "translation": "## 開発の準備\n\n開発を始める前に、以下を確認してください：\n\n1. [基本概念](../getting-started/basic-concepts.md)を読んでいること\n2. [イベント処理](../getting-started/event-handling.md)に精通していること\n3. 開発環境（Python >= 3.10）がインストールされていること\n4. ErisPulse SDK がインストールされていること"
     },
     {
       "hash": "20bd8cf355eeee226e64f56b062017ba",
-      "translation": "## 開発タイプの選択\n\nニーズに合わせて適切な開発タイプを選択してください：\n\n| 開発タイプ | 適用シーン | 入門ガイド |\n|---------|---------|---------|\n| **モジュール開発** | ボット機能の拡張、ビジネスロジックの実装、コマンドとメッセージ処理の提供 | [モジュール開発入門](modules/getting-started.md) |\n| **アダプター開発** | 新しいメッセージプラットフォームへの接続、クロスプラットフォーム通信の実現、プラットフォーム固有機能の提供 | [アダプター開発入門](adapters/getting-started.md) |\n\n> ボットの機能を拡張したい場合（コマンドの追加、メッセージの処理など）は、**モジュール開発**を選択してください。ボットを新しいプラットフォームに接続する必要がある場合は、**アダプター開発**を選択してください。"
+      "translation": "## 開発タイプの選択\n\nニーズに応じて適切な開発タイプを選択してください：\n\n| 開発タイプ | 適用シーン | 入門ガイド |\n|---------|---------|---------|\n| **モジュール開発** | ボット機能の拡張、ビジネスロジックの実装、コマンドとメッセージ処理の提供 | [モジュール開発入門](modules/getting-started.md) |\n| **アダプター開発** | 新しいメッセージプラットフォームへの接続、クロスプラットフォーム通信の実現、プラットフォーム固有機能の提供 | [アダプター開発入門](adapters/getting-started.md) |\n\n> ボットの機能を拡張したい場合（コマンドの追加やメッセージ処理など）は、**モジュール開発**を選択してください。ボットを新しいプラットフォームに接続する必要がある場合は、**アダプター開発**を選択してください。"
     },
     {
-      "hash": "df55c8acea3081490090bb2ad7dfa656",
-      "translation": "## 開発ツール\n\n### プロジェクトテンプレート\n\nErisPulse は参考としてサンプルプロジェクトを提供しています：\n\n- [モジュールのサンプル](https://github.com/ErisPulse/ErisPulse/tree/main/examples/example-module) - モジュールの完全なプロジェクト構造\n- [アダプターのサンプル](https://github.com/ErisPulse/ErisPulse/tree/main/examples/example-adapter) - アダプターの完全なプロジェクト構造\n\n### 開発モード\n\nホットリロードモードを使用して開発すると、コードの変更後に自動的にリロードされます：\n\n```bash\nepsdk run main.py --reload\n```\n\n### デバッグのコツ\n\n`config/config.toml` で DEBUG または TRACE レベルのログを有効にします：\n\n```toml\n[ErisPulse.logger]\n# DEBUG: モジュールのロード、ルート登録などの開発デバッグ情報を出力\n# TRACE: 最低レベル。イベントディスパッチ、ストレージ書き込み、遅延読み込みなどのフレームワーク内部の詳細なフローを出力\nlevel = \"DEBUG\"\n```"
+      "hash": "4ea6d33598a6f50b1c26861ad4db3410",
+      "translation": "## 開発ツール\n\n### プロジェクトテンプレート\n\nErisPulse は参考としてサンプルプロジェクトを提供しています：\n\n- [モジュールサンプル](https://github.com/ErisPulse/ErisPulse/tree/main/examples/example-module) - モジュールの完全なプロジェクト構造（コマンド / 設定 / ORM / 依存性注入）\n- [Web 機能サンプル](https://github.com/ErisPulse/ErisPulse/tree/main/examples/example-module-web) - ルーティングデコレーター / ミドルウェア / WebSocket フック / router.app エスケープハッチ\n- [インタラクション応用サンプル](https://github.com/ErisPulse/ErisPulse/tree/main/examples/example-module-interactive) - メッセージトランザクションと受領確認 / ORM 複合一意制約とトランザクション / リクエスト承認 / 送信チェーン\n- [運用ガバナンスサンプル](https://github.com/ErisPulse/ErisPulse/tree/main/examples/example-module-ops) - スレッドタスクの帰属 / 遅延タスク / メモリチェック / プライバシースイッチ\n- [アダプターサンプル](https://github.com/ErisPulse/ErisPulse/tree/main/examples/example-adapter) - アダプターの完全なプロジェクト構造（[ポーリング](https://github.com/ErisPulse/ErisPulse/tree/main/examples/example-adapter-polling) / [Webhook](https://github.com/ErisPulse/ErisPulse/tree/main/examples/example-adapter-webhook) バリアントもあり）\n\n### 開発モード\n\nホットリロードモードで開発すると、コード変更後に自動的にリロードされます：\n\n```bash\nepsdk run main.py --reload\n```\n\n### デバッグのコツ\n\n`config/config.toml` で DEBUG または TRACE レベルのログを有効にします：\n\n```toml\n[ErisPulse.logger]\n# DEBUG: モジュールのロード、ルート登録などの開発デバッグ情報を出力\n# TRACE: 最低レベル。イベントディスパッチ、ストレージへの書き込み、遅延ロードなどフレームワーク内部の詳細な流れを出力\nlevel = \"DEBUG\"\n```"
     },
     {
       "hash": "786840a3da60cbc55439693abdaaedee",
-      "translation": "## モジュールの公開\n\n完全な公開フローについては、[公開とモジュールストアガイド](publishing.md) を参照してください。PyPI の公開手順、ErisPulse モジュールストアへの申請フローなどが含まれます。"
+      "translation": "## モジュールの公開\n\n完全な公開フローについては [公開とモジュールストアガイド](publishing.md) を参照してください。PyPI の公開手順や ErisPulse モジュールストアへの提出フローなどが含まれます。"
     },
     {
       "hash": "2f89acabcdf406828738372366a4a32d",
-      "translation": "## 関連ドキュメント\n\n- [標準規格](../standards/) - 互換性を確保するための技術基準\n- [プラットフォーム特性ガイド](../platform-guide/) - 各プラットフォームアダプターの特性を理解する"
+      "translation": "## 関連ドキュメント\n\n- [標準規格](../standards/) - 互換性を確保するための技術標準\n- [プラットフォーム特性ガイド](../platform-guide/) - 各プラットフォームアダプターの特性を理解する"
     }
   ]
 }

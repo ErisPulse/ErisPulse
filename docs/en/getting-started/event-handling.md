@@ -5,25 +5,24 @@
 
 Event handlers are where the bot "understands" users and reacts to them. This guide provides copy-paste-ready code patterns for the five event types, covering practical scenarios such as argument parsing, permissions, throttling, and multi-turn interaction.
 
-## Overview of Event Types
+## Event Type Overview
 
 ErisPulse supports the following event types:
 
 | Event Type | Description | Applicable Scenarios |
-|---------|------|---------|
-| Message Event | Any message sent by a user | Chatbot, content filtering |
-| Command Event | Message starting with a command prefix | Command processing, function entry |
-| Notice Event | System notifications (friend addition, group member changes, etc.) | Welcome messages, status notifications |
-| Request Event | User requests (friend requests, group invitations) | Automatic request handling |
-| Meta Event | System-level events (connection, heartbeat) | Connection monitoring, status checks |
+|------------|-------------|----------------------|
+| Message Event | Any message sent by a user | Chatbots, content filtering |
+| Command Event | Messages starting with a command prefix | Command handling, feature entry points |
+| Notice Event | System notifications (e.g., friend addition, group member changes) | Welcome messages, status notifications |
+| Request Event | User requests (e.g., friend requests, group invitations) | Automatic request handling |
+| Meta Event | System-level events (e.g., connection, heartbeat) | Connection monitoring, status checks |
+
+> Each type has a generic register: `notice.on_notice()` / `request.on_request()` / `meta.on_meta()`  
+> (receives all events of that type); specific decorators (e.g., `on_group_increase`) only subscribe to corresponding subtypes, and should be preferred.
 
 ## Message Event Handling
 
-> **Tip**: It is recommended to use the `Event` type annotation in event handlers to get IDE auto-completion and type checking support.
-
-```python
-from ErisPulse.Core.Event import Event  # Import Event type for annotation
-```
+> **Strongly Recommended**: Add `Event` type annotation to the `event` parameter of event handlers—though it's not required at runtime (the framework passes an `Event` instance during dispatch), the annotation serves IDE completion and static checking. To get **completion for module/adapter custom methods**, run `epsdk types` once in your project root to generate type stubs (see [IDE Completion](../getting-started/ide-completion.md)).
 
 ### Listening to All Messages
 
@@ -40,6 +39,7 @@ async def message_handler(event: Event):
 ### Listening to Private Messages
 
 ```python
+from ErisPulse.Core.Event import Event
 @message.on_private_message()
 async def private_handler(event: Event):
     user_id = event.get_user_id()
@@ -49,16 +49,18 @@ async def private_handler(event: Event):
 ### Listening to Group Messages
 
 ```python
+from ErisPulse.Core.Event import Event
 @message.on_group_message()
 async def group_handler(event: Event):
     group_id = event.get_group_id()
     user_id = event.get_user_id()
-    sdk.logger.info(f"Message sent in group {group_id} by {user_id}")
+    sdk.logger.info(f"Message sent by {user_id} in group {group_id}")
 ```
 
 ### Listening to @ Messages
 
 ```python
+from ErisPulse.Core.Event import Event
 @message.on_at_message()
 async def at_handler(event: Event):
     # Get list of mentioned users
@@ -68,27 +70,27 @@ async def at_handler(event: Event):
 
 ### Wildcard and Regex Listening
 
-All four message decorators (`on_message` / `on_private_message` / `on_group_message` /
-`on_at_message`) support `pattern` (glob wildcard) and `regex` (regex), and messages that do not match will **not trigger** the handler:
+The four message decorators (`on_message` / `on_private_message` / `on_group_message` / `on_at_message`) all support `pattern` (glob-style wildcards) and `regex` (regular expressions). Messages that don't match will **not trigger** the handler:
 
 ```python
-# Glob wildcard: * any string, ? single character, [seq] character set
+from ErisPulse.Core.Event import Event
+# Glob-style wildcards: * matches any string, ? matches any single character, [seq] matches any character in the sequence
 @message.on_message(pattern="签到*")
 async def signin_handler(event: Event):
     await event.reply("Sign-in successful")
 
-# Regex: match amount
+# Regular expression: matches amounts
 @message.on_message(regex=r"\d+\s*元")
 async def price_handler(event: Event):
     await event.reply(f"Received amount: {event.get_text()}")
 
-# Both pattern and regex given → both must match
+# If both pattern and regex are given → both must match
 @message.on_message(pattern="*元", regex=r"\d+\s*元")
 async def combined_handler(event: Event):
     pass
 ```
 
-`wait_reply` also supports these two parameters (see [Wait Reply Functionality](../developer-guide/modules/event-wrapper.md#wait-reply-functionality)).
+The `wait_reply` function also supports these two parameters (see [Wait for Reply](../developer-guide/modules/event-wrapper.md#wait-for-reply-function)).
 
 ## Command Event Handling
 
@@ -471,11 +473,11 @@ When rejected, the framework outputs a TRACE log and triggers the `adapter.event
 
 ## Command Dispatch Decision Chain: Why a Command Didn't Trigger
 
-A command message sequentially passes through: **command text judgment → command name/alias match (suggests spelling if not matched) → match claims → scope → user ACL → owner → permission → cooldown/limit → usage limit (deprecated, notice/rejected) → parameter parsing → execution** (middleware can reject at the event level, see the previous section). If any step is not met, it terminates; governance hits are silently discarded by default (symmetrical to scope silence); permission rejections reply to the user, and deprecation replies or rejects according to the declaration.
+A command message sequentially passes through: **command text determination → command name/alias match (no spelling suggestion if not matched) → match immediately claims → scope → user ACL → owner → permission → cooldown/throttling → quota (usage) → deprecation (notice/rejected) → argument parsing → execution** (middleware can veto at the event level, see previous section). If any step fails, the process terminates; governance (cooldown/throttling/quota) by default silently discards, permission denials reply to the user, and deprecation replies or denies according to declaration.
 
-In testing, `ErisPulse-Testing`'s `dispatch()` directly returns this decision chain (`DispatchTrace`, `trace.explain()` outputs step-by-step causality), and in production, `ErisPulse.Core.Event.start_dispatch_trace()` can collect the same record.
+In testing, `ErisPulse-Testing`'s `dispatch()` directly returns this decision chain (`DispatchTrace`, `trace.explain()` outputs causal lines), and in production, `ErisPulse.Core.Event.start_dispatch_trace()` can collect the same record.
 
-Additionally, `ErisPulse.runtime` provides two sets of diagnostic APIs: `explain_module(module name)` answers "why the module didn't load" (not registered / lazy loaded / disabled by configuration / missing dependencies / SDK version not satisfied, each item gives a reason), `explain_event(event)` answers "why the event didn't respond" (adapter not registered / identity blacklisted / module session blocked / command not matched); with `format_report()` renders human-readable conclusions.
+Additionally, `ErisPulse.runtime` provides three sets of diagnostic APIs: `explain_module(module_name)` answers "why a module wasn't loaded" (unregistered / lazy loaded / disabled by configuration / missing dependency / SDK version not met, each item provides a reason), `explain_event(event)` answers "why an event wasn't responded" (adapter not registered / identity blacklisted / module session disabled / command not matched), `explain_trace(trace_id)` answers "why there was no response after this message was received" — aggregating the complete inbound and outbound timeline from the session transcript by trace-id and providing a conclusion (received but no reply / replied / transcript not enabled); paired with `format_report()` to render a human-readable conclusion. `explain_trace` depends on [session transcript](../advanced/transcript.md); if not enabled, it explicitly returns this conclusion instead of an empty result.
 
 ## Scope Filtering: Why My Module Didn't Receive the Message
 

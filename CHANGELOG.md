@@ -73,6 +73,132 @@
 
 ---
 
+## [2.12.0] - 2026/11/14
+> 正式发布
+
+**版本摘要**
+本版本以「生命周期治理与多账户体系根治」为主题：嵌套生命周期、细粒度热重载与影子模块体验闭环完善运行时治理，运行期 bot_id 注册表与事件链账户自动绑定让多账户部署模块侧零改动；内置 ORM 补齐复合主键、联合唯一与自动时间戳列等声明能力，并带来 `/metrics` 观测端点、延迟分位统计与 `doctor` 安全体检。
+
+**升级建议**
+- **是否建议升级**：建议升级
+- 新能力均为增量声明与增量方法；唯一破坏性项是存储写失败语义收紧（见注意事项），依赖旧返回值判断写失败的模块需改为 try/except
+
+**注意事项**
+- 存储写操作失败默认抛 `StorageOperationError`（`aset` / `adelete` / `aclear` / `set_multi` 及同步桥同路径），不再静默返回 `False`；连接级不可达的冷却期快速失败语义不变
+- `run_main_loop` 无可用主循环时改为入队并返回 `None`（不再创建临时事件循环）
+- 容器内 `epsdk restart`（PID 1 实例）改为发送 `SIGUSR1` 触发进程内软重启，不再终止重拉；整进程重启交由容器 restart 策略承载
+- 依赖提升：tomlclass `>=0.4.0,<0.5`
+- 适配器配套能力（onebot11/12、SnowLuma 运行期 bot_id 识别）随各适配器仓库发布；Dashboard 2.7+ 影子持久化能力探测自动启用
+
+> 完整变更明细见下方 [2.12.0-dev.0] / [2.12.0-dev.1] 开发条目。
+
+---
+
+## [2.12.0-dev.1] - 2026/11/11
+> 开发版
+
+**版本摘要**
+本版本主题为「内置 ORM 能力补全」：复合主键、联合唯一约束、自动时间戳列等声明能力落地，并修正 ORM 字段声明的类型检查误报。
+
+**升级建议**
+- **是否建议升级**：dev 版，建议开发环境先行验证
+- 既有单主键模型行为不变，新能力全部为增量声明参数与增量方法
+
+**注意事项**
+- 存量表执行 `create_table()` 会自动补建 `__unique_together__` 声明的唯一索引（幂等，无需重建表）
+- 复合主键模型的关系映射（has-many / belongs-to）暂不支持，实例访问时明确报错（此前静默取首个主键）
+
+### 新增
+
+- @YingXinche
+  - ORM 复合主键：多个 `primary_key=True` 字段收敛为表级 `PRIMARY KEY (a, b)` 约束，`get` / `save` / `delete` 按全部主键列定位，关系映射对复合主键明确报错（自增主键保持单列，与复合主键互斥，定义期校验）
+  - ORM 联合唯一：模型 `__unique_together__` 声明联合唯一分组，唯一索引实现、存量表免重建自动补建；存储层 `aCreateTable` 同步支持表级约束片段
+  - ORM `get_or_create` / `update_or_create` 惯用快捷
+  - ORM 自动时间戳列：`Field(auto_now_add=True)` 插入打点、`auto_now=True` 插入与实例保存均打点（浮点纪秒；QuerySet 批量更新路径不触发）
+  - ORM 外键删除动作：`Field(on_delete=...)` 生成 `ON DELETE` 子句（CASCADE / SET NULL / RESTRICT / NO ACTION / SET DEFAULT）
+  - ORM 部分列更新：`save(update_fields=[...])` 白名单更新
+
+### 修复
+
+- @YingXinche
+  - ORM `Field` 声明赋值侧类型检查误报：哨兵返回 `Any`（pydantic v2 同款口径）+ `dataclass_transform`（PEP 681），ty / basedpyright 检查归零，IDE 字段构造参数补全精确化
+  - `wait_reply` 同键等待被后继等待顶替（conflict）后，旧等待方的兜底清理误删后继等待的条目——新旧互杀、双双失效；新增 `cancel_if_current` 仅在条目仍为本方时才清理
+
+### 文档
+
+- @YingXinche
+  - 存量公共 API 教学补齐：配置热更新钩子 `on_config_update`（触发来源与路由规则）、`explain_trace` 消息链路诊断、`sdk.reload_all_modules()`、`bind_owner` 线程任务归属、消息事务回执读取、transcript 手动归档、路由请求对象高阶属性与 `router.app` 逃生舱（含底层 web 迁移的破坏性边界警示）、日志运行时隐私开关、内存诊断
+  - 新增 runtime 工具带速查页：`ErisPulse.runtime` 聚合导出层分类索引（归属权 / 后台任务 / 事件上下文 / 内存 / dict 解析 / 排障）与 `dict_to_dataclass` 用法
+  - 新增三个示例项目（web / interactive / ops）：路由与 WebSocket、消息事务与回执、ORM 联合唯一与存储事务、请求审批、发送链修饰、线程任务归属、延迟任务、隐私开关
+
+---
+
+## [2.12.0-dev.0] - 2026/11/05
+> 开发版
+
+**版本摘要**
+本版本主题为「生命周期治理与可运维性」：新增嵌套生命周期，补齐细粒度热重载、后台任务排队、适配器回滚重放与影子模块体验闭环。
+
+**升级建议**
+- **是否建议升级**：dev 版，建议开发环境先行验证
+- 嵌套关系需显式声明，既有模块与适配器升级后行为不变
+
+**注意事项**
+- `run_main_loop` 无主循环时改为入队并返回 `None`（不再创建临时事件循环）
+- 适配器热重载失败回滚后会重放旧实例的 `start()`，并新增 `adapter.rollback` 事件
+
+### 新增
+
+- @YingXinche
+  - 跨账户重复受理关联：`ErisPulse.framework.cross_account_policy`（默认 `off` 保持现状）——多账户同群的同一物理消息可 `mark`（后续副本注入 `multi_receipt` 字段照常分发，模块读取该字段自行裁决）或 `drop`（分发入口直接丢弃）；内容级判定无需适配器参与，`self.user_id` 契约不变
+  - `ownership.nest()` 嵌套生命周期：父 owner 回收时按注册逆序级联回收子 owner，环声明拒绝，`counts` / `orphans` 覆盖嵌套关系
+  - 细粒度热重载：按运行时源码归属判定单模块/单适配器重载，入口脚本与框架源码变更走进程重启；脚本模式子进程内挂载 watcher 并通过运行状态握手去重
+  - 后台任务待发队列：主循环注册前的 `spawn_background` 入队并在 `register_main_loop` 时统一冲队列，队列上限与退出滞留告警
+  - 运行期 bot_id 注册表与持久化：`BaseAdapter.update_bot_id(account_name, bot_id)`——bot_id → 账户注册表（解析链第一优先级，事件到达即回填）+ 账户配置持久化（`accounts.<name>.bot_id` 仅变更时落盘），重启后解析不依赖账户活动回填，多账户第二账户审批的重启窗口期根治
+  - 事件分发链账户自动绑定：分发入口把触发事件的账户标识注入调用上下文，处理链内的 `Send` / `Api` / `Request` 链路未显式指定账户时自动绑定（显式 `Using()` 与参数显式传入永远优先；无事件上下文维持默认账户语义），`send_context` / `api_context` / `request_context` 统一同口径——多账户部署模块侧零改动即可回复到正确账户
+  - `SendDSL` 新增 `Location()` 标准发送方法（OneBot12 `location` 段），方法清单与模板提示同步
+  - 影子模块体验闭环：SDK 新增 `shadow_ingest_whl`（whl 校验/原件落盘/解包）、`shadow_promote_persist`（转正后后台 pip 安装原件，重启不回退）、`shadow_persist_status`、`list_shadows`；Dashboard 真实模块卡片「影子测试中」标记、顶部影子聚合区、影子 owner 移出普通列表，旧版 SDK 自动降级为基础影子（功能不退化）
+  - `epsdk create`（module / adapter / pack）生成的可发布项目自带 `.gitignore`：排除运行时数据（config/ 令牌、data/、logs/）、`uv.lock`（库项目不入库 lockfile）与缓存/编辑器文件；已存在则不覆盖
+  - 运行指标观测一期：`/metrics` Prometheus 文本端点（`ErisPulse.server.metrics_enabled` 默认关闭，含事件接收总量与按类型计数、进程 uptime；`ERISPULSE_INSTANCE_ID` 实例身份覆盖）；`/health` 增补 `instance_id` / `uptime_seconds` / `events_received` 字段（多实例部署区分实例与容量评估的数据源）
+  - 网络客户端 `Client.stats` 增补请求延迟分位 `latency_p50_ms` / `latency_p95_ms`（有界采样窗口 256 条）
+  - 限流键支持信任反向代理头：`ErisPulse.router.rate_limit_trust_proxy`（默认 `false`）——反代后多客户端同 IP 共享限流窗口误伤场景，仅在可信反代后启用
+  - 模块开发者文档补齐公共 API 教学：请求事件审批闭环（`on_friend_request`/`on_group_request` + `event.approve()`/`reject()`）、`BaseModule.state` 模块级持久化状态（替代裸写 storage 键）、`event.send_chain`（reply 覆盖不了的修饰链场景）、`event.done` 认领/阻断入口、`sdk.enable_plugin_hot_reload`（裸 `sdk.run()` 场景）、泛型事件注册器（`on_notice`/`on_request`/`on_meta`）；`event: Event` 类型注解明确为强烈建议（全部文档示例补齐 import，并接入 `epsdk types` 类型存根动线）
+  - 新增性能基准与调优页：实测数字（含 NoneBot2 对照：单 handler 3.0× / 洪泛 4.8× / 多 handler 9.9×）、基准自跑与回归对比方法（`benchmark.py --json/--compare`）、调优要点；CI 新增 benchmark 报告 job（warning-only，快速档 8 套件结果落 artifact 供人工对比）
+
+### 优化
+
+- @YingXinche
+  - 适配器热重载失败回滚后自动重放 `start()`，新增 `adapter.rollback` 事件
+  - `spawn_background` / `run_main_loop` 移除临时事件循环兜底，避免业务协程在异循环执行
+
+### 变更
+
+- @YingXinche
+  - 存储写操作失败语义收紧（破坏性）：`aset` / `adelete` / `aclear` / `set_multi`（及同步桥 `set` / `delete` 等同路径）执行失败（写锁竞争超时 / SQL 错误 / 约束冲突）默认抛 `StorageOperationError`（`ErisPulse.Core` 聚合导出），不再静默返回 `False`——库可达而写失败意味着数据未写入，静默丢数据不可接受；连接级不可达的冷却期快速失败（`False` / `None`）保持不变（`StorageUnreachableError` 语义，规则 26）；**依赖旧返回值判断失败的模块需改为 try/except**
+  - 循环连接自愈：操作命中连接级损坏（closed / 磁盘 IO / 库文件损坏）时自动丢弃当前循环缓存连接并在下次操作重建——此前坏连接永久命中缓存、自愈断路（故障持续到进程退出，须手动清理资源池）；写锁竞争（database is locked）不误伤
+  - 事务开启兜底超时：`atransaction` / 同步事务开启超过 30s（`STORAGE_TXN_BEGIN_TIMEOUT_SECS`）抛 `StorageOperationError`，消除并发长事务下无限死等不报错的缺陷
+  - 依赖提升：tomlclass `>=0.3.2,<0.4` → `>=0.4.0,<0.5`（一致性版本——被清空的容器不再保留为空容器，内存与文件完全一致；保序数组编辑保留每元素注释与排版；公共 API 不再泄露 RecursionError）
+  - `run_main_loop` 无可用主循环时入队并返回 `None`
+  - `self.account_id` 调整为限定扩展键：动态注入的账户在尚未获取机器人 user_id 时以账户标识代位填充，`Event.get_self_account_id()` 保持 `account_id or user_id` 读取口径（账户名代位经账户名匹配解析回正确账户），user_id 可用后优先填入 self.user_id（OneBot12 基线口径）
+
+### 修复
+
+- @YingXinche
+  - SQLite 事务改用 `BEGIN IMMEDIATE`：事务开始即取写锁（busy_timeout 正常生效），消除 deferred 事务「先读后写」升级写锁时的 `SQLITE_BUSY_SNAPSHOT`——该 busy 不重试直接抛 locked，是高频读写混合（ORM / KV 双路径交错）下间歇性 database is locked 的框架内根因
+  - `epsdk restart` 对容器内 PID 1 实例改为向框架进程发送 `SIGUSR1` 触发进程内软重启（原「终止后重拉」模型会直接退出容器且不再拉起）；框架 `run()` 注册 `SIGUSR1` → `sdk.restart()`，整进程重启交由 `docker restart` / restart 策略承载
+  - 适配器回滚后旧实例不再停留在「已启动」但未实际服务的状态
+  - 适配器账户解析：显式 `account_id` 无法匹配时记录 WARNING 并回退首个启用账户（WARNING 的 platform / account_id / account 用于定位未归属到账户的事件来源）
+  - Api DSL 账户绑定跨适配器生效：框架按 `call_api` 实际消费方式自动改写账户字段（标准名 `account_id`，旧名 `_account_id` 兼容），未消费时剔除避免泄漏进平台参数并提示一次 WARNING；脚手架模板同步声明账户字段
+  - `epsdk install` 索引外包名守卫：不在生态索引中的包名安装前显式确认（验证状态 / SDK 兼容 / 来源信息守卫均不可用，黄牌提示自行确认来源）；`epsdk uninstall` 成功后提示配置条目与持久化数据不会自动清理
+  - `epsdk doctor` 新增安全体检项：服务监听地址（0.0.0.0 全网卡警示）与 API 文档端点默认开启提示（只读警示，不计入失败项）
+  - 适配器（onebot11/12、SnowLuma，随各适配器仓库发布）：运行期识别 Bot ID 并关联到账户实例（`bot_id`），事件 `self.user_id` 即可解析到接收账户，`event.reply()` 不再固定走第一个账户；OneBot11/SnowLuma 事件 id 改为稳定组合，重推去重恢复且不同账户互不吞事件
+
+### 文档
+
+- @YingXinche
+  - 请求操作规范新增「请求类型上下文留存」：异构端点（好友/群请求分端点）适配器须在事件侧留存 `request_id` → 类型/账户上下文，定义介质无关的统一条目字段表（含 `ts` 时间戳与 TTL、一一对应、KV 键名规则），操作侧按 kwargs 显式传参 > 缓存 > 回退默认端点 + WARNING 路由，类型覆盖参数保留名 `request_type` / `sub_type` / `group_id`；持久化介质（KV / 内置 ORM）为可选项且写入失败须降级为仅内存留存（纯文档规范，不涉及框架 API 与依赖变更）
+  - 请求操作全链文档修正扩展点口径：适配器重写 `_do_accept` / `_do_reject`（公开入口 `accept()` / `reject()` 内置 scope 授权闸口，勿重写），操作账户统一经 `self.request_context`（`Using()` > 事件链 `self.account_id` 代位 > `self.user_id` 兜底，与 `send_context` 同口径），示例项目与开发指南同步；清理 `HandleRequest` 旧 DSL 名残留；API 响应标准补 `make_response` / `make_error` 构造助手说明（参数语义与 `{platform}_raw` 挂载行为）
+  - 部署文档安全口径补齐：`/docs` / `/redoc` / `/openapi.json` 默认开启无鉴权的公网处置（`router.disable_docs()`）、webhook 验签默认放行提醒、安全模型边界声明（模块即可信代码 / scope 未配置默认允许）、SQLite 单文件后端不可多实例共享明示；`router.md` 鉴权示例改环境变量读法；README 版本速查表补 2.12 行；bug-tracker 统计概览与正文条目数同步（48 条 = 严重 17 + 中等 28 + 轻微 3）
 
 ---
 

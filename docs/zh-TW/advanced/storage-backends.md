@@ -82,6 +82,16 @@ pool_max = 10
 
 日誌範例：`mysql 連接池建立最終失敗（已重試 3 次），30 秒後自動重連；期間儲存操作將快速失敗，框架其餘功能不受影響`
 
+## 失敗語義（2.12 起）
+
+| 場景 | 行為 |
+|------|------|
+| 操作執行失敗（寫鎖逾時 / SQL 錯誤 / 約束衝突） | **拋出 `StorageOperationError`**（寫入路徑：aset / adelete / aclear / set_multi 及同步橋同路徑）——不再靜默 `False`，重要寫入失敗必須可見 |
+| 連線層級不可達（冷卻期快速失敗） | 回傳 `False` / `None`（規則 26 框架韌性語義，另有 `storage.unreachable` / `storage.recovered` 事件） |
+| 交易開啟逾時（>30s） | 拋出 `StorageOperationError`（`STORAGE_TXN_BEGIN_TIMEOUT_SECS`） |
+
+重要寫入請用 try/except 包裹並做補償；交易區塊內只放純 DB 操作。
+
 ## 異步原生 API
 
 ```python
@@ -127,6 +137,21 @@ async with sdk.storage.atransaction():
 
 建表欄位類型統一使用 SQLite 風格定義（如 `"INTEGER PRIMARY KEY AUTOINCREMENT"`、
 `"TEXT NOT NULL"`、`"DOUBLE DEFAULT 0.0"`），由方言自動翻譯為目標後端等價寫法。
+
+## SQLite "database is locked" 排查
+
+框架 SQLite 後端已內建：**WAL 日誌模式**（讀寫不互斥）+ **busy_timeout 5000ms**（寫鎖競爭自動等待）+ autocommit 連線 + 多事件迴圈各持共享連線 + **交易 `BEGIN IMMEDIATE`**（2.12 起——交易開始即取寫鎖，消除 deferred 交易「先讀後寫」升級時的 `SQLITE_BUSY_SNAPSHOT`，該 busy 不重試、`busy_timeout` 無法緩解，是高頻讀寫混合下間歇性 locked 的框架內根因）。
+
+2.12+ 純框架使用（儲存 / ORM / 混合雙路徑交錯寫）不應再出現 locked；仍遇到時按以下順序排查：
+
+| 場景 | 判定 | 處置 |
+|------|------|------|
+| 交易內慢操作 | `atransaction` 區塊內有慢活（外部 HTTP、大計算），持鎖超過 busy_timeout | 交易區塊內只做庫操作，慢操作移出 |
+| 混用第二套 ORM | 同一行程內 sqlmodel / SQLAlchemy / 裸 sqlite3 自開連線寫同一個資料庫檔案 | **同一資料庫檔案只用一套 ORM**（內建本就是非同步原生），不要混用過渡 |
+| 多行程同檔案 | 多實例 / Dashboard / 資料庫工具開啟同一 sqlite | 各實例獨立 `config/` 目錄；管理工具以唯讀模式開啟；高頻寫場景切換 mysql / postgres（設定一改零程式碼遷移） |
+| 舊版本框架 | `<2.12` 的 deferred 交易升級問題 | 升級框架 |
+
+> `busy_timeout` 目前為類別常數 `_SQLITE_BUSY_TIMEOUT_MS = 5000`（`Core/storage/sqlite.py`）；如需調整屬於原始碼層級修改，不作為執行期設定公開。
 
 ## 自訂 SQL 後端
 

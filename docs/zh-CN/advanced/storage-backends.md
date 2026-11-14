@@ -83,6 +83,16 @@ pool_max = 10
 
 日志示例：`mysql 连接池创建最终失败（已重试 3 次），30 秒后自动重连；期间存储操作将快速失败，框架其余功能不受影响`
 
+## 失败语义（2.12 起）
+
+| 场景 | 行为 |
+|------|------|
+| 操作执行失败（写锁超时 / SQL 错误 / 约束冲突） | **抛 `StorageOperationError`**（写路径：aset / adelete / aclear / set_multi 及同步桥同路径）——不再静默 `False`，重要写入失败必须可见 |
+| 连接级不可达（冷却期快速失败） | 返回 `False` / `None`（规则 26 框架韧性语义，另有 `storage.unreachable` / `storage.recovered` 事件） |
+| 事务开启超时（>30s） | 抛 `StorageOperationError`（`STORAGE_TXN_BEGIN_TIMEOUT_SECS`） |
+
+重要写入请用 try/except 包裹并做补偿；事务块内只放纯 DB 操作。
+
 ## 异步原生 API
 
 ```python
@@ -128,6 +138,21 @@ async with sdk.storage.atransaction():
 
 建表列类型统一使用 SQLite 风格定义（如 `"INTEGER PRIMARY KEY AUTOINCREMENT"`、
 `"TEXT NOT NULL"`、`"DOUBLE DEFAULT 0.0"`），由方言自动翻译为目标后端等价写法。
+
+## SQLite "database is locked" 排查
+
+框架 SQLite 后端已内建：**WAL 日志模式**（读写不互斥）+ **busy_timeout 5000ms**（写锁竞争自动等待）+ autocommit 连接 + 多事件循环各持共享连接 + **事务 `BEGIN IMMEDIATE`**（2.12 起——事务开始即取写锁，消除 deferred 事务「先读后写」升级时的 `SQLITE_BUSY_SNAPSHOT`，该 busy 不重试、`busy_timeout` 无法缓解，是高频读写混合下间歇性 locked 的框架内根因）。
+
+2.12+ 纯框架使用（存储 / ORM / 混合双路径交错写）不应再出现 locked；仍遇到时按以下顺序排查：
+
+| 场景 | 判定 | 处置 |
+|------|------|------|
+| 事务内慢操作 | `atransaction` 块内有慢活（外部 HTTP、大计算），持锁超过 busy_timeout | 事务块内只做库操作，慢操作移出 |
+| 混用第二套 ORM | 同一进程内 sqlmodel / SQLAlchemy / 裸 sqlite3 自开连接写同一个库文件 | **同一库文件只用一套 ORM**（内置本就是异步原生），不要混用过渡 |
+| 多进程同文件 | 多实例 / Dashboard / 数据库工具打开同一 sqlite | 各实例独立 `config/` 目录；管理工具用只读模式打开；高频写场景切 mysql / postgres（配置一改零代码迁移） |
+| 旧版本框架 | `<2.12` 的 deferred 事务升级问题 | 升级框架 |
+
+> `busy_timeout` 当前为类常量 `_SQLITE_BUSY_TIMEOUT_MS = 5000`（`Core/storage/sqlite.py`）；如需调整属于源码级修改，不作为运行时配置暴露。
 
 ## 自定义 SQL 后端
 

@@ -201,9 +201,101 @@ class TestAdapterReload:
             assert manager._adapters["Plat"] is instance
             assert "fake_adp_rb_old" in sys.modules  # sys.modules 条目恢复
             assert loader._last_adapter_reload_details == {}
+            # 旧实例原处于运行态且旧任务已结束 → 重放 start()
+            assert ("startup", "Plat") in manager.calls
         finally:
             sys.modules.pop("fake_adp_rb_old", None)
             sys.modules.pop("fake_adp_rb_new", None)
+
+    def test_rollback_replays_start_and_emits_event(self, monkeypatch):
+        loader, manager, old_mod, old_cls, new_cls, instance = self._prepare_world(
+            "fake_adp_evt_old", "fake_adp_evt_new"
+        )
+        snapshot = loader._capture_adapter_state("Plat", manager, [])
+        events: list[tuple] = []
+
+        async def fake_submit(event, msg=None, data=None):
+            events.append((event, data))
+
+        monkeypatch.setattr(
+            "ErisPulse.loaders.adapter.lifecycle.submit_event", fake_submit
+        )
+
+        try:
+            asyncio.run(
+                loader._restore_adapter_snapshot(snapshot, "Plat", manager)
+            )
+            assert ("startup", "Plat") in manager.calls
+            assert events
+            assert events[0][0] == "adapter.rollback"
+            assert events[0][1] == {
+                "adapter_name": "Plat",
+                "replayed": True,
+                "success": True,
+            }
+        finally:
+            sys.modules.pop("fake_adp_evt_old", None)
+            sys.modules.pop("fake_adp_evt_new", None)
+
+    def test_rollback_skips_replay_when_task_alive(self, monkeypatch):
+        loader, manager, old_mod, old_cls, new_cls, instance = self._prepare_world(
+            "fake_adp_alive_old", "fake_adp_alive_new"
+        )
+
+        class _AliveTask:
+            def done(self):
+                return False
+
+        manager._adapter_tasks["Plat"] = _AliveTask()
+        snapshot = loader._capture_adapter_state("Plat", manager, [])
+        events: list[tuple] = []
+
+        async def fake_submit(event, msg=None, data=None):
+            events.append((event, data))
+
+        monkeypatch.setattr(
+            "ErisPulse.loaders.adapter.lifecycle.submit_event", fake_submit
+        )
+
+        try:
+            asyncio.run(
+                loader._restore_adapter_snapshot(snapshot, "Plat", manager)
+            )
+            assert ("startup", "Plat") not in manager.calls
+            assert instance in manager._started_instances
+            assert events[0][1]["replayed"] is False
+        finally:
+            sys.modules.pop("fake_adp_alive_old", None)
+            sys.modules.pop("fake_adp_alive_new", None)
+
+    def test_rollback_replay_failure_marks_event(self, monkeypatch):
+        loader, manager, old_mod, old_cls, new_cls, instance = self._prepare_world(
+            "fake_adp_fail_old", "fake_adp_fail_new"
+        )
+        snapshot = loader._capture_adapter_state("Plat", manager, [])
+
+        async def failing_startup(platforms=None):
+            raise RuntimeError("start boom")
+
+        monkeypatch.setattr(manager, "startup", failing_startup)
+        events: list[tuple] = []
+
+        async def fake_submit(event, msg=None, data=None):
+            events.append((event, data))
+
+        monkeypatch.setattr(
+            "ErisPulse.loaders.adapter.lifecycle.submit_event", fake_submit
+        )
+
+        try:
+            asyncio.run(
+                loader._restore_adapter_snapshot(snapshot, "Plat", manager)
+            )
+            assert events[0][1]["replayed"] is True
+            assert events[0][1]["success"] is False
+        finally:
+            sys.modules.pop("fake_adp_fail_old", None)
+            sys.modules.pop("fake_adp_fail_new", None)
 
     def test_identity_unchanged_warns(self):
         old_mod, old_cls = _make_adapter_module("fake_adp_same")

@@ -6,8 +6,9 @@ MatrixAdapter 是基于 [Matrix协议](https://spec.matrix.org/) 构建的适配
 
 ## 文档信息
 
-- 对应模块版本: 4.4.0
+- 对应模块版本: 4.6.1
 - 维护者: ErisPulse
+- 最后更新: 2026-11-10
 
 ## 基本信息
 
@@ -50,6 +51,10 @@ enabled = true
 - `password`：Matrix用户密码，用于自动登录获取 access_token
 - `auto_accept_invites`：是否自动接受房间邀请，默认为 `true`
 - `enabled`：是否启用该账户（可选，默认为true）
+- `encryption_enabled`：是否启用端到端加密，默认为 `false`
+- `trust_all_devices`：是否自动信任未验证设备（E2EE），默认为 `true`
+- `device_id`：设备 ID（E2EE，通常自动获取，无需填写）
+- `store_path`：加密会话存储目录（E2EE），默认为 `data/matrix/<账户名>`
 
 **认证方式：**
 - 方式一（推荐）：直接提供 `access_token`
@@ -82,7 +87,35 @@ trust_all_devices = true        # 自动信任未验证设备（默认；false �
 - 不支持交叉签名与服务器端密钥备份；需要 Python >= 3.10
 - 未启用或未安装 matrix-nio 时自动降级为明文模式
 
-详细说明见 [适配器 README](https://github.com/ErisPulse/ErisPulse-MatrixAdapter)。
+详细说明见下文[端到端加密（E2EE）](#端到端加密e2ee)章节与[适配器 README](https://github.com/ErisPulse/ErisPulse-MatrixAdapter)。
+
+## 标准化对齐
+
+本节说明适配器与 ErisPulse 标准化规范对齐的行为。规范详情参见 SDK 文档《API 响应规范》（`docs/zh-CN/standards/api-response.md`）与《发送方法规范》（`docs/zh-CN/standards/send-method-spec.md`）。
+
+### 多账户受理（4.6.1 起）
+
+- 所有事件注入 `self.account_id`（来源账户名）；access_token 登录账户在 `user_id` 为空时也能正确完成多账户受理与事件回路由
+
+### 错误码规范化（4.6.x）
+
+- **媒体上传/下载失败与请求超时统一 33001**（网络错误）
+- **平台 API 失败统一 34100**（平台错误），Matrix errcode 保留在 `message` 与 `matrix_raw` 字段
+- **撤回上下文缺失 10003**：`delete_message` 未找到消息归属上下文时返回参数错误
+
+| retcode | 说明 |
+|---------|------|
+| 0 | 成功 |
+| 10002 | 不支持的动作（如 get_friend_list，Matrix 无好友概念） |
+| 10003 | 发送目标无效（无法解析为 Matrix 房间）、撤回上下文缺失 |
+| 33001 | 网络错误（媒体上传/下载失败、请求超时） |
+| 34100 | 平台 API 失败（Matrix errcode 保留在 message 与 matrix_raw） |
+
+### Send 规范
+
+- Send 全方法读取 `send_context`：事件链内自动使用当前事件来源账户，显式 `Using()` 指定的账户优先
+- HTML 方法：`.Html(html, fallback)` 发送富文本消息；`HTML` 为规范拼写别名（`Html` 保留兼容既有模块）
+- `get_group_list` 返回每项补齐 `group_name` 字段（与 `get_group_info` 一致）
 
 ### 标准Api动作示例
 
@@ -91,12 +124,11 @@ from ErisPulse import sdk
 matrix = sdk.adapter.get("matrix")
 result = await matrix.Api.get_self_info()            # /account/whoami
 result = await matrix.Api.get_group_info(room_id)    # m.room.name
-result = await matrix.Api.get_group_list()           # /joined_rooms
+result = await matrix.Api.get_group_list()           # /joined_rooms（每项含 group_name）
 await matrix.Api.delete_message(event_id)            # redact（登记表补全 room_id）
 ```
 
 ---
-
 
 ### 已对接平台能力
 
@@ -123,7 +155,7 @@ await matrix.Send.To("group", room_id).Text("Hello World!")
 - `.Video(file: bytes | str)`：发送视频消息，支持文件路径、URL、MXC URI、二进制数据。
 - `.File(file: bytes | str, filename: str = "")`：发送文件消息，支持文件路径、URL、MXC URI、二进制数据。
 - `.Notice(text: str)`：发送通知消息（Matrix的 m.notice 类型）。
-- `.Html(html: str, fallback: str = "")`：发送HTML格式消息，支持富文本内容。
+- `.Html(html: str, fallback: str = "")`：发送HTML格式消息，支持富文本内容（`HTML` 为规范拼写别名）。
 - `.MergeForward(nodes, title="合并聊天记录")`：发送合并转发消息（formatted_body blockquote 引用块形态；白名单会剥离 details/内联样式）。
 - `.Raw_ob12(message: List[Dict], **kwargs)`：发送 OneBot12 格式消息。
 
@@ -138,8 +170,8 @@ await matrix.Send.To("group", room_id).Text("Hello World!")
 ### 链式调用示例
 
 ```python
-# 基础发送
-await matrix.Send.To("user", dm_room_id).Text("Hello")
+# 基础发送（"user" 目标支持用户 ID（@user:server，自动反查 DM 房间）或房间 ID（!room:server））
+await matrix.Send.To("user", "@alice:matrix.org").Text("Hello")
 
 # 回复消息
 await matrix.Send.To("group", room_id).Reply("$event_id").Text("回复消息")
@@ -180,6 +212,13 @@ ob12_msg = [
     {"type": "text", "data": {"text": "不错吧？"}}
 ]
 await matrix.Send.To("group", room_id).Raw_ob12(ob12_msg)
+
+# 位置消息（标准 location 段 → Matrix m.location；与文本共存时拆分为独立事件）
+ob12_msg = [
+    {"type": "text", "data": {"text": "我在这里"}},
+    {"type": "location", "data": {"latitude": 39.9, "longitude": 116.4, "title": "北京市"}}
+]
+await matrix.Send.To("group", room_id).Raw_ob12(ob12_msg)
 ```
 
 ## 发送方法返回值
@@ -197,14 +236,7 @@ await matrix.Send.To("group", room_id).Raw_ob12(ob12_msg)
 }
 ```
 
-### 错误码说明
-
-| retcode | 说明 |
-|---------|------|
-| 0 | 成功 |
-| 32000 | 请求超时或媒体上传失败 |
-| 33000 | API调用异常 |
-| 34000 | API返回了意外格式或业务错误 |
+错误码规范见上文[标准化对齐](#标准化对齐)章节。
 
 ## 特有事件类型
 
@@ -288,10 +320,13 @@ Matrix消息根据 `msgtype` 自动转换为对应的消息段：
 | m.notice | `text` | 通知消息 |
 | m.emote | `text` | 动作消息 |
 | m.image | `image` | 图片消息 |
-| m.audio | `voice` | 音频消息 |
+| m.audio | `audio` | 音频消息（标准消息段名为 `audio`；`voice` 是发送方法名，不是段名） |
 | m.video | `video` | 视频消息 |
 | m.file | `file` | 文件消息 |
-| m.location | `location` | 位置消息 |
+| m.location | `location` | 位置消息（latitude/longitude 由 geo URI 解析） |
+
+> 提及（mention）：消息 content 中的 `m.mentions`（Matrix v1.11+ 规范）会转换为标准 `mention` 段——
+> `m.mentions.user_ids` → `mention(user_id=...)`，`m.mentions.room` → `mention(user_id="all")`。
 
 消息段结构示例：
 
@@ -321,12 +356,12 @@ Matrix消息根据 `msgtype` 自动转换为对应的消息段：
   }
 }
 
-// 位置消息
+// 位置消息（latitude/longitude 从 geo URI 解析）
 {
   "type": "location",
   "data": {
-    "latitude": 0.0,
-    "longitude": 0.0,
+    "latitude": 39.9,
+    "longitude": 116.4,
     "matrix_geo_uri": "geo:39.9,116.4",
     "text": "北京市"
   }
@@ -381,6 +416,30 @@ async def handle_message(event):
 
 - 收到房间邀请（`invite` 状态的房间）时，如果 `auto_accept_invites` 配置为 `true`（默认），适配器会自动加入房间
 - 加入房间调用 `/_matrix/client/v3/join/{room_id}` 接口
+
+## 端到端加密（E2EE）
+
+适配器自 4.3.0 起原生支持加密房间的端到端加密（基于 matrix-nio[e2e] / vodozemac），`encryption_enabled = true` 启用。
+
+### 工作机制
+
+- **同步**：启用后同步走 nio E2EE 会话，设备密钥上传、一次性密钥补充、to-device 消息（Olm/Megolm 会话密钥分发）全部自动处理；timeline 中的 `m.room.encrypted` 事件自动解密为明文事件再走统一转换
+- **发送**：目标房间为加密房间时自动分享 Megolm 会话并加密载荷；解密失败的事件跳过并记录警告
+- **媒体**：加密房间中的媒体上传为端到端加密（`m.file.encrypted`）；接收侧媒体段携带 `matrix_encrypted_file`（JWK，含 url/key/iv/hashes），下载密文后可通过 `MatrixAdapter.decrypt_media(ciphertext, key, iv, sha256)` 解密
+- **设备**：`device_id` 自动解析（登录响应 → `/whoami` → 本地持久化），密码重登复用同一设备；`trust_all_devices = true`（默认）自动信任未验证设备（bot 场景惯例），`false` 为严格模式
+- **降级**：E2EE 未启用或 matrix-nio 未安装时自动回退明文 REST 路径，行为与旧版完全一致
+
+### 模块侧接口
+
+- 事件 Mixin：`event.is_encrypted()` 判断消息是否来自加密房间
+- 媒体段标记：`encrypted: true` 与 `matrix_encrypted_file`（JWK）
+- 解密辅助：`MatrixAdapter.decrypt_media(file_bytes, key, iv, hash_value) -> bytes`
+
+### 已知限制
+
+- 不支持交叉签名（cross-signing）与服务器端密钥备份（room key backup）
+- 本地会话存储目录（`store_path`，默认 `data/matrix/<账户名>`）删除后历史消息无法解密
+- 交互式 SAS（emoji）验证暂未支持，计划后续版本提供
 
 ## 使用示例
 
@@ -478,5 +537,4 @@ async def handle_member_change(event):
         user_id = event.get("user_id")
         operator_id = event.get("operator_id")
         print(f"用户 {user_id} 被移除，操作者: {operator_id}")
-
 ```

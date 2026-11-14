@@ -1,33 +1,41 @@
 {
   "version": 2,
-  "hash": "64ca7795f481d5f4a7994c8482dbe3bc",
-  "file_hash": "64ca7795f481d5f4a7994c8482dbe3bc",
-  "translated_at": "2026-10-19T09:13:46.210694",
+  "hash": "74b5b8188bef145f175edafe1fb0cf4c",
+  "file_hash": "74b5b8188bef145f175edafe1fb0cf4c",
+  "translated_at": "2026-11-10T05:50:18.696340",
   "target_lang": "zh-TW",
   "chunks": [
     {
       "hash": "3b33559c4cde3c50c0835dd578a833a3",
-      "translation": "# Sandbox 平台特性文件\n\nSandboxAdapter 是 ErisPulse 內建的沙盒適配器，用於本地開發與模組調試——無需真實平台即可模擬訊息的收發。\n\n---"
+      "translation": "# Sandbox 平台特性文件\n\nSandboxAdapter 是 ErisPulse 內建的沙盒適配器，用於本地開發與模組除錯——無需真實平台即可模擬訊息收發。\n\n---"
     },
     {
-      "hash": "d5769e0ae79f68cdc351193894aba07b",
-      "translation": "## 文件資訊\n\n- 對應模組版本: 4.2.0\n- 維護者: ErisPulse"
+      "hash": "9469486b2dca4017d4e605b4f5001437",
+      "translation": "## 文件資訊\n\n- 對應模組版本: 4.2.3\n- 維護者: ErisPulse\n- 最後更新: 2026-11-10"
     },
     {
       "hash": "2add3b0a800daa6ba7f573b133226bfe",
-      "translation": "## 基本資訊\n\n- 平台簡介：本地沙盒環境，提供虛擬使用者/群組、Web 調試面板與訊息持久化\n- 適配器名稱：SandboxAdapter\n- 平台標識：`sandbox`\n- 單帳戶設計（本地調試場景）\n- 框架要求：軟依賴 `ErisPulse>=2.7.1`（執行時檢測提示，不強制）"
+      "translation": "## 基本資訊\n\n- 平台簡介：本地沙盒環境，提供虛擬用戶/群組、Web 調試面板與訊息持久化\n- 适配器名稱：SandboxAdapter\n- 平台標識：`sandbox`\n- 單帳戶設計（本地調試場景）\n- 框架要求：軟依賴 `ErisPulse>=2.7.1`（執行時檢測提示，不強制）"
     },
     {
       "hash": "5c8ab684c26414cdb4953b80df19f29c",
-      "translation": "## v5 範式更新（4.1.0）\n\n- **Api DSL 最小集**：`get_self_info` / `get_status` / `get_version` / `get_supported_actions`\n- **spawn_background 任務歸屬**：心跳任務改用 `runtime.spawn_background`\n- **框架軟依賴**：運行時偵測 `ErisPulse>=2.7.1` 並提示\n- 導入路徑更新至 `Core.Bases`（BaseConfig）"
+      "translation": "## v5 範式更新（4.1.0）\n\n- **Api DSL 最小集**：`get_self_info` / `get_status` / `get_version` / `get_supported_actions`\n- **spawn_background 任務歸屬**：心跳任務改用 `runtime.spawn_background`\n- **框架軟依賴**：執行時偵測 `ErisPulse>=2.7.1` 並提示\n- 導入路徑更新至 `Core.Bases`（BaseConfig）"
     },
     {
-      "hash": "6c62d2bacd7ee950e74cd2d5c6c40e43",
-      "translation": "## 標準 API 動作示例\n\n```python\nfrom ErisPulse import sdk\nsandbox = sdk.adapter.get(\"sandbox\")\n\nresult = await sandbox.Api.get_self_info()   # 沙盒機器人身份\nresult = await sandbox.Api.get_status()\nresult = await sandbox.Api.get_supported_actions()\n```"
+      "hash": "ddb48ecca9a77221ef9bf44cf144490e",
+      "translation": "## 標準化對齊（4.2.3）\n\n響應結構與錯誤碼遵循 [API 響應規範](../standards/api-response.md)。\n\n### HTML 發送方法\n\n- `.Html(html: str)`：發送 HTML 消息（經 html 通道渲染到 Web 面板）\n- `.HTML(html: str)`：`.Html()` 的別名（與標準 Send 方法命名保持一致）\n\n### 元動作（已標準）\n\n標準元動作返回標準響應：\n\n| 動作 | data 內容 |\n|------|----------|\n| `get_self_info` | `user_id`（配置的 `self_id`）/ `user_name`（`sandbox`） |\n| `get_status` | `good`（運行狀態）/ `bots`（帳戶列表） |\n| `get_version` | `impl`（ErisPulse-SandboxAdapter）/ `version` / `onebot_version` |\n| `get_supported_actions` | 支持的動作名列表 |\n\n```python\nfrom ErisPulse import sdk\nsandbox = sdk.adapter.get(\"sandbox\")\n\nresult = await sandbox.Api.get_self_info()   # 沙盒機器人身份\nresult = await sandbox.Api.get_status()\nresult = await sandbox.Api.get_version()\nresult = await sandbox.Api.get_supported_actions()\n```\n\n### 請求事件處理（Request stub）\n\n沙盒會合成 `type=\"request\"` 事件（好友/群申請，`request_id` 透傳自模擬事件），模組可用標準方式審批（完整規範見 [請求操作規範](../standards/request-action-spec.md)）：\n\n```python\nfrom ErisPulse.Core.Event import request\n\n@request.on_friend_request()\nasync def handle_friend_request(event):\n    await event.approve()   # 或 event.reject()\n```\n\n適配器側 Request DSL 為**模擬樁**：`accept()` / `reject()` 校驗 `request_id`（缺失時返回標準錯誤 `retcode=34001`，屬於請求操作族錯誤碼），校驗通過後模擬審批成功返回標準成功響應，便於下游聯調 `approve()` / `reject()` 流程。\n\n### 錯誤碼規範\n\n| retcode | 含義 | 說明 |\n|---------|------|------|\n| 0 | 成功 | — |\n| 10002 | 不支援 | 平台無對應能力 |\n| 10003 | 參數錯誤 | 缺少或無效參數 |\n| 10006 | 無效訊息段資料 | `MergeForward` 節點無有效文字內容 |\n| 34001 | 請求不存在 | `Request.accept()/reject()` 缺少 `request_id`（請求操作族） |"
     },
     {
-      "hash": "8b4b19e35ab08e37d869c26528a09944",
-      "translation": "## 使用說明\n\n- 沙盒提供虛擬用戶與群組，模組可像真實平台一樣收發訊息\n- Web 調試面板可手動發送訊息觸發模組處理邏輯\n- 訊息資料持久化儲存，重啟後可恢復\n- `.MergeForward(nodes, title=\"合併聊天記錄\")`：發送合併轉發訊息（渲染為 `<details>` 折疊 HTML 卡片，html 通道發出），用於驗證模組的合併轉發邏輯"
+      "hash": "758ab14b534192f2fa116bf3f1939080",
+      "translation": "## 配置說明\n\n```toml\n[Sandbox]\nself_id = \"sandbox_bot\"  # 沙盒機器人ID\nenable = true            # 是否啟用\n```"
+    },
+    {
+      "hash": "9df25cd56dfedbb7c3e34bd4cad4b806",
+      "translation": "## 使用說明\n\n- 沙盒提供虛擬用戶與群組，模組可像真實平台一樣收發訊息\n- Web 調試面板可手動發送訊息觸發模組處理邏輯\n- 訊息資料持久化儲存（`sdk.storage`），重啟後可恢復"
+    },
+    {
+      "hash": "16241ae5f5f6370ff0336dafa260d8d3",
+      "translation": "## 支援的消息發送類型\n\n所有發送方法均透過鏈式語法實現，例如：\n\n```python\nfrom ErisPulse import sdk\nsandbox = sdk.adapter.get(\"sandbox\")\n\nawait sandbox.Send.To(\"private\", \"user1\").Text(\"Hello\")\nawait sandbox.Send.To(\"group\", \"group1\").Markdown(\"**加粗**\")\n```\n\n支援的發送類型包括：\n\n| 方法 | 說明 |\n|------|------|\n| `.Text(text)` | 發送文字訊息 |\n| `.Image(file, summary=None)` | 發送圖片 |\n| `.Face(face_id)` | 發送表情 |\n| `.Record(file, magic=False)` | 發送語音 |\n| `.Voice(file)` | 發送語音（audio 通道） |\n| `.Video(file)` | 發送影片 |\n| `.File(file, filename=None)` | 發送檔案 |\n| `.Html(html)` / `.HTML(html)` | 發送 HTML 訊息（後者為別名） |\n| `.Markdown(markdown)` | 發送 Markdown 訊息 |\n| `.Json(json_data)` | 發送 JSON 卡片訊息 |\n| `.Xml(xml_data)` | 發送 XML 卡片訊息 |\n| `.Music(platform, id, title=None)` | 發送音樂訊息 |\n| `.Share(url, title, content=None, image=None)` | 發送連結分享 |\n| `.Location(lat, lon, title=None, content=None)` | 發送位置訊息 |\n| `.Dice()` | 發送骰子 |\n| `.Rps()` | 發送猜拳 |\n| `.Poke(user_id, type=\"poke\")` | 戳一戳 |\n| `.Recall(message_id)` | 模擬撤回訊息 |\n| `.MergeForward(nodes, title=\"合併聊天記錄\")` | 發送合併轉發訊息（渲染為 `<details>` 折疊 HTML 卡片，html 通道發出），用於驗證模組的合併轉發邏輯 |\n| `.Raw_ob12(message)` | 發送 OneBot12 原始訊息段（純 node 列表自動路由合併轉發，混合列表 node 段降級為純文字） |\n\n`At` / `AtAll` / `Reply` 修飾器由框架 SendDSL 基類提供。"
     }
   ]
 }

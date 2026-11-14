@@ -6,8 +6,9 @@ BilibiliAdapter 是基於 bilibili-api-python 的 B 站私信適配器，支援 
 
 ## 文件資訊
 
-- 對應模組版本: 0.1.0
+- 對應模組版本: 0.3.1
 - 維護者: ErisPulse
+- 最後更新: 2026-11-10
 
 ## 基本資訊
 
@@ -43,6 +44,41 @@ enabled = true
 **掃碼登入流程**：`login_mode = "qrcode"` 保存後，在 Dashboard → 組件配置 → 新增帳號嚮導中選擇「掃碼登入 B 站」→ B 站 APP 掃碼 → 手機確認 → 适配器輪詢登入狀態（scan → confirm → done），憑證自動寫入該帳號配置並生效。
 
 > 适配器同時註冊 `POST /bilibili/qr/start`（獲取二維碼，返回圖片 URL + 會話令牌）與 `POST /bilibili/qr/poll`（輪詢登入狀態）端點，第三方前端也可直接對接。輪詢請求需攜帶 start 返回的 `poll_token`，防止未授權輪詢。
+
+## 標準化對齊
+
+本節說明適配器與 ErisPulse 標準化規範對齊的行為。規範詳情參見 SDK 文件《API 回應規範》（`docs/zh-TW/standards/api-response.md`）。
+
+### Api.Using() 賬戶路由修復（0.3.1）
+
+`Api` DSL 各方法先前未正確消費 `Using()` 指定的賬戶，現已修復：顯式 `Using()` 傳入的 `_account_id` 與事件鏈路的 `api_context`（事件來源賬戶）均可正確路由至對應賬戶的 runtime，失效時回退至首個賬戶。
+
+### 消息事件補頂層 message_id
+
+消息事件補充頂層 `message_id` 欄位（取自 `msg_key`），與標準回應結構一致，可直接用於 `Reply()` 鏈式修飾。
+
+### 錯誤碼規範化（0.3.1）
+
+bilibili_api 異常按類歸類：網路類異常（`NetworkException` 等）回傳 `33001`，平台接口錯誤回傳 `34100`（原 34000/10004 不再使用），原始回應保留在 `bilibili_raw`。
+
+| retcode | 說明 |
+|---------|------|
+| 0 | 成功 |
+| 10002 | 不支援的動作/訊息段 |
+| 10003 | 參數/目標錯誤 |
+| 33001 | 網路錯誤（連線異常、超時） |
+| 34100 | B 站接口錯誤（原始回應保留在 `bilibili_raw`） |
+
+### 元動作標準化
+
+- `get_self_info` / `get_user_info` 的 `data` 含標準欄位：`user_id` / `user_name` / `user_displayname` / `user_remark`（B 站無備註概念，`user_remark` 恆為空）及 `avatar`
+- `get_version` 回傳 `{"impl": "ErisPulse-BilibiliAdapter", "version": "...", "onebot_version": "12"}`
+- `get_supported_actions` 回傳支援的動作名稱列表
+
+### 其他
+
+- `call_api` 同時接受標準欄位 `account_id` 與舊欄位名 `_account_id`（標準名優先）；框架 ApiDSL 自動適配
+- Converter 繼承框架 `BaseConverter`，公共欄位（id/time/platform/self/raw）由框架統一建構
 
 ## 消息發送
 
@@ -113,7 +149,7 @@ result = await bili.Api.get_session_msgs("123456789", begin_seqno=0)
 result = await bili.Api.get_status()
 result = await bili.Api.get_version()
 
-# 多帳號
+# 多帳戶
 result = await bili.Api.Using("account2").get_self_info()
 ```
 
@@ -123,13 +159,14 @@ result = await bili.Api.Using("account2").get_self_info()
 |------|------|---------|
 | `get_self_info()` | 自身資訊（mid/name/face） | Web API（空間資訊） |
 | `get_user_info(user_id)` | 用戶公開資訊（暱稱/頭像） | Web API（用戶資訊卡） |
-| `get_session_msgs(talker_id, begin_seqno)` | 會話歷史訊息 | Web 私信接口（session_msgs） |
+| `get_session_msgs(talker_id, begin_seqno)` | 會話歷史訊息 | Web 私信介面（session_msgs） |
 | `get_status()` | 適配器運行狀態 | 本地 |
-| `get_version()` | 適配器版本 | 本地 |
+| `get_version()` | 適配器版本（impl/version/onebot_version） | 本地 |
+| `get_supported_actions()` | 支援的動作名稱列表 | 本地 |
 
 ### 不支援的標準動作
 
-以下標準動作 B 站私信無對應能力，呼叫返回 `retcode=10002`：
+以下標準動作 B 站私信無對應能力，呼叫回傳 `retcode=10002`：
 
 - `get_friend_list` / `get_group_list` / `get_group_member_info`
 - `delete_message`（B 站私信僅對方可撤回自己的訊息）
@@ -141,10 +178,20 @@ result = await bili.Api.Using("account2").get_self_info()
 # send_message：文字與圖片段組合發送（等價於 Send 鏈）
 result = await bili.call_api(
     "send_message",
-    _account_id="default",
+    account_id="default",
     target_id="123456789",
     message=[{"type": "text", "data": {"text": "hi"}}],
 )
+```
+
+### 內容瀏覽擴展動作（供生態模組使用）
+
+透過 `Api.call()` / `call_api()` 提供內容瀏覽擴展（供 `call_adapter_api` 等生態模組使用）：
+
+```python
+result = await bili.Api.call("get_user_dynamics", uid="123456789")   # 用戶動態（簡化條目）
+result = await bili.Api.call("search_video", keyword="關鍵字", page=1)  # 影片搜尋
+result = await bili.Api.call("get_popular")                          # 熱門內容
 ```
 
 ## 返回值格式
@@ -154,7 +201,7 @@ result = await bili.call_api(
 ```python
 {
     "status": "ok",              # ok / failed
-    "retcode": 0,                # 0 成功；10002 不支援；10003 參數/目標錯誤；34000 B 站接口錯誤
+    "retcode": 0,                # 0 成功；10002 不支援；10003 參數/目標錯誤；33001 網路錯誤；34100 B 站接口錯誤
     "data": {...},               # 响应数据（send_msg 原始返回）
     "self": {"platform": "bilibili", "user_id": "..."},
     "message_id": "123456",      # B 站 msg_key

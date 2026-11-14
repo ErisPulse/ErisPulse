@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "6a3aece0e19dad78fdbcd91f16ef82c2",
-  "file_hash": "6a3aece0e19dad78fdbcd91f16ef82c2",
-  "translated_at": "2026-10-22T09:32:33.814224",
+  "hash": "7d58faac9ce514ca749884737295e271",
+  "file_hash": "7d58faac9ce514ca749884737295e271",
+  "translated_at": "2026-11-11T15:53:54.617367",
   "target_lang": "en",
   "chunks": [
     {
@@ -34,8 +34,8 @@
       "translation": "## Session Inbox: event.history\n\n> Retention policy (7 days / maximum number of entries) and runtime override API, risks, and audit are covered in the [Session Inbox](transcript.md) special topic.\n\nUnified record of recent message streams per session (both user and bot), serving as a **shared fact base** for AI context, anti-repetition, and behavioral analysis modules—modules no longer store history individually.\n\n```python\nmessages = await event.history(20)   # Last 20 messages in the current session, ascending order\nfor m in messages:\n    print(m[\"role\"], \":\", m[\"text\"])  # role: \"user\" / \"bot\"\n```\n\n- Automatic recording: inbound messages (role=user) + bot outbound text (role=bot)\n- Storage: separate SQLite table, retention policy = per session limit (default 50) + global TTL (default 7 days)\n- Writing method: memory buffer + background batch persistence (delay up to 1 second), query interface automatically merges un-persisted buffer rows—reading your own writes in the same process is unaffected; normal exit (`sdk.uninit` / process exit) automatically flushes. **Hard crash / forced kill may lose recent about 1 second of records**: this base is positioned as a recent context cache, not suitable for audit-level persistence\n- Configuration: `ErisPulse.transcript = {enabled = true, max_per_session = 50, ttl_hours = 168}`\n- Manager API: `sdk.transcript.append() / get() / clear()`, `aflush()` / `flush()` manually flush"
     },
     {
-      "hash": "54ea849a11ce1018eea963a7748994a4",
-      "translation": "## Message Transaction: message_tx\n\nAll outbound sends within the transaction are automatically logged; **on abnormal exit, previously sent messages are automatically withdrawn in reverse order** (skipped if adapter does not implement `delete_message`, but the ledger is still recorded normally).\n\n```python\nasync with event.message_tx():\n    await event.reply(\"Processing, please wait\")\n    result = await do_something()          # Exception thrown here →\n    await event.reply(f\"Completed: {result}\")   # The previous \"processing\" message is automatically withdrawn\n```\n\nSends outside the transaction are not logged (zero overhead); `get_send_receipts()` can view receipts of messages already sent in the current transaction."
+      "hash": "dcd956b9e657b3bb8bcbd8f068888546",
+      "translation": "## Message Transaction: message_tx\n\nAll outbound sends within a transaction are automatically recorded in the ledger; **on abnormal exit, already-sent messages are automatically recalled in reverse order**\n(skipped if the adapter does not implement `delete_message`, while the ledger is still recorded normally).\n\n```python\nasync with event.message_tx():\n    await event.reply(\"Processing, please wait\")\n    result = await do_something()          # exception raised here →\n    await event.reply(f\"Done: {result}\")   # the previous \"Processing\" message is automatically recalled\n```\n\nSends outside the transaction are not recorded (zero overhead); within the transaction, the receipt ledger can be read at any time. Typical use cases are **self-deleting bots**\n(scheduling a delayed recall immediately upon sending) and send auditing:\n\n```python\nimport asyncio\nfrom ErisPulse.runtime import get_send_receipts\n\nasync def delayed_delete(adapter, message_id: str, delay: float):\n    await asyncio.sleep(delay)\n    await adapter.delete_message(message_id)\n\nasync with event.message_tx():\n    await event.reply(\"Temporary notice\")\n    for r in get_send_receipts() or []:\n        # each receipt contains platform / bot_id / message_id / trace_id\n        asyncio.create_task(delayed_delete(adapter, r[\"message_id\"], 30))\n```\n\nReceipt reading is **transaction-scoped**: it returns a non-`None` value only within a `message_tx()` transaction,\nand is always `None` outside; to capture all outbound messages (including those outside transactions), use the `message.sending/sent`\nhooks (see the `trace_id` field in [Link Tracing](#link-tracing-trace-id))."
     },
     {
       "hash": "a149314e314cf92524cf4e6b8861163d",

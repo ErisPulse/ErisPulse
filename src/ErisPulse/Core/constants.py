@@ -119,6 +119,7 @@ CONFIG_KEY_ROUTER_CORS: Final[str] = "ErisPulse.router.cors"
 CONFIG_KEY_ROUTER_SECURITY: Final[str] = "ErisPulse.router.security"
 
 
+
 # ==============================================================================
 # 配置管理器
 #
@@ -451,6 +452,7 @@ EVENT_CORE_INIT_STAGE: Final[str] = "core.init.stage"
 EVENT_MODULE_RELOAD: Final[str] = "module.reload"
 EVENT_MODULE_ROLLBACK: Final[str] = "module.rollback"
 EVENT_ADAPTER_RELOAD: Final[str] = "adapter.reload"
+EVENT_ADAPTER_ROLLBACK: Final[str] = "adapter.rollback"
 EVENT_STORAGE_READY: Final[str] = "storage.ready"
 EVENT_STORAGE_UNREACHABLE: Final[str] = "storage.unreachable"
 EVENT_STORAGE_RECOVERED: Final[str] = "storage.recovered"
@@ -464,6 +466,22 @@ EVENT_I18N_LANGUAGE_CHANGED: Final[str] = "i18n.language.changed"
 # 使用位置: Core/adapter.py -> _emit_dispatch() 中间件链。
 # 修改影响: 事件名是对外契约，变更会静默破坏外部监听者——仍需同步文档（advanced/lifecycle.md）。
 EVENT_ADAPTER_EVENT_BLOCKED: Final[str] = "adapter.event.blocked"
+
+# 影子 whl 摄取限制：文件本体 / 解包总大小 / 解包条目（zip 炸弹防护）。
+# 使用位置: Core/shadow.py -> ShadowManager.ingest_whl()
+# 修改影响: 放宽会增大解包内存与磁盘占用，收紧会拒绝大体积合法 whl。
+SHADOW_WHL_MAX_BYTES: Final[int] = 50 * 1024 * 1024
+SHADOW_EXTRACT_MAX_BYTES: Final[int] = 200 * 1024 * 1024
+SHADOW_EXTRACT_MAX_ENTRIES: Final[int] = 2000
+
+# 影子「转正并持久化」单次 pip 安装的超时（秒）。
+# 使用位置: Core/shadow.py -> ShadowManager._run_pip_persist()
+# 修改影响: 设大容忍慢网络下载，设小加速失败暴露。
+SHADOW_PIP_TIMEOUT_SECS: Final[int] = 300
+
+# 影子「转正并持久化」的任务状态保留条数上限（内存环形，超出丢弃最旧）。
+# 使用位置: Core/shadow.py -> ShadowManager.persist_status()
+SHADOW_PERSIST_TASKS_MAX: Final[int] = 100
 
 # 连接池生命周期事件（2.10.0 新增）：连接登记/注销/加入分组/移出分组时发射。
 # 使用位置: Core/connections.py -> register(), unregister(), assign(), dismiss()（连接侧
@@ -726,6 +744,26 @@ DEFAULT_MODULE_CALL_TIMEOUT_SECS: Final[float] = 30.0
 # 使用位置: Core/adapter.py -> AdapterManager._is_duplicate_event()
 # 修改影响: 平台重连重推同 id 事件的去重窗口——容量越大可回溯越久，内存占用略增。
 DEFAULT_EVENT_DEDUPE_CAPACITY: Final[int] = 4096
+
+# 跨账户重复受理关联（cross-account receipt）的判定窗口（秒）：
+# 同平台 + 同会话 + 同发送者 + 同 alt_message 内容在窗口内再次到达（无论经哪个
+# self_id）视为同一物理消息的重复受理。
+# 使用位置: Core/adapter.py -> AdapterManager._cross_receipt_check()
+# 修改影响: 调大→更长的重复判定窗口（更少漏判，误吞同内容连发的风险略增）；
+# 调小→反之。
+DEFAULT_CROSS_RECEIPT_WINDOW_SECS: Final[float] = 3.0
+
+# 跨账户重复受理关联的 LRU 容量（记录最近 N 个首受理消息的内容键）。
+# 使用位置: Core/adapter.py -> AdapterManager._cross_receipt_check()
+# 修改影响: 容量越大可回溯越久（洪峰下不易被挤出），内存占用略增。
+DEFAULT_CROSS_RECEIPT_CAPACITY: Final[int] = 512
+
+# 跨账户重复受理的默认策略：off（不关联）/ mark（后续副本注入 multi_receipt
+# 字段后照常分发）/ drop（后续副本直接丢弃）。
+# 使用位置: Core/adapter.py -> AdapterManager._cross_receipt_check()；
+# 配置键 ErisPulse.framework.cross_account_policy。
+# 修改影响: 改为 mark/drop 即全局默认启用关联（当前默认 off 保持既有行为）。
+DEFAULT_CROSS_RECEIPT_POLICY: Final[str] = "off"
 
 # 文本匹配正则编译的 LRU 缓存容量（pattern/regex → 编译结果）。
 # 使用位置: Core/text_match.py -> _compile_regex() 装饰器。
@@ -1059,9 +1097,20 @@ DEFAULT_I18N_LANGUAGE: Final[str] = "auto"
 # 修改影响: 超过此时间的请求将被中止。
 DEFAULT_HTTP_CLIENT_TIMEOUT_SECS: Final[float] = 30.0
 
+# 存储事务开启兜底超时（秒）。
+# 使用位置: Core/Bases/storage.py _AsyncTransaction.start()。
+# 修改影响: 超过此时长仍拿不到事务连接/写锁则抛 StorageOperationError——
+# 兜底双层保险（内层为 SQLite busy_timeout 5s），防止事务无限死等。
+STORAGE_TXN_BEGIN_TIMEOUT_SECS: Final[float] = 30.0
+
 # HTTP 客户端连接超时（秒）。
 # 修改影响: 建立 TCP 连接的最大等待时间。
 DEFAULT_HTTP_CLIENT_CONNECT_TIMEOUT_SECS: Final[float] = 10.0
+
+# HTTP 客户端延迟采样窗口（条数）。
+# 使用位置: Core/client.py 请求延迟分位统计（stats() 的 latency_p50/p95）。
+# 修改影响: 越大分位越平滑、内存略增；增减只影响统计精度，不影响行为。
+CLIENT_LATENCY_SAMPLES_MAX: Final[int] = 256
 
 # HTTP 客户端默认最大重试次数。
 # 修改影响: 请求失败后的自动重试次数。0 = 不重试。
@@ -1214,6 +1263,12 @@ DEFAULT_HANDLER_DRAIN_TIMEOUT_SECS: Final[float] = 5.0
 # 修改影响: 设大确保任务彻底回收，设小加速卸载流程。
 DEFAULT_OWNER_CANCEL_TIMEOUT_SECS: Final[float] = 5.0
 
+# 主循环注册前的后台任务待发队列上限。
+# 使用位置: runtime/tasks.py（spawn_background / run_main_loop 无可运行循环时入队，
+# register_main_loop 冲队列；队列满时丢弃新任务并告警）。
+# 修改影响: 设大容忍更长的启动前突发（内存占用上升），设小更早暴露调度异常。
+PENDING_TASK_QUEUE_MAX: Final[int] = 1024
+
 # 归属清理钩子中单个异步回调的执行超时（秒）。
 # 使用位置: runtime/owner_cleanup.py（run_owner_cleanups 触发外部工具模块
 # 登记的 on_cleanup 钩子时，对异步回调施加 wait_for 超时保护）。
@@ -1328,6 +1383,12 @@ HARD_RESTART_EXIT_CODE: Final[int] = 42
 # 退出码 42 时重新拉起我"。未设置时 hard_restart() 走 self-respawn（自行拉起新进程）。
 # 修改影响: 必须同步 sdk.py 与 CLI/commands/run.py。
 ENV_SUPERVISED: Final[str] = "ERISPULSE_SUPERVISED"
+
+# 脚本模式热重载环境变量名。
+# CLI 以子进程运行脚本时注入；SDK 在 ``sdk.run()`` 内据此挂载细粒度
+# watcher，并把组件重载能力写入 runtime.json 供父进程握手去重。
+# 修改影响: 必须同步 CLI/constants.py 与 CLI/commands/run.py。
+ENV_SCRIPT_RELOAD: Final[str] = "ERISPULSE_SCRIPT_RELOAD"
 
 # 版本元数据缺失时的回退字符串。
 # 使用位置: sdk.py / ErisPulse/__init__.py / Core/router.py 的版本探测兜底。
@@ -1471,6 +1532,7 @@ __all__ = [
     "EVENT_CORE_INIT_STAGE",
     "EVENT_I18N_LANGUAGE_CHANGED",
     "EVENT_ADAPTER_RELOAD",
+    "EVENT_ADAPTER_ROLLBACK",
     "EVENT_MODULE_RELOAD",
     "EVENT_MODULE_ROLLBACK",
     "EVENT_STORAGE_READY",
@@ -1484,6 +1546,8 @@ __all__ = [
     "DEFAULT_BROADCAST_CONCURRENCY",
     "DEFAULT_BROADCAST_TIMEOUT_SECS",
     "CONNECTION_ID_HEX_CHARS",
+    "CLIENT_LATENCY_SAMPLES_MAX",
+    "STORAGE_TXN_BEGIN_TIMEOUT_SECS",
     "DEFAULT_CONNECTION_CLOSE_TIMEOUT_SECS",
     "DEFAULT_HTTP_CLIENT_CONNECT_TIMEOUT_SECS",
     "DEFAULT_HTTP_CLIENT_MAX_RETRIES",
@@ -1507,6 +1571,12 @@ __all__ = [
     "DEFAULT_MODULE_PRIORITY",
     "DEFAULT_OFFLINE_BOT_EXPIRY_SECS",
     "DEFAULT_OWNER_CANCEL_TIMEOUT_SECS",
+    "PENDING_TASK_QUEUE_MAX",
+    "SHADOW_EXTRACT_MAX_BYTES",
+    "SHADOW_EXTRACT_MAX_ENTRIES",
+    "SHADOW_PERSIST_TASKS_MAX",
+    "SHADOW_PIP_TIMEOUT_SECS",
+    "SHADOW_WHL_MAX_BYTES",
     "DEFAULT_PROACTIVE_GC_FULL_EVERY",
     "DEFAULT_PROACTIVE_GC_GEN0_MIN",
     "DEFAULT_PROACTIVE_GC_GENERATION",
@@ -1559,6 +1629,9 @@ __all__ = [
     "UNLOAD_LOCK_WAIT_TIMEOUT_SECS",
     "DEFAULT_MODULE_CALL_TIMEOUT_SECS",
     "DEFAULT_EVENT_DEDUPE_CAPACITY",
+    "DEFAULT_CROSS_RECEIPT_WINDOW_SECS",
+    "DEFAULT_CROSS_RECEIPT_CAPACITY",
+    "DEFAULT_CROSS_RECEIPT_POLICY",
     "DEFAULT_MAX_SESSION_REMINDERS",
     "DEFAULT_WS_AUTO_ACCEPT",
     "DEFAULT_WS_CLIENT_CONNECT_TIMEOUT_SECS",
@@ -1575,6 +1648,7 @@ __all__ = [
     "DETAIL_TYPE_PRIVATE",
     "DETAIL_TYPE_USER",
     "ENV_SUPERVISED",
+    "ENV_SCRIPT_RELOAD",
     "EVENT_TYPE_MESSAGE",
     "EVENT_TYPE_META",
     "EVENT_TYPE_NOTICE",

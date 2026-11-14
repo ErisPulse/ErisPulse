@@ -86,7 +86,26 @@ await sdk.module.dismiss_shadow("roll")   # 或：放弃影子
 
 **持久化提醒**：promote 是运行时切换——重启后仍以 v2 运行，需要把新版本
 **持久化安装**（`pip install -U` 新版本 / 替换插件文件）。运行时切换不会
-替你完成包管理。
+替你完成包管理。Dashboard 的「转正并持久化」会在转正成功后后台 pip 安装
+上传时落盘的 whl 原件，把这一步自动化；普通 `promote` 不落盘。
+
+## 三条硬边界
+
+| 边界 | 说明 |
+|------|------|
+| pip 排他 | 影子期**只解包不安装**：whl 原件落盘到 `shadows/<module>/`，仅供转正后持久化；影子运行期间不会 pip 安装，避免覆盖已装包导致线上行为漂移 |
+| promote 不落盘 | `promote_shadow` 只做运行时切换，不写包管理器；重启后回退 v1（配置中仍指向旧版本）。需要重启保持 v2 时用「转正并持久化」或手动 `pip install` |
+| 第三方依赖 = 进程已装版本 | 影子 import 的第三方库用的是**当前进程已安装的版本**；whl 声明的新依赖不会自动安装，缺依赖时影子装载失败（错误原样抛出） |
+
+> whl 摄取、`list_shadows` 与「转正并持久化」（`shadow_ingest_whl` /
+> `shadow_promote_persist` / `shadow_persist_status`）需要 ErisPulse **2.12+**；
+> 旧版 SDK 自动降级为基础影子（仅解包启动，无持久化），Dashboard 能力探测自动切换。
+
+运维查询面：`sdk.module.list_shadows()` 返回当前全部绑定
+`{原模块名: 影子 owner 名}`，供 Dashboard / 脚本聚合展示。
+
+whl 摄取与「转正并持久化」的实现归属 SDK：解包 / 落盘 / pip
+编排跟随 SDK 版本演进，Dashboard 只是调用入口。
 
 ## 相关文档
 

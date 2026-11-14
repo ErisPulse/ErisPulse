@@ -1,15 +1,14 @@
-# 異常體系與捕獲指南
+# 錯誤體系與捕獲指南
 
 > [!NOTE]
 > **L1 核心必讀**——首頁「閱讀路徑」中的五篇核心文件之一，模組開發必備。
 
-ErisPulse 所有自定義異常都繼承自 `ErisPulseError`，底層庫異常（aiohttp、aiomysql 等）  
-會在框架內部被捕獲並轉換為對應的 ErisPulse 異常——業務程式碼**無需依賴任何底層庫異常類型**。
+ErisPulse 所有自定義錯誤都繼承自 `ErisPulseError`，底層庫異常（aiohttp、aiomysql 等）會在框架內部被捕獲並轉換為對應的 ErisPulse 錯誤——業務代碼**無需依賴任何底層庫錯誤類型**。
 
 {!--< tips >!--}
-1. 想寬泛兜底：捕獲 `ErisPulseError`（所有框架異常的基類）
-2. 想精確處理：按模組捕獲（如 `ModuleCallTimeoutError`、`StorageUnreachableError`）
-3. 儲存操作預設不拋出：失敗時記錄日誌並返回 `False / None / default`；連線狀態變化訂閱 `storage.unreachable` / `storage.recovered` 事件
+1. 想寬泛兜底：捕獲 `ErisPulseError`（所有框架錯誤的基類）
+2. 想精確處理：按模組捕獲（如 `ModuleCallTimeoutError`、`StorageOperationError`、`StorageUnreachableError`）
+3. 存儲寫操作失敗**預設拋出** `StorageOperationError`（2.12 起）；連接級不可達的冷卻期快速失敗仍返回 `False / None / default`，連接狀態變化訂閱 `storage.unreachable` / `storage.recovered` 事件
 {!--< /tips >!--}
 
 ## 異常總覽
@@ -17,7 +16,7 @@ ErisPulse 所有自定義異常都繼承自 `ErisPulseError`，底層庫異常�
 ```text
 ErisPulseError                      # 所有框架異常的基類
 ├── ClientError                     # HTTP/WS 客戶端請求異常基類（Core/client）
-│   ├── ClientConnectionError       # 連接層錯誤：DNS 解析失敗、連接被拒絕、網路不可達
+│   ├── ClientConnectionError       # 連接層錯誤：DNS 解析失敗、連接被拒、網路不可達
 │   ├── ClientTimeoutError          # 請求超時
 │   └── HTTPStatusError             # HTTP 狀態碼錯誤（如 4xx/5xx 且 raise_for_status）
 ├── WebSocketError                  # WebSocket 異常基類（Core/client 的 WS 連接）
@@ -26,12 +25,13 @@ ErisPulseError                      # 所有框架異常的基類
 │   ├── ConnectionNotFoundError     # 連接不存在/已斷開註銷（connections.get/close）
 │   └── ConnectionPermissionError   # 非 owner 關閉他人連接（關閉權歸創建者）
 ├── StorageError                    # 存儲異常基類（Core/storage）
+│   ├── StorageOperationError       # 存儲操作執行失敗（2.12 起寫路徑預設拋出）
 │   └── StorageUnreachableError     # 存儲後端不可達（建池重試耗盡：資料庫不可達/憑證錯誤）
 ├── InteractionError                # 交互會話異常基類（Core/Event/interaction）
 │   ├── InteractionCancelled        # 掛起的等待/租約被取消（wait_reply 上層轉為返回 None）
-│   └── SessionOccupiedError        # 會話互斥租約被佔用（hold() 獲取失敗）
-├── ModuleError                     # 模組系統異常基類（Core/module）
-│   └── ModuleCallError             # 模組間呼叫異常基類
+│   └── SessionOccupiedError        # 會話互斥租約被占用（hold() 获取失敗）
+├── ModuleError                     # 模塊系統異常基類（Core/module）
+│   └── ModuleCallError             # 模塊間調用異常基類
 │       ├── ModuleNotAvailableError # 目標模組未註冊/未啟用/初始化失敗（含懶加載訪問）
 │       ├── ServiceNotProvidedError # 目標模組未聲明該服務（meta.services 白名單外）
 │       └── ModuleCallTimeoutError  # 被調方法執行超時（預設 30s）
@@ -44,20 +44,21 @@ ErisPulseError                      # 所有框架異常的基類
 
 ## 結構化屬性
 
-捕獲異常後可讀取結構化屬性（無需解析訊息文字）：
+捕獲異常後可讀取結構化屬性（無需解析訊息文本）：
 
 | 異常 | 屬性 |
 |------|------|
 | `ClientError`（含子類） | `.url` 請求 URL、`.method` 請求方法、`.attempts` 已嘗試次數（重試耗盡時） |
 | `HTTPStatusError` | `.status` 狀態碼、`.message` 回應訊息 |
 | `WebSocketDisconnect` | `.code` 關閉碼、`.reason` 關閉原因 |
-| `ConnectionNotFoundError` | `.connection_id` 查找的連線 id |
-| `ConnectionPermissionError` | `.connection_id` 目標連線 id、`.owner` 連線歸屬 owner |
+| `ConnectionNotFoundError` | `.connection_id` 查找的連接 id |
+| `ConnectionPermissionError` | `.connection_id` 目標連接 id、`.owner` 連接歸屬 owner |
 | `StorageUnreachableError` | `.backend` 後端名（sqlite/mysql/postgres）、`.cooldown` 冷卻秒數 |
+| `StorageOperationError` | `.operation` 操作名（set/delete/clear/set_multi/transaction_begin）、`.key` 操作鍵 |
 | `ModuleCallError`（含子類） | `.module` 目標模組名、`.method` 目標方法名 |
 | `ModuleCallTimeoutError` | 繼承 `.module/.method`，另有 `.timeout` 超時時限（秒） |
 | `InteractionCancelled` | `.reason` 取消原因、`.wait_key` 會話鍵 |
-| `SessionOccupiedError` | `.wait_key` 會話鍵、`.owner` 占用者 |
+| `SessionOccupiedError` | `.wait_key` 會話鍵、`.owner` 佔用者 |
 | `StrictModeError` | `.violations` 違規記錄列表 |
 
 ```python
@@ -80,7 +81,7 @@ except ClientError as e:
 | `ClientError` | 請求封裝層 | 其它客戶端錯誤（底層 aiohttp 異常已轉換） |
 | `ClientConnectionError` | 連接建立階段 | 目標服務不可達、DNS 失敗、連接被拒 |
 | `ClientTimeoutError` | 請求執行階段 | 超過請求超時時間 |
-| `HTTPStatusError` | `raise_for_status()` | 回應狀態碼為 4xx/5xx |
+| `HTTPStatusError` | `raise_for_status()` | 响應狀態碼為 4xx/5xx |
 
 ```python
 from ErisPulse.Core.Bases.errors import ClientTimeoutError
@@ -95,7 +96,7 @@ except ClientTimeoutError:
 
 | 異常 | 發生位置 | 典型場景 |
 |------|----------|----------|
-| `WebSocketError` | WS 收發方法 | 連接已關閉、收到意外訊息類型、底層 WS 異常 |
+| `WebSocketError` | WS 收發方法 | 連接已關閉、收到意外消息類型、底層 WS 異常 |
 | `WebSocketDisconnect` | WS 收發方法 | 對端正常斷開連接（框架會自動重連） |
 
 ### 連接註冊表系列 — `Core/connections.py`（2.10+）
@@ -110,15 +111,20 @@ except ClientTimeoutError:
 | 異常 | 發生位置 | 典型場景 |
 |------|----------|----------|
 | `StorageError` | 存儲層 | 存儲相關異常基類 |
+| `StorageOperationError` | KV 寫路徑 / 事務開啟（2.12 起） | 寫鎖競爭超時 / SQL 錯誤 / 約束衝突 / 事務開啟超時——**預設拋出** |
 | `StorageUnreachableError` | 建池階段 | 資料庫不可達 / 憑證錯誤 / 網路隔離，重試耗盡 |
 
-> **儲存操作的失敗語義**：KV 與查詢操作**預設不拋出**——失敗時記錄 ERROR 日誌並
-> 回傳 `False` / `None` / `default`（避免連接問題阻塞框架運行）。因此業務程式碼通常
-> **不會**捕獲到 `StorageUnreachableError`（它主要供直接操作儲存底層或自訂後端使用）。
-> 運行時感知連接狀態請訂閱生命週期事件 `storage.unreachable` / `storage.recovered`
-> （詳見[lifecycle.md#儲存連接狀態](lifecycle.md#儲存連接狀態)）。
->
-> 連接失敗行為詳見[儲存後端 → 連接失敗行為](storage-backends.md#連接失敗行為)。
+> **儲存操作的失敗語義（2.12 起分層）**：
+> - **寫路徑執行失敗預設拋出** `StorageOperationError`（`aset` / `adelete` / `aclear` / `set_multi`
+>   及同步橋同路徑）——庫可達而寫失敗意味著資料未寫入，靜默返回會讓呼叫方無感知丟資料；
+>   重要寫入請 try/except 並做補償
+> - **連接級不可達**（冷卻期快速失敗）仍返回 `False` / `None` / `default`（框架韌性語義），
+>   業務程式碼通常不會捕獲到 `StorageUnreachableError`；執行時感知連接狀態請訂閱生命週期事件
+>   `storage.unreachable` / `storage.recovered`（詳見[生命週期事件](lifecycle.md#儲存連接狀態)）
+> - **事務開啟超過 30s** 抛 `StorageOperationError`（`STORAGE_TXN_BEGIN_TIMEOUT_SECS`）——
+>   併發長事務無限死等屬框架缺陷，必須可觀測
+
+連接失敗行為詳見[儲存後端 → 連接失敗行為](storage-backends.md#連接失敗行為)。
 
 ### Interaction — `Core/Event/interaction.py`
 
@@ -130,7 +136,7 @@ except ClientTimeoutError:
 | `InteractionCancelled` | 掛起等待被取消時 | 設置到等待 future 上（等待方可捕獲獲取 `.reason`） |
 | `SessionOccupiedError` | `hold()` 租約獲取失敗 | 會話已被其他 owner 占用（`.owner` 可查占用者） |
 
-等待被取消（模組卸載 / 平台關閉 / 同會話新等待取代）時，`wait_reply` **回傳 `None`**
+等待被取消（模組卸載 / 平台關閉 / 同會話新等待取代）時，`wait_reply` **返回 `None`**
 而不拋出異常（`InteractionCancelled` 在內部被轉換）；需要區分取消原因時才直接捕獲它。
 
 ### Module 系列 — `Core/module.py`（`sdk.module.call`）
@@ -139,17 +145,17 @@ except ClientTimeoutError:
 |------|----------|----------|
 | `ModuleError` | 模組系統 | 模組系統異常基類 |
 | `ModuleCallError` | `module.call()` | 模組間呼叫異常基類 |
-| `ModuleNotAvailableError` | `module.call()` / 慢加載屬性存取 | 目標未註冊 / 未啟用 / 初始化失敗 |
+| `ModuleNotAvailableError` | `module.call()` / 懶加載屬性訪問 | 目標未註冊 / 未啟用 / 初始化失敗 |
 | `ServiceNotProvidedError` | `module.call()` | 目標 `meta.services` 白名單未聲明該方法 |
-| `ModuleCallTimeoutError` | `module.call()` | 被呼叫協程超過超時時間（預設 30s） |
+| `ModuleCallTimeoutError` | `module.call()` | 被調協程超過超時時間（預設 30s） |
 
-"目標模組不可用"在不同存取路徑下的異常類型：
+"目標模組不可用"在不同訪問路徑下的異常類型：
 
-| 存取路徑 | 異常 |
+| 訪問路徑 | 異常 |
 |----------|------|
 | `await sdk.module.call("X", "method")` | `ModuleNotAvailableError`（類型化） |
-| `sdk.module.X.attr`（慢加載屬性存取，初始化失敗後） | `ModuleNotAvailableError` |
-| `sdk.module.X`（模組未啟用時的屬性存取） | `AttributeError`（Python 屬性慣例，`hasattr` 依賴此語義） |
+| `sdk.module.X.attr`（懶加載屬性訪問，初始化失敗後） | `ModuleNotAvailableError` |
+| `sdk.module.X`（模組未啟用時的屬性訪問） | `AttributeError`（Python 屬性慣例，`hasattr` 依賴此語義） |
 
 ```python
 from ErisPulse.Core.Bases.errors import ModuleNotAvailableError, ServiceNotProvidedError
@@ -173,11 +179,11 @@ except ServiceNotProvidedError:
 
 ### 框架內部參數校驗（ValueError）
 
-儲存查詢建構器的參數校驗（空欄位類型、`Insert` 非 dict、不安全欄位類型等）拋標準
+儲存查詢建構器的參數校驗（空列類型、`Insert` 非 dict、不安全列類型等）拋標準
 `ValueError`——這類屬於**開發期編碼錯誤**，正常業務程式碼不應捕獲，而應修正呼叫。
 
-適配器標準動作失敗**不拋異常**：回傳帶 `retcode` 的回應字典（協定語義，如
-`retcode=10002` 表示動作未實現）——與 client 層"失敗拋 `ClientError`"是兩條平行
+適配器標準動作失敗**不拋異常**：返回帶 `retcode` 的響應字典（協定語義，如
+`retcode=10002` 表示動作未實現）——與 client 層"失敗拋 `ClientError`"是兩條並行
 的錯誤通道，適配器開發時需同時處理。
 
 ## 捕獲建議
@@ -207,9 +213,9 @@ except ErisPulseError as e:
 
 ## 相關文件
 
-根據排查意圖選擇：
+依排查意圖選擇：
 
-- **儲存操作返回 `False` / `None`，想搞清連接狀態** → [儲存後端 · 連接失敗行為](storage-backends.md#連接失敗行為)，或訂閱 [storage.unreachable / storage.recovered 事件](lifecycle.md#儲存連接狀態)
-- **`wait_reply` 返回 `None`，想知道被什麼取消** → [互動會話系統](interaction.md)（取消原因對照表）
-- **`module.call` 抛模組呼叫異常** → [模組間通信](module-communication.md)
-- **連接 / WebSocket 報錯** → [網路用戶端](http-client.md)（ClientError 體系）與[連接池與廣播](connections.md)（連接註冊表異常）
+- **儲存操作回傳 `False` / `None`，想知道連線狀態** → [儲存後端 · 連線失敗行為](storage-backends.md#連線失敗行為)，或訂閱 [storage.unreachable / storage.recovered 事件](lifecycle.md#儲存連線狀態)
+- **`wait_reply` 回傳 `None`，想知道被什麼取消** → [互動會話系統](interaction.md)（取消原因對照表）
+- **`module.call` 抛模組呼叫異常** → [模組間通訊](module-communication.md)
+- **連線 / WebSocket 報錯** → [網路客戶端](client.md)（ClientError 體系）與[連線池與廣播](connections.md)（連線註冊表異常）

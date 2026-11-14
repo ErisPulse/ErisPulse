@@ -15,6 +15,7 @@ from ..Core.constants import (
     DEFAULT_COMMAND_CASE_SENSITIVE,
     DEFAULT_COMMAND_MUST_AT_BOT,
     DEFAULT_COMMAND_PREFIX,
+    DEFAULT_CROSS_RECEIPT_POLICY,
     DEFAULT_HANDLER_MAX_CONCURRENCY,
     DEFAULT_I18N_LANGUAGE,
     DEFAULT_INTERACTION_CHECKPOINT_TTL_SECS,
@@ -76,6 +77,14 @@ DEFAULT_ERISPULSE_CONFIG = {
         # 内联 PEM 内容（优先于路径，适合容器/无文件系统场景）
         "ssl_cert": None,
         "ssl_key": None,
+        # /metrics Prometheus 文本端点开关（默认关闭；环境变量
+        # ERISPULSE_SERVER_METRICS_ENABLED 覆盖）
+        "metrics_enabled": False,
+    },
+    "router": {
+        # 限流键是否信任反向代理头（X-Forwarded-For 首地址）。
+        # 仅在可信反向代理之后启用，直连暴露时启用可被伪造绕过限流
+        "rate_limit_trust_proxy": False,
     },
     "logger": {
         "level": DEFAULT_LOG_LEVEL,
@@ -192,6 +201,13 @@ DEFAULT_ERISPULSE_CONFIG = {
         # None = 使用内置默认清单（Core/constants.FILE_WATCHER_IGNORED_DIRS）；
         # 非空列表 = 整体替换默认清单；[] = 不忽略任何目录
         "watch_ignore_dirs": None,
+        # 事件幂等去重见 Core/adapter.py（ErisPulse.framework.event_dedupe）；
+        # 跨账户重复受理策略：同一物理消息经多个账户（或多连接）先后到达时——
+        # "off"=不关联（默认，事件照常逐一分发）；
+        # "mark"=后续副本注入顶层 multi_receipt 字段（指向首个受理事件）后
+        #        照常分发，模块读取该字段自行裁决是否响应；
+        # "drop"=后续副本在分发入口直接丢弃（框架层去重，模块无感）
+        "cross_account_policy": DEFAULT_CROSS_RECEIPT_POLICY,
         # CLI `epsdk run --reload` 是否把插件目录交给插件热重载 watcher 处理
         # 并从自身监控中排除（True 时插件文件变更走单模块重载而非全量 restart）
         "watch_include_plugin_dirs": True,

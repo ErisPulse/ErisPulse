@@ -52,7 +52,7 @@
           "icon": "fa-door-open"
         },
         {
-          "title": "基本概念",
+          "title": "基礎概念",
           "path": "getting-started/basic-concepts.md",
           "level": 1,
           "icon": "fa-lightbulb"
@@ -196,19 +196,19 @@
               "icon": "fa-puzzle-piece"
             },
             {
-              "title": "モジュールのコア概念",
+              "title": "モジュールのコアコンセプト",
               "path": "developer-guide/modules/core-concepts.md",
               "level": 1,
               "icon": "fa-cubes-stacked"
             },
             {
-              "title": "Event 包装类详解",
+              "title": "Event ラッパークラス詳解",
               "path": "developer-guide/modules/event-wrapper.md",
               "level": 1,
               "icon": "fa-bolt-lightning"
             },
             {
-              "title": "モジュール開発ベストプラクティス",
+              "title": "モジュール開発のベストプラクティス",
               "path": "developer-guide/modules/best-practices.md",
               "level": 1,
               "icon": "fa-award"
@@ -220,25 +220,25 @@
           "icon": "fa-network-wired",
           "documents": [
             {
-              "title": "アダプタ開発入門",
+              "title": "アダプター開発入門",
               "path": "developer-guide/adapters/getting-started.md",
               "level": 1,
               "icon": "fa-network-wired"
             },
             {
-              "title": "アダプタのコアコンセプト",
+              "title": "アダプタのコア概念",
               "path": "developer-guide/adapters/core-concepts.md",
               "level": 1,
               "icon": "fa-microchip"
             },
             {
-              "title": "SendDSL の詳細解説",
+              "title": "SendDSL 詳細解説",
               "path": "developer-guide/adapters/send-dsl.md",
               "level": 1,
               "icon": "fa-code-branch"
             },
             {
-              "title": "アダプター開発ベストプラクティス",
+              "title": "アダプタ開発のベストプラクティス",
               "path": "developer-guide/adapters/best-practices.md",
               "level": 1,
               "icon": "fa-medal"
@@ -256,7 +256,7 @@
     "プラットフォームガイド": {
       "description": "各プラットフォームの機能とアダプターの説明",
       "icon": "fa-plug",
-      "count": 21,
+      "count": 22,
       "documents": [
         {
           "title": "ErisPulse PlatformFeatures ドキュメント",
@@ -265,61 +265,61 @@
           "icon": "fa-server"
         },
         {
-          "title": "OneBot11プラットフォーム特徴ドキュメント",
+          "title": "OneBot11プラットフォームの機能ドキュメント",
           "path": "platform-guide/onebot11.md",
           "level": 1,
           "icon": "fa-comments"
         },
         {
-          "title": "OneBot12プラットフォーム仕様ドキュメント",
+          "title": "OneBot12プラットフォームの機能ドキュメント",
           "path": "platform-guide/onebot12.md",
           "level": 1,
           "icon": "fa-comments"
         },
         {
-          "title": "Telegramプラットフォーム特徴ドキュメント",
+          "title": "Telegramプラットフォーム特性ドキュメント",
           "path": "platform-guide/telegram.md",
           "level": 1,
           "icon": "fa-paper-plane"
         },
         {
-          "title": "メールプラットフォームの機能ドキュメント",
+          "title": "メールプラットフォーム機能ドキュメント",
           "path": "platform-guide/email.md",
           "level": 1,
           "icon": "fa-envelope"
         },
         {
-          "title": "雲湖プラットフォームの特徴ドキュメント",
+          "title": "云湖プラットフォームの特徴ドキュメント",
           "path": "platform-guide/yunhu.md",
           "level": 1,
           "icon": "fa-cloud"
         },
         {
-          "title": "雲湖ユーザープラットフォーム特徴ドキュメント",
+          "title": "云湖用户平台特性文档",
           "path": "platform-guide/yunhu_user.md",
           "level": 1,
           "icon": "fa-user"
         },
         {
-          "title": "QQBotプラットフォームの特徴ドキュメント",
+          "title": "QQBotプラットフォーム機能ドキュメント",
           "path": "platform-guide/qqbot.md",
           "level": 1,
           "icon": "fa-comment-dots"
         },
         {
-          "title": "Kookプラットフォームの機能ドキュメント",
+          "title": "Kookプラットフォームの特徴ドキュメント",
           "path": "platform-guide/kook.md",
           "level": 1,
           "icon": "fa-headset"
         },
         {
-          "title": "Matrixプラットフォームの機能ドキュメント",
+          "title": "Matrixプラットフォーム特性ドキュメント",
           "path": "platform-guide/matrix.md",
           "level": 1,
           "icon": "fa-th-large"
         },
         {
-          "title": "Discordプラットフォーム特徴ドキュメント",
+          "title": "Discord プラットフォーム特性ドキュメント",
           "path": "platform-guide/discord.md",
           "level": 1,
           "icon": "fa-gamepad"
@@ -331,13 +331,13 @@
           "icon": "fa-mobile-screen"
         },
         {
-          "title": "プラットフォームの機能説明 — Webhook 一般的なブリッジアダプター",
+          "title": "Webhook 通用橋接アダプタープラットフォームの機能ドキュメント",
           "path": "platform-guide/webhook.md",
           "level": 1,
           "icon": "fa-link"
         },
         {
-          "title": "花楓カフェ（RockyChat）プラットフォームの機能ドキュメント",
+          "title": "花枫咖啡館（RockyChat）プラットフォーム機能ドキュメント",
           "path": "platform-guide/ideaura.md",
           "level": 1,
           "icon": "fa-wand-magic-sparkles"
@@ -355,19 +355,25 @@
           "icon": "fa-plug"
         },
         {
-          "title": "Minecraft プラットフォーム機能ドキュメント",
+          "title": "Minecraftプラットフォーム特徴ドキュメント",
           "path": "platform-guide/minecraft.md",
           "level": 1,
           "icon": "fa-plug"
         },
         {
-          "title": "Sandboxプラットフォームの特徴ドキュメント",
+          "title": "Oopz プラットフォームの特徴ドキュメント",
+          "path": "platform-guide/oopz.md",
+          "level": 1,
+          "icon": "fa-plug"
+        },
+        {
+          "title": "Sandbox プラットフォーム機能ドキュメント",
           "path": "platform-guide/sandbox.md",
           "level": 1,
           "icon": "fa-plug"
         },
         {
-          "title": "SnowLumaプラットフォームの特徴ドキュメント",
+          "title": "SnowLumaプラットフォーム機能ドキュメント",
           "path": "platform-guide/snowluma.md",
           "level": 1,
           "icon": "fa-plug"
@@ -422,7 +428,7 @@
     "高度なトピック": {
       "description": "フレームワークの高度な機能を深く理解する",
       "icon": "fa-fire",
-      "count": 19,
+      "count": 21,
       "documents": [
         {
           "title": "高級トピック",
@@ -462,7 +468,7 @@
         },
         {
           "title": "ネットワーククライアント",
-          "path": "advanced/http-client.md",
+          "path": "advanced/client.md",
           "level": 1,
           "icon": "fa-globe"
         },
@@ -485,13 +491,13 @@
           "icon": "fa-shield-halved"
         },
         {
-          "title": "所有権（owner）システム",
+          "title": "帰属システム",
           "path": "advanced/ownership.md",
           "level": 1,
           "icon": "fa-user-tag"
         },
         {
-          "title": "交互会話システム",
+          "title": "インタラクションセッションシステム",
           "path": "advanced/interaction.md",
           "level": 1,
           "icon": "fa-fire"
@@ -515,7 +521,7 @@
           "icon": "fa-server"
         },
         {
-          "title": "エラー体系とキャッチのガイド",
+          "title": "例外体系と捕捉ガイド",
           "path": "advanced/errors.md",
           "level": 1,
           "icon": "fa-triangle-exclamation"
@@ -523,6 +529,18 @@
         {
           "title": "接続プールとブロードキャスト",
           "path": "advanced/connections.md",
+          "level": 1,
+          "icon": "fa-fire"
+        },
+        {
+          "title": "パフォーマンスベンチマークとチューニング",
+          "path": "advanced/performance.md",
+          "level": 1,
+          "icon": "fa-fire"
+        },
+        {
+          "title": "runtimeツールベルト",
+          "path": "advanced/runtime.md",
           "level": 1,
           "icon": "fa-fire"
         },
@@ -577,7 +595,7 @@
           "icon": "fa-image"
         },
         {
-          "title": "ErisPulse-ApiMCP で AI クライアントからボットを操作する",
+          "title": "ErisPulse-ApiMCP — AI クライアントでボットを操作する",
           "path": "ecosystem/apimcp.md",
           "level": 1,
           "icon": "fa-cubes"
@@ -594,7 +612,7 @@
     "AI 支援開発": {
       "description": "AI を活用した ErisPulse 開発",
       "icon": "fa-robot",
-      "count": 12,
+      "count": 1,
       "documents": [
         {
           "title": "AI 支援開発",
@@ -603,80 +621,7 @@
           "icon": "fa-robot"
         }
       ],
-      "subgroups": {
-        "skills": {
-          "name": "Skills",
-          "icon": "fa-folder",
-          "documents": [
-            {
-              "title": "ErisPulse 适配器开发",
-              "path": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-              "level": 1,
-              "icon": "fa-robot"
-            },
-            {
-              "title": "ErisPulse 适配器技术标准",
-              "path": "ai-support/skills/erispulse-adapter-standards/SKILL.md",
-              "level": 1,
-              "icon": "fa-robot"
-            },
-            {
-              "title": "ErisPulse 通信与连接",
-              "path": "ai-support/skills/erispulse-communication/SKILL.md",
-              "level": 1,
-              "icon": "fa-robot"
-            },
-            {
-              "title": "ErisPulse 配置系统与 CLI 工具链",
-              "path": "ai-support/skills/erispulse-config-cli/SKILL.md",
-              "level": 1,
-              "icon": "fa-robot"
-            },
-            {
-              "title": "ErisPulse 生态与多平台",
-              "path": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-              "level": 1,
-              "icon": "fa-robot"
-            },
-            {
-              "title": "ErisPulse 异常体系与排障",
-              "path": "ai-support/skills/erispulse-errors-troubleshooting/SKILL.md",
-              "level": 1,
-              "icon": "fa-robot"
-            },
-            {
-              "title": "ErisPulse 快速上手与核心概念",
-              "path": "ai-support/skills/erispulse-getting-started/SKILL.md",
-              "level": 1,
-              "icon": "fa-robot"
-            },
-            {
-              "title": "ErisPulse 热重载与懒加载休眠",
-              "path": "ai-support/skills/erispulse-hot-reload/SKILL.md",
-              "level": 1,
-              "icon": "fa-robot"
-            },
-            {
-              "title": "ErisPulse 模块开发",
-              "path": "ai-support/skills/erispulse-module-dev/SKILL.md",
-              "level": 1,
-              "icon": "fa-robot"
-            },
-            {
-              "title": "ErisPulse 权限作用域与归属权",
-              "path": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-              "level": 1,
-              "icon": "fa-robot"
-            },
-            {
-              "title": "ErisPulse 影子灰度与消息追踪",
-              "path": "ai-support/skills/erispulse-shadow-transcript/SKILL.md",
-              "level": 1,
-              "icon": "fa-robot"
-            }
-          ]
-        }
-      }
+      "subgroups": {}
     },
     "技術標準": {
       "description": "フレームワークの技術仕様と標準",
@@ -702,7 +647,7 @@
           "icon": "fa-arrow-right-arrow-left"
         },
         {
-          "title": "アダプター標準化変換仕様",
+          "title": "アダプタ標準変換規格",
           "path": "standards/event-conversion.md",
           "level": 1,
           "icon": "fa-shuffle"
@@ -714,7 +659,7 @@
           "icon": "fa-paper-plane"
         },
         {
-          "title": "ErisPulse リクエスト操作仕様",
+          "title": "ErisPulse リクエスト操作規格",
           "path": "standards/request-action-spec.md",
           "level": 1,
           "icon": "fa-hand-paper"
@@ -726,7 +671,7 @@
           "icon": "fa-bolt"
         },
         {
-          "title": "アダプター標準化ガイド（概要）",
+          "title": "アダプター標準化ガイド（総綱）",
           "path": "standards/standardization-guide.md",
           "level": 1,
           "icon": "fa-gavel"

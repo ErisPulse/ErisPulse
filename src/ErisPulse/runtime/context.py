@@ -76,6 +76,14 @@ handler_waits: ContextVar[list[dict[str, Any]] | None] = ContextVar(
 #:   （日志、send_ctx、lifecycle data 中的 ``trace_id`` 字段）。
 current_trace_id: ContextVar[str | None] = ContextVar("current_trace_id", default=None)
 
+#: 当前事件处理链路的触发账户标识。
+#:
+#: 由 ``Core/adapter.py:emit`` 在事件入站时写入（``self.account_id or
+#: self.user_id`` 口径），随事件分发复制到各 handler Task 的上下文；
+#: Send / Api 链路未显式指定账户时据此兜底绑定，使模块处理事件时无需
+#: 显式 ``.Using()`` 即可回复到正确的接收账户。
+current_event_account: ContextVar[str] = ContextVar("current_event_account", default="")
+
 #: 消息回执账本（message transaction）。
 #:
 #: 生命周期
@@ -209,6 +217,21 @@ def get_handler_waits() -> list[dict[str, Any]] | None:
     :return: 记录列表或 None（不在 handler / Task 上下文内）
     """
     return handler_waits.get()
+
+
+def get_current_event_account() -> str:
+    """
+    获取当前事件处理链路的触发账户标识
+
+    在事件分发 / handler 执行期间可读取，Send / Api 链路未显式指定账户时
+    据此兜底绑定；不在事件处理上下文内（如后台定时任务）返回空字符串。
+
+    :return: 当前触发账户标识或空字符串
+
+    :example:
+    >>> account = get_current_event_account()
+    """
+    return current_event_account.get()
 
 
 def get_current_trace_id() -> str | None:

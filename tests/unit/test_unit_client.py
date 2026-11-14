@@ -222,6 +222,8 @@ class TestHttpClientInit:
             "total_errors": 0,
             "total_bytes_sent": 0,
             "total_bytes_received": 0,
+            "latency_p50_ms": 0,
+            "latency_p95_ms": 0,
         }
 
     def test_initial_no_session(self):
@@ -320,6 +322,8 @@ class TestHttpClientStats:
             "total_errors": 0,
             "total_bytes_sent": 0,
             "total_bytes_received": 0,
+            "latency_p50_ms": 0,
+            "latency_p95_ms": 0,
         }
 
 

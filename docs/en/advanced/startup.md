@@ -1,61 +1,62 @@
 # Startup Flow and Manual Control
 
 > [!TIP]
-> **When to read this**: When you need to manually drive the startup chain, customize the startup order, or troubleshoot startup failures. Skip if not needed; it does not affect the use of other features.
+> **When to read this**: When you need to manually drive the startup chain, customize the startup order, or troubleshoot startup failures. If not, skip it — it won't affect the use of any other features.
 
-ErisPulse's `await sdk.run()` / `await sdk.init()` encapsulates the entire startup chain into a "one-liner." However, when you need to fully customize the startup process (e.g., partial loading, dynamic registration, hot-swapping, injecting custom loading strategies), you need to understand what happens inside this chain and how to manually drive each step.
 
-This article breaks down the startup chain into independent components, explains their respective responsibilities, invocation order, and provides examples for manually initiating the entire process.
+ErisPulse's `await sdk.run()` / `await sdk.init()` wraps the entire startup chain into "one line of code". But when you need to fully customize the startup process (e.g., partial loading, dynamic registration, hot-plugging, injecting custom loading strategies), you need to understand what actually happens inside this chain and how to drive each step manually.
 
-> This article assumes you have run through [the first bot](../getting-started/first-bot.md) and understand the two `keep_running` modes of `sdk.run()`. This article focuses on the internal breakdown of the `init()` chain, as well as lower-level entry points such as `init()`/`init_task()`/`init_sync()`.
+This article breaks the startup chain into independent stages, explains each one's responsibilities and calling order, and provides a full manual startup example.
 
-## Overview of SDK Top-Level Entry Points
+> This article assumes you have already completed [Your First Bot](../getting-started/first-bot.md) and understand the two modes `sdk.run(keep_running=True/False)`. It focuses on breaking down the chain **inside** `init()`, along with the lower-level entry points `init()`/`init_task()`/`init_sync()`.
 
-In addition to the two `keep_running` modes of `run()`, the SDK provides several lower-level initialization entry points, differing in **asynchronicity, return values, and whether exceptions are wrapped**:
+## SDK Top-level Entry Points Overview
 
-| Entry Point | Asynchronicity | Return Value | Exception Handling | Use Case |
-|-------------|----------------|--------------|--------------------|----------|
-| `await sdk.run(True)` | async, blocks to maintain | `None` (automatically `uninit` on shutdown) | Module/adapter errors are intercepted, not crashing the process | Pure bot application |
-| `await sdk.run(False)` | async, non-blocking | `None` (no automatic uninstall) | Same as above | Initialize and then execute custom logic |
-| `await sdk.init()` | async, requires await | `bool` | Internal catch of component exceptions, returns `False` on failure | Manual lifecycle control (paired with `uninit()`) |
-| `sdk.init_task()` | async, returns Task without blocking | `asyncio.Task` | Same as `init()` | Concurrent initialization or when event loop is not running |
-| `sdk.init_sync()` | **Synchronous**, blocks current thread | `bool` | Same as `init()` | Command-line scripts, synchronous entry without event loop |
+Besides the two `keep_running` modes of `run()`, the SDK also provides several lower-level initialization entry points, which differ in **asynchronicity, return value, and whether exceptions are wrapped**:
 
-> **Common misconception**: `await sdk.init()` **is not equivalent** to `await sdk.run(keep_running=False)`. Two differences: ① `init()` returns `bool` (returns `False` on failure), `run()` returns `None`; ② `init()` only performs initialization, **does not automatically uninstall**, while `run()` automatically `uninit()` when the event loop ends. Therefore, when you need to manually pair uninstallation or customize the lifecycle, use `init()` + `uninit()`.
+| Entry Point | Async Nature | Return Value | Exception Handling | Applicable Scenarios |
+|------|--------|--------|----------|----------|
+| `await sdk.run(True)` | async, blocks to keep running | `None` (automatically `uninit` on shutdown) | Module/adapter errors are intercepted and won't drag down the process | Pure bot applications |
+| `await sdk.run(False)` | async, non-blocking | `None` (no automatic unloading) | Same as above | Running custom logic after initialization |
+| `await sdk.init()` | async, needs await | `bool` | Component exceptions are caught internally; returns `False` on failure | Manually controlling the lifecycle (paired with `uninit()`) |
+| `sdk.init_task()` | async, returns a Task without blocking | `asyncio.Task` | Same as `init()` | Running other initialization concurrently, or when the event loop is not yet running |
+| `sdk.init_sync()` | **Synchronous**, blocks the current thread | `bool` | Same as `init()` | Command-line scripts, synchronous entry points without an event loop |
 
-## Overview of the Startup Chain
+> **Common misconception**: `await sdk.init()` is **not equivalent to** `await sdk.run(keep_running=False)`. Two differences: ① `init()` returns a `bool` (returns `False` on failure) while `run()` returns `None`; ② `init()` only performs initialization and **does not automatically unload**, whereas `run()` automatically calls `uninit()` when the event loop ends. Therefore, when you need to manually pair the unload step or customize the lifecycle, use `init()` + `uninit()`.
 
-`sdk.init()` (specifically its internal `Initializer.init()`) launches the entire framework in the following order:
+## Startup Chain Overview
+
+`sdk.init()` (more precisely, its internal `Initializer.init()`) brings up the entire framework in the following order:
 
 ```mermaid
 flowchart TD
-    A[0. Prepare environment<br/>Configuration loading / Exception handling] --> B
-    B[1. Parallel discovery and loading<br/>AdapterLoader.load / ModuleLoader.load<br/>Internal call to Finder.find_all] --> C
+    A[0. Prepare environment<br/>Config loading / Exception handling] --> B
+    B[1. Parallel discovery and loading<br/>AdapterLoader.load / ModuleLoader.load<br/>internally calls Finder.find_all] --> C
     C[2. Register adapters<br/>AdapterLoader.register_to_manager] --> D
     D[3. Start adapters<br/>adapter.startup] --> E
     E[4. Register modules<br/>ModuleLoader.register_to_manager] --> F
-    F[5. Initialize modules<br/>ModuleLoader.initialize_modules<br/>Instantiation and mounting to sdk] --> G
-    G[6. Start routing server<br/>router.start]
+    F[5. Initialize modules<br/>ModuleLoader.initialize_modules<br/>instantiate and mount onto sdk] --> G
+    G[6. Start router server<br/>router.start]
 ```
 
-Corresponding core components:
+The corresponding core components:
 
 | Layer | Component | Responsibility |
-|-------|-----------|----------------|
-| Discovery | `AdapterFinder` / `ModuleFinder` | **Discover** adapters/modules from entry-points of installed packages |
-| Loading | `AdapterLoader` / `ModuleLoader` | Discovery + import + metadata reading + enable/disable judgment, returns object list |
-| Registration | `*Loader.register_to_manager` | Register objects to corresponding managers |
-| Management | `sdk.adapter` / `sdk.module` | Maintain adapter/module instances, provide start/stop interfaces |
-| Initialization | `ModuleLoader.initialize_modules` | Create module instances and mount to `sdk` (handle dependency topological sorting) |
+|----|------|------|
+| Discovery | `AdapterFinder` / `ModuleFinder` | **Discover** adapters/modules from the entry-points of installed packages |
+| Loading | `AdapterLoader` / `ModuleLoader` | Discovery + import + reading metadata + determining enabled/disabled, returning object inventories |
+| Registration | `*Loader.register_to_manager` | Register objects with the corresponding managers |
+| Management | `sdk.adapter` / `sdk.module` | Maintain adapter/module instances and provide start/stop interfaces |
+| Initialization | `ModuleLoader.initialize_modules` | Create module instances and mount them onto `sdk` (handles dependency topological sorting) |
 | Routing | `sdk.router` | HTTP / WebSocket server |
 
-> **Important**: `Finder` and `Loader` are two layers. `Loader` internally **already holds** a `Finder` (e.g., `AdapterLoader` has a `AdapterFinder`, `ModuleLoader` has a `ModuleFinder`). In most scenarios, you only need to use `Loader`; you only use `Finder` alone when you need to "list without importing."
+> **Important**: `Finder` and `Loader` are two layers. The `Loader` internally **already holds** a `Finder` (`AdapterLoader` comes with `AdapterFinder`, `ModuleLoader` comes with `ModuleFinder`). In the vast majority of scenarios you only need the `Loader`; you would only use a `Finder` on its own when you need "listing without importing".
 
-## Detailed Component Explanations
+## Detailed Breakdown of Each Stage
 
 ### 1. Discovery Layer: Finder
 
-Finder only finds which packages provide adapters/modules, without importing or instantiating.
+The Finder is only responsible for "finding out which packages provide adapters/modules"; it neither imports nor instantiates.
 
 ```python
 from ErisPulse.finders import AdapterFinder, ModuleFinder
@@ -63,7 +64,7 @@ from ErisPulse.finders import AdapterFinder, ModuleFinder
 adapter_finder = AdapterFinder()
 module_finder = ModuleFinder()
 
-# Find all installed adapters/modules entry-points
+# Find all installed adapter/module entry-points
 adapter_entries = adapter_finder.find_all()    # list[EntryPoint]
 module_entries = module_finder.find_all()      # list[EntryPoint]
 
@@ -71,11 +72,11 @@ module_entries = module_finder.find_all()      # list[EntryPoint]
 entry = module_finder.find_by_name("MyModule")  # EntryPoint | None
 ```
 
-Each `EntryPoint` can be `.load()` to get the corresponding class, but usually you don't need to call it manually—Loader will do it.
+Each `EntryPoint` can be `.load()`ed to obtain the corresponding class, but you usually don't need to call it manually — the Loader does that.
 
 ### 2. Loading Layer: Loader
 
-Loader does "import + metadata reading + enable/disable judgment" on top of Finder.
+On top of the Finder, the Loader does "import + reading metadata + determining enabled/disabled".
 
 ```python
 from ErisPulse.loaders import AdapterLoader, ModuleLoader
@@ -84,32 +85,32 @@ from ErisPulse import sdk
 adapter_loader = AdapterLoader()
 module_loader = ModuleLoader()
 
-# load() internally: calls finder.find_all() → processes each entry-point → returns a triple
+# Inside load(): calls finder.find_all() → processes each entry-point → returns a triple
 adapter_objs, enabled_adapters, disabled_adapters = await adapter_loader.load(sdk.adapter)
 module_objs, enabled_modules, disabled_modules = await module_loader.load(sdk.module)
 ```
 
-The three-tuple returned by `load()`:
+The triple returned by `load()`:
 
 | Return Value | Meaning |
-|--------------|---------|
+|--------|------|
 | `objs` (`dict`) | Name → object (adapter class / module wrapper object) |
 | `enabled` (`list[str]`) | Names that are enabled (not disabled in configuration) |
 | `disabled` (`list[str]`) | Names that are disabled |
 
-#### Diagnostic Information on Loading Failures
+#### Diagnostic Information on Load Failure
 
-When a module/adapter throws an exception during loading or initialization, the framework skips that component and continues loading other components, while outputting a **summary of user code frames**, allowing you to locate the error position at the default INFO level without manually re-enabling DEBUG:
+When a module/adapter throws an exception during the loading or initialization stage, the framework skips that component and continues loading the others, while outputting a **user code frame summary** so you can pinpoint the error location at the default INFO level without manually re-enabling DEBUG:
 
 ```
 [ERROR] [ModuleLoader] Failed to load module MyModule from entry-point, skipped: 'NoneType' object has no attribute 'platform'
   → MyModule/Core.py:42 in on_load
       adapter = sdk.platform
   → AttributeError: 'NoneType' object has no attribute 'platform'
-  → Note: Increase log level to DEBUG to view full stack trace; check the implementation code of module MyModule
+  → Hint: Raise the log level to DEBUG to see the full stack trace; check the implementation code of module MyModule
 ```
 
-The diagnostic information is generated by the `ErisPulse.runtime.diagnostics` module, automatically filtering out internal framework frames and retaining only your code frames. If you need to reuse it in custom loading logic:
+Diagnostic information is generated by the `ErisPulse.runtime.diagnostics` module, which automatically filters out framework internal frames and keeps only your code frames. To reuse it in custom loading logic:
 
 ```python
 from ErisPulse.runtime import log_diagnostic
@@ -117,14 +118,14 @@ from ErisPulse.runtime import log_diagnostic
 try:
     risky_init()
 except Exception as e:
-    log_diagnostic(e)  # Automatically extract user code frames and write to ERROR log
+    log_diagnostic(e)  # Automatically extract user code frames and write to the ERROR log
 ```
 
-This module also provides two low-level functions: `extract_user_frame()` (returns structured frame information) and `format_diagnostic_block()` (returns multi-line text).
+The module also provides two low-level functions: `extract_user_frame()` (returns structured frame information) and `format_diagnostic_block()` (returns multi-line text).
 
 ### 3. Registration Layer: register_to_manager
 
-Registers the objects produced by Loader to the manager so that `sdk.adapter` / `sdk.module` can recognize them.
+Register the objects produced by the Loader with the managers so that `sdk.adapter` / `sdk.module` can recognize them.
 
 ```python
 # Register adapters (returns bool, indicating whether all succeeded)
@@ -134,23 +135,23 @@ await adapter_loader.register_to_manager(enabled_adapters, adapter_objs, sdk.ada
 await module_loader.register_to_manager(enabled_modules, module_objs, sdk.module)
 ```
 
-After registration, adapters are registered to the adapter manager, and modules are registered to the module manager, but **they are not started/initialized yet**.
+After registration, the adapters are registered with the adapter manager and the modules are registered with the module manager, but **none of them have been started/instantiated yet**.
 
-### 4. Start Adapters
+### 4. Starting Adapters
 
 ```python
 # Start all registered adapters
 await sdk.adapter.startup()
-# Or specify a platform
+# Or specify platforms
 await sdk.adapter.startup("yunhu")
 await sdk.adapter.startup(["yunhu", "telegram"])
 ```
 
-> Registration ≠ Startup. `register_to_manager` only registers; `startup` calls the adapter's `start()`, establishing a connection to the platform.
+> Registration ≠ starting. `register_to_manager` merely registers; `startup` is what actually calls the adapter's `start()` and establishes the connection with the platform.
 
-### 5. Initialize Modules
+### 5. Initializing Modules
 
-Modules have an extra step—**instantiation** and mounting to `sdk` (so you can call `sdk.MyModule.xxx`). This step also handles module dependencies and topological sorting.
+Modules have one more step than adapters — they need to be **instantiated** and mounted onto `sdk` (so that you can call `sdk.MyModule.xxx`). This step also handles dependency declarations between modules and topological sorting.
 
 ```python
 success = await module_loader.initialize_modules(
@@ -158,9 +159,9 @@ success = await module_loader.initialize_modules(
 )
 ```
 
-After successful instantiation, modules appear on `sdk.<ModuleName>`.
+After successful instantiation, the module appears at `sdk.<ModuleName>`.
 
-### 6. Start Routing Server
+### 6. Starting the Router Server
 
 ```python
 await sdk.router.start(
@@ -171,11 +172,11 @@ await sdk.router.start(
 )
 ```
 
-The routing server is responsible for receiving webhook/WebSocket callbacks from adapters. Without starting it, server-mode adapters cannot receive messages.
+The router server is responsible for receiving Webhook / WebSocket callbacks from adapters. Without starting it, adapters running in server mode cannot receive messages.
 
 ## Complete Manual Startup Example
 
-The following code is **equivalent** to the core process of `await sdk.init()`, but each step is exposed to you, allowing you to insert custom logic at any step:
+The following code is **equivalent to** the core flow of `await sdk.init()`, but every step is exposed to you, and you can insert custom logic at any stage:
 
 ```python
 import asyncio
@@ -183,9 +184,10 @@ from ErisPulse import sdk
 from ErisPulse.loaders import AdapterLoader, ModuleLoader
 
 async def manual_startup():
-    # 0. Prepare environment (load configuration, register global exception handler)
-    #    _prepare_environment is a pre-step inside init(); in manual flow, it must be called first,
-    #    otherwise Loader won't read the configuration and will misjudge all adapters/modules as disabled.
+    # 0. Prepare the environment (load configuration, register global exception handling)
+    #    _prepare_environment is a prerequisite step inside init(); the manual flow
+    #    also needs to call it first, otherwise the Loader cannot read the configuration
+    #    and will misjudge all adapters/modules as disabled.
     if not await sdk._prepare_environment():
         print("Environment preparation failed")
         return False
@@ -194,7 +196,7 @@ async def manual_startup():
     adapter_loader = AdapterLoader()
     module_loader = ModuleLoader()
 
-    # 2. Parallel discovery and loading (consistent with internal use in init())
+    # 2. Parallel discovery and loading (using gather, consistent with init() internally)
     (adapter_objs, enabled_adapters, disabled_adapters), \
     (module_objs, enabled_modules, disabled_modules) = await asyncio.gather(
         adapter_loader.load(sdk.adapter),
@@ -215,13 +217,13 @@ async def manual_startup():
         enabled_modules, module_objs, sdk.module
     )
 
-    # 6. Initialize modules (instantiation + mounting to sdk)
+    # 6. Initialize modules (instantiate + mount onto sdk)
     if enabled_modules:
         await module_loader.initialize_modules(
             enabled_modules, module_objs, sdk.module, sdk
         )
 
-    # 7. Start routing server
+    # 7. Start the router server
     await sdk.router.start(host="0.0.0.0", port=8000)
 
     print("Manual startup completed")
@@ -230,161 +232,194 @@ async def manual_startup():
 async def main():
     ok = await manual_startup()
     if ok:
-        # Block to maintain running (manual flow does not automatically block)
+        # Block to keep running (the manual flow does not block automatically)
         await asyncio.Event().wait()
 
 if __name__ == "__main__":
     asyncio.run(main())
 ```
 
-### When to Use Manual Startup?
+### When Should You Start Manually?
 
-In most cases, **manual startup is not required**; `await sdk.run()` already handles all the above. Manual startup is only valuable in these scenarios:
+In the vast majority of cases, **you don't need** to start manually — `await sdk.run()` already does all of the above. Manual startup is only valuable in these scenarios:
 
-- **Partial loading**: Load only specified adapters/modules, skipping others
-- **Dynamic registration**: Register new adapters/modules at runtime based on conditions
-- **Custom order**: Need to disrupt the default loading order (e.g., start a module before an adapter)
-- **Inject strategies**: Inject custom strict mode managers, loading strategies, etc. into Loader
-- **Debugging/diagnosis**: Manually drive at a certain step when a failure occurs to locate the issue
+- **Partial loading**: load only the specified adapters/modules and skip the rest
+- **Dynamic registration**: register new adapters/modules at runtime based on conditions
+- **Custom order**: need to change the default loading order (e.g., start a certain module before starting adapters)
+- **Injecting strategies**: inject custom strict-mode managers, loading strategies, etc. into the Loader
+- **Debugging/diagnostics**: when a stage fails, drive it manually to pinpoint the problem
 
-## Runtime Fine-Grained Control
+## Runtime Fine-grained Control
 
-Even after using `sdk.run()` to complete the startup, you can still individually control subsystems at runtime without restarting the entire SDK:
+### Local Plugin Hot Reload
 
-### Hot Restart of Adapters
+`sdk.enable_plugin_hot_reload()` monitors source code changes in the local plugin directory (`plugins/`) and automatically reloads:
+`epsdk run` already enables it automatically, so no manual call is needed; if you need plugin hot reload when **starting with a bare `sdk.run()`**,
+call it once before `run()` (it only covers the local plugin directory and does not affect pip-installed modules/adapters):
 
 ```python
-# Hot restart a specific adapter (fix connection, does not affect other platforms)
+sdk.enable_plugin_hot_reload()
+sdk.run()
+```
+
+
+Even if startup was completed with `sdk.run()`, you can still individually control each subsystem at runtime without restarting the entire SDK:
+
+### Adapter Hot Start/Stop
+
+```python
+# Hot-restart an adapter (repair the connection without affecting other platforms)
 await sdk.adapter.shutdown("yunhu")
 await sdk.adapter.startup("yunhu")
 
-# Dynamically start a new platform
+# Bring up a new platform while running
 await sdk.adapter.startup("telegram")
 
 # Temporarily take a platform offline
 await sdk.adapter.shutdown("telegram")
 ```
 
-> `adapter.startup()` requires the adapter to be **registered** to the manager. Registration occurs during `init()`/`run()`, so this is fine-grained control after startup.
+> `adapter.startup()` requires that the adapter **has been registered** with the manager. Registration happens inside `init()`/`run()`, so this is fine-grained control **after** startup.
 
-### Routing Server
+### Router Server
 
 ```python
 # Temporarily take the webhook server offline
 await sdk.router.stop()
 
-# Restart (e.g., change port)
+# Restart (e.g., after changing the port)
 await sdk.router.start(host="0.0.0.0", port=9000)
 ```
 
-### Modules on Demand
+### On-demand Module Loading
 
 ```python
-# Manually load a module (possibly lazy-loaded)
+# Manually load a (possibly lazily loaded) module
 await sdk.load_module("MyModule")
 ```
 
 ## Graceful Shutdown
 
-Since version 2.7.0, `sdk.shutdown()` provides **programmatic graceful shutdown**: set a shutdown event to let the main loop, which is hanging due to `await sdk.run(keep_running=True)`, return, thus triggering `uninit()` to complete resource cleanup.
+Since 2.7.0, `sdk.shutdown()` provides **programmatic graceful shutdown**: it sets the shutdown event so that the main loop suspended in `await sdk.run(keep_running=True)` returns, which then triggers `uninit()` to complete resource cleanup.
 
 ```python
-# Call from any coroutine to trigger graceful exit (run() hangs and returns, then automatically uninit)
+# Call from any coroutine to trigger a graceful exit (run() returns from suspension and automatically uninits)
 sdk.shutdown()
 ```
 
-Typical use cases:
+Typical use case:
 
 ```python
 async def shutdown_after_idle():
     await asyncio.sleep(3600)
-    sdk.shutdown()  # Graceful exit after 1 hour of idle
+    sdk.shutdown()  # Graceful exit after 1 hour of idleness
 ```
 
-**Signal Handling**: `run()` internally registers `SIGTERM` / `SIGHUP` handlers, converting system signals into graceful shutdown—when containers (Docker `docker stop`) or `systemd` stop services, the process completes `uninit()` cleanup instead of being forcibly killed.
+**Signal handling**: `run()` internally registers `SIGTERM` / `SIGHUP` handlers, converting system signals into graceful shutdown — when container orchestration (Docker `docker stop`) or `systemd` stops the service, the process goes through `uninit()` cleanup instead of being forcibly killed. It also registers a `SIGUSR1` handler that converts the signal into an in-process soft restart (`sdk.restart()`) — `epsdk restart` sends this signal instead to trigger component hot reload for PID 1 instances inside containers (terminating them would exit the container, and they cannot be relaunched externally). The SIGUSR1 hot-restart channel requires ErisPulse **2.12+**.
 
-- Windows does not support `loop.add_signal_handler`, so the signal handler is automatically skipped (still use `sdk.shutdown()` or Ctrl+C to trigger shutdown)
-- Repeatedly calling `sdk.shutdown()` is safe (no operation if the event is already set)
+- Windows does not support `loop.add_signal_handler`; the signal handlers are automatically skipped (you can still trigger shutdown via `sdk.shutdown()` or Ctrl+C)
+- Repeatedly calling `sdk.shutdown()` is safe (calling again after the event is set is a no-op)
 
-## Unload Process
+## Unloading Process
 
-The reverse operation of startup is `await sdk.uninit()`, which cleans up in the reverse order:
+The reverse of startup is `await sdk.uninit()`, which cleans up in reverse order:
 
-1. Close all adapters (`adapter.shutdown()`)
+1. Shut down all adapters (`adapter.shutdown()`)
 2. Unload all modules
-3. Clean up all event handlers
-4. Clean up managers and module attributes on SDK
+3. Clear all event handlers
+4. Clean up the managers and the module attributes on the SDK
 
-In manual startup scenarios, remember to call `uninit()` before exiting to ensure graceful shutdown:
+In manual startup scenarios, remember to call `uninit()` before exiting to ensure a graceful shutdown:
 
 ```python
 try:
-    await asyncio.Event().wait()   # Maintain running
+    await asyncio.Event().wait()   # Keep running
 finally:
     await sdk.uninit()
 ```
 
 ## Restart
 
-The SDK provides two restart methods, both not requiring you to manually unload first—the framework handles it itself:
+The SDK provides two restart methods, neither of which requires you to unload first — the framework handles it itself:
 
-| Method | Call | Behavior | Use Case |
-|--------|------|----------|----------|
-| Hot Restart | `await sdk.restart()` | **Code-level hot reload at the component layer** within the same process: all modules go through a unified reload pipeline (global syntax pre-check / snapshot rollback / identity verification), adapters first **re-discover entry-points** (newly installed/uninstalled adapters during runtime take effect immediately), then reload each component code-level | Pip upgrades or installing components to make code effective, hot reload of modules |
-| Hard Restart | `await sdk.hard_restart()` | `uninit()` followed by exiting the process with **exit code 42**, restarted by an external supervisor | Framework self-upgrade (new framework code only takes effect in new process), C extension side effects, suspected resource leaks |
+| Method | Call | Behavior | Applicable Scenarios |
+|------|------|------|----------|
+| Hot restart | `await sdk.restart()` | **Component-level, code-level hot reload** within the same process: all modules go through a unified reload pipeline (aggregate syntax pre-check / snapshot rollback / identity verification), and adapters first **re-discover entry-points** (adapters newly installed/uninstalled at runtime take effect immediately) and are then code-level reloaded one by one | Making code take effect after pip upgrading or installing components, hot-updating modules |
+| Hard restart | `await sdk.hard_restart()` | After `uninit()`, exits the process with **exit code 42**, and an external supervisor brings up a brand-new process | Framework self-upgrade (upgraded framework code only takes effect in a new process), C extension side effects, suspected resource leaks |
 
 ```python
-# Hot Restart: Component-level code hot reload (most commonly used; newly installed adapters during runtime are also pulled in)
+# Hot restart: component-level, code-level hot reload (the most common; newly pip-installed adapters are also brought up)
 await sdk.restart()
 
-# Hard Restart: Exit the process, handed over to an external supervisor (see "Supervisor Guide" below)
-await sdk.hard_restart("sdk self-update")  # Optional reason for supervisor display
+# Hard restart: exit the process and let an external supervisor restart it (see the "Supervisor Guide" below)
+await sdk.hard_restart("sdk self-update")  # Optional reason for the supervisor to display
 ```
 
-> **Two points to note**:
-> 1. These methods execute the restart in a background task, **immediately returning `True` to indicate "restart task scheduled"**, not "restart completed." The actual restart runs in the background, avoiding interruption of the current event chain.
-> 2. The principle of `hard_restart()` is: after unloading and flushing configuration, exit the process with **exit code 42** (`HARD_RESTART_EXIT_CODE`)—**it does not start a new process itself**. It must be restarted by an external supervisor detecting exit code 42. If you directly run `python main.py` without any supervisor, the process exits with code 42 and **does not automatically restart** (the framework will warn).
+> **Two notes**:
+> 1. Both methods execute the restart via a background task; **returning `True` immediately means "the restart task has been scheduled"**, not "the restart is complete". The actual restart happens in the background to avoid interrupting the current event chain.
+> 2. `hard_restart()` works as follows: after unloading and flushing the configuration to disk, it exits the process with **exit code 42** (`HARD_RESTART_EXIT_CODE`) — **it does not itself spawn a new process**; an external supervisor must detect exit code 42 and restart it. If you run `python main.py` directly with no supervisor at all, the process simply ends after exiting with code 42 and **will not restart automatically** (the framework will print a warning).
 
-> **Mutual Exclusion and Merging of Hot Restarts** (since 2.11.1): All hot reload operations (single module reload / full reload / adapter reload / sleep / new plugin hot load) are mutually exclusive throughout the process—consecutive triggers during save storms do not concurrently cross, and during an ongoing restart, new requests are automatically merged (requests falling within the ordinary reload lock period are also merged and queued), and after completion, at most one additional round is run. When files with syntax errors are saved, the entire reload will be **rejected by a pre-check** before unloading (listing all error files and line numbers at once), adapter layer skips the current reload, `restart` fails, and all old instances continue serving; after fixing, `restart` again.
+> **Hot restart mutual exclusion and merging** (since 2.11.1): All hot reload operations (single-module reload / full reload / adapter reload / sleep / hot-loading of new plugins) are mutually exclusive for their entire duration — consecutive triggers under a save storm will not run concurrently or interleave; an in-progress restart automatically merges new requests as they arrive (requests landing during the lock-held period of an ordinary reload are likewise merged and queued), and at most one extra round is run after completion. When a file containing syntax errors is saved, the entire reload round is rejected by the **aggregate syntax pre-check** before unloading (listing all offending files and line numbers at once); the adapter layer skips that reload round, `restart` reports failure, and all old instances keep serving; once fixed, just call `restart` again.
 
-### When to Use Hard Restart?
+### When Should You Use a Hard Restart?
 
-Hot restart covers most scenarios (pip upgrades/installing components, hot reloading module code, **including newly installed adapters during runtime**). The following scenarios require hard restart:
+Hot restarts already cover the vast majority of scenarios (pip upgrading/installing components, hot-updating module code, **including adapters newly installed while running**). A hard restart is only needed in the following scenarios:
 
-- **Framework self-upgrade**: After upgrading ErisPulse itself, the new framework code only takes effect in a new process (Python does not re-import already loaded framework code).
-- **Binary library (C extension) side effects**: Hot restart occurs within the same process and cannot release C extensions, open file descriptors, threads, and other process-level resources; hard restart switches to a new process, completely clearing these side effects.
-- **Resource leak diagnosis**: When suspected memory or handle leaks exist, hard restart provides a clean environment.
+- **Framework self-upgrade**: after upgrading the ErisPulse core itself, the new framework code only takes effect in a brand-new process (Python will not re-import already loaded framework code).
+- **Binary library (C extension) side effects**: a hot restart happens within the same process and cannot release process-level resources such as C extensions, open file descriptors, or threads; a hard restart switches to a brand-new process, and these side effects are completely wiped out.
+- **Resource leak investigation**: when you suspect a memory or handle leak, a hard restart gets you a clean environment.
 
-> The "Framework Restart" function in the Dashboard management panel internally calls `hard_restart()`.
+> The "Framework Restart" feature in the Dashboard admin panel calls `hard_restart()` under the hood.
 
-### Exit Code 42 Contract
+### The Exit Code 42 Contract
 
-Hard restart is cross-process collaboration: **SDK is responsible for exiting (code 42), supervisor is responsible for restarting**.
+A hard restart is cross-process collaboration: **the SDK handles exiting (with code 42), and the supervisor handles bringing it back up**.
 
 | Role | Behavior |
-|------|----------|
-| SDK (when hard restarted) | `uninit()` → flush configuration → write hard restart marker (reason / PID, for supervisor display) → `os._exit(42)` |
-| Supervisor | Detects child process exit code 42 → displays hard restart reason → restarts the same command |
+|------|------|
+| SDK (when hard-restarting) | `uninit()` → flush configuration to disk → write the hard-restart marker (reason / PID, for the supervisor to display) → `os._exit(42)` |
+| Supervisor | Detects the child process exiting with code 42 → displays the hard-restart reason → restarts the same command |
 
-> `sdk.is_supervised()` can query whether the current process was started by a supervisor (detects environment variable `ERISPULSE_SUPERVISED`). CLI `run` command starts a subprocess and automatically injects this marker; external supervisors like systemd / Docker do not inject it, so `is_supervised()` returns `False`, and the framework will warn "no supervisor detected" after hard restart.
+> `sdk.is_supervised()` can query whether the current process was started by a supervisor (by detecting the `ERISPULSE_SUPERVISED` environment variable). The CLI `run` command automatically injects this marker when launching the subprocess; external supervisors such as systemd / Docker do not inject it, so `is_supervised()` returns `False`, and in that case the framework will print a "no supervisor detected" warning after a hard restart.
 
 ### Supervisor Guide
 
-Choose a supervisor suitable for you to make hard restart truly effective:
+Pick the supervisor that fits you to make hard restarts actually take effect:
 
-#### 1. CLI run command (development/simple deployment, recommended)
+#### 1. CLI run Command (Development/Simple Deployment, Recommended)
 
-`epsdk run main.py` has a built-in supervision loop: detects the child process exit code, restarts immediately if code 42 (and displays the hard restart reason); other abnormal exit codes retry automatically with exponential backoff; `Ctrl+C` first gracefully terminates the child process (code 0 is considered normal exit, no restart).
+`epsdk run main.py` has a built-in supervision loop: it detects the subprocess exit code, restarting immediately when it is 42 (and displaying the hard-restart reason); other abnormal exit codes are automatically retried with exponential backoff; `Ctrl+C` first gracefully terminates the subprocess (code 0 is treated as a normal exit and will not be relaunched).
 
 ```bash
 epsdk run main.py
 ```
 
-`epsdk run --reload` (development hot-reload mode, since 2.11.1) also uses the "supervisor process + reload worker subprocess" structure: worker saves `.py` files to trigger **component-level hot reload** (not full framework restart); hard restart is handled by the supervisor process restarting a new worker, making new code effective after upgrading the framework.
+`epsdk run --reload` (development hot reload mode, since 2.11.1) uses the same "supervisor process + reload worker subprocess" structure: saving a `.py` file inside the worker triggers **component-level hot reload** (not a full framework restart); a hard restart is carried out by the supervisor process re-launching a brand-new worker, so after upgrading the framework the new code takes effect immediately.
 
-#### 2. systemd (Linux server)
+#### Fine-Grained Reload Decision (2.12+)
 
-`RestartForceExitStatus=42` makes exit code 42 trigger a restart (default `on-failure` only works for non-zero codes):
+After a `.py` file is saved, the smallest reload unit is chosen based on runtime source ownership rather than guessed from path strings:
+
+| Changed File | Handling |
+|----------|------|
+| Inside the plugin directory (`ErisPulse.framework.plugins_dir`) | Handled by the plugin hot reload watcher; the dev watcher does not trigger again |
+| Source of loaded modules (including `pip install -e` and site-packages) | `sdk.reload_module(module_name)` |
+| Source of registered adapters | `sdk.reload_adapter(platform_name)` |
+| Entry script | Process-level restart (exit code 42, relaunched by the supervisor) |
+| The framework's own source (inside the `ErisPulse` package) | Process-level restart |
+| Matches multiple owners simultaneously / ownership cannot be determined | Conservatively falls back to a process-level restart |
+
+In bulk upgrade scenarios such as `epsdk upgrade`, you can use `sdk.reload_all_modules()` to reload all registered
+modules in one go (in dependency topological order; a failed module is skipped without rollback), with no need to restart the process.
+
+Script mode (`epsdk run main.py --reload`) does not turn the script into a worker: the dev watcher is mounted
+inside the script subprocess, and `component_reload_pid` is written to `.erispulse/runtime.json`; once the parent process
+sees this marker, module/adapter/plugin changes are handed over to the subprocess, and only entry-script or framework-source
+changes restart the script process.
+
+#### 2. systemd (Linux Servers)
+
+`RestartForceExitStatus=42` makes exit code 42 also trigger a restart (by default `on-failure` only applies to non-zero codes):
 
 ```ini
 [Service]
@@ -397,20 +432,23 @@ User=mybot
 
 #### 3. Docker / docker-compose
 
-The PID 1 inside the container is the application process, and after exit code 42, the container exits—use `restart` policy to automatically restart it:
+Inside a container, PID 1 is the application process; after exit code 42 the container exits — use the `restart` policy to let it restart automatically:
 
 ```yaml
 services:
   bot:
     build: .
-    restart: unless-stopped   # Restart for any exit (including 42)
+    restart: unless-stopped   # Restarts on any exit (including 42)
 ```
 
-#### 4. PM2 (Node ecosystem operations)
+> Inside a container, `epsdk restart` performs an in-process SIGUSR1 hot restart for PID 1 instances and does not exit the container;
+> whole-process restart is carried by the `restart` policy. See [Deployment → Restarting Inside Containers](../user-guide/deployment.md#restarting-inside-containers-pid-1-instances).
+
+#### 4. PM2 (Node Ecosystem Operations)
 
 ```bash
 pm2 start main.py --name mybot --interpreter python3
-# 42 is treated as an exit code, PM2 defaults to restart; set restart_delay to debounce
+# 42 counts as an exit code and PM2 restarts by default; set restart_delay for debouncing
 pm2 set mybot.restart_delay 2000
 ```
 
@@ -420,10 +458,10 @@ pm2 set mybot.restart_delay 2000
 [program:mybot]
 command=python3 /opt/mybot/main.py
 autorestart=true
-exitcodes=0,2,42    # 42 is also considered "normal exit requiring restart"
+exitcodes=0,2,42    # 42 is also treated as "a normal exit that needs a restart"
 ```
 
-#### 6. Pure Python Custom Supervisor
+#### 6. Pure-Python Custom Supervisor
 
 ```python
 import subprocess, sys, time
@@ -439,10 +477,10 @@ while True:
     time.sleep(3)           # Abnormal exit, retry with backoff
 ```
 
-> **Behavior without a supervisor**: Running directly with `python main.py`, calling `hard_restart()` exits the process with code 42 and does not restart. In this case, you should integrate any of the above supervisors.
+> **Behavior without a supervisor**: when running `python main.py` directly, after calling `hard_restart()` the process exits with code 42 and will not restart. In that case you should hook up one of the supervisors above.
 
 ## Related Documentation
 
-- [Create Your First Bot](../getting-started/first-bot.md) - Introduction to the two basic `keep_running` modes
-- [Lifecycle Management](lifecycle.md) - Listen to startup events such as `core.init.start` / `core.init.complete`
+- [Your First Bot](../getting-started/first-bot.md) - Introduction to the two basic `keep_running` modes
+- [Lifecycle Management](lifecycle.md) - Listening to startup events like `core.init.start` / `core.init.complete`
 - [Lazy Loading System](lazy-loading.md) - Module lazy loading mechanism and `load_module`

@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "1568a93b78175b74ec638244c9d67247",
-  "file_hash": "1568a93b78175b74ec638244c9d67247",
-  "translated_at": "2026-10-19T09:22:29.927551",
+  "hash": "c30613c7a9577d38205fc748378b9f70",
+  "file_hash": "c30613c7a9577d38205fc748378b9f70",
+  "translated_at": "2026-11-10T05:29:14.944355",
   "target_lang": "zh-TW",
   "chunks": [
     {
@@ -10,12 +10,16 @@
       "translation": "# 微信公眾號（WechatMp）適配器 - 平台特性文件"
     },
     {
-      "hash": "8d03ebf6fb75f1b343dd75a0aef750d7",
-      "translation": "## 基本資訊\n- 模組名稱: `ErisPulse-WechatMpAdapter`\n- 平台標識: `mp`（別名: `wechat_mp`）\n- 模組版本: 4.3.0\n- 維護者: ErisPulse\n- 依賴: `cryptography`"
+      "hash": "8d6036b35faaff3c5baa315e90ddcbc8",
+      "translation": "## 基本資訊\n- 模組名稱: `ErisPulse-WechatMpAdapter`\n- 平台識別: `mp`（別名: `wechat_mp`）\n- 模組版本: 4.3.2\n- 維護者: ErisPulse\n- 最後更新: 2026-11-10\n- 依賴: `cryptography`"
     },
     {
-      "hash": "c3e718ebdaa0d944a6d5e231bfc3b6b4",
-      "translation": "## v5 範式更新（4.2.0）\n\n- **BaseConverter 繼承**：轉換器公共欄位由框架 build_base_event 構建\n- **Api DSL 最小集**：get_self_info（appid）/get_status/get_version/get_supported_actions\n- **框架軟依賴**：執行時檢測 ErisPulse>=2.7.1 並提示；啟動輸出版本日誌\n\n---\n\n### 已對接平台能力\n\n- **接收**：公眾號回調訊息與關注/取關等事件（明文/安全模式），簽名校驗\n- **發送**：客服訊息（Text/Image 等，經 Send DSL）\n- **API**：帳戶資訊（appid）與運行狀態（最小集）"
+      "hash": "26ae620bad5b04efa40537f36cdc30a0",
+      "translation": "## v5 範式更新（4.2.0）\n\n- **BaseConverter 繼承**：轉換器公共欄位由框架 build_base_event 建構\n- **Api DSL 最小集**：get_self_info（appid）/get_status/get_version/get_supported_actions\n- **框架軟依賴**：執行時偵測 ErisPulse>=2.7.1 並提示；啟動輸出版本日誌"
+    },
+    {
+      "hash": "974ad0f261f280c746f512a80447212b",
+      "translation": "## 標準化對齊（4.3.2）\n\n回應結構與錯誤碼遵循 [API 回應規範](../standards/api-response.md)。\n\n### 訊息事件補齊 message_id\n\n訊息事件頂層補齊標準 `message_id` 欄位（取微信 MsgId，缺失時以空字串兜底），模組無需再從 `mp_msg_id` 讀取。\n\n### 標準回應\n\n所有 `call_api` / Send 呼叫回傳標準回應：`status` / `retcode` / `data` / `message_id` / `message` + 頂層 `mp_raw`。**被動回覆成功時 `message` 為空字串**（`data.passive_reply=true` 標識攔截為被動回覆）。\n\n### 錯誤碼規範\n\n| retcode | 含義 | 說明 |\n|---------|------|------|\n| 0 | 成功 | — |\n| 34100 | 平台失敗 | 微信 API 回傳 errcode != 0；**原始 errcode 保留在 `mp_raw`**。token 取得失敗同屬此碼 |\n| 10003 | 參數錯誤 / 未認證 | 未認證帳戶（`verified=false`）在非被動回覆上下文呼叫客服訊息 |\n\n### 帳戶與多帳戶\n\n- `call_api` 支援雙相容帳戶欄位：`account_id`（標準名）/ `_account_id`（舊名），框架 ApiDSL（`Api.Using(...)`）自動適配\n- `Send` 讀取 `send_context`（事件帳戶兜底）\n- `get_self_info` 補齊標準欄位：`user_id`（公眾號 AppID）/ `user_name` / `user_displayname`（`wechatmp:{帳戶名}`）\n\n---\n\n### 已對接平台能力\n\n- **接收**：公眾號回呼訊息與關注/取消關注等事件（明文/安全模式），簽章驗證\n- **發送**：客服訊息（Text/Image 等，經 Send DSL）\n- **API**：帳戶資訊（appid）與執行狀態（最小集）\n\n---"
     },
     {
       "hash": "5a31f4da1ab530aebcecf5636951aa52",
@@ -34,8 +38,8 @@
       "translation": "## 事件擴展方法\n\n透過 `register_event_mixin(\"mp\", ...)` 註冊，在事件物件上可直接呼叫：\n\n| 方法 | 回傳值 | 說明 |\n|------|--------|------|\n| `get_openid()` | str | 發送者 OpenID |\n| `get_msg_type()` | str | 微信原始訊息類型 |\n| `get_event()` | str | 事件類型（僅事件通知） |\n| `get_content()` | str | 訊息純文字內容 |\n| `get_raw_xml()` | str | 原始 XML 數據 |"
     },
     {
-      "hash": "e703acfb172d5d5d53d27c404fb4bdf0",
-      "translation": "## 配置選項\n\n### 多帳戶配置\n\n每個帳戶對應一個公眾號：\n\n```toml\n[WechatMpAdapter.accounts.main]\nappid = \"wx1234567890abcdef\"\nappsecret = \"your_app_secret_here\"\ntoken = \"your_callback_token\"\nencoding_aes_key = \"\"                    # 安全模式/兼容模式才需要（43位）\ncallback_path = \"/mp/main\"               # 回調路徑\nverified = true                          # 是否為認證服務號（影響主動發送能力）\nenable = true\n\n[WechatMpAdapter.accounts.secondary]\nappid = \"wx0987654321fedcba\"\nappsecret = \"another_app_secret\"\ntoken = \"another_callback_token\"\ncallback_path = \"/mp/secondary\"\nenable = true\n```\n\n### 配置字段說明\n\n| 字段 | 必填 | 說明 |\n|------|------|------|\n| `appid` | 是 | 公眾號 AppID |\n| `appsecret` | 是 | 公眾號 AppSecret（secret） |\n| `token` | 否 | 回調驗證 Token（建議填寫以啟用簽名驗證） |\n| `encoding_aes_key` | 否 | 消息加解密密鑰（43位，安全模式必需） |\n| `callback_path` | 否 | 回調路徑模板，預設 `/mp/{account}`，`{account}` 會被帳戶名替換 |\n| `verified` | 否 | 是否為**認證服務號**，預設 `true`（見下方說明） |\n| `enable` | 否 | 是否啟用，預設 `true` |\n\n### 認證服務號與被動回覆（verified）\n\n- `verified = true`（預設，認證服務號）：可隨時使用**客服消息**主動推送（48 小時窗口內）與模板消息\n- `verified = false`（未認證訂閱號）：\n  - 客服消息 / 模板消息**只能在 webhook 被動回覆上下文中發送**（收到用戶消息後 15 秒內、一次回覆）——適配器會自動將發送截獲為被動回覆\n  - 主動推送（如定時任務）返回 `retcode=34003` 錯誤"
+      "hash": "9dbabbec9035c085a7af69e126032a04",
+      "translation": "## 設定選項\n\n### 多帳戶設定\n\n每個帳戶對應一個公眾號：\n\n```toml\n[WechatMpAdapter.accounts.main]\nappid = \"wx1234567890abcdef\"\nappsecret = \"your_app_secret_here\"\ntoken = \"your_callback_token\"\nencoding_aes_key = \"\"                    # 安全模式/相容模式才需要（43位）\ncallback_path = \"/mp/main\"               # 回呼路徑\nverified = true                          # 是否為認證服務號（影響主動傳送能力）\nenable = true\n\n[WechatMpAdapter.accounts.secondary]\nappid = \"wx0987654321fedcba\"\nappsecret = \"another_app_secret\"\ntoken = \"another_callback_token\"\ncallback_path = \"/mp/secondary\"\nenable = true\n```\n\n### 設定欄位說明\n\n| 欄位 | 必填 | 說明 |\n|------|------|------|\n| `appid` | 是 | 公眾號 AppID |\n| `appsecret` | 是 | 公眾號 AppSecret（secret） |\n| `token` | 否 | 回呼驗證 Token（建議填寫以啟用簽章驗證） |\n| `encoding_aes_key` | 否 | 訊息加解密金鑰（43位，安全模式必需） |\n| `callback_path` | 否 | 回呼路徑範本，預設 `/mp/{account}`，`{account}` 會被帳戶名取代 |\n| `verified` | 否 | 是否為**認證服務號**，預設 `true`（見下方說明） |\n| `enable` | 否 | 是否啟用，預設 true |\n\n### 認證服務號與被動回覆（verified）\n\n- `verified = true`（預設，認證服務號）：可隨時使用**客服訊息**主動推送（48 小時窗口內）與範本訊息\n- `verified = false`（未認證訂閱號）：\n  - 客服訊息 / 範本訊息**只能在 webhook 被動回覆上下文中傳送**（收到使用者訊息後 15 秒內、一次回覆）——轉接器會自動將傳送攔截為被動回覆\n  - 主動推送（如排程任務）回傳 `retcode=10003` 錯誤（未認證）"
     },
     {
       "hash": "aa50fccfb0318b3abe63534caeb53ae8",
@@ -46,8 +50,8 @@
       "translation": "## 回調路由\n\n適配器為每個已啟用的帳戶註冊兩個路由（GET + POST）：\n\n- **GET**：微信伺服器接入驗證，驗證簽名後返回 `echostr`\n- **POST**：接收使用者訊息和事件，驗證簽名→解密（如需）→轉換→emit\n\n實際的存取路徑會自動加上模組前綴，例如註冊路徑 `/mp/main`，\n實際的存取路徑為 `/mp_{account}_verify/mp/main` 和 `/mp_{account}_message/mp/main`。"
     },
     {
-      "hash": "0d3b45708e831329d83b1324ac4eed5a",
-      "translation": "## API 回應\n\n所有 `call_api` 調用返回標準化響應：\n\n- 成功：`status: \"ok\"`, `retcode: 0`\n- 失敗：`status: \"failed\"`, `retcode: 34000+errcode`\n- 始終包含 `mp_raw`（原始回應）、`message_id`"
+      "hash": "b55d3a483fb6f82d6f7d2a4644737706",
+      "translation": "## API 回應\n\n所有 `call_api` 呼叫回傳標準化回應：\n\n- 成功：`status: \"ok\"`, `retcode: 0`\n- 失敗：`status: \"failed\"`, `retcode: 34100`（平台失敗；**原始 errcode 保留在 `mp_raw`**）或 `10003`（參數錯誤 / 未認證）\n- 始終包含 `mp_raw`（原始回應）與頂層 `message_id`（缺失時為空字串）"
     }
   ]
 }

@@ -4,30 +4,30 @@
 > **什麼時候需要讀這篇**：配接器骨架跑通後建議閱讀（工程化最佳實踐）。不需要則跳過，不影響其它功能的使用。
 
 
-這裡彙總配接器開發的工程約定：Bot 狀態上報、連線重試與心跳、多帳戶解析、標準化錯誤回應——照著做能避開斷線無感知、多帳戶傳錯目標、報錯難定位這類接入平台時的常見問題。
+這裡彙整配接器開發的工程約定：Bot 狀態上報、連線重試與心跳、多帳戶解析、標準化錯誤回應——照著做能避開掉線無感知、多帳戶發錯目標、報錯難定位這類接入平台時的常見問題。
 
 ## Bot 狀態管理與 Meta 事件
 
-轉接器應主動透過 `adapter.emit()` 發送 meta 事件，讓框架自動追蹤 Bot 的連線狀態、上下線與心跳資訊。
+配接器應主動透過 `adapter.emit()` 傳送 meta 事件，讓框架自動追蹤 Bot 的連線狀態、上下線與心跳資訊。
 
-### 1. 何時發送 Meta 事件
+### 1. 何時傳送 Meta 事件
 
 | 事件 | `detail_type` | 觸發時機 | 框架行為 |
 |------|--------------|---------|---------|
 | 連線 | `"connect"` | Bot 與平台建立連線時 | 註冊 Bot，觸發 `adapter.bot.online` 生命週期事件 |
 | 斷線 | `"disconnect"` | Bot 與平台斷開連線時 | 標記 Bot 離線，觸發 `adapter.bot.offline` 生命週期事件 |
-| 心跳 | `"heartbeat"` | 定期發送（建議 30-60 秒） | 更新 Bot 活躍時間與元資訊 |
+| 心跳 | `"heartbeat"` | 定期傳送（建議 30-60 秒） | 更新 Bot 活躍時間與元資訊 |
 
-### 2. 發送 Meta 事件
+### 2. 傳送 Meta 事件
 
-框架提供 `emit_meta()` 方法，一行即可發送 meta 事件：
+框架提供 `emit_meta()` 方法，一行即可傳送 meta 事件：
 
 ```python
 class MyAdapter(BaseAdapter):
     async def _ws_handler(self, websocket):
         bot_id = self._get_bot_id()
 
-        # Bot 上線：一行發送 connect 事件
+        # Bot 上線：一行傳送 connect 事件
         await self.emit_meta("connect", bot_id, user_name="MyBot", nickname="我的機器人")
 
         try:
@@ -65,13 +65,13 @@ await self.adapter.emit({
 
 ### 3. 心跳事件
 
-轉接器應在連線存活期間定期發送心跳事件，更新 Bot 的活躍時間：
+配接器應在連線存活期間定期傳送心跳事件，更新 Bot 的活躍時間：
 
 ```python
 class MyAdapter(BaseAdapter):
     async def _heartbeat_loop(self, bot_id: str):
         while self._connected:
-            # 向框架發送 meta heartbeat（一行完成）
+            # 向框架傳送 meta heartbeat（一行完成）
             await self.emit_meta("heartbeat", bot_id)
             await asyncio.sleep(30)
 ```
@@ -103,11 +103,11 @@ await self.adapter.emit(onebot_event)
 
 ### 5. Bot 狀態查詢
 
-查詢 API（`get_bot_info()` / `list_bots()` / `is_bot_online()` / `get_status_summary()`）與 Bot 生命週期事件表見 [轉接器系統 API - Bot 狀態管理](../../api-reference/adapter-system.md#bot-狀態管理)。
+查詢 API（`get_bot_info()` / `list_bots()` / `is_bot_online()` / `get_status_summary()`）與 Bot 生命週期事件表見 [配接器系統 API - Bot 狀態管理](../../api-reference/adapter-system.md#bot-狀態管理)。
 
-## 連接管理
+## 連線管理
 
-### 1. 實現連接重試
+### 1. 實作連線重試
 
 ```python
 import asyncio
@@ -120,7 +120,7 @@ class MyAdapter(BaseAdapter):
         while retry_count < max_retries:
             try:
                 await self._connect_to_platform()
-                self.logger.info("連接成功")
+                self.logger.info("連線成功")
                 break
             except Exception as e:
                 retry_count += 1
@@ -128,15 +128,15 @@ class MyAdapter(BaseAdapter):
                     # 指數退避策略
                     wait_time = min(60 * (2 ** retry_count), 600)
                     self.logger.warning(
-                        f"連接失敗，{wait_time}秒後重試 ({retry_count}/{max_retries}): {e}"
+                        f"連線失敗，{wait_time}秒後重試 ({retry_count}/{max_retries}): {e}"
                     )
                     await asyncio.sleep(wait_time)
                 else:
-                    self.logger.error("連接失敗，已達到最大重試次數")
+                    self.logger.error("連線失敗，已達到最大重試次數")
                     raise
 ```
 
-### 2. 連接狀態管理
+### 2. 連線狀態管理
 
 ```python
 class MyAdapter(BaseAdapter):
@@ -147,14 +147,14 @@ class MyAdapter(BaseAdapter):
     async def _ws_handler(self, websocket: WebSocket):
         self.connection = websocket
         self._connected = True
-        self.logger.info("連接已建立")
+        self.logger.info("連線已建立")
         
         try:
             while True:
                 data = await websocket.receive_text()
                 await self._process_event(data)
         except WebSocketDisconnect:
-            self.logger.info("連接已斷開")
+            self.logger.info("連線已斷開")
         finally:
             self.connection = None
             self._connected = False
@@ -162,7 +162,7 @@ class MyAdapter(BaseAdapter):
 
 ### 3. 心跳保活與 Meta 心跳
 
-適配器的心跳應同時完成兩個任務：向平台發送心跳保活，並向框架發送 meta heartbeat 事件。
+配接器的心跳應同時完成兩個任務：向平台傳送心跳保活，並向框架傳送 meta heartbeat 事件。
 
 ```python
 class MyAdapter(BaseAdapter):
@@ -173,10 +173,10 @@ class MyAdapter(BaseAdapter):
     async def _heartbeat_loop(self):
         while self.connection:
             try:
-                # 1. 向平台發送心跳保活
+                # 1. 向平台傳送心跳保活
                 await self.connection.send_json({"type": "ping"})
 
-                # 2. 向框架發送 meta heartbeat（使用 emit_meta 一行完成）
+                # 2. 向框架傳送 meta heartbeat（使用 emit_meta 一行完成）
                 await self.emit_meta("heartbeat", self._bot_id)
 
                 await asyncio.sleep(30)
@@ -185,9 +185,9 @@ class MyAdapter(BaseAdapter):
                 break
 ```
 
-### 4. 連接資訊暴露
+### 4. 連線資訊公開
 
-適配器註冊的路由應對使用者可見，便於使用者配置平台側的回呼位址。推薦在 `start()` 中主動輸出連接資訊：
+配接器註冊的路由應對使用者可見，便於使用者設定平台側的回呼位址。推薦在 `start()` 中主動輸出連線資訊：
 
 ```python
 class MyAdapter(BaseAdapter):
@@ -201,38 +201,38 @@ class MyAdapter(BaseAdapter):
         if self.sdk:
             info = self.sdk.adapter.get_connection_info(self.platform)
             if info:
-                self.logger.info(f"WebSocket 地址: "
+                self.logger.info(f"WebSocket 位址: "
                     f"{info.get('connection', {}).get('base_url', '')}"
                     f"{info.get('connection', {}).get('websocket_routes', [])}")
 ```
 
-使用者可以透過以下 API 查看適配器的所有路由和連接位址：
+使用者可以透過以下 API 查看配接器的所有路由與連線位址：
 
 ```python
 from ErisPulse import sdk
 
-# 適配器層級的連接資訊（推薦）
+# 配接器層級的連線資訊（推薦）
 info = sdk.adapter.get_connection_info("myplatform")
 
 # 路由管理器層級的查詢
 sdk.router.list_namespaces()              # 列出所有命名空間
 sdk.router.get_module_routes("myplatform")  # 詳細路由資訊
-sdk.router.get_module_urls("myplatform")    # 完整連接 URL
+sdk.router.get_module_urls("myplatform")    # 完整連線 URL
 ```
 
-> **注意**：路由註冊時的 `module_name` 必須與適配器在 ErisPulse 中註冊的 `platform` 名稱完全一致，否則 `get_connection_info()` 將無法關聯路由。多帳戶適配器應為每個帳戶註冊子路徑（如 `/account1/webhook`、`/account2/webhook`），而非使用不同的 `module_name`。
+> **注意**：路由註冊時的 `module_name` 必須與配接器在 ErisPulse 中註冊的 `platform` 名稱完全一致，否則 `get_connection_info()` 將無法關聯路由。多帳戶配接器應為每個帳戶註冊子路徑（如 `/account1/webhook`、`/account2/webhook`），而非使用不同的 `module_name`。
 
 ### 5. HTTP 路由生命週期
 
-適配器/模組透過 `router` 註冊的 HTTP/WebSocket 路由，其生命週期由框架按**歸屬原則**自動管理：
+配接器/模組透過 `router` 註冊的 HTTP/WebSocket 路由，其生命週期由框架按**歸屬原則**自動管理：
 
-- 註冊時的 `module_name`（命名空間）即歸屬標識；**reload / stop / unload 時框架會自動清理該歸屬下的全部路由與連接資源**，無需手動註銷
-- 因此 **`start()`（模組為 `on_load`）中必須無條件重新註冊路由**。不要用實例級布林標誌做"只註冊一次"的優化：配置熱重載（如帳戶欄位變更即時儲存）會觸發 stop/start 且**重用同一實例**，標誌殘留會導致路由被清理後**永久丟失**，表現為介面 404 且重啟程序才恢復
+- 註冊時的 `module_name`（命名空間）即歸屬識別；**reload / stop / unload 時框架會自動清理該歸屬下的全部路由與連線資源**，無需手動註銷
+- 因此 **`start()`（模組為 `on_load`）中必須無條件重新註冊路由**。不要用實例層級布林旗標做「只註冊一次」的最佳化：設定熱重載（如帳戶欄位變更即時保存）會觸發 stop/start 且**複用同一實例**，旗標殘留會導致路由被清理後**永久遺失**，表現為介面 404 且重啟行程才恢復
 
 ```python
 class MyAdapter(BaseAdapter):
     async def start(self):
-        # 每次啟動無條件重註冊（reload 後路由已隨上次 stop 自動清理）
+        # 每次啟動無條件重新註冊（reload 後路由已隨上次 stop 自動清理）
         router.register_http_route(self.platform, "/qr/start", self._qr_start, methods=["POST"])
         router.register_http_route(self.platform, "/qr/poll", self._qr_poll, methods=["POST"])
 ```
@@ -253,7 +253,7 @@ from ErisPulse.Core import router
 router.unregister_http_route(self.platform, "/qr/start")
 ```
 
-- 前端/呼叫方在熱重載視窗可能會收到路由 404，屬瞬時現象；面向瀏覽器的互動頁建議對 404 做有限次自動重試
+- 前端/呼叫方在熱重載視窗可能收到路由 404，屬瞬時現象；面向瀏覽器的互動頁建議對 404 做有限次自動重試
 
 ## 事件轉換
 
@@ -273,7 +273,7 @@ class MyPlatformConverter:
                 "platform": "myplatform",
                 "user_id": str(raw_event.get("bot_id", ""))
             },
-            "myplatform_raw": raw_event,  # 保留原始數據（必須）
+            "myplatform_raw": raw_event,  # 保留原始資料（必須）
             "myplatform_raw_type": raw_event.get("type", "")  # 原始類型（必須）
         }
         return onebot_event
@@ -295,30 +295,30 @@ def _convert_timestamp(self, timestamp):
     return int(timestamp)
 ```
 
-### 3. 事件 ID 生成
+### 3. 事件 ID 產生
 
 ```python
 import uuid
 
 def _generate_event_id(self, raw_event):
-    """生成事件 ID"""
+    """產生事件 ID"""
     event_id = raw_event.get("event_id")
     if event_id:
         return str(event_id)
-    # 如果平台沒有提供 ID，生成 UUID
+    # 如果平台沒有提供 ID，產生 UUID
     return str(uuid.uuid4())
 ```
 
-## SendDSL 實現
+## SendDSL 實作
 
-`At`/`AtAll`/`Reply` 修飾器已由框架 SendDSL 基類內建，適配器只需實現 `Raw_ob12` 和具體發送方法。使用 `self._apply_modifiers(message)` 和 `self.send_context` 簡化開發。
+`At`/`AtAll`/`Reply` 修飾器已由框架 SendDSL 基底類別內建，配接器只需實作 `Raw_ob12` 和具體傳送方法。使用 `self._apply_modifiers(message)` 和 `self.send_context` 簡化開發。
 
-### 1. 必須返回 Task 對象
+### 1. 必須回傳 Task 物件
 
 ```python
 class Send(BaseAdapter.Send):
     def Raw_ob12(self, message, **kwargs):
-        """推薦實現：使用框架輔助方法"""
+        """推薦實作：使用框架輔助方法"""
         async def _do_send():
             segments = self._apply_modifiers(message)
             return await self._adapter.call_api(
@@ -333,7 +333,7 @@ class Send(BaseAdapter.Send):
         return self.Raw_ob12([{"type": "text", "data": {"text": text}}])
 ```
 
-### 2. 鏈式修飾方法返回 self
+### 2. 鏈式修飾方法回傳 self
 
 ```python
 class Send(BaseAdapter.Send):
@@ -344,15 +344,15 @@ class Send(BaseAdapter.Send):
 
     def Button(self, content: list) -> 'Send':
         self.buttons.append(content)
-        return self # 返回 self
+        return self # 回傳 self
 ```
 
-### 3. 支持平台特有方法
+### 3. 支援平台特有方法
 
 ```python
 class Send(BaseAdapter.Send):
     def Sticker(self, sticker_id: str):
-        """發送表情包"""
+        """傳送貼圖"""
         return asyncio.create_task(
             self._adapter.call_api(
                 endpoint="/send_sticker",
@@ -362,7 +362,7 @@ class Send(BaseAdapter.Send):
         )
     
     def Card(self, card_data: dict):
-        """發送卡片訊息"""
+        """傳送卡片訊息"""
         return asyncio.create_task(
             self._adapter.call_api(
                 endpoint="/send_card",
@@ -376,7 +376,7 @@ class Send(BaseAdapter.Send):
 
 ### 1. 標準化回應格式
 
-框架提供 `make_response()` 和 `make_error()` 方法來構造標準化的回應：
+框架提供 `make_response()` 和 `make_error()` 方法建構標準化回應：
 
 ```python
 async def call_api(self, endpoint: str, **params):
@@ -399,7 +399,7 @@ async def call_api(self, endpoint: str, **params):
         return self.make_error(message=str(e))
 ```
 
-`make_response()` 會自動生成包含 `{platform}_raw` 鍵的回應字典。`make_error()` 預設使用 `retcode=34000`（Platform Error）。
+`make_response()` 會自動產生包含 `{platform}_raw` 鍵的回應字典。`make_error()` 預設使用 `retcode=34000`（Platform Error）。
 
 ### 2. 錯誤碼規範
 
@@ -408,26 +408,26 @@ async def call_api(self, endpoint: str, **params):
 ```python
 # 1xxxx - 動作請求錯誤
 10001: Bad Request
-10002: 不支援的動作
-10003: 錯誤的參數
+10002: Unsupported Action
+10003: Bad Param
 
 # 2xxxx - 動作處理器錯誤
-20001: 錯誤的處理器
-20002: 內部處理器錯誤
+20001: Bad Handler
+20002: Internal Handler Error
 
 # 3xxxx - 動作執行錯誤
-31000: 資料庫錯誤
-32000: 檔案系統錯誤
-33000: 網路錯誤
-34000: 平台錯誤
-35000: 邏輯錯誤
+31000: Database Error
+32000: Filesystem Error
+33000: Network Error
+34000: Platform Error
+35000: Logic Error
 ```
 
 ## 多帳戶支援
 
-### 1. 聲明式配置（推薦）
+### 1. 宣告式設定（推薦）
 
-使用 `AccountConfigClass` 聲明配置類後，框架會自動管理多帳戶的載入、驗證和模板生成。`BotAccountConfig` 基類提供 `enabled` 和 `name` 欄位，適配器無需聲明：
+使用 `AccountConfigClass` 宣告設定類別後，框架自動管理多帳戶載入、驗證和模板產生。`BotAccountConfig` 基底類別提供 `enabled` 和 `name` 欄位，配接器無需宣告：
 
 ```python
 from dataclasses import dataclass, field
@@ -448,7 +448,7 @@ class MyAdapter(BaseAdapter):
         for name, account in self.enabled_accounts.items():
             self.logger.info(f"啟動帳戶 {name}")
             await self._connect(name, account.token)
-            # bot_id 由框架自動從平台協議/登入回應中獲取並回填
+            # bot_id 由框架自動從平台協定/登入回應中取得並回填
     
     async def call_api(self, endpoint: str, **params):
         account_id = params.pop("account_id", None)
@@ -456,7 +456,7 @@ class MyAdapter(BaseAdapter):
         # name: 帳戶名, account: MyBotConfig 實例
 ```
 
-配置文件會自動生成為：
+設定檔自動產生為：
 
 ```toml
 [MyAdapter.accounts.default]
@@ -467,12 +467,14 @@ name = ""
 
 ### 2. 帳戶選擇機制
 
-框架內建 `_resolve_account()` 方法，匹配優先級如下：
+傳送時指定的帳戶識別（`Using()` / 事件鏈綁定）由框架自動解析，匹配優先順序：
 
-1. **帳戶名** — 配置鍵名精確匹配
-2. **`bot_id` 欄位** — 自動獲取的 bot_id（即 `event["self"]["user_id"]`）
-3. **任意 str 欄位** — 配置中其他字串欄位
-4. **兜底** — 第一個啟用的帳戶
+1. **帳戶名** — 設定鍵名精確匹配
+2. **`bot_id` 欄位** — 帳戶設定中的 `bot_id`（執行期自動回填，通常即 `event["self"]["user_id"]`）
+3. **任意 str 欄位** — 設定中其他字串欄位
+4. **後備** — 第一個啟用的帳戶
+
+配接器實作 `call_api` 時用框架內建的帳戶解析完成「識別 → 帳戶設定」映射：
 
 ```python
 # 按帳戶名匹配
@@ -481,15 +483,15 @@ name, account = self._resolve_account("account1")
 # 按 bot_id 匹配（最常用的方式，來自事件）
 name, account = self._resolve_account("bot_123")
 
-# 獲取第一個啟用的帳戶（傳入 None）
+# 取得第一個啟用的帳戶（傳入 None）
 name, account = self._resolve_account(None)
 ```
 
 ## 錯誤處理
 
-### 1. 分類異常處理
+### 1. 分類例外處理
 
-使用 `make_error()` 建立標準化的錯誤回應。透過 `sdk.client` 發起請求時，捕獲 ErisPulse 異常：
+使用 `make_error()` 建構標準化錯誤回應。透過 `sdk.client` 發出請求時捕捉 ErisPulse 例外：
 
 ```python
 from ErisPulse.Core.Bases.errors import ClientError, ClientTimeoutError
@@ -505,8 +507,8 @@ async def call_api(self, endpoint: str, **params):
         response = await resp.json()
         return self.make_response(data=response, raw=response)
     except ClientTimeoutError:
-        self.logger.error(f"請求超時: {endpoint}")
-        return self.make_error(retcode=32000, message="請求超時")
+        self.logger.error(f"請求逾時: {endpoint}")
+        return self.make_error(retcode=32000, message="請求逾時")
     except ClientError as e:
         self.logger.error(f"網路錯誤: {e}")
         return self.make_error(retcode=33000, message="網路請求失敗")
@@ -518,25 +520,25 @@ async def call_api(self, endpoint: str, **params):
         return self.make_error(message=str(e))
 ```
 
-> **向後相容**：直接使用 `aiohttp` 的舊適配器程式碼不受影響，仍可捕獲 `aiohttp.ClientError`。異常轉換僅在透過 `sdk.client` 發起請求時生效。
+> **向下相容**：直接使用 `aiohttp` 的舊配接器程式碼不受影響，仍可捕捉 `aiohttp.ClientError`。例外轉換僅在透過 `sdk.client` 發起請求時生效。
 
 ### 2. 日誌記錄
 
-框架會自動為適配器建立子 logger（`sdk.logger.get_child("MyAdapter")`），無需手動初始化：
+框架自動為配接器建立子 logger（`sdk.logger.get_child("MyAdapter")`），無需手動初始化：
 
 ```python
 class MyAdapter(BaseAdapter):
-    # ConfigClass = ...  # 宣告配置類後 self.logger 自動可用
+    # ConfigClass = ...  # 宣告設定類別後 self.logger 自動可用
     
     async def start(self):
-        self.logger.info("適配器啟動中...")
+        self.logger.info("配接器啟動中...")
         # ...
-        self.logger.info("適配器啟動完成")
+        self.logger.info("配接器啟動完成")
     
     async def shutdown(self):
-        self.logger.info("適配器關閉中...")
+        self.logger.info("配接器關閉中...")
         # ...
-        self.logger.info("適配器關閉完成")
+        self.logger.info("配接器關閉完成")
 ```
 
 ## 測試
@@ -565,12 +567,12 @@ class TestMyAdapter:
         assert "retcode" in response
 ```
 
-### 2. 集成測試
+### 2. 整合測試
 
 ```python
 @pytest.mark.asyncio
 async def test_adapter_start():
-    """測試適配器啟動"""
+    """測試配接器啟動"""
     adapter = MyAdapter()
     await adapter.start()
     assert adapter._connected is True
@@ -587,29 +589,29 @@ async def test_send_message():
 
 ## 反向轉換與訊息建構
 
-`Raw_ob12` 是適配器**必須實現**的方法，是反向轉換（OneBot12 → 平台）的統一入口。標準方法（`Text`、`Image` 等）應委派給 `Raw_ob12`，修飾器狀態（`At`/`Reply`/`AtAll`）需在 `Raw_ob12` 內合併為訊息段。
+`Raw_ob12` 是配接器**必須實作**的方法，是反向轉換（OneBot12 → 平台）的統一入口。標準方法（`Text`、`Image` 等）應委託給 `Raw_ob12`，修飾器狀態（`At`/`Reply`/`AtAll`）需在 `Raw_ob12` 內合併為訊息段。
 
 `MessageBuilder` 是配合 `Raw_ob12` 使用的訊息段建構工具，支援鏈式呼叫和快速建構。
 
-> 完整的實現規範、程式碼範例和使用方法請參閱：
-> - [發送方法規範 §6 反向轉換規範](../../standards/send-method-spec.md#6-反向轉換規範onebot12--平台)
-> - [發送方法規範 §11 訊息建構器](../../standards/send-method-spec.md#11-訊息建構器-messagebuilder)
+> 完整的實作規範、程式碼範例和使用方法請參閱：
+> - [傳送方法規範 §6 反向轉換規範](../../standards/send-method-spec.md#6-反向轉換規範onebot12--平台)
+> - [傳送方法規範 §11 訊息建構器](../../standards/send-method-spec.md#11-訊息建構器-messagebuilder)
 
-## 平台事件方法擴展
+## 平台事件方法擴充
 
-適配器可以為 Event 包裝類註冊平台專有方法，讓模組開發者能更方便地存取平台特有的資料。
+配接器可以為 Event 包裝類別註冊平台專有方法，讓模組開發者能更方便地存取平台特有資料。
 
-### 1. 使用 Mixin 類批量註冊（推薦）
+### 1. 使用 Mixin 類別批次註冊（推薦）
 
-當平台有數個專有方法時，推薦使用 Mixin 類：
+當平台有多個專有方法時，推薦使用 Mixin 類別：
 
 ```python
-# 在適配器的 start() 或模組層級註冊
+# 在配接器的 start() 或模組層級註冊
 from ErisPulse.Core.Event import register_event_mixin
 
 class MyPlatformEventMixin:
     def get_chat_name(self):
-        """獲取聊天名稱"""
+        """取得聊天名稱"""
         return self.get("myplatform_raw", {}).get("chat", {}).get("name", "")
 
     def is_official_message(self):
@@ -618,14 +620,14 @@ class MyPlatformEventMixin:
         return raw.get("sender", {}).get("is_official", False)
 
     def get_message_type(self):
-        """獲取平台訊息類型"""
+        """取得平台訊息類型"""
         return self.get("myplatform_raw", {}).get("msg_type", "text")
 
-# 批量註冊
+# 批次註冊
 register_event_mixin("myplatform", MyPlatformEventMixin)
 ```
 
-### 2. 使用裝飾器註冊單個方法
+### 2. 使用裝飾器註冊單一方法
 
 ```python
 from ErisPulse.Core.Event import register_event_method
@@ -635,7 +637,7 @@ def get_chat_name(self):
     return self.get("myplatform_raw", {}).get("chat", {}).get("name", "")
 ```
 
-### 3. 適配器關閉時清理
+### 3. 配接器關閉時清理
 
 ```python
 from ErisPulse.Core.Event import unregister_platform_event_methods
@@ -647,28 +649,28 @@ class MyAdapter(BaseAdapter):
         # ... 其他清理
 ```
 
-> 更詳細的註冊和註銷說明請參閱 [事件系統 API - 註冊平台擴展方法](../../api-reference/event-system.md#適配器註冊平台擴展方法)。
+> 更詳細的註冊和註銷說明請參閱 [事件系統 API - 註冊平台擴充方法](../../api-reference/event-system.md#配接器註冊平台擴充方法)。
 
 ## 文件維護
 
 ### 1. 維護平台特性文件
 
-在 `docs/zh-TW/platform-guide/` 下建立 `{platform}.md` 文件（其他語言版本會自動產生）：
+在 `docs/zh-TW/platform-guide/` 下建立 `{platform}.md` 文件(其它語言版本會自動產生)：
 
 ```markdown
-# 平台名稱適配器文件
+# 平台名稱配接器文件
 
 ## 基本資訊
 - 對應模組版本: 1.0.0
 - 維護者: Your Name
 
-## 支援的消息傳送類型
+## 支援的訊息傳送類型
 ...
 
 ## 特有事件類型
 ...
 
-## 配置選項
+## 設定選項
 ...
 ```
 
@@ -685,10 +687,10 @@ version = "2.0.0"  # 更新版本號
 
 ### 回顧前置知識
 
-- [適配器開發入門](getting-started.md) - 建立第一個適配器
-- [適配器核心概念](core-concepts.md) - 了解適配器架構
+- [配接器開發入門](getting-started.md) - 建立第一個配接器
+- [配接器核心概念](core-concepts.md) - 了解配接器架構
 - [SendDSL 詳解](send-dsl.md) - 學習訊息傳送
 
-### 適配器完善之後
+### 配接器完善之後
 
 - [發布與模組商店指南](../publishing.md) - 發布到 PyPI 與模組商店

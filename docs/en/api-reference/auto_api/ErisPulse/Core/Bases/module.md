@@ -59,6 +59,9 @@ def get_meta() -> ModuleMeta:
 on_load / on_unload 事件数据
 
 :ivar module_name: str 模块名称
+:ivar reason: str 卸载来意，仅 on_unload 提供；``"unload"`` / ``"reload"`` /
+    ``"disable"`` / ``"cascade"`` / ``"dormant"`` / ``"load-failed"`` /
+    ``"rollback"``（``"rollback"`` 为热重载回滚后重放 on_load 的事件来意）
 
 
 ### `class BaseModule(ABC)`
@@ -142,7 +145,7 @@ on_load / on_unload 事件数据
 #### 方法列表
 
 
-##### `get_meta() -> 'ModuleMeta | dict[str, Any]'`（staticmethod）
+##### `get_meta() -> ModuleMeta | dict[str, Any]`（staticmethod）
 
 获取模块介绍元信息（描述这个模块是什么、属于哪一类等）
 
@@ -274,7 +277,12 @@ class MyModule(BaseModule):
 
 > **提示**
 > 其中，event事件内容为:
-> `{ "module_name": "模块名" }`
+> `{ "module_name": "模块名", "reason": "卸载来意" }`
+> reason 取值：``unload``（常规卸载）/ ``reload``（热重载，失败会回滚并
+> 重放 on_load）/ ``disable``（禁用）/ ``cascade``（依赖级联）/
+> ``dormant``（归眠）/ ``load-failed``（加载失败半卸载）。
+> 需要跨重载存活的资源（连接池等）可据此区分来意：``reload`` 时可
+> 推迟关闭，交由归属清理链或回滚重放兜底。
 
 ---
 
@@ -308,7 +316,7 @@ async def on_load(self, event):
 ---
 
 
-##### `state -> 'BaseModule.ModuleState'`（property）
+##### `state -> BaseModule.ModuleState`（property）
 
 模块级持久化状态（storage 的命名空间视图）
 

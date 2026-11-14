@@ -54,6 +54,7 @@ from .Bases import (
     ShadowSourceError,
     ShadowStateError,
     StorageError,
+    StorageOperationError,
     StorageUnreachableError,
     StrictModeError,
     WebSocketError,
@@ -162,6 +163,7 @@ __all__ = [
     "SQLQueryBuilder",  # SQL 查询构建器（方言无关）
     "SQLStorageBase",  # SQL 存储后端共享基类
     "StorageError",  # 存储异常基类
+    "StorageOperationError",  # 存储操作执行失败异常
     "StorageUnreachableError",  # 存储后端不可达异常
     "StorageManager",  # 存储管理器类（SQLite 后端向后兼容别名）
     "StrictModeError",  # 严格模式致命异常

@@ -6,9 +6,10 @@ OneBot12Adapter is an adapter built based on the OneBot V12 protocol, serving as
 
 ## Document Information
 
-- Corresponding Module Version: 4.4.0
+- Corresponding Module Version: 4.6.2
 - Maintainer: ErisPulse
 - Protocol Version: OneBot V12
+- Last Updated: 2026-11-10
 
 ## Basic Information
 
@@ -19,16 +20,50 @@ OneBot12Adapter is an adapter built based on the OneBot V12 protocol, serving as
 
 ## v5 Paradigm Update (4.3.0)
 
-This adapter has completed the alignment with the v5 paradigm (incremental upgrade, API compatible):
+This adapter has completed alignment with the v5 paradigm (incremental upgrade, API compatible):
 
-- **BaseConverter Inheritance**: Common fields of the converter (id/time/platform/self/raw) are built by the framework build_base_event, and are overwritten by the OB11 field names (echo/time/self_id).
-- **spawn_background Task Ownership**: Client mode connection tasks are changed to use runtime.spawn_background (owner ownership, automatic shutdown recovery).
-- **Framework Soft Dependency**: Installing the adapter no longer declares a hard dependency on ErisPulse, avoiding pip resolution adjustments for the framework version; ErisPulse>=2.7.1 is detected at runtime and a log warning is issued if the version is too low.
-- **Startup Version Log**: Outputs "OneBotAdapter v4.3.0 has been loaded" during initialization.
+- **BaseConverter Inheritance**: Common fields of converters (id/time/platform/self/raw) are built by the framework's build_base_event, and are overridden by OB11 field names (echo/time/self_id).
+- **spawn_background Task Ownership**: Client mode connection tasks are now using Runtime.spawn_background (ownership assigned, shutdown automatically recycles).
+- **Framework Soft Dependency**: The adapter no longer declares a hard dependency on ErisPulse, avoiding pip resolution issues when adjusting framework versions; runtime detection ensures ErisPulse>=2.7.1, and logs a warning if the version is too low.
+- **Startup Version Log**: Outputs "OneBot12Adapter vX.Y.Z loaded" during initialization.
 
-Existing capabilities (supported since 4.2.0): multi-account, standard action mapping for Api DSL (get_self_info→get_login_info, etc.), Request DSL (friend/group request approval: event.approve() / event.reject()), EventMixin, i18n.
+Existing capabilities (supported since 4.2.0): Multi-account, standard action mapping for Api DSL (get_self_info→get_login_info, etc.), Request DSL (friend/group request approval: event.approve() / event.reject()), EventMixin, i18n.
 
----
+## Standardized Alignment
+
+This section describes the behaviors of the adapter that align with the ErisPulse standardization specification. For details, refer to the SDK documentation:《Request Operation Specification》(`docs/en/standards/request-action-spec.md`) and《API Response Specification》(`docs/en/standards/api-response.md`).
+
+### Request Events and Request DSL
+
+- **request_id Guarantee**: When request events are forwarded, the top-level `request_id` field is guaranteed (prioritizing the native `request_id`, falling back to mapping the `flag` field for OB11-style implementations; synthesizing if neither is present), for use by Request DSL
+- **Default Account Fallback**: When `Request` DSL (based on the `handle_quick_request` action) does not explicitly specify an account via `Using()`, it falls back to using the source account of the request event (`request_context`), ensuring correct routing of `event.approve()`/`event.reject()` within the event chain
+
+### call_api Error Handling
+
+- When an account is not connected or the connection is closed, `call_api` no longer throws a `ConnectionError`, but instead returns a standard failure response (`status="failed"`, `retcode=33001`)
+- API calls that timeout also return a standard failure response (`retcode=33001`)
+
+### Dual Compatibility of Account Fields and send_context
+
+- `call_api` accepts both the standard field `account_id` and the legacy field `_account_id` (with the standard name taking precedence); the framework's ApiDSL automatically adapts, and module code is recommended to use `account_id`
+- `Send`/`Recall`/`Edit`/`Batch` all methods read `send_context`: within the event chain, the account of the current event source is automatically used, with an explicitly specified account via `Using()` taking precedence
+
+### Event Field Injection
+
+- All events inject `self.account_id` (source account name), ensuring correct routing back to the source account in multi-account mode
+- All events must contain the `onebot12_raw_type` field (original event type, conforming to event transformation specifications)
+- Emoticon/pack/sticker message segments are named `onebot12_sticker` (sent internally via the `.Sticker()` method)
+
+### Error Code Specification
+
+| retcode | Meaning | Triggering Scenario |
+|---------|---------|---------------------|
+| 0 | Success | Action executed successfully |
+| 33001 | Network Error | Account not connected, connection closed, API call timeout |
+| 10002 | Unsupported Action | Backend does not support the requested action |
+| 10003 | Parameter Error | Missing necessary parameters |
+
+> The original response data returned by the backend is preserved in the `onebot12_raw` field.
 
 ## Standard API Actions (Api DSL)
 
@@ -85,7 +120,7 @@ await ob12.Request("request_flag").Using("main").accept()
 
 ## Supported Message Sending Types
 
-All sending methods are implemented through chain syntax, for example:
+All sending methods are implemented using a fluent interface syntax, for example:
 
 ```python
 from ErisPulse.Core import adapter
@@ -100,7 +135,7 @@ await onebot12.Send.To("group", group_id).Account("main").Text("Message from mai
 
 ### Case-Insensitive Method Calls
 
-All sending methods and chain modifiers support case-insensitive calls, and the adapter automatically maps them to the correct standard method names:
+All sending methods and fluent modifier methods support case-insensitive calls, and the adapter automatically maps them to the correct standard method names:
 
 ```python
 # All the following calls are equivalent
@@ -108,7 +143,7 @@ await onebot12.Send.To("user", 123).Text("hello")
 await onebot12.Send.To("user", 123).text("hello")
 await onebot12.Send.To("user", 123).TEXT("hello")
 
-# Chain modifiers are also supported
+# Fluent modifier methods also support this
 await onebot12.Send.To("group", 123).At(456).Text("hello")
 await onebot12.Send.To("group", 123).at(456).TEXT("hello")
 await onebot12.Send.To("group", 123).AT(456).text("hello")
@@ -116,45 +151,45 @@ await onebot12.Send.To("group", 123).AT(456).text("hello")
 
 ### Unsupported Method Calls
 
-When calling an unsupported method, the adapter returns a friendly text message instead of throwing an exception:
+When calling an unsupported method, the adapter returns a friendly text message instead of raising an exception:
 
 ```python
-# Call an unsupported method
+# Calling an unsupported method
 result = await onebot12.Send.To("user", 123).UnsupportedMethod("test")
 
-# The returned result is a sent text message
-# Message content: [Unsupported send type] Method name: UnsupportedMethod, Parameter: [args[0]: 'test']
+# The returned result is a text message
+# Message content: [Unsupported sending type] Method name: UnsupportedMethod, Parameters: [args[0]: 'test']
 ```
 
 ### Basic Message Types
 
-- `.Text(text: str)`: Send plain text message
-- `.Image(file: Union[str, bytes], filename: str = "image.png")`: Send image message (supports URL, Base64, or bytes)
-- `.Audio(file: Union[str, bytes], filename: str = "audio.ogg")`: Send audio message
-- `.Voice(file: Union[str, bytes], filename: str = "voice.ogg")`: Send voice message (alias for Audio, compatible with OneBot11)
-- `.Video(file: Union[str, bytes], filename: str = "video.mp4")`: Send video message
+- `.Text(text: str)` : Send plain text messages
+- `.Image(file: Union[str, bytes], filename: str = "image.png")` : Send image messages (supports URL, Base64, or bytes)
+- `.Audio(file: Union[str, bytes], filename: str = "audio.ogg")` : Send audio messages
+- `.Voice(file: Union[str, bytes], filename: str = "voice.ogg")` : Send voice messages (an alias of Audio, compatible with OneBot11)
+- `.Video(file: Union[str, bytes], filename: str = "video.mp4")` : Send video messages
 
-### Chain Modifier Methods (Return self to support chain calls)
+### Fluent Modifier Methods (return self to support fluent chaining)
 
-- `.At(user_id: Union[str, int])`: @ user (can be called multiple times)
-- `.AtAll()`: @ all members
-- `.Reply(message_id: Union[str, int])`: Reply to message
+- `.At(user_id: Union[str, int])` : @ user (can be called multiple times)
+- `.AtAll()` : @ all members
+- `.Reply(message_id: Union[str, int])` : Reply to a message
 
 ### Raw Message Sending
 
-- `.Raw_ob12(message: Union[Dict, List[Dict]], **kwargs)`: Send OneBot12 raw format message (conforms to naming conventions)
+- `.Raw_ob12(message: Union[Dict, List[Dict]], **kwargs)` : Send OneBot12 raw format messages (conforms to naming conventions)
 
 ### Other Message Types
 
-- `.Sticker(file_id: str)`: Send sticker/emoticon
-- `.Location(latitude: float, longitude: float, title: str = "", content: str = "")`: Send location
+- `.Sticker(file_id: str)` : Send sticker/emoticon messages (`onebot12_sticker` message segment)
+- `.Location(latitude: float, longitude: float, title: str = "", content: str = "")` : Send location messages
 
-### Management Functions
+### Management Features
 
-- `.Recall(message_id: Union[str, int])`: Recall message
-- `.Edit(message_id: Union[str, int], content: Union[str, List[Dict]])`: Edit message
-- `.Raw(message_segments: List[Dict])`: Send native OneBot12 message segments
-- `.Batch(target_ids: List[str], message: Union[str, List[Dict]], target_type: str = "user")`: Batch send messages
+- `.Recall(message_id: Union[str, int])` : Recall a message
+- `.Edit(message_id: Union[str, int], content: Union[str, List[Dict]])` : Edit a message
+- `.Raw(message_segments: List[Dict])` : Send native OneBot12 message segments
+- `.Batch(target_ids: List[str], message: Union[str, List[Dict]], target_type: str = "user")` : Batch send messages
 
 ## OneBot12 Standard Events
 
@@ -162,7 +197,7 @@ The OneBot12 adapter fully complies with the OneBot12 standard, and event format
 
 ### New Feature: Raw Event Type Field
 
-Conforms to the `standards/event-conversion.md` specification, all events will retain the raw event type field `onebot12_raw_type`:
+Compliant with the `standards/event-conversion.md` specification, all events will retain the raw event type field `onebot12_raw_type`:
 
 ```python
 {
@@ -178,7 +213,7 @@ Conforms to the `standards/event-conversion.md` specification, all events will r
 }
 ```
 
-### Message Events (Message Events)
+### Message Events
 
 ```python
 # Private message
@@ -209,7 +244,7 @@ Conforms to the `standards/event-conversion.md` specification, all events will r
 }
 ```
 
-### Notice Events (Notice Events)
+### Notice Events
 
 ```python
 # Group member increase
@@ -241,7 +276,7 @@ Conforms to the `standards/event-conversion.md` specification, all events will r
 }
 ```
 
-### Request Events (Request Events)
+### Request Events
 
 ```python
 # Friend request
@@ -252,7 +287,8 @@ Conforms to the `standards/event-conversion.md` specification, all events will r
     "detail_type": "friend",
     "self": {"user_id": "bot-id"},
     "user_id": "user-id",
-    "comment": "application message",
+    "comment": "Application message",
+    "request_id": "request-flag",
     "flag": "request-flag",
     "time": 1234567890
 }
@@ -266,14 +302,15 @@ Conforms to the `standards/event-conversion.md` specification, all events will r
     "self": {"user_id": "bot-id"},
     "group_id": "group-id",
     "user_id": "user-id",
-    "comment": "application message",
+    "comment": "Application message",
+    "request_id": "request-flag",
     "flag": "request-flag",
     "sub_type": "invite",
     "time": 1234567890
 }
 ```
 
-### Meta Events (Meta Events)
+### Meta Events
 
 ```python
 # Lifecycle event
@@ -287,7 +324,7 @@ Conforms to the `standards/event-conversion.md` specification, all events will r
     "time": 1234567890
 }
 
-# Heartbeat event
+// Heartbeat event
 {
     "id": "event-id",
     "type": "meta_event",
@@ -436,10 +473,10 @@ The OneBot12 adapter uses an asynchronous non-blocking design:
 
 The adapter provides a comprehensive error handling mechanism:
 
-1. Network connection exceptions are automatically reconnected (supports independent reconnection for each account, with a 30-second interval).
-2. API call timeout handling (fixed 30-second timeout).
-3. Message sending failures are automatically retried (up to 3 retries).
-4. Calls to unsupported methods return friendly text prompts.
+1. Automatic reconnection for network connection exceptions (supports independent reconnection for each account, with a 30-second interval)
+2. API call timeout handling (fixed 30-second timeout; timeout returns the standard failure response `retcode=33001`)
+3. When an account is not connected or the connection is closed, `call_api` returns the standard failure response `retcode=33001` instead of throwing a `ConnectionError`
+4. Calling unsupported methods will return a friendly text prompt
 
 ## Event Handling Enhancement
 

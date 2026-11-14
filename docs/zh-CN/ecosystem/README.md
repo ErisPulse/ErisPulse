@@ -49,7 +49,7 @@ epsdk install ErisPulse-QvQChat
 
 ### ErisPulse-ApiMCP：让 AI 客户端操控机器人
 
-在用 Claude Desktop、Claude Code 这类支持 MCP 的 AI 客户端？ApiMCP 把机器人运行时反向开放成 14 个 MCP 工具：AI 可以直接替你收发消息、调用已装模块、查看平台状态、订阅群聊事件——机器人变成 AI 的"手和眼"。
+在用 Claude Desktop、Claude Code 这类支持 MCP 的 AI 客户端？ApiMCP 把机器人运行时反向开放成 17 个 MCP 工具：AI 可以直接替你收发消息、调用已装模块、查看平台状态、订阅群聊事件——机器人变成 AI 的"手和眼"。
 
 ```bash
 epsdk install ErisPulse-ApiMCP

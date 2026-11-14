@@ -95,12 +95,12 @@ class MyModule(BaseModule):
 
 詳細用法見 [i18n 文檔](../../advanced/i18n.md#推薦寫法透過-i18nclass-宣告翻譯鍵-v270)。
 
-## 異步編程
+## 非同步程式設計
 
-### 1. 使用異步庫
+### 1. 使用非同步函式庫
 
 ```python
-# 推薦使用 SDK 內建 HTTP 客戶端（異步，自動日誌和統計）
+# 建議使用 SDK 內建 HTTP 用戶端（非同步，自動日誌與統計）
 from ErisPulse.Core import client
 
 class MyModule(BaseModule):
@@ -125,54 +125,55 @@ class MyModule(BaseModule):
             async with session.get(url) as response:
                 return await response.json()
 
-# 不要使用 requests（同步，會阻塞事件循環）
+# 不要使用 requests（同步，會阻塞事件迴圈）
 import requests
 
 class MyModule(BaseModule):
     def fetch_data(self, url):
-        return requests.get(url).json()  # 會阻塞事件循環
+        return requests.get(url).json()  # 會阻塞事件迴圈
 ```
 
-### 2. 正確的異步操作
+### 2. 正確的非同步操作
 
 ```python
-from ErisPulse.Core.Event import Event  # event: Event 注解可獲得 IDE 補全
+from ErisPulse.Core.Event import Event  # event: Event 註解強烈建議；自訂方法補全見 epsdk types
 
 async def handle_command(self, event: Event):
     # 需要等待結果的耗時操作：直接 await（生命週期明確）
     result = await self._long_operation()
 
 async def on_load(self, event: dict):
-    # 後台任務（輪詢/定時/fire-and-forget）：用 self.spawn()，
-    # 模組卸載時框架在 on_unload 之後兜底取消，避免持有 self 導致泄漏
+    # 背景任務（輪詢/定時/fire-and-forget）：用 self.spawn()，
+    # 模組卸載時框架在 on_unload 之後保底取消，避免持有 self 導致洩漏
     self.spawn(self._poll())
 ```
 
 > [!NOTE]
-> 後台任務推薦 `self.spawn()`（ErisPulse **2.8.0+**）。**2.8.3 起**裸 `asyncio.create_task`
-> 也會自動隱式歸屬模組（Task Factory 自動登記，卸載時兜底取消，不再泄漏 `self` 引用）；
-> `self.spawn()` 仍是推薦寫法——支援非主迴圈執行緒調度回主迴圈、顯式 `owner=` 指定。
-> **2.8.3 之前的版本**裸任務不歸屬、會持有 `self` 引用導致模組實例無法被回收
-> （熱重載泄漏），必須用 `self.spawn()`。詳見 [生命週期管理](../../advanced/lifecycle.md#後台任務歸屬與自動取消)。
+> 背景任務建議使用 `self.spawn()`（ErisPulse **2.8.0+**）。**2.8.3 起**裸 `asyncio.create_task`
+> 也會自動隱含歸屬模組（Task Factory 自動登記，卸載時保底取消，不再洩漏 `self` 參考）；
+> `self.spawn()` 仍是建議寫法——支援非主迴圈執行緒調度回主迴圈、明確 `owner=` 指定。
+> **2.8.3 之前**的版本裸任務不歸屬、會持有 `self` 參考導致模組實例無法被回收
+> （熱重載洩漏），必須使用 `self.spawn()`。詳見 [生命週期管理](../../advanced/lifecycle.md#后台任务归属与自动取消)。
 
 ### 3. 資源管理
 
 ```python
 async def on_load(self, event):
-    # SDK 客戶端已自動管理連接池，無需手動建立 session
+    # SDK 用戶端已自動管理連線池，無需手動建立 session
     pass
     
 async def on_unload(self, event):
-    # 如需自訂客戶端，記得清理資源
+    # 如需自訂用戶端，記得清理資源
     pass
 ```
 
 ## 事件處理
 
-### 1. 使用 Event 包裝類
+### 1. 使用 Event 包裝類別
 
 ```python
-# 使用 Event 包裝類的便捷方法
+from ErisPulse.Core.Event import Event
+# 使用 Event 包裝類別的便捷方法
 @command("info")
 async def info_command(event: Event):
     user_id = event.get_user_id()
@@ -185,10 +186,10 @@ async def info_command(event: Event):
     user_id = event["user_id"]  # 不夠清晰，容易出錯
 ```
 
-### 2. 合理使用懶加載
+### 2. 合理使用懶載入
 
 ```python
-# 低頻命令模組：宣告 activate_on 觸發器，首個匹配命令到達時自動激活（保持懶加載）
+# 低頻命令模組：宣告 activate_on 觸發器，首個匹配命令到達時自動啟用（保持懶載入）
 class CommandModule(BaseModule):
     @staticmethod
     def get_load_strategy():
@@ -196,7 +197,7 @@ class CommandModule(BaseModule):
             {"command": {"name": "dice", "help": "擲一個骰子", "aliases": ["d"]}},
         ])
 
-# 低頻監聽器模組：宣告事件觸發器，事件到達時自動激活
+# 低頻監聽器模組：宣告事件觸發器，事件到達時自動啟用
 class ListenerModule(BaseModule):
     @staticmethod
     def get_load_strategy():
@@ -204,25 +205,26 @@ class ListenerModule(BaseModule):
             {"notice": "group_member_increase"},
         ])
 
-# 高頻觸發（每則訊息都要處理）或啟動時就必須就緒的模組：立即加載
+# 高頻觸發（每條訊息都要處理）或啟動時就必須就緒的模組：立即載入
 class HotListenerModule(BaseModule):
     @staticmethod
     def get_load_strategy():
         return ModuleLoadStrategy(lazy_load=False)
 
-# 工具模組適合懶加載
+# 工具模組適合懶載入
 class UtilityModule(BaseModule):
     @staticmethod
     def get_load_strategy():
         return ModuleLoadStrategy(lazy_load=True)
 ```
 
-> `activate_on` 的完整語法（事件三形式 / 命令簡寫與 dict 聲明 / help 回退鏈）見
-> [懶加載模組系統](../../advanced/lazy-loading.md#事件驅動懶激活activate_on)。
+> `activate_on` 的完整語法（事件三形式 / 命令簡寫與 dict 宣告 / help 回退鏈）見
+> [懶載入模組系統](../../advanced/lazy-loading.md#事件驅動懶啟用activate_on)。
 
 ### 3. 事件處理器註冊
 
 ```python
+from ErisPulse.Core.Event import Event
 async def on_load(self, event):
     # 在 on_load 中註冊事件處理器
     @command("hello")
@@ -277,6 +279,7 @@ class MyToolModule(BaseModule):
 ### 1. 分類異常處理
 
 ```python
+from ErisPulse.Core.Event import Event
 from ErisPulse.Core.Bases.errors import ClientError
 
 async def handle_event(self, event: Event):
@@ -297,10 +300,10 @@ async def handle_event(self, event: Event):
         raise
 ```
 
-### 2. 超時處理
+### 2. 逾時處理
 
 ```python
-# 推薦使用 SDK 內建客戶端（自帶超時和重試）
+# 推薦使用 SDK 內建用戶端（自帶逾時和重試）
 from ErisPulse.Core import client
 from ErisPulse.Core.Bases.errors import ClientTimeoutError
 
@@ -309,7 +312,7 @@ async def fetch_with_timeout(self, url, timeout=30):
         resp = await client.get(url, timeout=timeout)
         return await resp.json()
     except ClientTimeoutError:
-        self.logger.warning(f"請求超時: {url}")
+        self.logger.warning(f"請求逾時: {url}")
         raise
 ```
 
@@ -380,9 +383,9 @@ self.logger.info(f"處理請求: request_id={request_id}, user_id={user_id}, dur
 self.logger.info(f"處理請求了，來自使用者 {user_id}，用時 {duration} 毫秒")
 ```
 
-## 性能優化
+## 效能優化
 
-### 1. 使用緩存
+### 1. 使用快取
 
 ```python
 class MyModule(BaseModule):
@@ -395,10 +398,10 @@ class MyModule(BaseModule):
             if key in self._cache:
                 return self._cache[key]
             
-            # 從資料庫獲取
+            # 從資料庫取得
             data = await self._fetch_from_db(key)
             
-            # 緩存資料
+            # 快取資料
             self._cache[key] = data
             return data
 ```
@@ -406,14 +409,15 @@ class MyModule(BaseModule):
 ### 2. 避免阻塞操作
 
 ```python
-# 使用異步操作
+from ErisPulse.Core.Event import Event
+# 使用非同步操作
 async def process_message(self, event: Event):
-    # 異步處理
+    # 非同步處理
     await self._async_process(event)
 
 # ❌ 阻塞操作
 async def process_message(self, event: Event):
-    # 同步操作，阻塞事件循環
+    # 同步操作，阻塞事件迴圈
     result = self._sync_process(event)
 ```
 
@@ -422,7 +426,7 @@ async def process_message(self, event: Event):
 ### 1. 敏感資料保護
 
 ```python
-# 敏感資料儲存在配置中（宣告式 ConfigClass，secret 欄位不進入日誌/導出）
+# 敏感資料儲存在設定中（宣告式 ConfigClass，secret 欄位不進入日誌/匯出）
 from dataclasses import dataclass, field
 from ErisPulse.Core.Bases import BaseModule, BaseConfig
 
@@ -430,7 +434,7 @@ from ErisPulse.Core.Bases import BaseModule, BaseConfig
 class MyModuleConfig(BaseConfig):
     api_key: str = field(
         default="",
-        metadata={"description": "API 密鑰", "secret": True},
+        metadata={"description": "API 金鑰", "secret": True},
     )
 
 class MyModule(BaseModule):
@@ -438,7 +442,7 @@ class MyModule(BaseModule):
 
     def check_api_key(self):
         if not self.cfg.api_key or self.cfg.api_key == "YOUR_API_KEY_HERE":
-            raise ValueError("請在 config.toml 中設定有效的 API 密鑰")
+            raise ValueError("請在 config.toml 中設定有效的 API 金鑰")
 
 # ❌ 敏感資料硬編碼
 class MyModule(BaseModule):
@@ -448,6 +452,7 @@ class MyModule(BaseModule):
 ### 2. 輸入驗證
 
 ```python
+from ErisPulse.Core.Event import Event
 # 驗證使用者輸入
 async def process_command(self, event: Event):
     user_input = event.get_text()

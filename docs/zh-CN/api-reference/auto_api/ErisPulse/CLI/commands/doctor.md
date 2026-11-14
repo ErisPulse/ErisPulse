@@ -45,6 +45,19 @@ doctor 命令
 ---
 
 
+##### `_security_rows(config_path: Path) -> 'list[tuple[str, str, str]]'`
+
+安全默认值体检（只读警示，不计入失败项）
+
+检查项：服务监听地址（0.0.0.0 全网卡警示）与 API 文档端点默认开启提示。
+
+- **config_path** (`Path`): 配置文件路径
+
+**返回值** (`(状态, 标签, 详情)`): 行列表
+
+---
+
+
 ##### `_scan_config_pollution(config_path: Path) -> 'list[tuple[str, str, str]]'`
 
 扫描历史升级遗留的配置污染（只读，不做任何修改）

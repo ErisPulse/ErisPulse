@@ -1,25 +1,29 @@
 {
   "version": 2,
-  "hash": "db403ab121230f9df11de71d6e66ad25",
-  "file_hash": "db403ab121230f9df11de71d6e66ad25",
-  "translated_at": "2026-10-22T10:05:31.802393",
+  "hash": "70d521ccc68a882fe764ada16c03bf02",
+  "file_hash": "70d521ccc68a882fe764ada16c03bf02",
+  "translated_at": "2026-11-11T08:32:48.478718",
   "target_lang": "zh-TW",
   "chunks": [
     {
-      "hash": "f5b77481a5b10b484d6b104f5f79aeec",
-      "translation": "# 數據模型層（ORM）\n\n> [!TIP]  \n> **什麼時候需要閱讀這篇**：需要數據模型、自動建表或關係映射時。不需要則跳過，不會影響其他功能的使用。  \n\n2.9.0 版本起框架內建聲明式數據模型層：繼承 `Model` 並使用 `Field` 聲明欄位，即可獲得自動建表與增刪改查能力。模型直接建立在內建儲存層之上——SQLite / MySQL / PostgreSQL 由 `ErisPulse.storage.backend` 配置決定，**切換後端無需修改模型代碼**。"
+      "hash": "a2f2b449b06432653189888492f1c3e3",
+      "translation": "# 數據模型層（ORM）\n\n> [!TIP]\n> **何時需要閱讀這篇**：需要數據模型、自動建表或關係映射時。不需要則跳過，不會影響其他功能的使用。\n\n> [!NOTE]\n> **ORM 是異步原生的**：所有 CRUD 方法（`create` / `get` / `save` / `delete` / `create_table` / QuerySet 終結操作）都是 `async def`，直接在事件循環內 `await` 調用即可——底層驅動為 aiosqlite / aiomysql / asyncpg（隨儲存後端切換），不存在同步阻塞。KV 儲存的同步 `get`/`set` 是相容層，與 ORM 無關。\n\n2.9.0 起框架內建宣告式數據模型層：繼承 `Model` 並使用 `Field` 聲明欄位，即可獲得自動建表與增刪改查能力。模型直接建構在內建儲存層之上——SQLite / MySQL / PostgreSQL 由 `ErisPulse.storage.backend` 配置決定，**切換後端無需修改模型程式碼**。"
     },
     {
       "hash": "c1b572c8a25677998e6ff5138ed757d1",
       "translation": "## 聲明模型\n\n```python\nfrom ErisPulse.Core.Bases import Model, Field\n\nclass User(Model):\n    id: int = Field(primary_key=True, autoincrement=True)\n    name: str = Field(max_length=64)\n    age: int = Field(default=0, ge=0, le=150)\n    role: str = Field(default=\"user\", choices=[\"user\", \"admin\"])\n    tags: list = Field(default_factory=list)          # JSON 列，讀寫自動序列化\n    bio: str = Field(default=\"\", description={\"i18n\": \"user.bio\", \"default\": \"簡介\"})\n```\n\n- 表名預設取類名 snake_case（`UserProfile → user_profile`），可用 `__tablename__ = \"xxx\"` 覆蓋\n- `Field` 的約束詞表與宣告式配置類一致（`choices` / `ge` / `le` / `max_length`，`description` 同樣支援 i18n 字典）；校驗引擎與配置校驗同源"
     },
     {
-      "hash": "2250175b6f3cfb6c4ae127c1ca94f673",
-      "translation": "## 字段參數\n\n| 參數 | 說明 |\n|------|------|\n| `default` | 預設值（未提供且非自增 → 必填 NOT NULL） |\n| `default_factory` | 可變預設值工廠（如 `list`） |\n| `primary_key` | 主鍵 |\n| `autoincrement` | 自增主鍵（隱含主鍵，`create` 後自動回填） |\n| `max_length` | 字串最大長度（生成 `VARCHAR(n)`，寫入驗證） |\n| `nullable` | 是否允許 NULL（預設 False） |\n| `index` | 生成普通索引 |\n| `unique` | 唯一約束 |\n| `choices` / `ge` / `le` | 列舉 / 數值範圍（寫入驗證） |\n| `description` | 描述（i18n 字典，與配置類同格式） |\n| `column_type` | 覆寫 SQL 列類型定義 |"
+      "hash": "31d24b100ebcf39458f4bb08c8d53a62",
+      "translation": "## 字段參數\n\n| 參數 | 說明 |\n|------|------|\n| `default` | 預設值（未提供且非自增 → 必填 NOT NULL） |\n| `default_factory` | 可變預設值工廠（如 `list`） |\n| `primary_key` | 主鍵（多個即複合主鍵，收斂為表級 `PRIMARY KEY (a, b)`） |\n| `autoincrement` | 自增主鍵（隱含主鍵，`create` 後自動回填；單列主鍵專用，與複合主鍵互斥） |\n| `max_length` | 字串最大長度（生成 `VARCHAR(n)`，寫入校驗） |\n| `nullable` | 是否允許 NULL（預設 False） |\n| `index` | 生成普通索引 |\n| `unique` | 唯一約束 |\n| `choices` / `ge` / `le` | 陣列 / 數值範圍（寫入校驗） |\n| `description` | 描述（i18n 字典，與配置類同格式） |\n| `column_type` | 覆蓋 SQL 列類型定義 |\n| `foreign_key` | 列級外鍵約束（`\"表.列\"`，生成 `REFERENCES`） |\n| `on_delete` | 外鍵刪除動作：`CASCADE` / `SET NULL` / `RESTRICT` / `NO ACTION` / `SET DEFAULT` |\n| `auto_now_add` | 插入時自動寫入當前時間戳（浮點紀秒） |\n| `auto_now` | 插入與實例 `save()` 更新時均自動寫入（`QuerySet.update` 批量路徑不觸發） |"
     },
     {
-      "hash": "e66d4fa207a283a011577d62cf31457f",
-      "translation": "## 建表與 CRUD\n\n```python\nawait User.create_table()                      # 幂等（IF NOT EXISTS）\n\nuser = await User.create(name=\"Alice\", age=20) # 插入（自增主鍵自動回填）\ngot = await User.get(id=user.id)               # 等值查詢首條\n\nusers = await User.where(User.age > 18).order_by(\"-age\").limit(10).all()\nfirst = await User.where(User.name == \"Alice\").first()\ntotal = await User.count(User.age > 18)\n\nuser.age = 21\nawait user.save()                              # 按主鍵更新（先約束校驗）；主鍵缺失時退化為插入（自增主鍵同樣回填到實例）\nawait user.delete()                            # 按主鍵刪除\n\nawait User.update_all(User.age > 18, role=\"adult\")  # 批量更新\nawait User.delete_all(User.age > 100)               # 批量刪除\n```\n\n查詢表達式支援 `> >= < <= == !=`、`in_([...])`，以及 `&`（與）/ `|`（或）組合：\n\n```python\nawait User.where((User.age > 18) & User.name.in_([\"Alice\", \"Bob\"])).all()\n```"
+      "hash": "5c26b10d764cb1a185d54c86e35402cb",
+      "translation": "## 複合主鍵與聯合唯一\n\n多個 `primary_key=True` 欄位組成複合主鍵，`get` / `save` / `delete` 按全部主鍵欄位定位；  \n`__unique_together__` 聲明聯合唯一分組（可多組）：\n\n```python\nclass Membership(Model):\n    __tablename__ = \"memberships\"\n    __unique_together__ = ((\"user_id\", \"group_id\"),)\n\n    user_id: int = Field(primary_key=True)\n    group_id: int = Field(primary_key=True)\n    role: str = Field(default=\"member\")\n\nm = await Membership.get(user_id=1, group_id=2)\n```\n\n- `autoincrement` 與複合主鍵互斥，共存時模型定義即報錯  \n- `__unique_together__` 以唯一索引實現（`uq_` 前綴索引名）：新建表隨建表生成，**已存在的表執行 `create_table()` 自動補建**，無需重建  \n- 複合主鍵模型暫不支援關係映射（has-many / belongs-to），實例訪問時明確報錯"
+    },
+    {
+      "hash": "c4f4c5b85917284cb94a112296431aa8",
+      "translation": "## 建表與 CRUD\n\n```python\nawait User.create_table()                      # 幂等（IF NOT EXISTS）\n\nuser = await User.create(name=\"Alice\", age=20) # 插入（自增主鍵自動回填）\ngot = await User.get(id=user.id)               # 等值查詢首條\n\nusers = await User.where(User.age > 18).order_by(\"-age\").limit(10).all()\nfirst = await User.where(User.name == \"Alice\").first()\ntotal = await User.count(User.age > 18)\n\nuser.age = 21\nawait user.save()                              # 按主鍵更新（先約束校驗）；主鍵缺失時退化為插入（自增主鍵同樣回填到實例）\nawait user.save(update_fields=[\"age\"])         # 部分列更新（白名單，其餘列不寫入）\nawait user.delete()                            # 按主鍵刪除\n\nuser, created = await User.get_or_create({\"age\": 20}, name=\"Alice\")      # 查得即返回；無則創建\nuser, created = await User.update_or_create({\"age\": 21}, name=\"Alice\")   # 查得更新 defaults 並保存；無則創建\n\nawait User.update_all(User.age > 18, role=\"adult\")  # 批量更新\nawait User.delete_all(User.age > 100)               # 批量刪除\n```\n\n> [!NOTE]\n> `get_or_create` / `update_or_create` 在並發競爭下兩個協程可能同時走到創建分支——唯一約束（主鍵 / `unique` / `__unique_together__`）會讓後到者收到 `StorageOperationError`；需要幂等語義時捕獲後重查一次。\n\n查詢表達式支援 `> >= < <= == !=`、`in_([...])`，以及 `&`（與）/ `|`（或）組合：\n\n```python\nawait User.where((User.age > 18) & User.name.in_([\"Alice\", \"Bob\"])).all()\n```"
     },
     {
       "hash": "169054700cd60a4cc73604923c492e9a",
@@ -38,8 +42,8 @@
       "translation": "## 自動遷移（階段二）\n\n`create_table()` 在表已存在時自動對比現有列與模型欄位：**新增欄位**自動執行\n`ALTER TABLE ADD COLUMN`（遷移欄位剔除 `NOT NULL` 約束，存量行回填 NULL），\n宣告了 `index=True` 的新欄位同步建立索引。無需手動編寫遷移腳本。\n\n```python\n# v1 上線後模型演進：新增 email / bio 欄位\nclass User(Model):\n    __tablename__ = \"orm_users\"\n\n    id: int = Field(primary_key=True, autoincrement=True)\n    name: str = Field(max_length=64)\n    age: int = Field(default=0)\n    email: str = Field(default=\"\")     # 新增：下次 create_table() 自動 ADD COLUMN\n    bio: str = Field(default=\"\")\n\nawait User.create_table()              # 幂等：僅遷移新增欄位\n```\n\n**邊界**：僅支援新增欄位；主鍵變更、欄位類型變更、刪欄需手動處理（避免破壞性\nALTER 誤操作）。"
     },
     {
-      "hash": "8d8f77fbe5afc0cade2492dd9eeb48f7",
-      "translation": "## 外鍵（關係映射基礎）\n\n`foreign_key=\"表.列\"` 聲明欄位級外鍵約束，DDL 會生成 `REFERENCES` 子句：\n\n```python\nclass Post(Model):\n    __tablename__ = \"posts\"\n\n    id: int = Field(primary_key=True, autoincrement=True)\n    author: int = Field(foreign_key=\"orm_users.id\")\n\n    content: str = Field(max_length=255)\n```"
+      "hash": "9be6608efdcb7834d5bc7b35433d198d",
+      "translation": "## 外鍵（關係映射基礎）\n\n`foreign_key=\"表.列\"` 聲明欄位級別的外鍵約束，DDL 會生成 `REFERENCES` 子句；`on_delete` 聲明刪除動作（例如 `\"CASCADE\"` 級聯刪除引用行）：\n\n```python\nclass Post(Model):\n    __tablename__ = \"posts\"\n\n    id: int = Field(primary_key=True, autoincrement=True)\n    author: int = Field(foreign_key=\"orm_users.id\", on_delete=\"CASCADE\")\n\n    content: str = Field(max_length=255)\n```"
     },
     {
       "hash": "3bc63b2b6aa493301f11e1712a5b2615",

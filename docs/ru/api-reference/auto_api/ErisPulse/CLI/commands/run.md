@@ -44,115 +44,34 @@ SDK 模式（script=None）：dev 文件监控 + 自动启用插件热重载 + `
 ## 类列表
 
 
-### `class ReloadHandler(FileSystemEventHandler)`
-
-文件系统事件处理器
-
-监控 .py 文件变更并触发 sdk.restart() 组件级热重载
-
-> **提示**
-> 1. 文件监控运行在独立线程，通过 run_coroutine_threadsafe 安全调度到事件循环
-> 2. 合并去抖：首个事件立即触发，窗口（FILE_RELOAD_DEBOUNCE_SECS）内的后续
-> 变更合并且窗口静默后统一补发一次（不丢弃）
-> 3. 新建 .py 文件（on_created）同样触发热重载；删除不触发（插件目录的删除
-> 清理由插件热重载 watcher 负责）
-
-
-#### 方法列表
-
-
-##### `__init__(loop: asyncio.AbstractEventLoop)`
-
-初始化热重载处理器
-
-- **loop** (`asyncio.AbstractEventLoop`): 用于调度重载协程的事件循环
-
----
-
-
-##### `on_modified(event: FileChangeEvent) -> None`
-
-文件修改事件回调，对 .py 文件触发热重载
-
-- **event** (`FileChangeEvent`): 文件系统事件
-
----
-
-
-##### `on_created(event: FileChangeEvent) -> None`
-
-文件创建事件回调（新建 .py 文件同样触发热重载）
-
-- **event** (`FileChangeEvent`): 文件系统事件
-
----
-
-
-##### `_on_event(src_path: str) -> None`
-
-**内部方法** 合并去抖入口
-
----
-
-
-##### `_flush_pending() -> None`
-
-去抖窗口到期：补发窗口内合并的变更（可为空）
-
----
-
-
-##### `close() -> None`
-
-停止补发定时器（监控停止时调用）
-
----
-
-
-##### `_dispatch(paths: set[str]) -> None`
-
-**内部方法**
-先提示变更文件（在调度重载之前——用户应先看到触发原因），再调度热重载
-
----
-
-
-### `class _DevWatchdog`
+### `class _DevWatchdog(DevWatcher)`
 
 **内部方法**
 dev 模式文件监控（reload worker 内运行）
 
-忽略 .venv/.git 等目录；插件目录默认移交插件热重载 watcher 处理
-（全量 restart 本就覆盖插件代码，避免双重触发）。
+细粒度判定与调度由 ``runtime.dev_watch`` 提供；忽略 .venv/.git 等目录，
+插件目录默认移交插件热重载 watcher 处理。
 
 
 #### 方法列表
 
 
-##### `_resolve_excludes() -> 'tuple[list[str] | None, list[str]]'`（staticmethod）
-
-解析 dev 监控的忽略目录与插件目录移交清单
-
-**返回值**: (PollingObserver ignore_dirs——None = 内置默认清单, 需移交
-
-    插件 watcher 并从自身监控排除的插件目录名列表)
-
----
-
-
-##### `start(watch_dir: str, loop: asyncio.AbstractEventLoop) -> None`
+##### `start(watch_dir: str = '.', loop: asyncio.AbstractEventLoop | None = None, notify: 'Callable[[set[str]], None] | None' = None) -> bool`
 
 启动 dev 文件监控并打印模式面板
 
 - **watch_dir**: 监控目录
-- **loop**: 用于调度重载的事件循环
+- **loop**: 用于调度重载的事件循环（缺省取当前运行循环）
+- **notify**: 文件变更提示回调（本覆写忽略，固定使用面板打印）
+
+**返回值**: 是否启动成功
 
 ---
 
 
-##### `stop() -> None`
+##### `_notify(paths: set[str]) -> None`（staticmethod）
 
-停止 dev 文件监控（幂等）
+**内部方法** 打印本批变更文件
 
 ---
 

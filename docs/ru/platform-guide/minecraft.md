@@ -4,10 +4,11 @@ MinecraftAdapter — это адаптер для сервера Minecraft Java 
 
 ---
 
-## Информация о документации
+## Информация о документе
 
-- Версия соответствующего модуля: 0.1.0
-- Ответственный: ErisPulse
+- Соответствующая версия модуля: 0.1.2
+- Ответственный за сопровождение: ErisPulse
+- Последнее обновление: 2026-11-10
 
 ## Основная информация
 
@@ -51,6 +52,44 @@ enabled = true
 - `enable_log_tail`: переключатель логов (по умолчанию отключено). При отключении адаптер работает в режиме только отправки (не генерирует события)
 - `log_path`: путь к файлу логов. Требуется, чтобы адаптер и сервер работали на одной машине или каталог логов был смонтирован; поддерживается ротация логов (latest.log после ротации автоматически сбрасывает позицию чтения)
 - `poll_interval`: интервал сканирования логов (секунды, минимум 0.2)
+
+## Соответствие стандартизации
+
+В этом разделе описывается поведение адаптера в соответствии со спецификацией стандартизации ErisPulse. Подробности спецификации см. в документации SDK «Спецификация ответов API» (`docs/ru/standards/api-response.md`).
+
+### Исправление маршрутизации учетных записей в Api.Using() (0.1.2)
+
+Ранее методы DSL `Api` не корректно использовали учетную запись, указанную в `Using()`. Теперь это исправлено: `_account_id`, переданный явно через `Using()`, и `api_context` из цепочки событий (учетная запись — источник события) корректно маршрутизируются к runtime соответствующего сервера; при отсутствии значения используется первая учетная запись.
+
+### Добавление верхнеуровневого message_id в события сообщений
+
+В события сообщений добавлено верхнеуровневое поле `message_id` (UUID; для tellraw/say отсутствует реальный ID сообщения, поэтому используется сгенерированный идентификатор сообщения).
+
+### Стандартизация detail_type для событий входа/выхода (0.1.2)
+
+`detail_type` событий входа/выхода игрока стандартизирован: вместо `server_joined` / `server_left` используются `group_member_increase` / `group_member_decrease`, исходный тип сохраняется в `sub_type`:
+
+| Нативный тип | Стандартизированный detail_type | sub_type |
+|----------|-------------------|----------|
+| server_joined | `group_member_increase` | `server_joined` |
+| server_left | `group_member_decrease` | `server_left` |
+
+### Стандартизация расширенных действий (0.1.2)
+
+Для расширенных действий предусмотрена форма вызова с префиксом платформы; старые имена методов сохранены для совместимости:
+
+- `Api.call("minecraft.get_player_list")` / `call_api("minecraft.get_player_list")` (старый `get_player_list` сохранен)
+- `Api.call("minecraft.exec", command="...")` / `call_api("minecraft.exec", ...)` (старый `exec` сохранен)
+
+### Стандартизация метадействий
+
+- `data` в `get_self_info` содержит стандартные поля: `user_id` / `user_name` / `user_displayname` и `host`
+- `get_version` возвращает `{"impl": "ErisPulse-MinecraftAdapter", "version": "...", "onebot_version": "12"}`
+- `get_supported_actions` возвращает список поддерживаемых имен действий
+
+### Прочее
+
+- `call_api` принимает как стандартное поле `account_id`, так и старое имя поля `_account_id` (приоритет отдается стандартному имени); ApiDSL фреймворка адаптируется автоматически
 
 ## Отправка сообщений
 
@@ -98,14 +137,16 @@ await mc.Send.Using("server2").To("server", "s2").Text("Сообщение с в
 | `user` | `tellraw <имя_игрока> {"text":"..."}` — видно только этому игроку |
 | `server` / `group` | `say <содержимое>` — широковещательное сообщение (group_id — это bot_id) |
 
-## Стандартные API-действия (Api)
+## Стандартные действия API (Api)
 
 ```python
 from ErisPulse import sdk
 mc = sdk.adapter.get("minecraft")
 
-# Список онлайн игроков (парсинг вывода команды list)
+# Список игроков онлайн (разбор вывода команды list)
 result = await mc.Api.get_player_list()       # {"players": ["Steve", "Alex"], "raw": "..."}
+# Также можно использовать расширенную форму действия с префиксом
+result = await mc.Api.call("minecraft.get_player_list")
 
 # Статус подключения
 result = await mc.Api.get_status()            # {"status": "ok", "connected": true}
@@ -116,7 +157,7 @@ result = await mc.Api.get_self_info()         # {user_id, user_name, host}
 # Версия
 result = await mc.Api.get_version()
 
-# Множественные серверы
+# Несколько серверов
 result = await mc.Api.Using("server2").get_player_list()
 ```
 
@@ -124,14 +165,15 @@ result = await mc.Api.Using("server2").get_player_list()
 
 | Метод | Описание | Источник данных |
 |------|------|---------|
-| `get_status()` | Статус подключения RCON | Локальный |
-| `get_self_info()` | Идентификация сервера (bot_id/имя аккаунта/host:port) | Локальный |
-| `get_player_list()` | Список онлайн игроков (парсинг вывода команды list) | RCON |
-| `get_version()` | Версия адаптера | Локальный |
+| `get_status()` | Статус подключения RCON | Локально |
+| `get_self_info()` | Идентификация сервера (bot_id/имя аккаунта/host:port) | Локально |
+| `get_player_list()` | Список игроков онлайн (разбор вывода команды `list`; расширенное имя `minecraft.get_player_list`) | RCON |
+| `get_version()` | Версия адаптера (impl/version/onebot_version) | Локально |
+| `get_supported_actions()` | Список имён поддерживаемых действий | Локально |
 
-### Расширенные действия платформы
+### Платформенные расширенные действия
 
-Через `Api.exec(cmd)` можно выполнить любую команду RCON (эквивалентно `call_api("exec", command=...)`):
+Через `Api.exec(cmd)` можно выполнять произвольные команды RCON (эквивалентно `call_api("minecraft.exec", command=...)`; старое имя `exec` сохранено для совместимости):
 
 ```python
 # Управление белым списком
@@ -144,26 +186,26 @@ await mc.Api.exec("weather clear")
 await mc.Api.exec("op Alex")
 await mc.Api.exec("kick Steve")
 
-# Данные и счётчики
+# Данные и таблица счёта
 await mc.Api.exec("scoreboard objectives add kills deathCount")
 ```
 
-> **Внимание по безопасности**: `Api.exec` предоставляет полный контроль над консолью сервера (включая stop/deop и т.д.), не передавайте незащищённый интерфейс вызовам из ненадёжных источников.
+> **Предупреждение о безопасности**: `Api.exec` обладает полными правами консоли сервера (включая stop/deop и т.д.); не предоставляйте неаутентифицированный доступ к этой точке входа недоверенным вызывающим сторонам.
 
 ### Неподдерживаемые стандартные действия
 
-Следующие стандартные действия не поддерживаются RCON, вызов возвращает `retcode=10002` или `33001` (неподключено):
+Следующие стандартные действия не имеют аналогов в RCON, при вызове возвращается `retcode=10002` или `33001` (нет подключения):
 
-- `delete_message` (в Minecraft нет возможности удаления сообщений)
-- `get_friend_list` / `get_group_list` (используйте `get_player_list` как замену)
+- `delete_message` (в Minecraft отсутствует отзыв сообщений)
+- `get_friend_list` / `get_group_list` (используйте вместо них `get_player_list`)
 
-### Общий входной интерфейс действий
+### Универсальная точка входа для действий
 
 ```python
-# send_message: эквивалент Send-цепочки
+# send_message: эквивалентно цепочке Send
 result = await mc.call_api(
     "send_message",
-    _account_id="default",
+    account_id="default",
     target_type="user", target_id="Steve",
     message=[{"type": "text", "data": {"text": "hi"}}],
 )
@@ -183,22 +225,22 @@ result = await mc.call_api(
 }
 ```
 
-## Типы событий (при enable_log_tail = true)
+## Типы событий (enable_log_tail = true)
 
-Необходимо проверять `platform == "minecraft"`, чтобы использовать функции данной платформы. **RCON-протокол не может получать события чата** (чистый протокол запрос-ответ), события зависят от прослушивания логов.
+Перед использованием возможностей этой платформы требуется проверка `platform == "minecraft"`. **По протоколу RCON события чата не поступают** (чистый протокол «запрос — ответ»), поэтому события доступны только через прослушивание логов.
 
 ### Сопоставление событий
 
-| Строка лога сервера | Событие адаптера | Описание |
+| Строка лога сервера | Событие Adapter | Описание |
 |--------------|--------------|------|
-| `[12:34:56] [...]: <Steve> 你好` | message (detail_type: server) | Сообщение игрока |
-| `[12:35:00] [...]: Alex joined the game` | notice (detail_type: server_joined) | Игрок присоединился |
-| `[12:36:00] [...]: Alex left the game` | notice (detail_type: server_left) | Игрок покинул |
+| `[12:34:56] [...]: <Steve> привет` | message (`detail_type: server`) | Чат игроков |
+| `[12:35:00] [...]: Alex joined the game` | notice (`detail_type: group_member_increase`, `sub_type: server_joined`) | Игрок присоединился |
+| `[12:36:00] [...]: Alex left the game` | notice (`detail_type: group_member_decrease`, `sub_type: server_left`) | Игрок вышел |
 
-### Примеры полей событий
+### Пример полей события
 
 ```python
-# Сообщение
+# Чат
 {
   "id": "uuid",
   "time": 1793277000,
@@ -207,17 +249,18 @@ result = await mc.call_api(
   "platform": "minecraft",
   "self": {"platform": "minecraft", "user_id": "mc1", "user_name": "mc1", "account_id": "default"},
   "user_id": "Steve",                      # Имя игрока
-  "message": [{"type": "text", "data": {"text": "Привет, мир"}}],
-  "alt_message": "Привет, мир",
+  "message": [{"type": "text", "data": {"text": "привет, мир"}}],
+  "alt_message": "привет, мир",
   "group_id": "mc1",                       # bot_id
-  "minecraft_raw": {"line": "[12:34:56] [Server thread/INFO]: <Steve> Привет, мир"},
+  "minecraft_raw": {"line": "[12:34:56] [Server thread/INFO]: <Steve> привет, мир"},
   "minecraft_raw_type": "log_line"
 }
 
 # Присоединение (notice)
 {
   "type": "notice",
-  "detail_type": "server_joined",          # или server_left
+  "detail_type": "group_member_increase",  # при выходе — group_member_decrease
+  "sub_type": "server_joined",             # исходный тип сохраняется в sub_type (при выходе — server_left)
   "user_id": "Alex",
   "operator_id": "Alex",
   "group_id": "mc1",
@@ -226,9 +269,9 @@ result = await mc.call_api(
 }
 ```
 
-### Удаление дубликатов
+### Дедупликация зацикленных событий
 
-Ответы команд `say` / `tellraw` также записываются в лог. Адаптер при отправке сохраняет отпечаток содержимого (окно в 30 секунд), при появлении в логе одинакового содержимого событие пропускается, чтобы избежать повторной отправки сообщений бота.
+Эхо команд `say` / `tellraw` также записывается в лог. Адаптер при отправке сохраняет отпечаток содержимого (окно 30 секунд); при появлении в логе того же содержимого отправка события пропускается, чтобы сообщения, отправленные ботом, не воспринимались как полученные события (защита от зацикливания).
 
 ## Примечания
 

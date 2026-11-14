@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "2224d9499abf21c4a545a2ae820a9763",
-  "file_hash": "2224d9499abf21c4a545a2ae820a9763",
-  "translated_at": "2026-10-14T02:07:50.242026",
+  "hash": "8bc10e0d17b5911bf1916c08c8a4c435",
+  "file_hash": "8bc10e0d17b5911bf1916c08c8a4c435",
+  "translated_at": "2026-11-11T07:55:59.906840",
   "target_lang": "zh-TW",
   "chunks": [
     {
@@ -22,12 +22,20 @@
       "translation": "## 連接失敗行為\n\n框架啟動與運行**不依賴資料庫可達**——MySQL / PostgreSQL 連接失敗不會導致框架崩潰或無法啟動：\n\n1. 建池瞬時失敗自動指數退避重試（預設 3 次）\n2. 重試耗盡 → 記錄 WARNING（含原因與冷卻時長），框架照常啟動 / 繼續運行，僅儲存操作暫不可用\n3. 冷卻期（預設 30 秒）內後續儲存操作**快速失敗**（不阻塞、不拖慢其餘功能）\n4. 冷卻結束自動重連嘗試——資料庫恢復後儲存隨之恢復，無需重啟\n\n日誌範例：`mysql 連接池建立最終失敗（已重試 3 次），30 秒後自動重連；期間儲存操作將快速失敗，框架其餘功能不受影響`"
     },
     {
+      "hash": "50e905a793b1e285407478848fe71bd8",
+      "translation": "## 失敗語義（2.12 起）\n\n| 場景 | 行為 |\n|------|------|\n| 操作執行失敗（寫鎖逾時 / SQL 錯誤 / 約束衝突） | **拋出 `StorageOperationError`**（寫入路徑：aset / adelete / aclear / set_multi 及同步橋同路徑）——不再靜默 `False`，重要寫入失敗必須可見 |\n| 連線層級不可達（冷卻期快速失敗） | 回傳 `False` / `None`（規則 26 框架韌性語義，另有 `storage.unreachable` / `storage.recovered` 事件） |\n| 交易開啟逾時（>30s） | 拋出 `StorageOperationError`（`STORAGE_TXN_BEGIN_TIMEOUT_SECS`） |\n\n重要寫入請用 try/except 包裹並做補償；交易區塊內只放純 DB 操作。"
+    },
+    {
       "hash": "66ed20d51a58850c2d3f76f52a31217f",
       "translation": "## 異步原生 API\n\n```python\n# KV 操作\nawait sdk.storage.aset(\"app.name\", \"MyApp\")\nvalue = await sdk.storage.aget(\"app.name\")\nkeys = await sdk.storage.aget_all_keys()\n\n# 表操作\nawait sdk.storage.aCreateTable(\"users\", {\n    \"id\": \"INTEGER PRIMARY KEY AUTOINCREMENT\",\n    \"name\": \"TEXT NOT NULL\",\n})\nrows = await sdk.storage.Table(\"users\").Select(\"name\").ToDict().aExecute()\n\n# 異步事務\nasync with sdk.storage.atransaction():\n    await sdk.storage.aset(\"key1\", \"value1\")\n    await sdk.storage.Table(\"users\").Insert({\"name\": \"Alice\"}).aExecute()\n```\n\n同步 API（`get/set/transaction/Table(...).Execute()`）繼續可用，內部經\n`AsyncBridge` 後台事件循環橋接執行——在異步 handler 中調用會短暫阻塞\n該事件循環，**首次調用會輸出一次性告警**（\"建議改用 a 前綴異步方法\"），\n推薦優先使用 a 前綴異步方法。兩條邊界必須知曉：\n\n- **橋接線程內禁止再調同步介面**：同步介面在橋接線程內執行，此時再調\n  同步介面會拋 `RuntimeError`（防重入保護，避免自死鎖）\n- **橋接目標循環關閉後調用會失敗**：`uninit()` 之後不要再調用儲存介面\n\n完整方法對照見 [SQL 查詢建構器](sql-builder.md)。"
     },
     {
       "hash": "fb0f5a54e8e15925c34bc9789399f653",
       "translation": "## 方言行為差異\n\n方言差異全部收斂在框架內部，呼叫程式碼無需感知：\n\n| 差異點 | SQLite | MySQL | PostgreSQL |\n|------|------|------|------|\n| 占位符 | `?` | `%s`（自動翻譯） | `$1..$n`（自動翻譯） |\n| KV UPSERT | `INSERT OR REPLACE` | `ON DUPLICATE KEY UPDATE` | `ON CONFLICT DO UPDATE` |\n| KV 值欄位類型 | `TEXT` | `LONGTEXT` | `TEXT` |\n| 自增主鍵 | 原生支援 | `AUTO_INCREMENT`（自動翻譯） | `SERIAL`（自動翻譯） |\n\n建表欄位類型統一使用 SQLite 風格定義（如 `\"INTEGER PRIMARY KEY AUTOINCREMENT\"`、\n`\"TEXT NOT NULL\"`、`\"DOUBLE DEFAULT 0.0\"`），由方言自動翻譯為目標後端等價寫法。"
+    },
+    {
+      "hash": "81c0d75eef60bc5afa0f9a32a2cb664c",
+      "translation": "## SQLite \"database is locked\" 排查\n\n框架 SQLite 後端已內建：**WAL 日誌模式**（讀寫不互斥）+ **busy_timeout 5000ms**（寫鎖競爭自動等待）+ autocommit 連線 + 多事件迴圈各持共享連線 + **交易 `BEGIN IMMEDIATE`**（2.12 起——交易開始即取寫鎖，消除 deferred 交易「先讀後寫」升級時的 `SQLITE_BUSY_SNAPSHOT`，該 busy 不重試、`busy_timeout` 無法緩解，是高頻讀寫混合下間歇性 locked 的框架內根因）。\n\n2.12+ 純框架使用（儲存 / ORM / 混合雙路徑交錯寫）不應再出現 locked；仍遇到時按以下順序排查：\n\n| 場景 | 判定 | 處置 |\n|------|------|------|\n| 交易內慢操作 | `atransaction` 區塊內有慢活（外部 HTTP、大計算），持鎖超過 busy_timeout | 交易區塊內只做庫操作，慢操作移出 |\n| 混用第二套 ORM | 同一行程內 sqlmodel / SQLAlchemy / 裸 sqlite3 自開連線寫同一個資料庫檔案 | **同一資料庫檔案只用一套 ORM**（內建本就是非同步原生），不要混用過渡 |\n| 多行程同檔案 | 多實例 / Dashboard / 資料庫工具開啟同一 sqlite | 各實例獨立 `config/` 目錄；管理工具以唯讀模式開啟；高頻寫場景切換 mysql / postgres（設定一改零程式碼遷移） |\n| 舊版本框架 | `<2.12` 的 deferred 交易升級問題 | 升級框架 |\n\n> `busy_timeout` 目前為類別常數 `_SQLITE_BUSY_TIMEOUT_MS = 5000`（`Core/storage/sqlite.py`）；如需調整屬於原始碼層級修改，不作為執行期設定公開。"
     },
     {
       "hash": "4456caf0b2aa114376e6566017473994",

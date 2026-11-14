@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "5df137ca3ab2396b93fd243cc6fe1905",
-  "file_hash": "5df137ca3ab2396b93fd243cc6fe1905",
-  "translated_at": "2026-10-22T10:51:04.140865",
+  "hash": "d7693b79865380749a9bed7ed6b6ad79",
+  "file_hash": "d7693b79865380749a9bed7ed6b6ad79",
+  "translated_at": "2026-11-04T08:04:22.453075",
   "target_lang": "zh-TW",
   "chunks": [
     {
@@ -38,8 +38,8 @@
       "translation": "## Router 模組\n\nHTTP/WebSocket 路由管理器，基於 FastAPI + Uvicorn，支援裝飾器路由、中介層、分組、限流、CORS。\n\n> 完整的路由 API 文件（裝飾器路由、WebSocket、中介層、速率限制、CORS、安全標頭等）請參考 [路由管理器](../advanced/router.md)。\n\n### 快速參考\n\n```python\n# HTTP 路由\n@sdk.router.get(\"MyModule\", \"/api\")\nasync def handler(request: HttpRequest):\n    return {\"status\": \"ok\"}\n\n# WebSocket 路由\n@sdk.router.ws(\"MyModule\", \"/ws\")\nasync def ws_handler(ws: WebSocketConnection):\n    async for text in ws.iter_text():\n        await ws.send_text(f\"Echo: {text}\")\n\n# 路由分組\ngroup = sdk.router.group(\"MyModule\", prefix=\"/v1\")\n@group.get(\"/users\")\nasync def list_users(request: HttpRequest):\n    return {\"users\": []}\n```"
     },
     {
-      "hash": "52d8330e0e6aef42829fa700f53d51f1",
-      "translation": "## HTTP Client 模組\n\n統一網路客戶端，聚合 HTTP 請求、WebSocket 連線、連線池管理、自動重試、請求統計和生命週期事件整合。\n\n> 完整的網路客戶端文件（請求方法、回應物件、WebSocket 客戶端、例外體系等）請參考 [網路客戶端](../advanced/http-client.md)。\n\n### 快速參考\n\n```python\nfrom ErisPulse.Core import client\n\n# HTTP 請求\nresp = await client.get(\"https://api.example.com/users\")\ndata = await resp.json()\n\n# WebSocket\nws = await client.ws_connect(\"wss://example.com/ws\")\nasync for text in ws.iter_text():\n    await ws.send_text(f\"Echo: {text}\")\n```"
+      "hash": "8efde8e929f5ffce29c6ad632d023492",
+      "translation": "## HTTP Client 模塊\n\n統一的網路客戶端，聚合 HTTP 請求、WebSocket 連接、連接池管理、自動重試、請求統計和生命週期事件整合。\n\n> 完整的網路客戶端文件（請求方法、回應物件、WebSocket 客戶端、例外體系等）請參考 [網路客戶端](../advanced/client.md)。\n\n### 快速參考\n\n```python\nfrom ErisPulse.Core import client\n\n# HTTP 請求\nresp = await client.get(\"https://api.example.com/users\")\ndata = await resp.json()\n\n# WebSocket\nws = await client.ws_connect(\"wss://example.com/ws\")\nasync for text in ws.iter_text():\n    await ws.send_text(f\"Echo: {text}\")\n```"
     },
     {
       "hash": "346a85644efcf0a57cf9b2d4ce6c4c8c",
@@ -54,8 +54,8 @@
       "translation": "## Transcript 會話收件匣\n\n每個會話近期訊息流的自動記錄與查詢（`sdk.transcript`），作為 AI 對話、\n防重複發言等上下文記憶類模組的共用基礎。\n\n### 常用方法\n\n```python\n# 便捷查詢（推薦）：目前會話最近 20 條（含使用者與機器人，時間遞增）\nmessages = await event.history(20)\nfor m in messages:\n    print(m[\"role\"], \":\", m[\"text\"])\n\n# 管理器 API\nsdk.transcript.append(event, \"user\", \"文字\")\nsdk.transcript.get(event, n=20)\nsdk.transcript.clear(event)\n```\n\n設定（`ErisPulse.transcript`）：`enabled`（預設開啟）、`max_per_session`（每會話上限，預設 50）、\n`ttl_hours`（全域過期時間，預設 168 小時）。資料存於獨立 SQLite 資料表，超限/過期時惰性清理。\n\n> [!NOTE]\n> 本節能力新增於 ErisPulse **2.8.0+**"
     },
     {
-      "hash": "0d810f40982ab4538422b36e950daaa9",
-      "translation": "## 相關文件\n\n**繼續查 API**：\n- [事件系統 API](event-system.md) - Event 模組 API\n- [適配器系統 API](adapter-system.md) - Adapter 管理 API\n\n**深入某個子系統的完整文件**：\n- [SQL 查詢建構器](../advanced/sql-builder.md) - SQL 鏈式查詢完整文件\n- [路由管理器](../advanced/router.md) - 路由管理器完整文件\n- [網路客戶端](../advanced/http-client.md) - 網路客戶端完整文件\n- [生命週期管理](../advanced/lifecycle.md) - 生命週期完整文件"
+      "hash": "5d7e1a49664ab0fd8df3d76473c62e5c",
+      "translation": "## 相關文件\n\n**繼續查看 API**：\n- [事件系統 API](event-system.md) - Event 模組 API\n- [適配器系統 API](adapter-system.md) - Adapter 管理 API\n\n**深入某個子系統的完整文件**：\n- [SQL 查詢建構器](../advanced/sql-builder.md) - SQL 鏈式查詢完整文件\n- [路由管理器](../advanced/router.md) - 路由管理器完整文件\n- [網路客戶端](../advanced/client.md) - 網路客戶端完整文件\n- [生命週期管理](../advanced/lifecycle.md) - 生命週期完整文件"
     }
   ]
 }

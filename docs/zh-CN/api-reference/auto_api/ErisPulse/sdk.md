@@ -350,6 +350,20 @@ await sdk.run(before_init=before, after_init=after, on_ready=ready)
 ---
 
 
+##### `_start_script_dev_watcher() -> None`
+
+**内部方法** 脚本模式：挂载细粒度 watcher 并写入能力标记
+
+---
+
+
+##### `_stop_script_dev_watcher() -> None`
+
+**内部方法** 停止脚本模式 watcher 并清除能力标记
+
+---
+
+
 ##### `shutdown() -> None`
 
 请求优雅关闭
@@ -497,7 +511,11 @@ await sdk.reload_all_modules()
 ##### `_register_signal_handlers() -> None`
 
 **内部方法**
-注册进程信号处理器，将 SIGTERM / SIGHUP 等信号转为优雅关闭
+注册进程信号处理器：SIGTERM / SIGHUP 转为优雅关闭，SIGUSR1 转为
+进程内软重启（组件级热重载）
+
+SIGUSR1 供 ``epsdk restart`` 对容器内 PID 1 实例使用——容器主进程
+被终止即容器退出，外部「停止后重拉」不可用，改由框架进程内完成重启。
 
 Windows 不支持 ``loop.add_signal_handler``，捕获异常后跳过
 （Windows 下仍可通过 ``sdk.shutdown()`` 或 Ctrl+C 触发关闭）。

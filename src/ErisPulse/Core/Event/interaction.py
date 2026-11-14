@@ -590,6 +590,18 @@ class InteractionManager:
         self._cancel_entry(key, entry, reason)
         return True
 
+    def cancel_if_current(self, key: str, entry: "_Entry", reason: str = REASON_CANCELLED) -> bool:
+        """
+        仅当 key 当前登记的条目仍是 entry 时才取消
+
+        等待方兜底清理专用：同键等待被后继等待顶替（conflict）后，
+        旧等待方的兜底清理不得误删后继等待的条目，否则新旧互杀、双双失效。
+        """
+        current = self._entries.get(key) or self._session_entries.get(key)
+        if current is not entry:
+            return False
+        return self.cancel(key, reason)
+
     def cancel_by_owner(self, owner: str) -> int:
         """
         按归属者取消所有挂起会话（模块卸载链路调用）

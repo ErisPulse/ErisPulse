@@ -1,33 +1,37 @@
 {
   "version": 2,
-  "hash": "2bfa9b84dda7dd3a6022cba97406e012",
-  "file_hash": "2bfa9b84dda7dd3a6022cba97406e012",
-  "translated_at": "2026-09-12T10:29:30.883089",
+  "hash": "03263a02ff9fa6db25c848bc41207108",
+  "file_hash": "03263a02ff9fa6db25c848bc41207108",
+  "translated_at": "2026-11-10T05:25:48.792696",
   "target_lang": "zh-TW",
   "chunks": [
     {
       "hash": "801ea581e858921e6eed2a28181710d8",
-      "translation": "# 終端平台特性文件\n\nTerminalAdapter 是命令行終端適配器——終端即聊天會話，用於本地快速調試模塊邏輯。\n\n---"
+      "translation": "# Terminal 平台特性文件\n\nTerminalAdapter 是命令行終端適配器——終端即聊天對話，用於本地快速調試模組邏輯。\n\n---"
     },
     {
-      "hash": "355ff45b64d1e76fde9e42ae8f563746",
-      "translation": "## 文件資訊\n\n- 對應模組版本: 1.1.0\n- 維護者: ErisPulse"
+      "hash": "16dfefe4f0e55a87c5598ec54e3f3013",
+      "translation": "## 文件資訊\n\n- 對應模組版本: 1.2.2\n- 維護者: ErisPulse\n- 最後更新: 2026-11-10"
     },
     {
       "hash": "e1c9704c47ba4a2be3d3c6120e628e0c",
-      "translation": "## 基本資訊\n\n- 平台簡介：將本地命令列當作聊天對話，stdin 輸入即為訊息，模組回應直接列印到終端機\n- 適配器名稱：TerminalAdapter\n- 平台標識：`terminal`\n- 單帳戶設計（用於本地除錯場景）\n- 框架要求：軟依賴 `ErisPulse>=2.7.1`（執行時偵測提示，不強制）"
+      "translation": "## 基本資訊\n\n- 平台簡介：將本地命令列當作聊天對話，stdin 輸入即訊息，模組回應直接列印到終端機\n- 适配器名稱：TerminalAdapter\n- 平台標識：`terminal`\n- 單帳號設計（本地調試場景）\n- 框架要求：軟依賴 `ErisPulse>=2.7.1`（執行時偵測提示，不強制）"
     },
     {
-      "hash": "41f08af72b2159f33630119d0dac06a0",
-      "translation": "## 配置說明\n\n```toml\n[Terminal]\nbot_id = \"terminal_bot\"   # 沙盒機器人ID\nbot_name = \"Terminal\"     # 顯示名稱\n```"
+      "hash": "bf04ae4c43f4298e461dfc144796bf47",
+      "translation": "## 配置說明\n\n```toml\n[Terminal]\nbot_id = \"terminal_bot\"    # Bot 的用戶 ID\nbot_name = \"TerminalBot\"   # Bot 昵稱\nuser_id = \"terminal_user\"  # 模擬用戶的 ID（與 Bot 對話的終端用戶）\nuser_name = \"User\"         # 模擬用戶暱稱\nprompt = \"> \"              # 輸入提示符\nreply_prefix = \"[Bot] \"    # Bot 回覆的行前綴（留空則不加前綴）\necho_input = false         # 是否回顯用戶輸入（管道輸入場景下開啟）\n```"
     },
     {
       "hash": "2a934798be3daee3ed96232be0615395",
-      "translation": "## v5 範式更新（1.1.0）\n\n- **spawn_background 任務歸屬**：stdin 讀取迴圈改用 `runtime.spawn_background`\n- **框架軟依賴**：運行時檢測 `ErisPulse>=2.7.1` 並提示；啟動輸出版本日誌"
+      "translation": "## v5 範式更新（1.1.0）\n\n- **spawn_background 任務歸屬**：stdin 讀取迴圈改用 `runtime.spawn_background`\n- **框架軟依賴**：運行時偵測 `ErisPulse>=2.7.1` 並提示；啟動輸出版本日誌"
     },
     {
-      "hash": "4144a6370fce61b9fb24e28425de1a1f",
-      "translation": "## 使用說明\n\n```python\n# 模組照常監聽訊息即可\nfrom ErisPulse.Core.Event import message\n\n@message.on_message()\nasync def handle(event):\n    if event.get(\"platform\") == \"terminal\":\n        await event.reply(\"收到：\" + event.get_text())\n```\n\n- 終端輸入的文本即使用者訊息，支援多行（以空行結束）\n- 適用於開發期快速驗證模組邏輯，無需接入真實平台"
+      "hash": "499b4081ea35949fe9249891ac86bf03",
+      "translation": "## 標準化對齊（1.2.2）\n\n響應結構與錯誤碼遵循 [API 響應規範](../standards/api-response.md)。\n\n### 消息事件补齐 message_id\n\nstdin 消息事件补齐頂層標準 `message_id` 字段（uuid 生成），模組可穩定引用終端消息進行回覆/去重。\n\n### Send 繼承 BaseAdapter.Send\n\n`Send` 繼承框架 `BaseAdapter.Send`，**標準修飾器鏈（`At` / `AtAll` / `Reply` 等）生效**，修飾段與文字段一併渲染輸出；`node`（合併轉發）段降級為純文字原文輸出（內容不遺失）。\n\n### 元動作补齐\n\n標準元動作已补齐，返回標準響應：\n\n| 動作 | data 內容 |\n|------|----------|\n| `get_status` | `enabled`（運行狀態）/ `boot_time`（啟動時間戳） |\n| `get_version` | `impl`（TerminalAdapter）/ `version` / `onebot_version` |\n| `get_supported_actions` | 支持的動作名列表 |\n\n```python\nfrom ErisPulse import sdk\nterminal = sdk.adapter.get(\"terminal\")\n\nresult = await terminal.Api.get_status()\nresult = await terminal.Api.get_version()\nresult = await terminal.Api.get_supported_actions()\nresult = await terminal.Api.get_self_info()    # user_id/user_name\nresult = await terminal.Api.get_user_info(\"terminal_user\")\nresult = await terminal.Api.get_friend_list()\n```\n\n### delete_message 能力降級語義修正\n\n終端無撤回能力：`delete_message` 從「返回成功」修正為**能力降級標準語義**——返回 `retcode=10002`（不支援的操作），模組可據此判定降級。\n\n### 錯誤碼規範\n\n| retcode | 含義 | 說明 |\n|---------|------|------|\n| 0 | 成功 | — |\n| 10002 | 不支援 | 群組操作、消息撤回、未實現的標準動作 |"
+    },
+    {
+      "hash": "4b303269e7bc47aa98552048c5f5ce81",
+      "translation": "## 使用說明\n\n```python\n# 模組照常監聽訊息即可\nfrom ErisPulse.Core.Event import message\n\n@message.on_message()\nasync def handle(event):\n    if event.get(\"platform\") == \"terminal\":\n        await event.reply(\"收到：\" + event.get_text())\n```\n\n- 終端輸入的文本即使用者訊息，支援多行（以空行結束）\n- 事件結構示例（stdin 消息）：\n\n```json\n{\n  \"id\": \"<uuid>\",\n  \"time\": 1700000000,\n  \"message_id\": \"<uuid>\",\n  \"type\": \"message\",\n  \"detail_type\": \"private\",\n  \"platform\": \"terminal\",\n  \"self\": {\"platform\": \"terminal\", \"user_id\": \"terminal_bot\", \"user_name\": \"TerminalBot\"},\n  \"user_id\": \"terminal_user\",\n  \"message\": [{\"type\": \"text\", \"data\": {\"text\": \"輸入內容\"}}],\n  \"alt_message\": \"輸入內容\",\n  \"terminal_raw\": {\"text\": \"輸入內容\"},\n  \"terminal_raw_type\": \"stdin_line\"\n}\n```\n\n- 發送示例（修飾器鏈可用）：\n\n```python\nterminal = sdk.adapter.get(\"terminal\")\n\nawait terminal.Send.To(\"private\", \"terminal_user\").Text(\"Hello\")\nawait terminal.Send.To(\"private\", \"terminal_user\").At(\"terminal_user\").Text(\"帶修飾器的訊息\")\nawait terminal.Send.To(\"private\", \"terminal_user\").Raw_ob12([\n    {\"type\": \"text\", \"data\": {\"text\": \"OneBot12 段\"}}\n])\n```\n\n- 適用於開發期快速驗證模組邏輯，無需接入真實平台"
     }
   ]
 }

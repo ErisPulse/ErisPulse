@@ -1,9 +1,12 @@
 # 數據模型層（ORM）
 
-> [!TIP]  
-> **什麼時候需要閱讀這篇**：需要數據模型、自動建表或關係映射時。不需要則跳過，不會影響其他功能的使用。  
+> [!TIP]
+> **何時需要閱讀這篇**：需要數據模型、自動建表或關係映射時。不需要則跳過，不會影響其他功能的使用。
 
-2.9.0 版本起框架內建聲明式數據模型層：繼承 `Model` 並使用 `Field` 聲明欄位，即可獲得自動建表與增刪改查能力。模型直接建立在內建儲存層之上——SQLite / MySQL / PostgreSQL 由 `ErisPulse.storage.backend` 配置決定，**切換後端無需修改模型代碼**。
+> [!NOTE]
+> **ORM 是異步原生的**：所有 CRUD 方法（`create` / `get` / `save` / `delete` / `create_table` / QuerySet 終結操作）都是 `async def`，直接在事件循環內 `await` 調用即可——底層驅動為 aiosqlite / aiomysql / asyncpg（隨儲存後端切換），不存在同步阻塞。KV 儲存的同步 `get`/`set` 是相容層，與 ORM 無關。
+
+2.9.0 起框架內建宣告式數據模型層：繼承 `Model` 並使用 `Field` 聲明欄位，即可獲得自動建表與增刪改查能力。模型直接建構在內建儲存層之上——SQLite / MySQL / PostgreSQL 由 `ErisPulse.storage.backend` 配置決定，**切換後端無需修改模型程式碼**。
 
 ## 聲明模型
 
@@ -28,15 +31,40 @@ class User(Model):
 |------|------|
 | `default` | 預設值（未提供且非自增 → 必填 NOT NULL） |
 | `default_factory` | 可變預設值工廠（如 `list`） |
-| `primary_key` | 主鍵 |
-| `autoincrement` | 自增主鍵（隱含主鍵，`create` 後自動回填） |
-| `max_length` | 字串最大長度（生成 `VARCHAR(n)`，寫入驗證） |
+| `primary_key` | 主鍵（多個即複合主鍵，收斂為表級 `PRIMARY KEY (a, b)`） |
+| `autoincrement` | 自增主鍵（隱含主鍵，`create` 後自動回填；單列主鍵專用，與複合主鍵互斥） |
+| `max_length` | 字串最大長度（生成 `VARCHAR(n)`，寫入校驗） |
 | `nullable` | 是否允許 NULL（預設 False） |
 | `index` | 生成普通索引 |
 | `unique` | 唯一約束 |
-| `choices` / `ge` / `le` | 列舉 / 數值範圍（寫入驗證） |
+| `choices` / `ge` / `le` | 陣列 / 數值範圍（寫入校驗） |
 | `description` | 描述（i18n 字典，與配置類同格式） |
-| `column_type` | 覆寫 SQL 列類型定義 |
+| `column_type` | 覆蓋 SQL 列類型定義 |
+| `foreign_key` | 列級外鍵約束（`"表.列"`，生成 `REFERENCES`） |
+| `on_delete` | 外鍵刪除動作：`CASCADE` / `SET NULL` / `RESTRICT` / `NO ACTION` / `SET DEFAULT` |
+| `auto_now_add` | 插入時自動寫入當前時間戳（浮點紀秒） |
+| `auto_now` | 插入與實例 `save()` 更新時均自動寫入（`QuerySet.update` 批量路徑不觸發） |
+
+## 複合主鍵與聯合唯一
+
+多個 `primary_key=True` 欄位組成複合主鍵，`get` / `save` / `delete` 按全部主鍵欄位定位；  
+`__unique_together__` 聲明聯合唯一分組（可多組）：
+
+```python
+class Membership(Model):
+    __tablename__ = "memberships"
+    __unique_together__ = (("user_id", "group_id"),)
+
+    user_id: int = Field(primary_key=True)
+    group_id: int = Field(primary_key=True)
+    role: str = Field(default="member")
+
+m = await Membership.get(user_id=1, group_id=2)
+```
+
+- `autoincrement` 與複合主鍵互斥，共存時模型定義即報錯  
+- `__unique_together__` 以唯一索引實現（`uq_` 前綴索引名）：新建表隨建表生成，**已存在的表執行 `create_table()` 自動補建**，無需重建  
+- 複合主鍵模型暫不支援關係映射（has-many / belongs-to），實例訪問時明確報錯
 
 ## 建表與 CRUD
 
@@ -52,11 +80,18 @@ total = await User.count(User.age > 18)
 
 user.age = 21
 await user.save()                              # 按主鍵更新（先約束校驗）；主鍵缺失時退化為插入（自增主鍵同樣回填到實例）
+await user.save(update_fields=["age"])         # 部分列更新（白名單，其餘列不寫入）
 await user.delete()                            # 按主鍵刪除
+
+user, created = await User.get_or_create({"age": 20}, name="Alice")      # 查得即返回；無則創建
+user, created = await User.update_or_create({"age": 21}, name="Alice")   # 查得更新 defaults 並保存；無則創建
 
 await User.update_all(User.age > 18, role="adult")  # 批量更新
 await User.delete_all(User.age > 100)               # 批量刪除
 ```
+
+> [!NOTE]
+> `get_or_create` / `update_or_create` 在並發競爭下兩個協程可能同時走到創建分支——唯一約束（主鍵 / `unique` / `__unique_together__`）會讓後到者收到 `StorageOperationError`；需要幂等語義時捕獲後重查一次。
 
 查詢表達式支援 `> >= < <= == !=`、`in_([...])`，以及 `&`（與）/ `|`（或）組合：
 
@@ -123,14 +158,14 @@ ALTER 誤操作）。
 
 ## 外鍵（關係映射基礎）
 
-`foreign_key="表.列"` 聲明欄位級外鍵約束，DDL 會生成 `REFERENCES` 子句：
+`foreign_key="表.列"` 聲明欄位級別的外鍵約束，DDL 會生成 `REFERENCES` 子句；`on_delete` 聲明刪除動作（例如 `"CASCADE"` 級聯刪除引用行）：
 
 ```python
 class Post(Model):
     __tablename__ = "posts"
 
     id: int = Field(primary_key=True, autoincrement=True)
-    author: int = Field(foreign_key="orm_users.id")
+    author: int = Field(foreign_key="orm_users.id", on_delete="CASCADE")
 
     content: str = Field(max_length=255)
 ```

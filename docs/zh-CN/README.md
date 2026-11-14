@@ -82,6 +82,7 @@ ErisPulse 是事件驱动的模块化异步机器人框架——业务代码只�
 | 通信连接 | [模块间通信](advanced/module-communication.md) · [连接池与广播](advanced/connections.md) · [路由系统](advanced/router.md) | 不懂服务契约（`meta.services`）白名单，跨模块 `module.call` 会被 `ServiceNotProvidedError` 拒绝且不知原因 |
 | 数据存储 | [存储后端](advanced/storage-backends.md) · [SQL 构建](advanced/sql-builder.md) · [网络客户端](advanced/client.md) | 不懂连接失败冷却期语义，数据库抖动时会误判"框架挂了"（实际是存储操作快速失败、冷却后自动重连） |
 | 消息对话 | [Conversation 多轮对话](advanced/conversation.md) · [会话收件箱](advanced/transcript.md) · [MessageBuilder](advanced/message-builder.md) · [国际化](advanced/i18n.md) | 不懂会话互斥租约，两个模块同时等同一用户的回复会互相踢掉 |
+| 性能观测 | [性能基准与调优](advanced/performance.md) | 部署前不看基准数字，容量规划全靠猜；升级后不做回归对比，性能退化发现不了 |
 | 灰度影子 | [影子模块与灰度转正](advanced/shadow.md) | 不懂五道隔离闸就提前转正，影子的出站消息会外溢到真实用户 |
 
 **概念关系总表**
@@ -134,6 +135,7 @@ ErisPulse 是事件驱动的模块化异步机器人框架——业务代码只�
 | **2.9** | 「模块开发体验」主线（EPRFC-2026-001）：声明式命令参数（`args=` / `options=`）与命令治理（`cooldown=` / `rate_limit=`）、统一依赖注入（`Depends`）、中间件事件否决权、内置 ORM（自动迁移 + 关系映射）、影子模块灰度转正、分发决策链追踪与排查诊断、正式支持 Python 3.14 |
 | **2.10** | 连接一等资源（`connections` 注册表：广播 / 业务分组 / 跨模块传递复用 / 卸载自动回收）、根导入契约（常用 API 全部可 `from ErisPulse import`）、归属权体系补全、收件箱保留策略运行时覆盖；2.10.2 适配器本地插件目录（`plugins/`）+ `epsdk create pack` + tomlclass 无损配置写入 |
 | **2.11**（dev） | 「改代码 → 看效果」开发闭环：热重载默认全量语义（语法预检 + 代码身份核对 + 依赖者级联重导）、懒加载休眠（`dormant_after`）、适配器代码级热重载（`sdk.adapter.reload`）、`.got()` 命令流语法糖、`epsdk stop` / `restart` 运行时控制 |
+| **2.12**（dev） | 生命周期治理与可运维性：嵌套生命周期（`ownership.nest()`）、细粒度热重载（单模块/单适配器判定，框架源码变更走进程重启）、后台任务待发队列、事件分发链账户自动绑定（`send_context` / `api_context` / `request_context` 同口径，多账户模块零改动）、跨账户重复受理关联（`framework.cross_account_policy`）、影子模块 whl 摄取与持久化转正闭环、容器内 `epsdk restart` 进程内软重启、`SendDSL.Location()` |
 
 ## 开发方式
 

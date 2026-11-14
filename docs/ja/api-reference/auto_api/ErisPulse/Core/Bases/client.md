@@ -207,7 +207,7 @@ async for msg in ws.iter_messages():
 HTTP 客户端抽象基类
 
 定义统一的异步 HTTP 请求和 WebSocket 连接接口，
-具体实现由 Core.client.HttpClient 提供。
+具体实现由 Core.client.Client 提供。
 
 > **提示**
 > 1. 通过 sdk.client 获取全局单例，也可自行实例化
@@ -335,11 +335,11 @@ async for text in ws.iter_text():
 ---
 
 
-##### `stats -> dict[str, int]`（property）
+##### `stats -> dict[str, int | float]`（property）
 
 请求统计
 
-**返回值** (`dict[str, int]`): 统计数据
+**返回值** (`dict`): 统计数据（含 latency_p50_ms / latency_p95_ms 延迟分位）
 
 ---
 

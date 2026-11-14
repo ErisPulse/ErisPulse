@@ -76,6 +76,26 @@ jobs:
             if [ -n "$changelog_section" ]; then
               changelog=$(echo "$changelog_section" | tail -n +2)
 
+              # Notes 末尾追加客户端下载表：固定指向 App 仓库 latest——
+              # 安装包文件名随 App 版本演进（latest 页永远最新），rootfs 为
+              # 固定名滚动资产（随框架发版由 pypi-publish 的 notify-app-rootfs
+              # 触发重建）。表头英文保证通用可读；printf 拼装保持 YAML 块缩进，
+              # 产出行首的 --- 分隔与表格由 markdown 渲染。
+              app_section="$(printf '%s\n' \
+                '' \
+                '---' \
+                '' \
+                '> **ErisPulse App**：可直接安装并管理 ErisPulse 的客户端——安装即得框架运行环境、Dashboard 管理面板与进程守护。安装包文件名随 App 版本演进，rootfs 随框架发版自动重建：' \
+                '' \
+                '| Platform | Package | Download |' \
+                '|----------|---------|----------|' \
+                '| Windows | `*-windows-x64-setup.exe` / `*-windows-x64.zip` | [Latest release](https://github.com/ErisPulse/ErisPulse-App/releases/latest) |' \
+                '| Linux | `*-linux-x64.tar.gz` | [Latest release](https://github.com/ErisPulse/ErisPulse-App/releases/latest) |' \
+                '| macOS (Apple Silicon) | `*-macos-arm64.zip` | [Latest release](https://github.com/ErisPulse/ErisPulse-App/releases/latest) |' \
+                '| Android | `*-online-*.apk` / `*-offline-*.apk` | [Latest release](https://github.com/ErisPulse/ErisPulse-App/releases/latest) |' \
+                '| Termux / Proot (aarch64) | `erispulse-rootfs-aarch64.tar.gz` | [Direct link](https://github.com/ErisPulse/ErisPulse-App/releases/latest/download/erispulse-rootfs-aarch64.tar.gz) |')"
+              changelog="$changelog$app_section"
+
               # Determine if this is a dev version
               # 预发布判定：dev/alpha/beta/rc/pre；旧正则 dev|alpha|beta|pre|a|b
               # 中的裸 a|b 会把任何含字母 a/b 的版本误判，且漏掉 rc
@@ -96,6 +116,7 @@ jobs:
                 git push origin "$tag_name"
               else
                 echo "Tag $tag_name already exists"
+                echo "tag_preexisted=true" >> $GITHUB_OUTPUT
               fi
 
               # Check if release exists
@@ -137,184 +158,12 @@ jobs:
             -f event_type=docs-build \
             --jq '.event_type // "dispatched"' || true
 
-      # AI 物料（prompts .md）与技能包（skills .zip）不再随发行版分发附件：
-      # 二者由 auto-update-docs 生成并提交回开发分支，官网直接链接分支文件下载，
-      # 避免 release assets 里堆叠与文档重复的大文件。
+      # App rootfs 同步不在本 workflow 触发：rootfs 构建时 pip 安装固定版本框架，
+      # 早于 PyPI 收录会装到空版本——由 pypi-publish.yml 的 notify-app-rootfs
+      # job 在 publish 成功后触发。
 
-      - name: Setup pybuild
-        if: steps.create-release.outputs.release_created == 'true' || steps.create-release.outputs.release_updated == 'true'
-        # 供应链：pin 到上游日期 tag（上游以日期发 tag，无语义版本）。
-        # 升级时手动更新此引用并核对上游变更。
-        uses: pybuild-org/pybuild@20260804-074152
+      # 发行版不再附带任何构建附件：AI 物料（prompts .md）与技能包（skills .zip）
+      # 由 auto-update-docs 生成并提交回开发分支，官网直接链接分支文件下载；
+      # 客户端可执行包由 ErisPulse-App 自构建发布（rootfs 资产跟随其 latest
+      # release 滚动更新，触发链见 pypi-publish.yml 的 notify-app-rootfs）。
 
-      - name: Build standalone executables (pybuild v2)
-        id: pybuild
-        if: steps.create-release.outputs.release_created == 'true' || steps.create-release.outputs.release_updated == 'true'
-        continue-on-error: true
-        shell: bash
-        run: |
-          version=$(grep '^version' pyproject.toml | head -1 | sed 's/version = "//;s/"//')
-
-          # --- 1. Build ErisPulse wheel ---
-          python -m pip install --upgrade pip build
-          python -m build --wheel
-          WHEEL=$(ls dist/erispulse-*.whl | head -1)
-          echo "Built wheel: $WHEEL"
-
-          # --- 2. Prepare minimal source dir (ErisPulse comes from pip) ---
-          mkdir -p standalone_src build_dist release_assets
-
-          # --- 3. Generate single build config for all 6 platforms ---
-          cat > target.xml << XML
-          <config name="builder">
-              <prop name="app" value="ErisPulse" />
-              <prop name="source" value="standalone_src" />
-              <prop name="output" value="build_dist" />
-              <prop name="version" value="3.12.13" />
-              <prop name="release" value="20260610" />
-          </config>
-          <run job="setup builder" />
-          <config name="python">
-              <prop name="arch" value="x86_64" />
-              <prop name="os" value="unknown-linux-gnu" />
-          </config>
-          <run job="setup python" />
-          <config type="group" name="standalone targets">
-              <config name="python">
-                  <prop name="arch" value="x86_64" />
-                  <prop name="os" value="unknown-linux-gnu" />
-              </config>
-              <config name="pip">
-                  <prop name="platform" value="manylinux_2_17_x86_64" />
-                  <prop name="download" value="${WHEEL}" />
-                  <prop name="download" value="ErisPulse-Dashboard" />
-              </config>
-              <config name="launcher">
-                  <prop name="run" value="-m ErisPulse run" />
-              </config>
-          </config>
-          <config type="group" name="standalone targets">
-              <config name="python">
-                  <prop name="arch" value="aarch64" />
-                  <prop name="os" value="unknown-linux-gnu" />
-              </config>
-              <config name="pip">
-                  <prop name="platform" value="manylinux_2_17_aarch64" />
-                  <prop name="download" value="${WHEEL}" />
-                  <prop name="download" value="ErisPulse-Dashboard" />
-              </config>
-              <config name="launcher">
-                  <prop name="run" value="-m ErisPulse run" />
-              </config>
-          </config>
-          <config type="group" name="standalone targets">
-              <config name="python">
-                  <prop name="arch" value="x86_64" />
-                  <prop name="os" value="pc-windows-msvc" />
-              </config>
-              <config name="pip">
-                  <prop name="platform" value="win_amd64" />
-                  <prop name="download" value="${WHEEL}" />
-                  <prop name="download" value="ErisPulse-Dashboard" />
-                  <prop name="download" value="colorama" />
-              </config>
-              <config name="launcher">
-                  <prop name="run" value="-m ErisPulse run" />
-              </config>
-          </config>
-          <config type="group" name="standalone targets">
-              <config name="python">
-                  <prop name="arch" value="aarch64" />
-                  <prop name="os" value="pc-windows-msvc" />
-              </config>
-              <config name="pip">
-                  <prop name="platform" value="win_arm64" />
-                  <prop name="download" value="${WHEEL}" />
-                  <prop name="download" value="ErisPulse-Dashboard" />
-                  <prop name="download" value="colorama" />
-              </config>
-              <config name="launcher">
-                  <prop name="run" value="-m ErisPulse run" />
-              </config>
-          </config>
-          <config type="group" name="standalone targets">
-              <config name="python">
-                  <prop name="arch" value="x86_64" />
-                  <prop name="os" value="apple-darwin" />
-              </config>
-              <config name="pip">
-                  <prop name="platform" value="macosx_10_9_x86_64" />
-                  <prop name="download" value="${WHEEL}" />
-                  <prop name="download" value="ErisPulse-Dashboard" />
-              </config>
-              <config name="launcher">
-                  <prop name="run" value="-m ErisPulse run" />
-              </config>
-          </config>
-          <config type="group" name="standalone targets">
-              <config name="python">
-                  <prop name="arch" value="aarch64" />
-                  <prop name="os" value="apple-darwin" />
-              </config>
-              <config name="pip">
-                  <prop name="platform" value="macosx_11_0_arm64" />
-                  <prop name="download" value="${WHEEL}" />
-                  <prop name="download" value="ErisPulse-Dashboard" />
-              </config>
-              <config name="launcher">
-                  <prop name="run" value="-m ErisPulse run" />
-              </config>
-          </config>
-          <run job="build standalone" />
-          XML
-
-          # --- 4. Build all platforms in one pass ---
-          if ! pybuild target.xml; then
-            echo "⚠️ pybuild encountered errors, collecting any partial outputs"
-          fi
-
-          # --- 5. Rename outputs to release naming convention ---
-          # pybuild v2 names outputs as {python.arch}-{python.os}.zip
-          declare -A TARGET_MAP=(
-            ["x86_64-unknown-linux-gnu"]="linux-amd64"
-            ["aarch64-unknown-linux-gnu"]="linux-arm64"
-            ["x86_64-pc-windows-msvc"]="windows-amd64"
-            ["aarch64-pc-windows-msvc"]="windows-arm64"
-            ["x86_64-apple-darwin"]="macos-amd64"
-            ["aarch64-apple-darwin"]="macos-arm64"
-          )
-
-          for zip in build_dist/*.zip; do
-            [ -f "$zip" ] || continue
-            base=$(basename "$zip" .zip)
-            target="${TARGET_MAP[$base]:-}"
-            if [ -n "$target" ]; then
-              mv "$zip" "release_assets/ErisPulse-${version}-${target}.zip"
-              echo "Built: ErisPulse-${version}-${target}.zip"
-            else
-              echo "⚠️ Unknown output: $base"
-            fi
-          done
-
-          echo "\n=== Build output ==="
-          ls -la release_assets/ErisPulse-*.zip 2>/dev/null || echo "No standalone executables built"
-
-      - name: Upload all assets to Release
-        if: steps.create-release.outputs.release_created == 'true' || steps.create-release.outputs.release_updated == 'true'
-        env:
-          GH_TOKEN: ${{ steps.app-token.outputs.token }}
-        shell: bash
-        run: |
-          version=$(grep '^version' pyproject.toml | head -1 | sed 's/version = "//;s/"//')
-          tag_name="v$version"
-
-          # release_assets/ has AI docs + ErisPulse-*.zip standalone executables
-          echo "All release assets:"
-          ls -la release_assets/
-
-          if [ -n "$(ls -A release_assets)" ]; then
-            gh release upload "$tag_name" release_assets/* --clobber
-            echo "Uploaded $(ls release_assets | wc -l) assets to $tag_name"
-          else
-            echo "No assets to upload"
-          fi

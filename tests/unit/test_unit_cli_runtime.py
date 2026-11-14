@@ -82,6 +82,75 @@ class TestRestartCommand:
         assert runtime_state.read() is None
 
 
+@pytest.mark.unit
+class TestRestartContainerHot:
+    """容器内实例（PID 1）restart 改走进程内热重启信号"""
+
+    async def test_pid1_signals_framework_child(self, in_tmp_project, monkeypatch, capsys):
+        import signal as signal_mod
+
+        killed: list[tuple[int, object]] = []
+
+        def fake_kill(pid, sig):
+            # 放行 pid_alive 的 0 号信号存活探测，只记录真实热重启信号
+            if sig != 0:
+                killed.append((pid, sig))
+
+        monkeypatch.setattr(signal_mod, "SIGUSR1", object(), raising=False)
+        monkeypatch.setattr(os, "kill", fake_kill)
+        monkeypatch.setattr(
+            "ErisPulse.CLI.commands.runtime.subprocess.call",
+            lambda *a, **k: pytest.fail("容器内实例不应走停止后重拉路径"),
+        )
+
+        runtime_state.write(pid=1, argv=["epsdk", "run"], child_pid=os.getpid())
+        cmd = RestartCommand()
+        cmd.execute(_args(force=False, pid=None))  # 不应抛 SystemExit
+
+        assert len(killed) == 1
+        assert killed[0][0] == os.getpid()
+        # 状态文件保留：实例仍在运行，未被清理
+        assert runtime_state.read() is not None
+        out = capsys.readouterr().out
+        assert str(os.getpid()) in out
+
+    async def test_pid1_without_sigusr1_reports_unsupported(self, in_tmp_project, monkeypatch, capsys):
+        import signal as signal_mod
+
+        monkeypatch.delattr(signal_mod, "SIGUSR1", raising=False)
+        runtime_state.write(pid=1, argv=["epsdk", "run"], child_pid=os.getpid())
+
+        cmd = RestartCommand()
+        with pytest.raises(SystemExit) as exc_info:
+            cmd.execute(_args(force=False, pid=None))
+
+        assert exc_info.value.code == 1
+        out = capsys.readouterr().out
+        assert out
+        # 状态文件保留，未误杀实例
+        assert runtime_state.read() is not None
+
+    async def test_pid1_non_posix_env_reported(self, in_tmp_project, monkeypatch, capsys):
+        """SIGUSR1 存在但 os.kill 失败（权限等）：报告不支持并保留实例"""
+        import signal as signal_mod
+
+        monkeypatch.setattr(signal_mod, "SIGUSR1", object(), raising=False)
+
+        def _fail_kill(pid, sig):
+            if sig != 0:
+                raise PermissionError(1, "operation not permitted")
+
+        monkeypatch.setattr(os, "kill", _fail_kill)
+        runtime_state.write(pid=1, argv=["epsdk", "run"], child_pid=os.getpid())
+
+        cmd = RestartCommand()
+        with pytest.raises(SystemExit) as exc_info:
+            cmd.execute(_args(force=False, pid=None))
+
+        assert exc_info.value.code == 1
+        assert runtime_state.read() is not None
+
+
 def _args(force: bool, pid):
     """构造 argparse Namespace 桩"""
     from argparse import Namespace

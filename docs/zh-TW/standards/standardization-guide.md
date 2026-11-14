@@ -27,13 +27,13 @@
 
 ## 2. 標準地圖
 
-| 領域 | 標準文件 | 涵蓋內容 |
+| 領域 | 標準文件 | 覆蓋內容 |
 |------|---------|---------|
-| 事件轉換 | [事件轉換標準](event-conversion.md) | 事件結構、標準訊息段（text/image/mention/reply/keyboard 等）、平台擴充段規範 |
-| 互動元件 | **本文件 §5** | 按鈕/鍵盤、下拉選擇、卡片、互動回呼事件標準欄位、修飾器約定、各平台映射 |
-| API 動作 | [API 動作標準](api-action-spec.md) | OneBot12 標準動作（使用者/群組/頻道/訊息管理/元動作）的統一介面與 `ApiDSL` |
-| 請求操作 | [請求操作規範](request-action-spec.md) | 請求事件欄位（request_id）與 Request DSL（approve/reject） |
-| 發送方法 | [發送方法規範](send-method-spec.md) | Send 類別方法命名、參數、修飾器、反向轉換（OB12→平台） |
+| 事件轉換 | [事件轉換標準](event-conversion.md) | 事件結構、標準訊息段（text/image/mention/reply/keyboard 等）、平台擴展段規範 |
+| 互動元件 | **本文檔 §5** | 按鈕/鍵盤、下拉選擇、卡片、互動回調事件標準欄位、修飾器約定、各平台映射 |
+| API 動作 | [API 動作標準](api-action-spec.md) | OneBot12 標準動作（使用者/群組/頻道/訊息/管理/元動作）的統一介面與 `ApiDSL` |
+| 請求操作 | [請求操作規範](request-action-spec.md) | 請求事件欄位（request_id）、Request DSL（approve/reject）與請求類型上下文留存 |
+| 發送方法 | [發送方法規範](send-method-spec.md) | Send 類方法命名、參數、修飾器、反向轉換（OB12→平台） |
 | 會話類型 | [會話類型標準](session-types.md) | user/group/channel/guild/dms 等會話類型定義與映射 |
 | API 回應 | [API 回應標準](api-response.md) | 標準回應結構與 retcode 約定 |
 
@@ -234,24 +234,24 @@ def get_interaction_id(self) -> str: ...  # interaction_id
 
 ## 7. 新適配器開發者的標準 Checklist
 
-開發新適配器時，按此清單對照實作（★ 為必須，其餘建議）：
+開發新適配器時，請依照此清單對照實現（★ 為必須，其餘推薦）：
 
-- [ ] ★ 事件轉換為 OneBot12 標準結構，繼承 `BaseConverter`
-- [ ] ★ 標準訊息段收發支援（text/image/mention/reply/keyboard…；媒體段按
+- [ ] ★ 將事件轉換為 OneBot12 標準結構，繼承 `BaseConverter`
+- [ ] ★ 支援標準訊息段的收發（text/image/mention/reply/keyboard…；媒體段依照
       [發送方法規範 §2.1](send-method-spec.md) 的形態分級與降級階梯處理）
-- [ ] ★ 實作 `Raw_ob12`（含標準段 → 平台結構轉換；標準 `keyboard` 段必做）
+- [ ] ★ 實現 `Raw_ob12`（包含標準段 → 平台結構轉換；標準 `keyboard` 段必做）
 - [ ] ★ 回傳標準回應結構（`make_response`/`make_error`）
-- [ ] ★ 多帳戶：`AccountConfigClass(BotAccountConfig)` + `_resolve_account`
-- [ ] ★ Send 類別繼承 `BaseAdapter.Send`，用 `_apply_modifiers`/`send_context`
-- [ ] ☆ Api DSL：標準動作映射到平台API（見 API 動作標準）
-- [ ] ☆ Request DSL：請求事件含 `request_id` + `accept/reject`
-- [ ] ☆ 互動元件：`keyboard` 段轉換 + 互動回呼標準欄位 + `.Keyboard()`/`.Buttons()` 修飾器（適配器 Send 類別實作）
-- [ ] ☆ EventMixin：`get_raw_event()` / `get_button_data()` 等平台擴充方法
-- [ ] ☆ 生命週期任務用 `runtime.spawn_background`
-- [ ] ☆ 設定讀取用 `self.cfg`
-- [ ] ☆ 框架軟依賴：不宣告 ErisPulse 硬依賴 + 執行時版本偵測
-- [ ] ☆ i18n：設定欄位與日誌多語言
-- [ ] ☆ platform-guide 平台文件 + 適配器儲存庫 platform-features.md
+- [ ] ★ 多帳戶：`AccountConfigClass(BotAccountConfig)` + 帳戶解析（帳戶名 / `bot_id` 匹配）
+- [ ] ★ Send 類繼承 `BaseAdapter.Send`，使用 `_apply_modifiers`/`send_context`
+- [ ] ☆ Api DSL：標準動作映射到平台 API（參見 API 動作標準）
+- [ ] ☆ Request DSL：請求事件包含 `request_id` + `accept/reject`（異構端點平台包含請求類型上下文留存）
+- [ ] ☆ 互動組件：`keyboard` 段轉換 + 互動回調標準欄位 + `.Keyboard()`/`.Buttons()` 修飾器（適配器 Send 類實現）
+- [ ] ☆ EventMixin：`get_raw_event()` / `get_button_data()` 等平台擴展方法
+- [ ] ☆ 生命週期任務使用 `runtime.spawn_background`
+- [ ] ☆ 配置讀取使用 `self.cfg`
+- [ ] ☆ 框架軟依賴：不宣告 ErisPulse 硬依賴 + 運行時版本檢測
+- [ ] ☆ i18n：配置欄位與日誌多語言
+- [ ] ☆ platform-guide 平台文件 + 適配器倉庫 platform-features.md
 
 ## 8. 相關文件
 

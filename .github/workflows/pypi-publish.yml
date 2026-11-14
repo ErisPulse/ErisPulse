@@ -85,3 +85,41 @@ jobs:
           packages-dir: dist/
           verbose: true
 
+  notify-app-rootfs:
+    # PyPI 发布成功后（needs 串联保证）才通知 App 仓库重建 rootfs：rootfs
+    # 构建时 pip 安装固定版本框架，早于 PyPI 收录会装到空版本。
+    runs-on: ubuntu-latest
+    needs: [pypi-publish]
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Generate App Token
+        id: app-token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.ERISBOT_APP_ID }}
+          private-key: ${{ secrets.ERISBOT_PRIVATE_KEY }}
+
+      - name: Trigger App rootfs sync
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          # dev/预发布不通知：rootfs 是固定名滚动资产，只跟随正式版。dispatch
+          # 失败不改变发布结果，可手动在 App 仓库跑 rootfs-sync 重试；
+          # workflow_dispatch 手动重跑发布时 checkout 的是默认分支，版本以
+          # 当时 pyproject 为准。
+          version=$(grep '^version' pyproject.toml | head -1 | sed 's/version = "//;s/"//')
+          if echo "$version" | grep -qE '(dev|alpha|beta|rc|pre)'; then
+            echo "prerelease $version — skip rootfs sync"
+            exit 0
+          fi
+          gh api repos/ErisPulse/ErisPulse-App/dispatches \
+            -f event_type=framework-released \
+            -F "client_payload[version]=$version" \
+            --jq '.event_type // "dispatched"' \
+            || echo "App 仓库 dispatch 失败（不影响本次发布）"
+

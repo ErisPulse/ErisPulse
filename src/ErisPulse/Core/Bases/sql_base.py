@@ -38,7 +38,7 @@ from ..constants import (
 from ..i18n import i18n
 from ..lifecycle import lifecycle
 from ..logger import TRACE, logger
-from .errors import StorageUnreachableError
+from .errors import StorageOperationError, StorageUnreachableError
 from .storage import _SENTINEL, BaseQueryBuilder, BaseStorage, _current_txn
 
 # SQL 标识符（表名/列名）合法模式——用于 INSERT/UPDATE 列名、表名等必须为简单标识符的场景
@@ -856,6 +856,33 @@ class SQLStorageBase(BaseStorage):
         finally:
             await self._release_resource_conn(resource, conn)
 
+    # 连接级损坏判定：命中即丢弃循环缓存资源，下次操作重建（规则 26 自动重连兑现）
+    _CONN_BROKEN_MARKERS = ("closed", "disk i/o", "malformed", "shutdown")
+
+    def _invalidate_if_connection_broken(self, e: BaseException) -> None:
+        """
+        {!--< internal-use >!--}
+        连接级损坏（closed / 磁盘 IO / 库文件损坏）时丢弃当前循环的缓存资源
+
+        写锁竞争（database is locked）不属此类——连接本身可用，丢弃会误伤。
+        不失效则坏连接永远命中缓存、永不重建（自愈断路，故障持续到进程退出）。
+
+        :param e: 操作抛出的异常
+        """
+        msg = str(e).lower()
+        if not any(marker in msg for marker in self._CONN_BROKEN_MARKERS):
+            return
+        try:
+            loop = asyncio.get_running_loop()
+        except RuntimeError:
+            return
+        with self._resources_lock:
+            if loop in self._loop_resources:
+                del self._loop_resources[loop]
+                logger.warning(
+                    i18n.t("core.storage.loop_resource_invalidated", error=str(e))
+                )
+
     async def _run_with_conn(
         self, impl: Callable[..., Any], *args: Any, conn: Any = None
     ) -> Any:
@@ -865,8 +892,12 @@ class SQLStorageBase(BaseStorage):
         """
         if conn is not None:
             return await impl(conn, *args)
-        async with self._acquire() as acquired:
-            return await impl(acquired, *args)
+        try:
+            async with self._acquire() as acquired:
+                return await impl(acquired, *args)
+        except Exception as e:
+            self._invalidate_if_connection_broken(e)
+            raise
 
     # 方言执行漏斗（子类实现）
 
@@ -1266,9 +1297,15 @@ class SQLStorageBase(BaseStorage):
             if logger.should_log(TRACE):
                 logger.trace(f"storage.set: key={key}")
             return result
-        except Exception as e:
-            logger.error(i18n.t("core.storage.set_failed", key=key, error=e))
+        except StorageUnreachableError:
+            # 规则 26：连接级不可达 → 冷却期快速失败返回 False（框架韧性，failover 契约）
+            logger.warning(i18n.t("core.storage.cooldown_fast_fail", backend=self.dialect.name))
             return False
+        except Exception as e:
+            raise StorageOperationError(
+                i18n.t("core.storage.set_failed", key=key, error=e),
+                operation="set", key=key,
+            ) from e
 
     async def _delete_impl(self, conn: Any, key: str) -> bool:
         table, key_col, value_col = self._kv_table_sql()
@@ -1332,9 +1369,15 @@ class SQLStorageBase(BaseStorage):
             logger.trace(i18n.t("core.storage.kv_delete", key=key))
         try:
             return await self._run_with_conn(self._delete_impl, key, conn=conn)
-        except Exception as e:
-            logger.error(i18n.t("core.storage.delete_failed", key=key, error=e))
+        except StorageUnreachableError:
+            # 规则 26：连接级不可达 → 冷却期快速失败返回 False（框架韧性，failover 契约）
+            logger.warning(i18n.t("core.storage.cooldown_fast_fail", backend=self.dialect.name))
             return False
+        except Exception as e:
+            raise StorageOperationError(
+                i18n.t("core.storage.delete_failed", key=key, error=e),
+                operation="delete", key=key,
+            ) from e
 
     async def _aget_all_keys_impl(self, conn: Any) -> list[str]:
         table, key_col, _value_col = self._kv_table_sql()
@@ -1383,9 +1426,14 @@ class SQLStorageBase(BaseStorage):
                 conn=conn,
             )
             return True
-        except Exception as e:
-            logger.error(i18n.t("core.storage.clear_failed", error=e))
+        except StorageUnreachableError:
+            # 规则 26：连接级不可达 → 冷却期快速失败返回 False（框架韧性，failover 契约）
+            logger.warning(i18n.t("core.storage.cooldown_fast_fail", backend=self.dialect.name))
             return False
+        except Exception as e:
+            raise StorageOperationError(
+                i18n.t("core.storage.clear_failed", error=e), operation="clear"
+            ) from e
 
     # 批量操作（单连接批量 SQL）
 
@@ -1465,9 +1513,14 @@ class SQLStorageBase(BaseStorage):
 
             await self._run_with_conn(write_all)
             return True
-        except Exception as e:
-            logger.error(i18n.t("core.storage.set_multi_failed", error=e))
+        except StorageUnreachableError:
+            # 规则 26：连接级不可达 → 冷却期快速失败返回 False（框架韧性，failover 契约）
+            logger.warning(i18n.t("core.storage.cooldown_fast_fail", backend=self.dialect.name))
             return False
+        except Exception as e:
+            raise StorageOperationError(
+                i18n.t("core.storage.set_multi_failed", error=e), operation="set_multi"
+            ) from e
 
     def set_multi(self, items: dict[str, Any]) -> bool:
         """
@@ -1537,7 +1590,9 @@ class SQLStorageBase(BaseStorage):
         """
         return SQLQueryBuilder(self, table_name)
 
-    async def aCreateTable(self, table_name: str, columns: dict[str, str]) -> bool:
+    async def aCreateTable(
+        self, table_name: str, columns: dict[str, str], constraints: list[str] | None = None
+    ) -> bool:
         """
         异步创建表
 
@@ -1546,6 +1601,9 @@ class SQLStorageBase(BaseStorage):
 
         :param table_name: 表名
         :param columns: 列名到类型的映射
+        :param constraints: 表级约束 DDL 片段（如 ``PRIMARY KEY ("a", "b")``），
+            追加在列定义之后；片段内标识符引用由调用方完成，内容经注入
+            危险字符校验
         :return: 操作是否成功
 
         :example:
@@ -1562,6 +1620,8 @@ class SQLStorageBase(BaseStorage):
             for col_name, col_type in columns.items():
                 _validate_identifier(col_name, "column")
                 _validate_column_type(col_type)
+            for constraint in constraints or []:
+                _validate_column_type(constraint)
         except ValueError as e:
             logger.error(
                 i18n.t("core.storage.create_table_failed", table=table_name, error=e)
@@ -1574,7 +1634,8 @@ class SQLStorageBase(BaseStorage):
                 f"{dialect.quote(col)} {dialect.translate_column_type(typ)}"
                 for col, typ in columns.items()
             )
-            sql = f"CREATE TABLE IF NOT EXISTS {dialect.quote(table_name)} ({col_defs})"
+            fragments = [col_defs, *(constraints or [])]
+            sql = f"CREATE TABLE IF NOT EXISTS {dialect.quote(table_name)} ({', '.join(fragments)})"
             await self._execute_query("dml", sql, [])
             return True
         except Exception as e:

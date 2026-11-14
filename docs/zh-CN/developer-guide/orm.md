@@ -3,6 +3,9 @@
 > [!TIP]
 > **什么时候需要读这篇**：需要数据模型、自动建表或关系映射时。不需要则跳过，不影响其它功能的使用。
 
+> [!NOTE]
+> **ORM 是异步原生的**：全部 CRUD 方法（`create` / `get` / `save` / `delete` / `create_table` / QuerySet 终结操作）都是 `async def`，直接在事件循环内 `await` 调用即可——底层驱动为 aiosqlite / aiomysql / asyncpg（随存储后端切换），不存在同步阻塞。KV 存储的同步 `get`/`set` 是兼容层，与 ORM 无关。
+
 
 2.9.0 起框架内置声明式数据模型层：继承 `Model` 并用 `Field` 声明字段，即可获得自动建表与增删改查能力。模型直接构建在内置存储层之上——SQLite / MySQL / PostgreSQL 由 `ErisPulse.storage.backend` 配置决定，**切换后端无需修改模型代码**。
 
@@ -29,8 +32,8 @@ class User(Model):
 |------|------|
 | `default` | 默认值（未提供且非自增 → 必填 NOT NULL） |
 | `default_factory` | 可变默认值工厂（如 `list`） |
-| `primary_key` | 主键 |
-| `autoincrement` | 自增主键（隐含主键，`create` 后自动回填） |
+| `primary_key` | 主键（多个即复合主键，收敛为表级 `PRIMARY KEY (a, b)`） |
+| `autoincrement` | 自增主键（隐含主键，`create` 后自动回填；单列主键专用，与复合主键互斥） |
 | `max_length` | 字符串最大长度（生成 `VARCHAR(n)`，写入校验） |
 | `nullable` | 是否允许 NULL（默认 False） |
 | `index` | 生成普通索引 |
@@ -38,6 +41,31 @@ class User(Model):
 | `choices` / `ge` / `le` | 枚举 / 数值范围（写入校验） |
 | `description` | 描述（i18n 字典，与配置类同格式） |
 | `column_type` | 覆写 SQL 列类型定义 |
+| `foreign_key` | 列级外键约束（`"表.列"`，生成 `REFERENCES`） |
+| `on_delete` | 外键删除动作：`CASCADE` / `SET NULL` / `RESTRICT` / `NO ACTION` / `SET DEFAULT` |
+| `auto_now_add` | 插入时自动写入当前时间戳（浮点纪秒） |
+| `auto_now` | 插入与实例 `save()` 更新时均自动写入（`QuerySet.update` 批量路径不触发） |
+
+## 复合主键与联合唯一
+
+多个 `primary_key=True` 字段组成复合主键，`get` / `save` / `delete` 按全部主键列定位；
+`__unique_together__` 声明联合唯一分组（可多组）：
+
+```python
+class Membership(Model):
+    __tablename__ = "memberships"
+    __unique_together__ = (("user_id", "group_id"),)
+
+    user_id: int = Field(primary_key=True)
+    group_id: int = Field(primary_key=True)
+    role: str = Field(default="member")
+
+m = await Membership.get(user_id=1, group_id=2)
+```
+
+- `autoincrement` 与复合主键互斥，共存时模型定义即报错
+- `__unique_together__` 以唯一索引实现（`uq_` 前缀索引名）：新建表随建表生成，**已存在的表执行 `create_table()` 自动补建**，无需重建
+- 复合主键模型暂不支持关系映射（has-many / belongs-to），实例访问时明确报错
 
 ## 建表与 CRUD
 
@@ -53,11 +81,18 @@ total = await User.count(User.age > 18)
 
 user.age = 21
 await user.save()                              # 按主键更新（先约束校验）；主键缺失时退化为插入（自增主键同样回填到实例）
+await user.save(update_fields=["age"])         # 部分列更新（白名单，其余列不写入）
 await user.delete()                            # 按主键删除
+
+user, created = await User.get_or_create({"age": 20}, name="Alice")      # 查得即返回；无则创建
+user, created = await User.update_or_create({"age": 21}, name="Alice")   # 查得更新 defaults 并保存；无则创建
 
 await User.update_all(User.age > 18, role="adult")  # 批量更新
 await User.delete_all(User.age > 100)               # 批量删除
 ```
+
+> [!NOTE]
+> `get_or_create` / `update_or_create` 在并发竞争下两个协程可能同时走到创建分支——唯一约束（主键 / `unique` / `__unique_together__`）会让后到者收到 `StorageOperationError`；需要幂等语义时捕获后重查一次。
 
 查询表达式支持 `> >= < <= == !=`、`in_([...])`，以及 `&`（与）/ `|`（或）组合：
 
@@ -124,14 +159,15 @@ ALTER 误操作）。
 
 ## 外键（关系映射基础）
 
-`foreign_key="表.列"` 声明列级外键约束，DDL 生成 `REFERENCES` 子句：
+`foreign_key="表.列"` 声明列级外键约束，DDL 生成 `REFERENCES` 子句；`on_delete`
+声明删除动作（如 `"CASCADE"` 级联删除引用行）：
 
 ```python
 class Post(Model):
     __tablename__ = "posts"
 
     id: int = Field(primary_key=True, autoincrement=True)
-    author: int = Field(foreign_key="orm_users.id")
+    author: int = Field(foreign_key="orm_users.id", on_delete="CASCADE")
 
     content: str = Field(max_length=255)
 ```

@@ -1,47 +1,48 @@
-# Email Platform Feature Documentation
+# Email Platform Features Documentation
 
-EmailAdapter is an email adapter based on the SMTP/IMAP protocol, supporting email sending, receiving, and processing.
+EmailAdapter is an email adapter based on the SMTP/IMAP protocols, supporting email sending, receiving, and processing.
 
 ---
 
-## Documentation Information
+## Document Information
 
-- Corresponding Module Version: 4.3.0  
+- Corresponding module version: 4.3.2
 - Maintainer: ErisPulse
+- Last updated: 2026-11-10
 
 ## Basic Information
 
-- Platform Overview: A general-purpose adapter for sending and receiving emails via standard SMTP/IMAP protocols
-- Adapter Name: EmailAdapter
-- Multi-account Support: Supports configuring multiple email accounts simultaneously
-- Connection Method: IMAP long-polling for receiving + SMTP for sending
-- Authentication Method: Email address + password/authorization code
-- OneBot12 Compatibility: Supports sending OneBot12 formatted messages
+- Platform overview: A universal adapter for sending and receiving emails via the standard SMTP/IMAP protocols
+- Adapter name: EmailAdapter
+- Multi-account support: Supports configuring multiple email accounts simultaneously
+- Connection method: IMAP long-polling for receiving + SMTP for sending
+- Authentication method: Email address + password/authorization code
+- OneBot12 compatibility: Supports sending OneBot12 format messages
 
-## Configuration Guide
+## Configuration
 
 ### Global Configuration (EmailAdapter)
 
-| Configuration Item | Type | Default Value | Description |
-|--------------------|------|---------------|-------------|
+| Option | Type | Default | Description |
+|--------|------|--------|------|
 | `imap_server` | str | `imap.example.com` | Default IMAP server address |
 | `imap_port` | int | `993` | Default IMAP port |
 | `smtp_server` | str | `smtp.example.com` | Default SMTP server address |
 | `smtp_port` | int | `465` | Default SMTP port |
-| `ssl` | bool | `true` | Whether to enable SSL by default |
+| `ssl` | bool | `true` | Whether SSL is enabled by default |
 | `timeout` | int | `30` | Default connection timeout (seconds) |
 | `poll_interval` | int | `60` | IMAP polling interval (seconds) |
-| `max_retries` | int | `3` | Maximum number of retry attempts on connection failure |
+| `max_retries` | int | `3` | Maximum number of retries on connection failure |
 
 ### Account Configuration (EmailAdapter.accounts)
 
-Each account corresponds to an independent email. Account-level configurations take precedence over global configurations.
+Each account corresponds to an independent mailbox. Account-level configuration takes precedence over global configuration.
 
 ```toml
 [EmailAdapter.accounts.default]
 email = "user@example.com"
 password = "your-password-or-auth-code"
-imap_server = "imap.example.com"    # Optional, leave empty to use global default
+imap_server = "imap.example.com"    # Optional, leave empty to use global defaults
 imap_port = 993                      # Optional
 smtp_server = "smtp.example.com"    # Optional
 smtp_port = 465                      # Optional
@@ -55,32 +56,62 @@ password = "another-password"
 enabled = true
 ```
 
-## v5 Paradigm Update (4.2.0)
+## v5 Paradigm Updates (4.2.0)
 
-- **Api DSL Minimal Set**: get_self_info (email address) / get_status / get_version / get_supported_actions
-- **spawn_background Task Ownership**: IMAP polling tasks now use runtime.spawn_background
-- **Framework Soft Dependency**: Runtime checks for ErisPulse>=2.7.1 and prompts; version logs are output on startup
-- Import paths updated to Core.Bases; _load_accounts retained (global default values merged into adapter-specific logic)
+- **Api DSL minimal set**: get_self_info (email address) / get_status / get_version / get_supported_actions
+- **spawn_background task ownership**: The IMAP polling task now uses runtime.spawn_background
+- **Framework soft dependency**: Detects ErisPulse>=2.7.1 at runtime and issues a prompt; outputs a version log at startup
+- Import paths updated to Core.Bases; _load_accounts retained (merging global defaults is logic specific to this adapter)
+
+## Standardization Alignment (4.3.2)
+
+The response structure and error codes follow the [API Response Specification](../standards/api-response.md).
+
+### Events and Response Fields
+
+- **Message events now include top-level `message_id`**: Taken from the email `Message-ID` header
+- **Email events without `Message-ID` fall back to uuid for the id**: The event `id` and `message_id` are no longer empty, preventing events from being silently deduplicated downstream due to duplicate ids
+- **The raw data of `get_self_info` is located in the top-level `email_raw` of the response**, and the standard fields include `user_id` (email address)
+
+### HTML Sending Methods
+
+- `.Html(html: str)`: Sends an email in HTML format
+- `.HTML(html: str)`: Alias of `.Html()` (consistent with the standard Send method naming)
+
+### Error Code Specification
+
+| retcode | Meaning | Description |
+|---------|------|------|
+| 0 | Success | — |
+| 33001 | Network error | SMTP/IMAP connection failures (timeout, connection refused, etc.) |
+| 34100 | Platform failure | SMTP rejection (recipient/sender/data/authentication rejected); the original error is retained in `email_raw` |
+| 10003 | Parameter error | Missing or invalid parameters |
+
+### Accounts and Multi-Account
+
+- `Send` reads `send_context` (event account fallback): When `Send` is called from an event context, it falls back to the source account by default
+- For multi-account sending, explicitly specify the account with `Send.Using("account name")`
 
 ---
 
-### Platform Capabilities Already Integrated
 
-- **Receiving**: IMAP polling for receiving messages (body/HTML/attachments parsed into message segments), incremental unread detection
-- **Sending**: SMTP sending (Subject/Text/Html/Cc/Bcc/ReplyTo/Attachment), supports multiple accounts
-- **API**: Account information and runtime status (minimal set); concepts like email recall/group are not applicable
+### Integrated Platform Capabilities
+
+- **Receiving**: IMAP polling for incoming mail (body/HTML/attachments parsed into message segments), incremental unread detection
+- **Sending**: SMTP outgoing mail (Subject/Text/Html/Cc/Bcc/ReplyTo/Attachment), multi-account supported
+- **API**: Account information and running status (minimal set); concepts such as email recall/groups are not applicable
 
 ---
 
 ## Supported Message Sending Types
 
-All sending methods are implemented through a fluent API syntax:
+All sending methods are implemented via chained syntax:
 
 ```python
 from ErisPulse.Core import adapter
 mail = adapter.get("email")
 
-# Simple plain text email
+# Simple text email
 await mail.Send.To("private", "to@example.com").Subject("Test").Text("Content")
 
 # HTML email with attachments
@@ -90,41 +121,41 @@ await mail.Send.To("private", "to@example.com") \
     .Attachment("report.pdf") \
     .Html("<h1>HTML Content</h1>")
 
-# Use Raw_ob12 to send standard OB12 messages
+# Send standard OB12 messages using Raw_ob12
 await mail.Send.To("private", "to@example.com").Raw_ob12([
-    {"type": "text", "data": {"text": "Email body"}},
+    {"type": "text", "data": {"text": "Email body text"}},
     {"type": "file", "data": {"file": "/path/to/attachment.pdf"}},
 ])
 
-# Specify the sending account (for multiple accounts)
+# Specify the sending account (multi-account)
 await mail.Send.Using("default").To("private", "to@example.com").Text("Content")
 ```
 
-> Note: When using the fluent API syntax, parameter methods (Subject / Cc / Attachment, etc.) must be called before the sending method (Text / Html / Raw_ob12).
+> Note: When using chained syntax, parameter methods (Subject / Cc / Attachment, etc.) must be called before the sending method (Text / Html / Raw_ob12).
 
 ### Basic Sending Methods
 
 | Method | Description |
-|--------|-------------|
-| `.Text(text: str)` | Send plain text email |
-| `.Html(html: str)` | Send HTML formatted email |
-| `.MergeForward(nodes, title)` | Send merged forward email (body is a `<details>` collapsed HTML card, subject defaults to the title) |
-| `.Raw_ob12(message, **kwargs)` | Send OneBot12 formatted message |
+|------|------|
+| `.Text(text: str)` | Sends a plain text email |
+| `.Html(html: str)` | Sends an email in HTML format (`.HTML(html)` is an alias) |
+| `.MergeForward(nodes, title)` | Sends a merged-forward email (the body is a collapsible `<details>` HTML card; the subject defaults to the title) |
+| `.Raw_ob12(message, **kwargs)` | Sends a OneBot12 format message |
 
-### Fluent Modifier Methods (return self, can be chained)
+### Chained Modifier Methods (return self, can be combined)
 
 | Method | Description |
-|--------|-------------|
-| `.Subject(subject: str)` | Set the email subject |
-| `.Cc(emails: Union[str, List[str]])` | Set the CC recipients |
-| `.Bcc(emails: Union[str, List[str]])` | Set the BCC recipients |
-| `.ReplyTo(email: str)` | Set the reply-to address |
-| `.Attachment(file, filename: str = None)` | Add an attachment |
+|------|------|
+| `.Subject(subject: str)` | Sets the email subject |
+| `.Cc(emails: Union[str, List[str]])` | Sets CC addresses |
+| `.Bcc(emails: Union[str, List[str]])` | Sets BCC addresses |
+| `.ReplyTo(email: str)` | Sets the reply-to address |
+| `.Attachment(file, filename: str = None)` | Adds an attachment |
 
 ### OB12 Message Segment Reverse Conversion (Raw_ob12)
 
 | OB12 Message Segment | Converted to Email Content |
-|----------------------|----------------------------|
+|------------|--------------|
 | `text` | Plain text body |
 | `image` | Image attachment |
 | `video` | Video attachment |
@@ -132,15 +163,15 @@ await mail.Send.Using("default").To("private", "to@example.com").Text("Content")
 | `audio` | Audio attachment |
 | `markdown` | Converted to HTML body |
 
-## Unique Event Types
+## Platform-Specific Event Types
 
-### Core Differences
+### Key Differences
 
-1. All email events are of `message` type, with `detail_type` fixed as `private`
-2. `user_id` is the sender's **pure email address**, `user_nickname` is the sender's display name
-3. `message` message segments are in standard OB12 format (text segment + file segment)
+1. All email events are of `message` type, with `detail_type` fixed to `private`
+2. `user_id` is the sender's **plain email address**, and `user_nickname` is the sender's display name
+3. `message` segments are in standard OB12 format (text segment + file segment)
 4. The email subject is obtained via the `email_subject` extension field
-5. The complete original data is preserved in the `email_raw` field
+5. The complete raw data is retained in the `email_raw` field
 
 ### New Email Event (email_new)
 
@@ -155,6 +186,7 @@ await mail.Send.Using("default").To("private", "to@example.com").Text("Content")
     "platform": "email",
     "user_id": "bot@example.com"
   },
+  "message_id": "<message-id@example.com>",
   "message": [
     {
       "type": "text",
@@ -163,7 +195,7 @@ await mail.Send.Using("default").To("private", "to@example.com").Text("Content")
       }
     }
   ],
-  "alt_message": "Email Subject",
+  "alt_message": "Email subject",
   "user_id": "sender@example.com",
   "user_nickname": "Saber"
 }
@@ -194,7 +226,7 @@ await mail.Send.Using("default").To("private", "to@example.com").Text("Content")
 
 ### Reply Email Event (email_reply)
 
-When the email contains `References` or `In-Reply-To` headers, `email_raw_type` is `email_reply`:
+When an email contains `References` or `In-Reply-To` headers, `email_raw_type` is `email_reply`:
 
 ```json
 {
@@ -209,14 +241,14 @@ When the email contains `References` or `In-Reply-To` headers, `email_raw_type` 
 ## Extension Field Descriptions
 
 | Field | Type | Description |
-|-------|------|-------------|
-| `email_raw` | dict | Complete original email data (subject/from/to/date/cc/bcc/text_content/html_content/attachments, etc.) |
-| `email_raw_type` | str | Original event type: `email_new` (new email) or `email_reply` (reply email) |
+|------|------|------|
+| `email_raw` | dict | Complete raw email data (subject/from/to/date/cc/bcc/text_content/html_content/attachments, etc.) |
+| `email_raw_type` | str | Raw event type: `email_new` (new email) or `email_reply` (reply email) |
 | `email_subject` | str | Email subject (convenient access) |
-| `email_from` | str | Sender's pure email address (convenient access) |
-| `attachments` | list | List of attachment data (including binary `data` field, backward compatible) |
+| `email_from` | str | Sender's plain email address (convenient access) |
+| `attachments` | list | List of attachment data (includes the binary `data` field, backward compatible) |
 
-## Standard Event Examples
+## Standard Event Example
 
 ### Complete Email Event
 
@@ -231,6 +263,7 @@ When the email contains `References` or `In-Reply-To` headers, `email_raw_type` 
     "platform": "email",
     "user_id": "bot@example.com"
   },
+  "message_id": "<abc123@example.com>",
   "message": [
     {
       "type": "text",
@@ -278,7 +311,7 @@ When the email contains `References` or `In-Reply-To` headers, `email_raw_type` 
 }
 ```
 
-## Sending Method Return Values
+## Sending Method Return Value
 
 ```json
 {
@@ -306,7 +339,7 @@ from ErisPulse.Core.Event import message
 async def handle_email(event):
     if event.get("platform") != "email":
         return
-    # Pure email address of sender
+    # Sender's plain email address
     sender = event["user_id"]              # sender@example.com
     
     # Sender's display name
@@ -315,19 +348,19 @@ async def handle_email(event):
     # Email subject
     subject = event.get("email_subject")   # Meeting Notice
     
-    # Plain text body (first text segment)
+    # Plain text body (the first text segment)
     text = event.get_text()
     
-    # Complete original data
+    # Complete raw data
     raw = event.get("email_raw", {})
     html = raw.get("html_content", "")
     
-    # Process attachments
+    # Handle attachments
     for seg in event.get("message", []):
         if seg["type"] == "file":
             filename = seg["data"]["file_name"]
             size = seg["data"]["size"]
     
-    # Reply to email
+    # Reply to the email
     await event.reply(f"Received: {subject}")
 ```

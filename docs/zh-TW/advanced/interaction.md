@@ -278,19 +278,39 @@ for m in messages:
 - 配置：`ErisPulse.transcript = {enabled = true, max_per_session = 50, ttl_hours = 168}`
 - 管理器 API：`sdk.transcript.append() / get() / clear()`，`aflush()` / `flush()` 手動刷盤
 
-## 訊息事務：message_tx
+## 消息事務：message_tx
 
-事務內的所有出站發送自動記帳；**異常退出時逆序自動撤回**已發送的訊息
-（適配器未實現 `delete_message` 時跳過，帳本仍正常記錄）。
+事務內的所有出站發送自動記帳；**異常退出時逆序自動撤回**已發送的消息  
+（適配器未實作 `delete_message` 時跳過，帳本仍正常記錄）。
 
 ```python
 async with event.message_tx():
     await event.reply("正在處理，請稍候")
     result = await do_something()          # 這裡拋異常 →
-    await event.reply(f"完成: {result}")   # 前面的「處理中」自動撤回
+    await event.reply(f"完成: {result}")   # 前面的"處理中"自動撤回
 ```
 
-事務外發送不記帳（零開銷）；`get_send_receipts()` 可查看當前事務已發送的回執。
+事務外發送不記帳（零開銷）；事務內隨時可讀回執帳本，典型用途是**自刪機器人**  
+（發出即安排延時撤回）與發送審計：
+
+```python
+import asyncio
+from ErisPulse.runtime import get_send_receipts
+
+async def delayed_delete(adapter, message_id: str, delay: float):
+    await asyncio.sleep(delay)
+    await adapter.delete_message(message_id)
+
+async with event.message_tx():
+    await event.reply("臨時提示")
+    for r in get_send_receipts() or []:
+        # 每條回執含 platform / bot_id / message_id / trace_id
+        asyncio.create_task(delayed_delete(adapter, r["message_id"], 30))
+```
+
+回執讀取是**事務作用域**的：僅在 `message_tx()` 事務內返回非 `None`，  
+事務外恆為 `None`；需要捕獲全部出站（含事務外）請用 `message.sending/sent`  
+鉤子（見[鏈路追蹤](#鏈路追蹤trace-id)的 `trace_id` 字段）。
 
 ## 鏈路追蹤：trace-id
 

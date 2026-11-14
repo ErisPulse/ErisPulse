@@ -20,7 +20,7 @@ from pathlib import Path
 FULL_EXAMPLE_FILENAME = "config.full.example"
 
 # 生成器版本：模板/静态段结构变化时递增，驱动带标记文件的一次性刷新
-_GEN = 5
+_GEN = 6
 
 # 首行标记前缀（语言无关，供自动刷新判定）
 _MARKER_PREFIX = "# ErisPulse full config reference (auto-maintained by framework, gen="
@@ -142,6 +142,7 @@ def render_full_example(adapter_list=None, st=None) -> str:
             f"# {st.t('cfg.framework.watch_ignore_dirs_line1')}",
             f"# watch_ignore_dirs = [\".venv\", \".git\", \"node_modules\"]  # {st.t('cfg.framework.watch_ignore_dirs_line2')}",
             f"watch_include_plugin_dirs = true  # {st.t('cfg.framework.watch_include_plugin_dirs')}",
+            f'cross_account_policy = "off"   # {st.t("cfg.framework.cross_account_policy")}',
             "",
             st.t("cfg.section.transcript"),
             "",

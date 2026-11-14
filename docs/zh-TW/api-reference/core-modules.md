@@ -407,11 +407,11 @@ async def list_users(request: HttpRequest):
     return {"users": []}
 ```
 
-## HTTP Client 模組
+## HTTP Client 模塊
 
-統一網路客戶端，聚合 HTTP 請求、WebSocket 連線、連線池管理、自動重試、請求統計和生命週期事件整合。
+統一的網路客戶端，聚合 HTTP 請求、WebSocket 連接、連接池管理、自動重試、請求統計和生命週期事件整合。
 
-> 完整的網路客戶端文件（請求方法、回應物件、WebSocket 客戶端、例外體系等）請參考 [網路客戶端](../advanced/http-client.md)。
+> 完整的網路客戶端文件（請求方法、回應物件、WebSocket 客戶端、例外體系等）請參考 [網路客戶端](../advanced/client.md)。
 
 ### 快速參考
 
@@ -529,12 +529,12 @@ sdk.transcript.clear(event)
 
 ## 相關文件
 
-**繼續查 API**：
+**繼續查看 API**：
 - [事件系統 API](event-system.md) - Event 模組 API
 - [適配器系統 API](adapter-system.md) - Adapter 管理 API
 
 **深入某個子系統的完整文件**：
 - [SQL 查詢建構器](../advanced/sql-builder.md) - SQL 鏈式查詢完整文件
 - [路由管理器](../advanced/router.md) - 路由管理器完整文件
-- [網路客戶端](../advanced/http-client.md) - 網路客戶端完整文件
+- [網路客戶端](../advanced/client.md) - 網路客戶端完整文件
 - [生命週期管理](../advanced/lifecycle.md) - 生命週期完整文件

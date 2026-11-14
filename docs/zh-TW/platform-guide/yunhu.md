@@ -1,30 +1,31 @@
 # 雲湖平台特性文件
 
-YunhuAdapter 是基於雲湖協議建構的適配器，整合了所有雲湖功能模組，提供統一的事件處理與訊息操作介面。
+YunhuAdapter 是基於雲湖協議建構的適配器，整合了所有雲湖功能模組，提供統一的事件處理和訊息操作介面。
 
 ---
 
 ## 文件資訊
 
-- 對應模組版本: 4.5.0
+- 對應模組版本: 4.6.2
 - 維護者: ErisPulse
+- 最後更新: 2026-11-10
 
 ## 基本資訊
 
 - 平台簡介：雲湖（Yunhu）是一個企業級即時通訊平台
 - 適配器名稱：YunhuAdapter
-- 多帳戶支援：支援透過 bot_id 來識別與設定多個雲湖機器人帳戶
+- 多帳號支援：支援透過 bot_id 識別並設定多個雲湖機器人帳號
 - 鏈式修飾支援：支援 `.Reply()` 等鏈式修飾方法
-- OneBot12 兼容：支援發送 OneBot12 格式訊息
+- OneBot12相容：支援發送 OneBot12 格式訊息
 
 ## v5 範式更新（4.4.0）
 
-本適配器已完成 v5 範式對齊（增量升級，API 兼容）：
+本適配器已完成 v5 範式對齊（增量升級，API 相容）：
 
 - **官方服務端API全集**（Api DSL 扩展方法）：編輯訊息、批量發送、訊息列表、使用者/全局看板、群成員禁言、移除群成員、群訊息類型控制、群標籤 CRUD、使用者打標籤
 - **標準 keyboard 段**（跨平台互動元件標準）：{"type": "keyboard", "data": {"rows": [[{"label", "type": "callback|link", "data"}]]}} 段自動轉換為雲湖 buttons；.Buttons(rows) / .Keyboard(rows) 修飾器接受通用結構（原生結構向後相容）
-- **互動回調標準字段**：按鈕點擊/A2UI 事件包含 interaction_id / utton_data 標準字段
-- **spawn_background 任務歸屬**：WS 連接任務改用 runtime.spawn_background
+- **互動回調標準字段**：按鈕點擊/A2UI 事件包含 interaction_id / button_data 標準字段
+- **spawn_background 任務歸屬**：WS 連接任務改用 `runtime.spawn_background`
 - **框架軟依賴**：運行時檢測 ErisPulse>=2.7.1 並提示；啟動輸出版本日誌
 
 ### 平台擴展動作（call / Api 方法）
@@ -57,6 +58,54 @@ async def handle_button(event):
 
 > 完整標準說明見 [跨平台互動元件標準](../standards/standardization-guide.md)。
 
+## 標準化對齊（4.6.2）
+
+本版本完成適配器標準化對齊，回應結構與錯誤碼遵循 [API 回應規範](../standards/api-response.md)。
+
+### 帳戶與多帳戶封閉
+
+- **事件注入 `self.account_id`**（內部帳戶名）：接收到的事件 `self` 對象攜帶產生該事件的帳戶名，`event.reply()` 會自動路由到**受理該事件的帳戶**，多帳戶場景無需再手動 `Using(bot_id)`
+- **`call_api` 雙兼容字段**：`account_id`（標準名）/ `_account_id`（舊名）均可指定帳戶，框架 ApiDSL（`Api.Using(...)`）自動適配
+- **`Send` 讀取 `send_context`**（事件帳戶兜底）：在事件處理上下文中調用 `Send` 時預設回落到來源帳戶
+
+### 錯誤碼規範
+
+| retcode | 含義 | 說明 |
+|---------|------|------|
+| 0 | 成功 | — |
+| 33001 | 網路錯誤 | 連接雲湖伺服器失敗等網路類異常 |
+| 34100 | 平台失敗 | 雲湖回傳失敗；原始回應保留在 `yunhu_raw` |
+| 10002 | 不支援 | 資源不存在（機器人/使用者/群不存在）或平台無對應能力的標準動作 |
+| 10003 | 參數錯誤 | 缺少或無效參數 |
+
+> **4.6.2 變化**：適配器補齊 `_platform` 後，`make_response` 由框架自動攜帶 `yunhu_raw`，平台失敗統一回傳 `34100`；"機器人/使用者/群不存在" 從 `34001` 調整為 `10002`（資源不存在）。
+
+### 回應結構調整
+
+原回應頂層的非標準 `self` 字段移入 `data.self_info`（含 bot_id），頂層僅保留標準字段與 `yunhu_raw`：
+
+```json
+{
+  "status": "ok",
+  "retcode": 0,
+  "data": {
+    "self_info": {"user_id": "bot_id"},
+    "messageInfo": {"msgId": "..."}
+  },
+  "message_id": "123456",
+  "message": "",
+  "yunhu_raw": {}
+}
+```
+
+### 未知事件不再靜默丟棄
+
+無法識別的雲湖事件現產出 `type="unknown"` 事件（`detail_type` 為原始事件類型，原始數據保留在 `yunhu_raw`）並輸出 warning 日誌，模組可據此排查未接入的事件類型。
+
+### 平台擴展方法約定
+
+歷史平台擴展方法（`edit_message` / `batch_send` / `set_user_board` / `gag_group_member` / `create_group_tag` 等）繼續保留可用；**新增平台擴展統一走 `Api.call("yunhu.xxx", **params)`**（見下文「平台擴展動作」）。
+
 ---
 
 ## 支援的訊息發送類型
@@ -71,13 +120,13 @@ await yunhu.Send.To("user", user_id).Text("Hello World!")
 
 支援的發送類型包括：
 - `.Text(text: str)`：發送純文字訊息。
-- `.Html(html: str)`：發送HTML格式訊息。
+- `.Html(html: str)`：發送HTML格式訊息。`.HTML(html)` 為別名（與標準 Send 方法命名保持一致）。
 - `.Markdown(markdown: str)`：發送Markdown格式訊息。
 - `.MergeForward(nodes, title="合併聊天記錄")`：發送合併轉發訊息（渲染為 `<details>` 折疊 HTML 卡片，經 html 通道發出）。
 - `.A2UI(text: str)`：發送A2UI格式訊息。
-- `.Image(file: bytes, stream: bool = False, filename: str = None)`：發送圖片訊息，支援流式上傳和自訂檔名。
-- `.Video(file: bytes, stream: bool = False, filename: str = None)`：發送影片訊息，支援流式上傳和自訂檔名。
-- `.File(file: bytes, stream: bool = False, filename: str = None)`：發送檔案訊息，支援流式上傳和自訂檔名。
+- `.Image(file: bytes, stream: bool = False, filename: str = None)`：發送圖片訊息，支援流式上傳和自訂檔案名。
+- `.Video(file: bytes, stream: bool = False, filename: str = None)`：發送影片訊息，支援流式上傳和自訂檔案名。
+- `.File(file: bytes, stream: bool = False, filename: str = None)`：發送檔案訊息，支援流式上傳和自訂檔案名。
 - `.Batch(target_ids: List[str], message: str, content_type: str = "text", **kwargs)`：批量發送訊息。
 - `.Edit(msg_id: str, text: str, content_type: str = "text", buttons: List = None)`：編輯已有訊息。
 - `.Recall(msg_id: str)`：撤回訊息。
@@ -107,7 +156,7 @@ await yunhu.Send.To("group", group_id).Kick(user_id)
 
 ### 訊息查詢方法
 
-獲取指定對話（使用者/群）的歷史訊息列表，需要透過鏈式語法指定目標，例如：
+獲取指定會話（使用者/群）的歷史訊息列表，需要透過鏈式語法指定目標，例如：
 ```python
 from ErisPulse.Core import adapter
 yunhu = adapter.get("yunhu")
@@ -115,7 +164,7 @@ yunhu = adapter.get("yunhu")
 result = await yunhu.Send.To("group", group_id).GetMessages(before=10)
 ```
 
-- `.GetMessages(message_id: str = None, before: int = None, after: int = None)`：獲取對話歷史訊息。回傳包含`list`陣列和`total`總數的回應資料。
+- `.GetMessages(message_id: str = None, before: int = None, after: int = None)`：獲取會話歷史訊息。回傳包含`list`陣列和`total`總數的回應資料。
   - `message_id`：訊息ID（可選）。不填時配合`before`回傳最近的N條訊息。
   - `before`：回傳指定訊息ID前N條。
   - `after`：回傳指定訊息ID後N條。
@@ -149,7 +198,7 @@ await yunhu.Send.To("group", group_id).Board("")
 | 欄位         | 類型   | 是否必填 | 說明                                                                 |
 |--------------|--------|----------|----------------------------------------------------------------------|
 | `text`       | string | 是       | 按鈕上的文字                                                         |
-| `actionType` | int    | 是       | 動作類型：<br>`1`: 跳轉 URL<br>`2`: 複製<br>`3`: 點擊回報            |
+| `actionType` | int    | 是       | 動作類型：<br>`1`: 跳轉 URL<br>`2`: 複製<br>`3`: 點擊彙報            |
 | `url`        | string | 否       | 當 `actionType=1` 時使用，表示跳轉的目標 URL                         |
 | `value`      | string | 否       | 當 `actionType=2` 時，該值會複製到剪貼簿<br>當 `actionType=3` 時，該值會發送給訂閱端 |
 
@@ -159,13 +208,13 @@ buttons = [
     [
         {"text": "複製", "actionType": 2, "value": "xxxx"},
         {"text": "點擊跳轉", "actionType": 1, "url": "http://www.baidu.com"},
-        {"text": "回報事件", "actionType": 3, "value": "xxxxx"}
+        {"text": "彙報事件", "actionType": 3, "value": "xxxxx"}
     ]
 ]
 await yunhu.Send.To("user", user_id).Buttons(buttons).Text("帶按鈕的訊息")
 ```
 > **注意：**
-> - 只有使用者點擊了**按鈕回報事件**的按鈕才會收到推送，**複製**和**跳轉URL**均無法收到推送。
+> - 只有使用者點擊了**按鈕彙報事件**的按鈕才會收到推送，**複製**和**跳轉URL**均無法收到推送。
 
 ### 鏈式修飾方法（可組合使用）
 
@@ -174,7 +223,7 @@ await yunhu.Send.To("user", user_id).Buttons(buttons).Text("帶按鈕的訊息")
 - `.Reply(message_id: str)`：回覆指定訊息。
 - `.At(user_id: str)`：@指定使用者。
 - `.AtAll()`：@所有人。
-- `.Buttons(buttons: List)`：添加按鈕。
+- `.Buttons(buttons: List)`：新增按鈕。
 
 ### 鏈式呼叫範例
 
@@ -247,7 +296,7 @@ result = await yunhu.Send.To("group", group_id).GetMessages(message_id="msg_xxx"
 # 獲取群中指定訊息ID前後各10條（共回傳21條）
 result = await yunhu.Send.To("group", group_id).GetMessages(message_id="msg_xxx", before=10, after=10)
 
-# 獲取使用者對話歷史訊息
+# 獲取使用者會話歷史訊息
 result = await yunhu.Send.To("user", user_id).GetMessages(message_id="msg_xxx", before=10)
 ```
 
@@ -279,9 +328,9 @@ from ErisPulse.Core import adapter
 yunhu = adapter.get("yunhu")
 
 # 信息查詢（透過公開 Web API，無需鑑權）
-result = await yunhu.Api.get_self_info()              # 機器人自身信息
-result = await yunhu.Api.get_user_info("7058262")     # 任意使用者信息
-result = await yunhu.Api.get_group_info("635409929")  # 群信息
+result = await yunhu.Api.get_self_info()              # 機器人自身資訊
+result = await yunhu.Api.get_user_info("7058262")     # 任意使用者資訊
+result = await yunhu.Api.get_group_info("635409929")  # 群資訊
 
 # 檔案操作
 result = await yunhu.Api.upload_file(type="path", name="a.png", path="./a.png")
@@ -298,12 +347,25 @@ info = await yunhu.Api.Using("bot1").get_self_info()
 
 | 方法 | 說明 | 資料來源 |
 |------|------|---------|
-| `get_self_info()` | 機器人自身信息 | 公開 Web API（bot-info） |
-| `get_user_info(user_id)` | 使用者信息（任意使用者可查） | 公開 Web API（user/homepage） |
-| `get_group_info(group_id)` | 群信息 | 公開 Web API（group-info） |
+| `get_self_info()` | 機器人自身資訊 | 公開 Web API（bot-info） |
+| `get_user_info(user_id)` | 使用者資訊（任意使用者可查） | 公開 Web API（user/homepage） |
+| `get_group_info(group_id)` | 群資訊 | 公開 Web API（group-info） |
 | `upload_file(*, type, name, ...)` | 上傳檔案（自動判定 image/video/file） | Bot 開放 API |
-| `get_file(file_id)` | 獲取檔案（file_id 即 URL） | — |
+| `get_file(file_id)` | 獲取檔案（file_id 即 URL，自動攜帶 Referer 下載並回傳 base64） | 代理下載 |
 | `delete_message(message_id, *, chat_id, chat_type)` | 撤回訊息 | Bot 開放 API（/bot/recall） |
+
+#### 媒體訊息與防盜鏈（4.6.3）
+
+雲湖媒體 CDN（`chat-img.jwznb.com` 等）啟用 **Referer 防盜鏈**：裸 `GET` 一律 `403`，必須攜帶 `Referer: https://im.jwzhd.com/`。
+
+- 收到媒體訊息（image/video/file/audio）時，事件內媒體段的 `data.headers.Referer` 已附帶該值；自行下載的模組請攜帶此頭
+- 或者直接用 `call_api("get_file", file_id=<url>)`，適配器代理下載並回傳 base64（自動處理防盜鏈）
+
+```python
+seg = event["message"][0]          # {"type": "image", "data": {...}}
+img = await bot.call_api("get_file", file_id=seg["data"]["url"])
+raw_bytes = base64.b64decode(img["data"]["base64"])
+```
 
 > **注意**：`get_self_info` / `get_user_info` / `get_group_info` 透過**非官方公開 Web API**（chat-web-go.jwzhd.com）實現，這些接口無需鑑權但非官方文件、可能隨平台更新變動；失敗時回傳標準錯誤回應。
 
@@ -316,7 +378,7 @@ info = await yunhu.Api.Using("bot1").get_self_info()
 
 ### 平台擴展動作
 
-透過 `Api.call("yunhu.xxx", **params)` 調用雲湖特有動作（參數採用 OB12 風格命名，適配器自動翻譯為雲湖欄位）：
+透過 `Api.call("yunhu.xxx", **params)` 調用雲湖特有動作（參數採用 OB12 風格命名，適配器自動翻譯為雲湖字段）：
 
 | 擴展動作 | 說明 | 等價 Send 方法 |
 |---------|------|---------------|
@@ -325,7 +387,7 @@ info = await yunhu.Api.Using("bot1").get_self_info()
 | `yunhu.ban` | 禁言（group_id, user_id, duration） | `Send.To("group", g).Ban(uid, duration)` |
 | `yunhu.unban` | 解除禁言（group_id, user_id） | `Send.To("group", g).Ban(uid, duration=0)` |
 | `yunhu.tag.create/edit/delete/list` | 群標籤 CRUD（group_id, ...） | `Send.To("group", g).CreateTag(...)` 等 |
-| `yunhu.tag.relate` / `yunhu.tag.relate_cancel` | 給使用者添加/移除標籤 | `Send.To("group", g).AddUserTag(...)` 等 |
+| `yunhu.tag.relate` / `yunhu.tag.relate_cancel` | 給使用者新增/移除標籤 | `Send.To("group", g).AddUserTag(...)` 等 |
 | `yunhu.set_member_title` / `yunhu.unset_member_title` | **成員頭銜語義別名**（標籤≈頭銜，內部映射到 tag.relate） | — |
 | `yunhu.msg_type_limit` | 群訊息類型限制（group_id, type） | `Send.To("group", g).SetMsgTypeLimit(...)` |
 | `yunhu.get_messages` | 獲取歷史訊息（chat_id, chat_type, message_id?, before?, after?） | `Send.To(...).GetMessages(...)` |
@@ -339,23 +401,24 @@ await yunhu.Api.call("yunhu.set_member_title", group_id="123", user_id="456", ti
 result = await yunhu.Api.call("yunhu.get_messages", chat_id="123", chat_type="group", before=10)
 ```
 
-> **標籤與頭銜**：雲湖的"標籤"語義等同 OneBot12 群成員 `title`。`yunhu.set_member_title` 是 `yunhu.tag.relate` 的原生語義別名，二者內部映射到同一端點。群訊息事件中發送者角色由 `senderUserLevel` 映射到標準 `role` 欄位（owner/admin/member）。
+> **標籤與頭銜**：雲湖的"標籤"語義等同 OneBot12 群成員 `title`。`yunhu.set_member_title` 是 `yunhu.tag.relate` 的原生語義別名，二者內部映射到同一端點。群訊息事件中發送者角色由 `senderUserLevel` 映射到標準 `role` 字段（owner/admin/member）。
 
 ## 發送方法回傳值
 
-所有發送方法均回傳一個 Task 物件，可以直接 await 獲取發送結果。回傳結果遵循 ErisPulse 适配器标准化回應規範：
+所有發送方法均回傳一個 Task 物件，可以直接 await 獲取發送結果。回傳結果遵循 ErisPulse 適配器標準化回傳規範：
 
 ```python
 {
     "status": "ok",           // 執行狀態
     "retcode": 0,             // 回傳碼
-    "data": {...},            // 回應資料
-    "self": {...},            // 自身資訊（包含 bot_id）
+    "data": {...},            // 回應資料（self_info 含 bot_id，見「回應結構調整」）
     "message_id": "123456",   // 訊息ID
     "message": "",            // 錯誤資訊
     "yunhu_raw": {...}        // 原始回應資料
 }
 ```
+
+> **4.6.2 變化**：原回應頂層的非標準 `self` 字段已移入 `data.self_info`。獲取 bot_id 請改用 `result["data"]["self_info"]["user_id"]`。
 
 ## 特有事件類型
 
@@ -370,18 +433,18 @@ result = await yunhu.Api.call("yunhu.get_messages", chat_id="123", chat_type="gr
     - A2UI按鈕點擊：yunhu_a2ui_button
     - 機器人設定：yunhu_bot_setting
     - 快捷選單：yunhu_shortcut_menu
-2. 標準欄位擴展（4.3.0+）：
-    - 訊息事件新增標準 `role` 欄位（由雲湖 `senderUserLevel` 映射為 `owner`/`admin`/`member`）
-    - 新增 `user_avatar` 欄位（發送者頭像 URL）
-3. 擴展欄位：
-    - 所有特有欄位均以yunhu_前綴標識
-    - 保留原始資料在yunhu_raw欄位
+2. 標準字段擴展（4.3.0+）：
+    - 訊息事件新增標準 `role` 字段（由雲湖 `senderUserLevel` 映射為 `owner`/`admin`/`member`）
+    - 新增 `user_avatar` 字段（發送者頭像 URL）
+3. 擴展字段：
+    - 所有特有字段均以yunhu_前綴標識
+    - 保留原始資料在yunhu_raw字段
     - 私聊中self.user_id表示機器人ID
 
-### 特殊欄位範例
+### 特殊字段範例
 
 ```python
-# 表單指令
+# 表單命令
 {
   "type": "message",
   "detail_type": "private",
@@ -423,7 +486,7 @@ result = await yunhu.Api.call("yunhu.get_messages", chat_id="123", chat_type="gr
     "recv_id": "接收者ID",
     "recv_type": "接收者類型",
     "action_name": "操作名稱",
-    "source_component_id": "來源元件ID",
+    "source_component_id": "來源組件ID",
     "form_context": {},
     "interaction_json": "互動資料JSON字串"
   }
@@ -549,7 +612,7 @@ await yunhu.Send.To("user", user_id).A2UI("A2UI互動卡片內容")
 | `get_raw_event()` | `dict` | 獲取雲湖原始事件資料（`yunhu_raw`） |
 | `get_sender_level()` | `str` | 發送者雲湖原生等級（owner/administrator/member/unknown） |
 | `get_sender_role()` | `str` | 發送者 OneBot12 標準 role（owner/admin/member） |
-| `get_sender_title()` | `str` | 發送者頭銜（標準 `title` 欄位存取器，預留） |
+| `get_sender_title()` | `str` | 發送者頭銜（標準 `title` 字段存取器，預留） |
 | `get_sender_avatar()` | `str` | 發送者頭像 URL |
 | `get_command()` | `dict` | 指令資料（僅指令訊息事件，`yunhu_command`） |
 | `get_button_value()` | `str` | 按鈕點擊事件的 value（`yunhu_button.value`） |
@@ -577,16 +640,16 @@ async def handle_yunhu_notice(event):
         menu_id = event.get_menu_id()
 ```
 
-## 擴展欄位說明
+## 擴展字段說明
 
-- 所有特有欄位均以 `yunhu_` 前綴標識，避免與標準欄位衝突
-- 保留原始資料在 `yunhu_raw` 欄位，便於存取雲湖平台的完整原始資料
+- 所有特有字段均以 `yunhu_` 前綴標識，避免與標準字段衝突
+- 保留原始資料在 `yunhu_raw` 字段，便於存取雲湖平台的完整原始資料
 - `self.user_id` 表示機器人ID（從配置中的bot_id獲取）
-- 表單指令透過 `yunhu_command` 欄位提供結構化資料
-- 按鈕點擊事件透過 `yunhu_button` 欄位提供按鈕相關資訊
-- A2UI按鈕事件透過 `yunhu_a2ui` 欄位提供A2UI互動相關資訊
-- 機器人設定變更透過 `yunhu_setting` 欄位提供設定項資料
-- 快捷選單操作透過 `yunhu_menu` 欄位提供選單相關資訊
+- 表單指令透過 `yunhu_command` 字段提供結構化資料
+- 按鈕點擊事件透過 `yunhu_button` 字段提供按鈕相關資訊
+- A2UI按鈕事件透過 `yunhu_a2ui` 字段提供A2UI互動相關資訊
+- 機器人設定變更透過 `yunhu_setting` 字段提供設定項資料
+- 快捷選單操作透過 `yunhu_menu` 字段提供選單相關資訊
 - 表情包/貼紙訊息段透過 `yunhu_expression` 消息段提供貼紙資料（sticker_id、貼紙包ID、圖片尺寸等）
 
 ### 表情包/貼紙訊息段 (yunhu_expression)
@@ -607,12 +670,12 @@ async def handle_yunhu_notice(event):
 }
 ```
 
-| 欄位 | 類型 | 說明 |
+| 字段 | 類型 | 說明 |
 |------|------|------|
 | `sticker_id` | string | 貼紙唯一標識 |
 | `sticker_pack_id` | string | 貼紙包ID |
 | `expression_id` | string | 表情ID |
-| `image_name` | string | 表情圖片檔名 |
+| `image_name` | string | 表情圖片檔案路徑 |
 | `width` | int | 圖片寬度（可選） |
 | `height` | int | 圖片高度（可選） |
 
@@ -688,7 +751,7 @@ await yunhu.Send.To("user", "user123").Text("Hello from default bot!")
 
 ### 事件中的Bot標識
 
-接收到的事件會自動包含對應的`bot_id`資訊：
+接收到的事件會自動包含對應的`bot_id`資訊（4.6.2 起同時注入內部帳戶名 `self.account_id`）：
 
 ```python
 from ErisPulse.Core.Event import message
@@ -698,15 +761,21 @@ async def handle_message(event):
     if event["platform"] == "yunhu":
         # 獲取觸發事件的機器人ID
         bot_id = event["self"]["user_id"]
-        print(f"訊息來自Bot: {bot_id}")
-        
-        # 使用相同bot回覆訊息
+        account_id = event["self"].get("account_id", "")  # 內部帳戶名（如 bot1）
+        print(f"訊息來自Bot: {bot_id}（帳戶: {account_id}）")
+
+        # 4.6.2 起 event.reply() 自動路由到受理帳戶，直接回覆即可
+        await event.reply("回覆訊息")
+
+        # 仍可顯式指定帳戶發送
         yunhu = adapter.get("yunhu")
         await yunhu.Send.Using(bot_id).To(
             event["detail_type"],
             event["user_id"] if event["detail_type"] == "private" else event["group_id"]
         ).Text("回覆訊息")
 ```
+
+> **提示**：`call_api` 支援雙兼容帳戶字段：`account_id`（標準名）與 `_account_id`（舊名），框架 ApiDSL 的 `Using()` 與事件帳戶兜底（`send_context`）均自動適配。
 
 ### 日誌資訊
 
@@ -735,4 +804,4 @@ yunhu.bots["bot1"].enabled = False
 
 ### 舊配置相容
 
-舊版 `[Yunhu_Adapter.bots.*]` 配置（含 `bot_id` 字段）會自動遷移至 `accounts` 格式（`bot_id` 已改為運行時自動檢測，配置中的值會被忽略）；建議儘快遷移至新格式。
+舊版 `[Yunhu_Adapter.bots.*]` 配置（含 `bot_id` 字段）會自動遷移到 `accounts` 格式（`bot_id` 已改為運行時自動檢測，配置中的值會被忽略）；建議盡快遷移到新格式。

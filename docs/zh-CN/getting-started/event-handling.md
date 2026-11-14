@@ -17,13 +17,12 @@ ErisPulse 支持以下事件类型：
 | 请求事件 | 用户请求（好友请求、群邀请） | 自动处理请求 |
 | 元事件 | 系统级事件（连接、心跳） | 连接监控、状态检查 |
 
+> 各类型均有泛型注册器：`notice.on_notice()` / `request.on_request()` / `meta.on_meta()`
+> （接收该类型全部事件）；细分装饰器（如 `on_group_increase`）只订阅对应子类型，优先使用细分装饰器。
+
 ## 消息事件处理
 
-> **提示**: 建议在事件处理器中使用 `Event` 类型注解，以获得 IDE 自动补全和类型检查支持。
-
-```python
-from ErisPulse.Core.Event import Event  # 导入事件类型用于注解
-```
+> **强烈建议**：为事件处理器的 `event` 参数添加 `Event` 类型注解——运行时不写也能跑（框架分发时传入的就是 Event 实例），注解服务于 IDE 补全与静态检查；为获得**模块/适配器自定义方法**的补全，在项目根目录跑一次 `epsdk types` 生成类型存根（见 [IDE 补全](../getting-started/ide-completion.md)）。
 
 ### 监听所有消息
 
@@ -40,6 +39,7 @@ async def message_handler(event: Event):
 ### 监听私聊消息
 
 ```python
+from ErisPulse.Core.Event import Event
 @message.on_private_message()
 async def private_handler(event: Event):
     user_id = event.get_user_id()
@@ -49,6 +49,7 @@ async def private_handler(event: Event):
 ### 监听群聊消息
 
 ```python
+from ErisPulse.Core.Event import Event
 @message.on_group_message()
 async def group_handler(event: Event):
     group_id = event.get_group_id()
@@ -59,6 +60,7 @@ async def group_handler(event: Event):
 ### 监听@消息
 
 ```python
+from ErisPulse.Core.Event import Event
 @message.on_at_message()
 async def at_handler(event: Event):
     # 获取被@的用户列表
@@ -73,6 +75,7 @@ async def at_handler(event: Event):
 **不会触发**处理器：
 
 ```python
+from ErisPulse.Core.Event import Event
 # glob 通配符：* 任意串、? 单字符、[seq] 字符集
 @message.on_message(pattern="签到*")
 async def signin_handler(event: Event):
@@ -513,7 +516,7 @@ async def firewall(data):
 
 测试中 `ErisPulse-Testing` 的 `dispatch()` 直接返回这条决策链（`DispatchTrace`，`trace.explain()` 输出逐行因果），生产环境可用 `ErisPulse.Core.Event.start_dispatch_trace()` 采集同样的记录。
 
-此外 `ErisPulse.runtime` 提供两组排查诊断 API：`explain_module(模块名)` 回答"模块为什么没加载"（未注册 / 懒加载 / 配置禁用 / 依赖缺失 / SDK 版本不满足，逐项给原因），`explain_event(事件)` 回答"事件为什么没响应"（适配器未注册 / 身份拉黑 / 模块会话屏蔽 / 命令未命中）；配 `format_report()` 渲染人类可读结论。
+此外 `ErisPulse.runtime` 提供三组排查诊断 API：`explain_module(模块名)` 回答"模块为什么没加载"（未注册 / 懒加载 / 配置禁用 / 依赖缺失 / SDK 版本不满足，逐项给原因），`explain_event(事件)` 回答"事件为什么没响应"（适配器未注册 / 身份拉黑 / 模块会话屏蔽 / 命令未命中），`explain_trace(trace_id)` 回答"这条消息收到后为什么没回"——按 trace-id 从会话 transcript 聚合完整出入站时间线并给出结论（收到未回 / 已回 / transcript 未启用）；配 `format_report()` 渲染人类可读结论。`explain_trace` 依赖[会话转录](../advanced/transcript.md)，未启用时明确返回该结论而不是空结果。
 
 ## 作用域过滤：为什么我的模块没收到消息
 

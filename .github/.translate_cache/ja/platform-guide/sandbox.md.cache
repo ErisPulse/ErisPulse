@@ -1,33 +1,41 @@
 {
   "version": 2,
-  "hash": "64ca7795f481d5f4a7994c8482dbe3bc",
-  "file_hash": "64ca7795f481d5f4a7994c8482dbe3bc",
-  "translated_at": "2026-10-19T09:14:04.201518",
+  "hash": "74b5b8188bef145f175edafe1fb0cf4c",
+  "file_hash": "74b5b8188bef145f175edafe1fb0cf4c",
+  "translated_at": "2026-11-10T05:33:57.497551",
   "target_lang": "ja",
   "chunks": [
     {
       "hash": "3b33559c4cde3c50c0835dd578a833a3",
-      "translation": "# Sandboxプラットフォームの特徴ドキュメント\n\nSandboxAdapterは、ErisPulseに内蔵されたサンドボックスアダプターで、ローカル開発とモジュールのデバッグに使用されます。本物のプラットフォームを必要とせず、メッセージの送受信をシミュレートします。\n\n---"
+      "translation": "# Sandbox プラットフォーム機能ドキュメント\n\nSandboxAdapter は ErisPulse に組み込まれたサンドボックスアダプターで、ローカル開発とモジュールのデバッグに使用されます——実際のプラットフォームがなくてもメッセージの送受信をシミュレートできます。\n\n---"
     },
     {
-      "hash": "d5769e0ae79f68cdc351193894aba07b",
-      "translation": "## ドキュメント情報\n\n- 対応するモジュールのバージョン: 4.2.0\n- 維持管理者: ErisPulse"
+      "hash": "9469486b2dca4017d4e605b4f5001437",
+      "translation": "## ドキュメント情報\n\n- 対応モジュールバージョン: 4.2.3\n- メンテナー: ErisPulse\n- 最終更新: 2026-11-10"
     },
     {
       "hash": "2add3b0a800daa6ba7f573b133226bfe",
-      "translation": "## 基本情報\n\n- プラットフォームの概要：ローカルサンドボックス環境で、仮想ユーザー/グループ、Webデバッグパネル、メッセージの永続化を提供します。\n- アダプター名: SandboxAdapter\n- プラットフォーム識別子: `sandbox`\n- 単一アカウント設計（ローカルデバッグ環境）\n- フレームワークの要件：ソフト依存 `ErisPulse>=2.7.1`（実行時検出による警告、強制ではありません）"
+      "translation": "## 基本情報\n\n- プラットフォーム概要：ローカルサンドボックス環境。仮想ユーザー/グループ、Web デバッグパネル、メッセージ永続化を提供\n- アダプター名：SandboxAdapter\n- プラットフォーム識別子：`sandbox`\n- 単一アカウント設計（ローカルデバッグ用途）\n- フレームワーク要件：ソフト依存 `ErisPulse>=2.7.1`（実行時に検出して通知、強制ではない）"
     },
     {
       "hash": "5c8ab684c26414cdb4953b80df19f29c",
-      "translation": "## v5 フレームワークの更新（4.2.0）\n\n- **Api DSL最小集合**：`get_self_info` / `get_status` / `get_version` / `get_supported_actions`\n- **spawn_background タスクの所属**：ハートビートタスクは `runtime.spawn_background` を使用\n- **フレームワークのソフト依存**：実行時に `ErisPulse>=2.7.1` を検出し、警告を表示\n- インポートパスを `Core.Bases`（BaseConfig）に更新"
+      "translation": "## v5 パラダイム更新（4.1.0）\n\n- **Api DSL 最小セット**：`get_self_info` / `get_status` / `get_version` / `get_supported_actions`\n- **spawn_background タスク帰属**：ハートビートタスクは `runtime.spawn_background` を使用するように変更\n- **フレームワークのソフト依存**：実行時に `ErisPulse>=2.7.1` を検出し、通知\n- インポートパスを `Core.Bases`（BaseConfig）に更新"
     },
     {
-      "hash": "6c62d2bacd7ee950e74cd2d5c6c40e43",
-      "translation": "## 標準Apiの動作例\n\n```python\nfrom ErisPulse import sdk\nsandbox = sdk.adapter.get(\"sandbox\")\n\nresult = await sandbox.Api.get_self_info()   # サンドボックス上のロボットのアイデンティティ\nresult = await sandbox.Api.get_status()\nresult = await sandbox.Api.get_supported_actions()\n```"
+      "hash": "ddb48ecca9a77221ef9bf44cf144490e",
+      "translation": "## 標準化への準拠（4.2.3）\n\nレスポンス構造とエラーコードは [API レスポンス規範](../standards/api-response.md) に従います。\n\n### HTML 送信メソッド\n\n- `.Html(html: str)`：HTML メッセージを送信します（html チャネル経由で Web パネルにレンダリング）\n- `.HTML(html: str)`：`.Html()` のエイリアス（標準 Send メソッドの命名と一貫性を保持）\n\n### メタアクション（標準化済み）\n\n標準メタアクションは標準レスポンスを返します：\n\n| アクション | data の内容 |\n|------|----------|\n| `get_self_info` | `user_id`（設定された `self_id`）/ `user_name`（`sandbox`） |\n| `get_status` | `good`（実行状態）/ `bots`（アカウントリスト） |\n| `get_version` | `impl`（ErisPulse-SandboxAdapter）/ `version` / `onebot_version` |\n| `get_supported_actions` | サポートされているアクション名のリスト |\n\n```python\nfrom ErisPulse import sdk\nsandbox = sdk.adapter.get(\"sandbox\")\n\nresult = await sandbox.Api.get_self_info()   # サンドボックスボットの識別情報\nresult = await sandbox.Api.get_status()\nresult = await sandbox.Api.get_version()\nresult = await sandbox.Api.get_supported_actions()\n```\n\n### リクエストイベント処理（Request stub）\n\nサンドボックスは `type=\"request\"` イベント（友人申請/グループ参加申請、`request_id` はシミュレートイベントから透過）を合成し、モジュールは標準的な方法で承認できます（完全な規範は [リクエスト操作規範](../standards/request-action-spec.md) を参照）：\n\n```python\nfrom ErisPulse.Core.Event import request\n\n@request.on_friend_request()\nasync def handle_friend_request(event):\n    await event.approve()   # または event.reject()\n```\n\nアダプター側の Request DSL は**シミュレーションスタブ**です：`accept()` / `reject()` は `request_id` を検証し（欠落時はリクエスト操作系エラーコードである標準エラー `retcode=34001` を返します）、検証通過後は承認成功をシミュレートして標準の成功レスポンスを返します。これにより、下流での `approve()` / `reject()` フローの結合テストが容易になります。\n\n### エラーコード規範\n\n| retcode | 意味 | 説明 |\n|---------|------|------|\n| 0 | 成功 | — |\n| 10002 | 未サポート | プラットフォームに対応機能がない |\n| 10003 | パラメーターエラー | パラメーターの欠落または無効 |\n| 10006 | 無効なメッセージセグメントデータ | `MergeForward` ノードに有効なテキスト内容がない |\n| 34001 | リクエストが存在しない | `Request.accept()/reject()` に `request_id` が欠落（リクエスト操作系） |"
     },
     {
-      "hash": "8b4b19e35ab08e37d869c26528a09944",
-      "translation": "## 使用方法\n\n- サンドボックスは仮想ユーザーとグループを提供し、モジュールは本物のプラットフォームのようにメッセージを送受信できます。\n- Webデバッグパネルは手動でメッセージを送信し、モジュールの処理ロジックをトリガーできます。\n- メッセージデータは永続化され、再起動後も復元できます。\n- `.MergeForward(nodes, title=\"合并聊天记录\")`：メッセージの結合転送を送信します（HTMLの`<details>`折りたたみカードとしてレンダリングされ、htmlチャンネルから発信されます）。これは、モジュールの結合転送ロジックを検証するために使用されます。"
+      "hash": "758ab14b534192f2fa116bf3f1939080",
+      "translation": "## 設定説明\n\n```toml\n[Sandbox]\nself_id = \"sandbox_bot\"  # サンドボックスボットID\nenable = true            # 有効にするかどうか\n```"
+    },
+    {
+      "hash": "9df25cd56dfedbb7c3e34bd4cad4b806",
+      "translation": "## 使用説明\n\n- サンドボックスは仮想ユーザーとグループを提供し、モジュールは実際のプラットフォームと同様にメッセージの送受信が可能\n- Web デバッグパネルからメッセージを手動で送信し、モジュールの処理ロジックをトリガーできる\n- メッセージデータは永続化ストレージ（`sdk.storage`）に保存され、再起動後も復元可能"
+    },
+    {
+      "hash": "16241ae5f5f6370ff0336dafa260d8d3",
+      "translation": "## サポートされるメッセージ送信タイプ\n\nすべての送信メソッドはチェーン構文で実装されています。例：\n\n```python\nfrom ErisPulse import sdk\nsandbox = sdk.adapter.get(\"sandbox\")\n\nawait sandbox.Send.To(\"private\", \"user1\").Text(\"Hello\")\nawait sandbox.Send.To(\"group\", \"group1\").Markdown(\"**太字**\")\n```\n\nサポートされる送信タイプは以下の通りです：\n\n| メソッド | 説明 |\n|------|------|\n| `.Text(text)` | テキストメッセージを送信 |\n| `.Image(file, summary=None)` | 画像を送信 |\n| `.Face(face_id)` | 表情を送信 |\n| `.Record(file, magic=False)` | 音声を送信 |\n| `.Voice(file)` | 音声を送信（audio チャンネル） |\n| `.Video(file)` | 動画を送信 |\n| `.File(file, filename=None)` | ファイルを送信 |\n| `.Html(html)` / `.HTML(html)` | HTML メッセージを送信（後者はエイリアス） |\n| `.Markdown(markdown)` | Markdown メッセージを送信 |\n| `.Json(json_data)` | JSON カードメッセージを送信 |\n| `.Xml(xml_data)` | XML カードメッセージを送信 |\n| `.Music(platform, id, title=None)` | 音楽メッセージを送信 |\n| `.Share(url, title, content=None, image=None)` | リンク共有を送信 |\n| `.Location(lat, lon, title=None, content=None)` | 位置情報メッセージを送信 |\n| `.Dice()` | サイコロを送信 |\n| `.Rps()` | じゃんけんを送信 |\n| `.Poke(user_id, type=\"poke\")` | つつき（Poke） |\n| `.Recall(message_id)` | メッセージの取り消しをシミュレート |\n| `.MergeForward(nodes, title=\"チャット履歴を統合\")` | 統合転送メッセージを送信（`<details>` 折りたたみ HTML カードとしてレンダリングされ、html チャンネルで送信されます）。モジュールの統合転送ロジックの検証に使用されます |\n| `.Raw_ob12(message)` | OneBot12 の生のメッセージセグメントを送信（純粋な node リストは自動的に統合転送へルーティングされ、混合リストの node セグメントはプレーンテキストにダウングレードされます） |\n\n`At` / `AtAll` / `Reply` 修飾子は、フレームワークの SendDSL 基底クラスによって提供されます。"
     }
   ]
 }

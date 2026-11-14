@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "a6b62f516649e34b8b9dadf9be62a207",
-  "file_hash": "a6b62f516649e34b8b9dadf9be62a207",
-  "translated_at": "2026-10-22T14:17:40.463062",
+  "hash": "f747f948868d67e9e87d0dd98f4d05f8",
+  "file_hash": "f747f948868d67e9e87d0dd98f4d05f8",
+  "translated_at": "2026-11-04T07:55:52.449221",
   "target_lang": "zh-TW",
   "chunks": [
     {
@@ -10,8 +10,8 @@
       "translation": "# 術語表（唯一真相源）\n\n> [!TIP]\n> **什麼時候需要讀這篇**：寫文件 / 改文件時拿不準一個概念該叫什麼，或發現兩篇文件對同一概念說法不一致時。不需要則跳過。\n\n本表收斂 ErisPulse 文件中曾經多處不一致的核心概念。每個術語只給一個**正式名**、一組**中英對照**與一段**歷史別名說明**；正文與其它文件衝突時，以本表為準，並請順手修正衝突文件。\n\n收錄原則：\n\n- 只收「歷史上叫法漂移過、或中英混用易歧義」的概念；純程式碼識別碼（如 `BaseModule`）不加收錄\n- 每條定義均先在 `docs/zh-TW` 全庫與原始碼中 grep 驗證過實際用法，定義與主流用法一致\n- 文件內首次出現時給全稱（中文 + 括注英文），後續用簡稱\n\n---"
     },
     {
-      "hash": "4a6192936913e2f6b06db21afcc79519",
-      "translation": "## 1. Client 與 HttpClient\n\n| 項目 | 內容 |\n|------|------|\n| 正式名稱 | `Client`（基底類別 `BaseClient`） |\n| 中英對照 | Client（統一 HTTP/WS 用戶端） |\n| 歷史別名 | `HttpClient`（2.8.0 前類別名稱，保留相容別名）；`BaseHttpClient`（2.8.0 前基底類別名稱，保留相容別名） |\n\n**唯一定義**：統一 HTTP/WS 用戶端，透過抽象層封裝底層請求庫（目前為 aiohttp），提供請求統計、重試、日誌、WebSocket 用戶端與 ErisPulse 例外體系。2.8.0 起類別名稱由 `HttpClient` 更名為 `Client`，**`sdk.client` 屬性名稱不變**。\n\n**文件寫法**：一律寫 `Client`；僅在「舊程式碼遷移 / 相容」語境提及 `HttpClient`，並括注「相容別名」。定義出處見 [http-client](../advanced/http-client.md) 與 [架構總覽](../architecture.md)。"
+      "hash": "411b1bcb1fa454c2209a7764521c1008",
+      "translation": "## 1. Client 與 HttpClient\n\n| 項 | 內容 |\n|------|------|\n| 正式名 | `Client`（基類 `BaseClient`） |\n| 中英對照 | Client（統一 HTTP/WS 客戶端） |\n| 歷史別名 | `HttpClient`（2.8.0 前類名，保留相容別名）；`BaseHttpClient`（2.8.0 前基類名，保留相容別名） |\n\n**唯一定義**：統一 HTTP/WS 客戶端，透過抽象層封裝底層請求庫（目前為 aiohttp），提供請求統計、重試、日誌、WebSocket 客戶端與 ErisPulse 異常體系。2.8.0 起類名由 `HttpClient` 更名為 `Client`，**`sdk.client` 屬性名不變**。\n\n**文件寫法**：一律寫 `Client`；僅在「舊代碼遷移 / 相容」語境提及 `HttpClient`，並括注「相容別名」。定義出處見 [http-client](../advanced/client.md) 與 [架構總覽](../architecture.md)。"
     },
     {
       "hash": "230b4b5f13332723801cec21ca8638d4",

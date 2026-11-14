@@ -1,33 +1,41 @@
 {
   "version": 2,
-  "hash": "64ca7795f481d5f4a7994c8482dbe3bc",
-  "file_hash": "64ca7795f481d5f4a7994c8482dbe3bc",
-  "translated_at": "2026-10-19T09:13:45.548017",
+  "hash": "74b5b8188bef145f175edafe1fb0cf4c",
+  "file_hash": "74b5b8188bef145f175edafe1fb0cf4c",
+  "translated_at": "2026-11-10T05:16:20.271596",
   "target_lang": "en",
   "chunks": [
     {
       "hash": "3b33559c4cde3c50c0835dd578a833a3",
-      "translation": "# Sandbox Platform Feature Documentation\n\nSandboxAdapter is the built-in sandbox adapter of ErisPulse, used for local development and module debugging—simulating message sending and receiving without requiring a real platform.\n\n---"
+      "translation": "# Sandbox Platform Features Documentation\n\nSandboxAdapter is the built-in sandbox adapter of ErisPulse, designed for local development and module debugging—enabling you to simulate message sending and receiving without a real platform.\n\n---"
     },
     {
-      "hash": "d5769e0ae79f68cdc351193894aba07b",
-      "translation": "## Document Information\n\n- Corresponding Module Version: 4.2.0\n- Maintainer: ErisPulse"
+      "hash": "9469486b2dca4017d4e605b4f5001437",
+      "translation": "## Document Information\n\n- Corresponding module version: 4.2.3\n- Maintainer: ErisPulse\n- Last updated: 2026-11-10"
     },
     {
       "hash": "2add3b0a800daa6ba7f573b133226bfe",
-      "translation": "## Basic Information\n\n- Platform Overview: Local sandbox environment, providing virtual users/groups, a web debugging panel, and message persistence.\n- Adapter Name: SandboxAdapter\n- Platform Identifier: `sandbox`\n- Single account design (for local debugging scenarios)\n- Framework Requirement: Soft dependency `ErisPulse>=2.7.1` (runtime detection prompt, not mandatory)"
+      "translation": "## Basic Information\n\n- Platform Overview: A local sandbox environment providing virtual users/groups, a web debug panel, and message persistence\n- Adapter Name: SandboxAdapter\n- Platform Identifier: `sandbox`\n- Single-account design (for local debugging scenarios)\n- Framework Requirement: Soft dependency on `ErisPulse>=2.7.1` (runtime detection prompt, not enforced)"
     },
     {
       "hash": "5c8ab684c26414cdb4953b80df19f29c",
-      "translation": "## v5 Paradigm Update (4.1.0)\n\n- **Minimal API DSL**: `get_self_info` / `get_status` / `get_version` / `get_supported_actions`\n- **spawn_background Task Ownership**: Heartbeat tasks now use `runtime.spawn_background`\n- **Framework Soft Dependencies**: Runtime detection of `ErisPulse>=2.7.1` with prompt\n- Import path updated to `Core.Bases` (BaseConfig)"
+      "translation": "## v5 Paradigm Update (4.1.0)\n\n- **Api DSL minimal set**: `get_self_info` / `get_status` / `get_version` / `get_supported_actions`\n- **spawn_background task ownership**: heartbeat tasks now use `runtime.spawn_background`\n- **Framework soft dependency**: detects `ErisPulse>=2.7.1` at runtime and prompts accordingly\n- Import path updated to `Core.Bases` (BaseConfig)"
     },
     {
-      "hash": "6c62d2bacd7ee950e74cd2d5c6c40e43",
-      "translation": "## Standard API Action Examples\n\n```python\nfrom ErisPulse import sdk\nsandbox = sdk.adapter.get(\"sandbox\")\n\nresult = await sandbox.Api.get_self_info()   # Sandbox bot identity\nresult = await sandbox.Api.get_status()\nresult = await sandbox.Api.get_supported_actions()\n```"
+      "hash": "ddb48ecca9a77221ef9bf44cf144490e",
+      "translation": "## Standardization Alignment (4.2.3)\n\nResponse structure and error codes follow the [API Response Specification](../standards/api-response.md).\n\n### HTML Sending Methods\n\n- `.Html(html: str)`: Sends an HTML message (rendered to the web panel via the html channel)\n- `.HTML(html: str)`: Alias for `.Html()` (consistent with standard Send method naming)\n\n### Meta Actions (Standardized)\n\nStandard meta actions return standard responses:\n\n| Action | data Content |\n|--------|-------------|\n| `get_self_info` | `user_id` (the configured `self_id`) / `user_name` (`sandbox`) |\n| `get_status` | `good` (running status) / `bots` (list of accounts) |\n| `get_version` | `impl` (ErisPulse-SandboxAdapter) / `version` / `onebot_version` |\n| `get_supported_actions` | List of supported action names |\n\n```python\nfrom ErisPulse import sdk\nsandbox = sdk.adapter.get(\"sandbox\")\n\nresult = await sandbox.Api.get_self_info()   # sandbox bot identity\nresult = await sandbox.Api.get_status()\nresult = await sandbox.Api.get_version()\nresult = await sandbox.Api.get_supported_actions()\n```\n\n### Request Event Handling (Request stub)\n\nThe sandbox synthesizes `type=\"request\"` events (friend/group join requests, with `request_id` passed through from the simulated event), and modules can approve them in the standard way (see the [Request Action Specification](../standards/request-action-spec.md) for the full specification):\n\n```python\nfrom ErisPulse.Core.Event import request\n\n@request.on_friend_request()\nasync def handle_friend_request(event):\n    await event.approve()   # or event.reject()\n```\n\nThe adapter-side Request DSL is a **simulated stub**: `accept()` / `reject()` validate the `request_id` (returning a standard error with `retcode=34001` when missing, which belongs to the request action family of error codes). After validation passes, the approval is simulated as successful and a standard success response is returned, facilitating downstream joint debugging of the `approve()` / `reject()` flow.\n\n### Error Code Specification\n\n| retcode | Meaning | Description |\n|---------|---------|-------------|\n| 0 | Success | — |\n| 10002 | Unsupported | The platform has no corresponding capability |\n| 10003 | Invalid parameters | Missing or invalid parameters |\n| 10006 | Invalid message segment data | `MergeForward` nodes have no valid text content |\n| 34001 | Request not found | `Request.accept()/reject()` missing `request_id` (request action family) |"
     },
     {
-      "hash": "8b4b19e35ab08e37d869c26528a09944",
-      "translation": "## Usage Instructions\n\n- The sandbox provides virtual users and groups, allowing modules to send and receive messages just like on a real platform.\n- The Web debugging panel allows manual message sending to trigger module processing logic.\n- Message data is persistently stored and can be restored after a restart.\n- `.MergeForward(nodes, title=\"Merge Chat Records\")`: Sends a merged forward message (rendered as a `<details>` collapsed HTML card, sent via the HTML channel), used to verify the module's merged forward logic."
+      "hash": "758ab14b534192f2fa116bf3f1939080",
+      "translation": "## Configuration\n\n```toml\n[Sandbox]\nself_id = \"sandbox_bot\"  # Sandbox bot ID\nenable = true            # Whether to enable\n```"
+    },
+    {
+      "hash": "9df25cd56dfedbb7c3e34bd4cad4b806",
+      "translation": "## Usage\n\n- The sandbox provides virtual users and groups, allowing modules to send and receive messages just like on a real platform\n- The web debug panel allows you to manually send messages to trigger module processing logic\n- Message data is persistently stored (`sdk.storage`) and can be restored after restart"
+    },
+    {
+      "hash": "16241ae5f5f6370ff0336dafa260d8d3",
+      "translation": "## Supported Message Send Types\n\nAll send methods are implemented via chained syntax, for example:\n\n```python\nfrom ErisPulse import sdk\nsandbox = sdk.adapter.get(\"sandbox\")\n\nawait sandbox.Send.To(\"private\", \"user1\").Text(\"Hello\")\nawait sandbox.Send.To(\"group\", \"group1\").Markdown(\"**Bold**\")\n```\n\nThe supported send types include:\n\n| Method | Description |\n|------|------|\n| `.Text(text)` | Send a text message |\n| `.Image(file, summary=None)` | Send an image |\n| `.Face(face_id)` | Send an emoji |\n| `.Record(file, magic=False)` | Send a voice message |\n| `.Voice(file)` | Send a voice message (via the audio channel) |\n| `.Video(file)` | Send a video |\n| `.File(file, filename=None)` | Send a file |\n| `.Html(html)` / `.HTML(html)` | Send an HTML message (the latter is an alias) |\n| `.Markdown(markdown)` | Send a Markdown message |\n| `.Json(json_data)` | Send a JSON card message |\n| `.Xml(xml_data)` | Send an XML card message |\n| `.Music(platform, id, title=None)` | Send a music message |\n| `.Share(url, title, content=None, image=None)` | Send a link share |\n| `.Location(lat, lon, title=None, content=None)` | Send a location message |\n| `.Dice()` | Send a dice |\n| `.Rps()` | Send rock-paper-scissors |\n| `.Poke(user_id, type=\"poke\")` | Send a poke |\n| `.Recall(message_id)` | Simulate message recall |\n| `.MergeForward(nodes, title=\"Merged Chat History\")` | Send merged-forward messages (rendered as a collapsible `<details>` HTML card and sent via the html channel), used to verify a module's merged-forwarding logic |\n| `.Raw_ob12(message)` | Send raw OneBot12 message segments (a pure node list is automatically routed to merged forwarding; a mixed list with node segments is downgraded to plain text) |\n\nThe `At` / `AtAll` / `Reply` modifiers are provided by the framework's SendDSL base class."
     }
   ]
 }

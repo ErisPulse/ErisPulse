@@ -1,12 +1,12 @@
 {
   "version": "1.0",
   "total_categories": 1,
-  "total_documents": 140,
+  "total_documents": 144,
   "categories": {
     "自动生成 API": {
       "description": "核心 API 和接口文档",
       "icon": "fa-microchip",
-      "count": 140,
+      "count": 144,
       "documents": [
         {
           "title": "`ErisPulse.__init__` 模块",
@@ -693,6 +693,12 @@
               "icon": "fa-book"
             },
             {
+              "title": "`ErisPulse.runtime.dev_watch` 模块",
+              "path": "api-reference/auto_api/ErisPulse/runtime/dev_watch.md",
+              "level": 1,
+              "icon": "fa-book"
+            },
+            {
               "title": "`ErisPulse.runtime.diagnostics` 模块",
               "path": "api-reference/auto_api/ErisPulse/runtime/diagnostics.md",
               "level": 1,
@@ -741,6 +747,12 @@
               "icon": "fa-book"
             },
             {
+              "title": "`ErisPulse.runtime.metrics` 模块",
+              "path": "api-reference/auto_api/ErisPulse/runtime/metrics.md",
+              "level": 1,
+              "icon": "fa-book"
+            },
+            {
               "title": "`ErisPulse.runtime.owner_cleanup` 模块",
               "path": "api-reference/auto_api/ErisPulse/runtime/owner_cleanup.md",
               "level": 1,
@@ -767,6 +779,18 @@
             {
               "title": "`ErisPulse.runtime.reload_ops` 模块",
               "path": "api-reference/auto_api/ErisPulse/runtime/reload_ops.md",
+              "level": 1,
+              "icon": "fa-book"
+            },
+            {
+              "title": "`ErisPulse.runtime.reload_target` 模块",
+              "path": "api-reference/auto_api/ErisPulse/runtime/reload_target.md",
+              "level": 1,
+              "icon": "fa-book"
+            },
+            {
+              "title": "`ErisPulse.runtime.resource_track` 模块",
+              "path": "api-reference/auto_api/ErisPulse/runtime/resource_track.md",
               "level": 1,
               "icon": "fa-book"
             },

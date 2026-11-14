@@ -1,0 +1,87 @@
+# パフォーマンスベンチマークとチューニング
+
+> [!TIP]
+> **いつこのドキュメントを読むべきか**：イベントのスループットやレイテンシの数値に関心がある場合、デプロイ前のキャパシティ評価、バージョンアップグレード前後のパフォーマンスリグレッションを比較したい場合に読んでください。必要がなければ読み飛ばしても、他の機能の利用には影響しません。
+
+## 実測ベンチマーク（2026-10-05、Python 3.13.14）
+
+同一マシン上での前後2回の実測（ウォームアップ + 複数回のサンプリングによるパーセンタイル算出）、NoneBot2 2.5.0 は独立環境の対照。
+すべての数値はリポジトリ同梱のベンチマークで再現可能：`python tests/performance/benchmark.py`。
+
+### イベントディスパッチ（ops/s、値が高いほど良い）
+
+| ベンチマーク項目 | ErisPulse | NoneBot2 2.5.0 | 比較 |
+|---|---|---|---|
+| バス単一ハンドラ逐次レイテンシ | **9,189** | 3,021 | 3.0× |
+| バスフラッドスループット（1000 イベント/ラウンド） | **9,877** | 2,055 | 4.8× |
+| 10 ハンドラ/イベント スループット | **4,309** | 435 | 9.9× |
+| コマンドヒット（/コマンド） | **2,165** | 677 | 3.2× |
+| コマンドミス（コマンド以外のメッセージ） | **10,818** | 921 | 11.7× |
+| メッセージブリッジ単一ハンドラ（デフォルト全パイプライン） | **2,804** | 2,144 | 1.3× |
+
+### その他サブシステムの能力（最適化後）
+
+| ベンチマーク項目 | ops/s | ベンチマーク項目 | 数値 |
+|---|---|---|---|
+| getConfig ホット読み取り | 1,086,957 | ORM 単一 create | 407/s |
+| KV aset（sqlite） | 1,659 | GET /health（ASGI） | 1,188/s |
+| KV aget（sqlite） | 3,333 | module.call RPC | 148,905/s |
+| エンドツーエンドメッセージ往復 | 298 | 混合負荷 | 142/s |
+
+### 起動時間
+
+| フェーズ | ErisPulse | NoneBot2 |
+|---|---|---|
+| インタプリタ空転対照 | 59.5ms | — |
+| コールドインポート | 241.7ms | 249.6ms |
+| sdk.init / NoneBot init | 30.8ms | 162.3ms |
+
+## ベンチマークの実行とリグレッション比較
+
+```bash
+# クイックモード（サンプル数は約1/4、スモークテスト用）
+python tests/performance/benchmark.py --quick
+
+# 完全なベースラインをファイルに保存（8スイート：config/event/storage/send/router/module/overall/startup）
+python tests/performance/benchmark.py --json baseline.json
+
+# 旧ベースラインとの比較（差分が±5%の閾値内ならノイズとみなす）
+python tests/performance/benchmark.py --compare baseline.json
+
+# HTMLレポート / ストレージスイートのバックエンド指定
+python tests/performance/benchmark.py --html report.html
+python tests/performance/benchmark.py --backend mysql
+```
+
+> CI に関する注意：ベンチマークの数値はマシンによって変動するため、`--compare` の ±5% 閾値は**同一マシン**での前後比較（アップグレード検証）にのみ適しており、マシンをまたぐゲート判定には適していません。
+
+## チューニングのポイント
+
+1. **メッセージブリッジの全経路におけるボトルネックはセッション記録**：デフォルトで transcript 記録が有効（2.9 以降はメモリバッファ + バックグラウンドでの一括永続化）；監査要件がない場合は無効化可能で、全経路のスループットは約 2,804 → 3,774 ops/s に向上
+2. **GC 管理**：`ErisPulse.framework` の proactive_gc 設定グループ（interval / full_every / memory_growth_mb / `idle_only`）——イベントのピーク時には自動的に GC をスキップ；init フェーズでの `gc.freeze()` は組み込み済み
+3. **ストレージバックエンド**：ローカル単体の sqlite（WAL）で十分；マルチインスタンスでデータ層を共有する場合は mysql / postgres に切り替え（[ストレージバックエンド](storage-backends.md) を参照）
+4. **ホットパスは最適化組み込み済み**（2.9 以降、設定不要）：transcript の一括永続化、i18n キャッシュ、ログレベルガード、マッチャーの事前コンパイル、設定の遅延書き込みと統一フラッシュ
+5. **コマンド制御状態の上限**：クールダウン/レート制限/クォータの状態テーブルは上限 4096 件（超過時は最も古いものから削除）、超大規模グループ向けのデプロイでも調整不要
+
+## メモリ診断
+
+「実行するほどにメモリを多く消費する」問題を調査する際、疑わしい処理の前後にラベル付きのスナップショットを打つことで、同名のラベルが自動的に増分（RSS + tracemalloc 両指標）を計算します。
+
+```python
+from ErisPulse.runtime import log_snapshot, snapshot
+
+class MyModule(BaseModule):
+    async def on_load(self, event):
+        snapshot("MyModule.load")            # dict（ラベルによる RSS delta 含む）を取得して返す
+
+    async def on_unload(self, event):
+        log_snapshot("MyModule.unload")      # 同じ口径で取得し TRACE レベルのログに記録
+```
+
+- `snapshot(label)` はマシンで読み取れる dict を返し、アサーションや報告に適しています。`log_snapshot(label)` は TRACE レベルのログに直接書き込み、一時的な調査に適しています。
+- label は容量制限付きで、呼び出し回数に応じてメモリが漏れることはありません。`/metrics` エンドポイントのプロセス指標と併用することで、長期的な傾向を観察できます。
+- モジュールのアンロード後に残る増加は、通常、所有権の欠如を示しています（[所有権システム](ownership.md)の `bind_owner` タスク項目を参照）。
+
+## 関連ドキュメント
+
+- **実行メトリクスの観測**：`/health`（インスタンス識別 / イベントカウント）と `/metrics`（Prometheus テキスト、`ErisPulse.server.metrics_enabled` が有効な場合）については、[デプロイガイド](../user-guide/deployment.md)を参照してください

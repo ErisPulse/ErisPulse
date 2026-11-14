@@ -11,19 +11,18 @@ ErisPulse 支援以下事件類型：
 
 | 事件類型 | 說明 | 適用場景 |
 |---------|------|---------|
-| 消息事件 | 使用者發送的任何訊息 | 聊天機器人、內容過濾 |
+| 訊息事件 | 使用者傳送的任何訊息 | 聊天機器人、內容過濾 |
 | 命令事件 | 以命令前綴開頭的訊息 | 命令處理、功能入口 |
-| 通知事件 | 系統通知（好友添加、群成員變化等） | 歡迎訊息、狀態通知 |
+| 通知事件 | 系統通知（好友新增、群成員變化等） | 歡迎訊息、狀態通知 |
 | 請求事件 | 使用者請求（好友請求、群邀請） | 自動處理請求 |
-| 元事件 | 系統級事件（連接、心跳） | 連接監控、狀態檢查 |
+| 元事件 | 系統級事件（連線、心跳） | 連線監控、狀態檢查 |
 
-## 消息事件處理
+> 各類型均有泛型註冊器：`notice.on_notice()` / `request.on_request()` / `meta.on_meta()`
+> （接收該類型全部事件）；細分裝飾器（如 `on_group_increase`）只訂閱對應子類型，優先使用細分裝飾器。
 
-> **提示**: 建議在事件處理器中使用 `Event` 類型註解，以獲得 IDE 自動補全和類型檢查支援。
+## 訊息事件處理
 
-```python
-from ErisPulse.Core.Event import Event  # 導入事件類型用於註解
-```
+> **強烈建議**：為事件處理器的 `event` 參數加上 `Event` 型別註解——執行時不寫也能跑（框架分發時傳入的就是 Event 實例），註解服務於 IDE 補全與靜態檢查；為取得**模組/轉接器自訂方法**的補全，在專案根目錄執行一次 `epsdk types` 生成型別存根（見 [IDE 補全](../getting-started/ide-completion.md)）。
 
 ### 監聽所有訊息
 
@@ -37,53 +36,57 @@ async def message_handler(event: Event):
     sdk.logger.info(f"收到 {user_id} 的訊息: {text}")
 ```
 
-### 監聽私人訊息
+### 監聽私聊訊息
 
 ```python
+from ErisPulse.Core.Event import Event
 @message.on_private_message()
 async def private_handler(event: Event):
     user_id = event.get_user_id()
-    await event.reply(f"你好，{user_id}！這是私人訊息。")
+    await event.reply(f"你好，{user_id}！這是私聊訊息。")
 ```
 
 ### 監聽群聊訊息
 
 ```python
+from ErisPulse.Core.Event import Event
 @message.on_group_message()
 async def group_handler(event: Event):
     group_id = event.get_group_id()
     user_id = event.get_user_id()
-    sdk.logger.info(f"群 {group_id} 中 {user_id} 發送了訊息")
+    sdk.logger.info(f"群 {group_id} 中 {user_id} 傳送了訊息")
 ```
 
 ### 監聽@訊息
 
 ```python
+from ErisPulse.Core.Event import Event
 @message.on_at_message()
 async def at_handler(event: Event):
-    # 獲取被@的使用者列表
+    # 取得被@的使用者清單
     mentions = event.get_mentions()
     await event.reply(f"你@了這些使用者: {mentions}")
 ```
 
-### 通配符與正規表示式監聽
+### 萬用字元與正規表示式監聽
 
 四個訊息裝飾器（`on_message` / `on_private_message` / `on_group_message` /
-`on_at_message`）均支援 `pattern`（glob 通配符）與 `regex`（正規表示式），不匹配的訊息
+`on_at_message`）均支援 `pattern`（glob 萬用字元）與 `regex`（正規表示式），不符合的訊息
 **不會觸發**處理器：
 
 ```python
-# glob 通配符：* 任意串、? 單字元、[seq] 字元集
+from ErisPulse.Core.Event import Event
+# glob 萬用字元：* 任意字串、? 單一字元、[seq] 字元集
 @message.on_message(pattern="簽到*")
 async def signin_handler(event: Event):
     await event.reply("簽到成功")
 
-# 正規表示：匹配金額
+# 正規表示式：比對金額
 @message.on_message(regex=r"\d+\s*元")
 async def price_handler(event: Event):
     await event.reply(f"收到金額：{event.get_text()}")
 
-# pattern 與 regex 同時給出 → 兩者都須匹配
+# pattern 與 regex 同時給出 → 兩者皆須符合
 @message.on_message(pattern="*元", regex=r"\d+\s*元")
 async def combined_handler(event: Event):
     pass
@@ -509,11 +512,11 @@ async def firewall(data):
 
 ## 命令分發決策鏈：為什麼命令沒觸發
 
-一條命令訊息依次經過：**命令文字判定 → 命令名/別名命中（未命中附拼寫建議）→ 命中即認領 → 作用域 → 使用者 ACL → 主人 → 權限 → 冷卻/限流 → 配額（usage）→ 廢棄（deprecated，notice/rejected）→ 參數解析 → 執行**（中間件可在事件層否決，見上一節）。任何一步不滿足即終止；治理命中（冷卻/限流/配額）預設靜默丟棄，權限類拒絕會回覆使用者，廢棄按聲明回覆或拒絕。
+一條命令訊息依次經過：**命令文本判定 → 命令名/別名命中（未命中附拼寫建議）→ 命中即認領 → 作用域 → 用戶 ACL → 主人 → 權限 → 冷卻/限流 → 配額（usage）→ 廢棄（deprecated，notice/rejected）→ 參數解析 → 執行**（中介軟體可在事件層否決，見上一節）。任何一步不滿足即終止；治理命中（冷卻/限流/配額）預設靜默丟棄，權限類拒絕會回覆用戶，廢棄按聲明回覆或拒絕。
 
-測試中 `ErisPulse-Testing` 的 `dispatch()` 直接回傳這條決策鏈（`DispatchTrace`，`trace.explain()` 輸出逐行因果），生產環境可用 `ErisPulse.Core.Event.start_dispatch_trace()` 采集同樣的記錄。
+測試中 `ErisPulse-Testing` 的 `dispatch()` 直接回傳這條決策鏈（`DispatchTrace`，`trace.explain()` 輸出逐行因果），生產環境可用 `ErisPulse.Core.Event.start_dispatch_trace()` 採集同樣的記錄。
 
-此外 `ErisPulse.runtime` 提供兩組排查診斷 API：`explain_module(模組名)` 回答"模組為什麼沒加載"（未註冊 / 懶加載 / 配置禁用 / 依賴缺失 / SDK 版本不滿足，逐項給原因），`explain_event(事件)` 回答"事件為什麼沒響應"（適配器未註冊 / 身份拉黑 / 模組會話屏蔽 / 命令未命中）；配 `format_report()` 渲染人類可讀結論。
+此外 `ErisPulse.runtime` 提供三組排查診斷 API：`explain_module(模組名)` 回答「模組為什麼沒載入」（未註冊 / 懶載入 / 設定停用 / 依賴缺失 / SDK 版本不滿足，逐項給原因），`explain_event(事件)` 回答「事件為什麼沒回應」（適配器未註冊 / 身分封鎖 / 模組會話屏蔽 / 命令未命中），`explain_trace(trace_id)` 回答「這條訊息收到後為什麼沒回」——按 trace-id 從會話 transcript 聚合完整出入站時間軸並給出結論（收到未回 / 已回 / transcript 未啟用）；配 `format_report()` 渲染人類可讀結論。`explain_trace` 依賴[會話轉錄](../advanced/transcript.md)，未啟用時明確回傳該結論而不是空結果。
 
 ## 作用域過濾：為什麼我的模組沒收到訊息
 

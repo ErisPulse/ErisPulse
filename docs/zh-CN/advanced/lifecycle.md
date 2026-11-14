@@ -206,6 +206,7 @@ def audit_config(data):
 |---------|---------|------|
 | `adapter.load` | 适配器注册完成 | `{"platform": str, "success": bool}` |
 | `adapter.reload` | 适配器代码级热重载完成 | `{"adapter_name": str, "success": bool, "full": bool, "duration_ms": int, "identity_changed": bool, "version_old": str, "version_new": str, "was_started": bool, "source": str}`；`identity_changed=False` = 进程内可能仍运行旧代码 |
+| `adapter.rollback` | 适配器热重载失败回滚完成（恢复旧注册态之后） | `{"adapter_name": str, "replayed": bool, "success": bool}`；`replayed=True` 表示已重放旧实例的 `start()`，`success` 表示重放是否成功 |
 | `adapter.start` | 适配器启动 | `{"platforms": [str]}` |
 | `adapter.status.change` | 适配器状态变化 | `{"platform": str, "status": str, "retry_count": int, "error": str(仅失败时)}`；status 完整取值：`starting` / `started` / `start_failed` / `stopping` / `stopped` / `stop_failed` / `skipped-dependency` / `disabled` |
 | `adapter.stop` | 适配器关闭 | `{"platforms": [str]}` |
@@ -445,6 +446,12 @@ class Main(BaseModule):
 - **`self.spawn(coro)`**（模块内推荐）：任务自动归属模块名，模块卸载时框架在 `on_unload` **之后**兜底取消未结束的任务并记录警告
 - **`spawn_background(coro)`**（`ErisPulse.runtime`）：自动捕获当前 `owner_scope` 上下文；`cancel_owner_tasks(owner)` 按归属取消，`cancel_all_background_tasks()` 供 `sdk.uninit()` 兜底
 - **适配器**：关闭时对平台名下的后台任务同样兜底取消
+
+**主循环注册前的任务**（2.12+）：`spawn_background()` 与 `run_main_loop()`
+在无可用主循环时不再创建临时事件循环，而是进入待发队列（上限
+`PENDING_TASK_QUEUE_MAX`，默认 1024）；`sdk.run()` 注册主循环时统一冲队列。
+队列满时丢弃新任务并告警；按 owner 取消会同时移除该 owner 的待发任务；
+退出时仍有滞留任务会告警并丢弃。`run_main_loop()` 在入队路径返回 `None`。
 
 ```python
 async def on_load(self, event):

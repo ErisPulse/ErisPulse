@@ -63,7 +63,7 @@ _EXCLUDE_METHOD_NAMES = frozenset({
     "Hook", "Retry", "Timeout", "Defer", "Priority", "PriorityThreshold",
     "OnProgress", "OnError", "Build",
     # 基类标准发送方法（已在 SendDSL 声明）
-    "Text", "Image", "Voice", "Video", "File", "Raw_ob12", "Example",
+    "Text", "Image", "Voice", "Video", "File", "Location", "Raw_ob12", "Example",
     # 非发送成员
     "send_context", "Raw", "list_sends",
 })
@@ -407,7 +407,7 @@ class TypesCommand(Command):
             "At", "AtAll", "Reply", "To", "Using", "Account",
             "Hook", "Retry", "Timeout", "Defer", "Priority", "PriorityThreshold",
             "OnProgress", "OnError", "Build",
-            "Text", "Image", "Voice", "Video", "File", "Raw_ob12", "Example",
+            "Text", "Image", "Voice", "Video", "File", "Location", "Raw_ob12", "Example",
             "send_context", "Raw",
             "cfg", "sdk", "logger", "storage", "adapter", "router",
             "on_load", "on_unload", "on_config_update", "get_load_strategy",

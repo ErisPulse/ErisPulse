@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "1568a93b78175b74ec638244c9d67247",
-  "file_hash": "1568a93b78175b74ec638244c9d67247",
-  "translated_at": "2026-10-19T09:23:48.097856",
+  "hash": "c30613c7a9577d38205fc748378b9f70",
+  "file_hash": "c30613c7a9577d38205fc748378b9f70",
+  "translated_at": "2026-11-10T05:06:21.813108",
   "target_lang": "ja",
   "chunks": [
     {
@@ -10,12 +10,16 @@
       "translation": "# 微信公众号（WechatMp）アダプター - プラットフォーム特性ドキュメント"
     },
     {
-      "hash": "8d03ebf6fb75f1b343dd75a0aef750d7",
-      "translation": "## 基本情報\n- モジュール名: `ErisPulse-WechatMpAdapter`\n- プラットフォーム識別子: `mp`（別名: `wechat_mp`）\n- モジュールバージョン: 4.3.0\n- 維持管理者: ErisPulse\n- 依存: `cryptography`"
+      "hash": "8d6036b35faaff3c5baa315e90ddcbc8",
+      "translation": "## 基本情報\n- モジュール名: `ErisPulse-WechatMpAdapter`\n- プラットフォーム識別子: `mp`（別名: `wechat_mp`）\n- モジュールバージョン: 4.3.2\n- 維持管理者: ErisPulse\n- 最終更新: 2026-11-10\n- 依存: `cryptography`"
     },
     {
-      "hash": "c3e718ebdaa0d944a6d5e231bfc3b6b4",
-      "translation": "## v5 フレームワークの更新 (4.2.0)\n\n- **BaseConverter 継承**：変換器の共通フィールドは、フレームワークの build_base_event によって構築されます。\n- **Api DSL 最小セット**：get_self_info（appid）/get_status/get_version/get_supported_actions\n- **フレームワークのソフト依存**：実行時に ErisPulse>=2.7.1 を検出し、警告を出力します。起動時にバージョンログを出力します。\n\n---\n\n### 対応プラットフォーム機能\n\n- **受信**：公式アカウントのコールバックメッセージと、フォロー/アンフォローなどのイベント（平文/セキュリティモード）、署名検証\n- **送信**：カスタマーメッセージ（Text/Image など、Send DSL を経由）\n- **API**：アカウント情報（appid）と実行状態（最小セット）"
+      "hash": "26ae620bad5b04efa40537f36cdc30a0",
+      "translation": "## v5 ファンタジーの更新（4.2.0）\n\n- **BaseConverter の継承**：コンバーターの共通フィールドはフレームワークの build_base_event によって構築されます。\n- **Api DSL の最小セット**：get_self_info（appid）/get_status/get_version/get_supported_actions\n- **フレームワークのソフト依存**：ErisPulse>=2.7.1 を実行時に検出し、警告を表示します。起動時にバージョンのログを出力します。"
+    },
+    {
+      "hash": "974ad0f261f280c746f512a80447212b",
+      "translation": "## 標準化の整列 (4.3.2)\n\nレスポンス構造とエラーコードは、[API レスポンス規格](../standards/api-response.md)に従います。\n\n### メッセージイベントの補完 message_id\n\nメッセージイベントの最上層に標準の `message_id` フィールドを追加します（WeChat の MsgId を取得し、不足している場合は空文字列で補完）。モジュールは `mp_msg_id` から読み取る必要はありません。\n\n### 標準レスポンス\n\nすべての `call_api` / Send 呼び出しは、標準レスポンスを返します：`status` / `retcode` / `data` / `message_id` / `message` + 最上層の `mp_raw`。**パッシブリプライが成功した場合、`message` は空文字列です**（`data.passive_reply=true` はパッシブリプライとしてブロックされたことを示します）。\n\n### エラーコード規格\n\n| retcode | 含意 | 説明 |\n|---------|------|------|\n| 0 | 成功 | — |\n| 34100 | プラットフォームの失敗 | WeChat API が errcode != 0 を返した場合；**元の errcode は `mp_raw` に保持されます**。token の取得失敗もこのコードに属します |\n| 10003 | パラメータのエラー / 未認証 | 認証されていないアカウント（`verified=false`）がパッシブリプライのコンテキスト外でカスタマーメッセージを呼び出した場合 |\n\n### アカウントと複数アカウント\n\n- `call_api` は、標準名の `account_id` と旧名の `_account_id` の両方のアカウントフィールドをサポートします。フレームワーク ApiDSL（`Api.Using(...)`）が自動的に適応します\n- `Send` は `send_context`（イベントアカウントをデフォルトとして）を読み取ります\n- `get_self_info` は、標準フィールドを補完します：`user_id`（WeChat 公衆号 AppID）/ `user_name` / `user_displayname`（`wechatmp:{アカウント名}`）\n\n---\n\n### 既に接続済みのプラットフォーム機能\n\n- **受信**：WeChat 公衆号のコールバックメッセージと、フォロー/アンフォローなどのイベント（明文/セキュリティモード）、署名検証\n- **送信**：カスタマーメッセージ（Text/Image など、Send DSL を経由）\n- **API**：アカウント情報（appid）と実行状態（最小限のセット）"
     },
     {
       "hash": "5a31f4da1ab530aebcecf5636951aa52",
@@ -34,8 +38,8 @@
       "translation": "## イベント拡張メソッド\n\n`register_event_mixin(\"mp\", ...)` で登録すると、イベントオブジェクト上で直接以下のメソッドを呼び出すことができます。\n\n| メソッド | 戻り値 | 説明 |\n|------|--------|------|\n| `get_openid()` | str | 送信者の OpenID |\n| `get_msg_type()` | str | 微信の元のメッセージタイプ |\n| `get_event()` | str | イベントタイプ（イベント通知のみ） |\n| `get_content()` | str | メッセージの純粋なテキスト内容 |\n| `get_raw_xml()` | str | 元の XML データ |"
     },
     {
-      "hash": "e703acfb172d5d5d53d27c404fb4bdf0",
-      "translation": "## 設定オプション\n\n### 複数アカウントの設定\n\n各アカウントは1つの公式アカウントに対応します：\n\n```toml\n[WechatMpAdapter.accounts.main]\nappid = \"wx1234567890abcdef\"\nappsecret = \"your_app_secret_here\"\ntoken = \"your_callback_token\"\nencoding_aes_key = \"\"                    # セキュリティモード/互換モードが必要な場合（43文字）\ncallback_path = \"/mp/main\"               # コールバックパス\nverified = true                          # 認証済みサービスアカウントかどうか（アクティブ送信能力に影響）\nenable = true\n\n[WechatMpAdapter.accounts.secondary]\nappid = \"wx0987654321fedcba\"\nappsecret = \"another_app_secret\"\ntoken = \"another_callback_token\"\ncallback_path = \"/mp/secondary\"\nenable = true\n```\n\n### 設定項目の説明\n\n| 項目 | 必須 | 説明 |\n|------|------|------|\n| `appid` | はい | 公式アカウントの AppID |\n| `appsecret` | はい | 公式アカウントの AppSecret（secret） |\n| `token` | いいえ | コールバック検証用のトークン（署名検証を有効にするために推奨） |\n| `encoding_aes_key` | いいえ | メッセージ暗号化/復号化用のキー（43文字、セキュリティモードで必須） |\n| `callback_path` | いいえ | コールバックパスのテンプレート、デフォルトは `/mp/{account}`、`{account}` はアカウント名に置換されます |\n| `verified` | いいえ | **認証済みサービスアカウント**かどうか、デフォルトは `true`（下記参照） |\n| `enable` | いいえ | 有効かどうか、デフォルトは true |\n\n### 認証済みサービスアカウントとパッシブ応答（verified）\n\n- `verified = true`（デフォルト、認証済みサービスアカウント）：**カスタマーメッセージ**のアクティブ送信（48時間ウィンドウ内）とテンプレートメッセージを使用可能\n- `verified = false`（未認証のサブスクリプションアカウント）：\n  - カスタマーメッセージ / テンプレートメッセージは**webhookのパッシブ応答コンテキスト内でのみ送信可能**（ユーザーのメッセージを受け取ってから15秒以内、1回の応答）——アダプターは送信をパッシブ応答として自動的に截獲します\n  - アクティブ送信（例：定期的なタスク）は `retcode=34003` エラーを返します"
+      "hash": "9dbabbec9035c085a7af69e126032a04",
+      "translation": "## 配置オプション\n\n### 複数アカウントの設定\n\n各アカウントは1つのWeChat公式アカウントに対応します：\n\n```toml\n[WechatMpAdapter.accounts.main]\nappid = \"wx1234567890abcdef\"\nappsecret = \"your_app_secret_here\"\ntoken = \"your_callback_token\"\nencoding_aes_key = \"\"                    # セキュリティモード/互換モードが必要な場合（43文字）\ncallback_path = \"/mp/main\"               # コールバックパス\nverified = true                          # 認証済みサービスアカウントかどうか（アクティブ送信能力に影響）\nenable = true\n\n[WechatMpAdapter.accounts.secondary]\nappid = \"wx0987654321fedcba\"\nappsecret = \"another_app_secret\"\ntoken = \"another_callback_token\"\ncallback_path = \"/mp/secondary\"\nenable = true\n```\n\n### 設定フィールドの説明\n\n| フィールド | 必須 | 説明 |\n|------|------|------|\n| `appid` | はい | 公式アカウントの AppID |\n| `appsecret` | はい | 公式アカウントの AppSecret（secret） |\n| `token` | いいえ | コールバック検証トークン（署名検証を有効にするために推奨） |\n| `encoding_aes_key` | いいえ | メッセージの暗号化/復号化キー（43文字、セキュリティモードが必要） |\n| `callback_path` | いいえ | コールバックパステンプレート、デフォルトは `/mp/{account}`、`{account}` はアカウント名に置換されます |\n| `verified` | いいえ | 認証済み**サービスアカウント**かどうか、デフォルトは `true`（下記を参照） |\n| `enable` | いいえ | 有効化するかどうか、デフォルトは true |\n\n### 認証済みサービスアカウントと受動応答（verified）\n\n- `verified = true`（デフォルト、認証済みサービスアカウント）：**カスタマーメッセージ**のアクティブ送信（48時間ウィンドウ内）とテンプレートメッセージを使用可能\n- `verified = false`（未認証のサブスクリプションアカウント）：\n  - カスタマーメッセージ / テンプレートメッセージは**webhook受動応答のコンテキスト内でのみ送信可能**（ユーザーからのメッセージを受信した後15秒以内、1回の応答のみ）——アダプターは送信を受動応答として自動的に捕捉します\n  - アクティブ送信（例：定時タスク）は `retcode=10003` エラー（未認証）を返します"
     },
     {
       "hash": "aa50fccfb0318b3abe63534caeb53ae8",
@@ -46,8 +50,8 @@
       "translation": "## コールバックルート\n\nアダプターは、有効なアカウントごとに2つのルート（GET + POST）を登録します。\n\n- **GET**：WeChatサーバーの接続検証。署名を検証した後に `echostr` を返します。\n- **POST**：ユーザーのメッセージとイベントを受け取ります。署名を検証→必要に応じて復号化→変換→emit\n\n実際のアクセスパスには、モジュールのプレフィックスが自動的に追加されます。たとえば、ルートを `/mp/main` に登録した場合、実際のアクセスパスは `/mp_{account}_verify/mp/main` および `/mp_{account}_message/mp/main` になります。"
     },
     {
-      "hash": "0d3b45708e831329d83b1324ac4eed5a",
-      "translation": "## API レスポンス\n\nすべての `call_api` 呼び出しは標準化されたレスポンスを返します：\n\n- 成功: `status: \"ok\"`, `retcode: 0`\n- 失敗: `status: \"failed\"`, `retcode: 34000+errcode`\n- いずれの場合も `mp_raw`（元のレスポンス）と `message_id` が含まれます。"
+      "hash": "b55d3a483fb6f82d6f7d2a4644737706",
+      "translation": "## API レスポンス\n\nすべての `call_api` 呼び出しは、標準化されたレスポンスを返します：\n\n- 成功: `status: \"ok\"`, `retcode: 0`\n- 失敗: `status: \"failed\"`, `retcode: 34100`（プラットフォームのエラー；**元の errcode は `mp_raw` に保持されます**）または `10003`（パラメータエラー / 認証されていない）\n- 常に `mp_raw`（元のレスポンス）と、ルートレベルの `message_id`（存在しない場合は空文字列）が含まれます。"
     }
   ]
 }

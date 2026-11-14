@@ -9,8 +9,8 @@ ErisPulse 所有自定义异常都继承自 `ErisPulseError`，底层库异常�
 
 {!--< tips >!--}
 1. 想宽泛兜底：捕获 `ErisPulseError`（所有框架异常的基类）
-2. 想精确处理：按模块捕获（如 `ModuleCallTimeoutError`、`StorageUnreachableError`）
-3. 存储操作默认不抛出：失败时记日志并返回 `False / None / default`；连接状态变化订阅 `storage.unreachable` / `storage.recovered` 事件
+2. 想精确处理：按模块捕获（如 `ModuleCallTimeoutError`、`StorageOperationError`、`StorageUnreachableError`）
+3. 存储写操作失败**默认抛出** `StorageOperationError`（2.12 起）；连接级不可达的冷却期快速失败仍返回 `False / None / default`，连接状态变化订阅 `storage.unreachable` / `storage.recovered` 事件
 {!--< /tips >!--}
 
 ## 异常总览
@@ -27,6 +27,7 @@ ErisPulseError                      # 所有框架异常的基类
 │   ├── ConnectionNotFoundError     # 连接不存在/已断开注销（connections.get/close）
 │   └── ConnectionPermissionError   # 非 owner 关闭他人连接（关闭权归创建者）
 ├── StorageError                    # 存储异常基类（Core/storage）
+│   ├── StorageOperationError       # 存储操作执行失败（2.12 起写路径默认抛出）
 │   └── StorageUnreachableError     # 存储后端不可达（建池重试耗尽：数据库不可达/凭据错误）
 ├── InteractionError                # 交互会话异常基类（Core/Event/interaction）
 │   ├── InteractionCancelled        # 挂起的等待/租约被取消（wait_reply 上层转为返回 None）
@@ -55,6 +56,7 @@ ErisPulseError                      # 所有框架异常的基类
 | `ConnectionNotFoundError` | `.connection_id` 查找的连接 id |
 | `ConnectionPermissionError` | `.connection_id` 目标连接 id、`.owner` 连接归属 owner |
 | `StorageUnreachableError` | `.backend` 后端名（sqlite/mysql/postgres）、`.cooldown` 冷却秒数 |
+| `StorageOperationError` | `.operation` 操作名（set/delete/clear/set_multi/transaction_begin）、`.key` 操作键 |
 | `ModuleCallError`（含子类） | `.module` 目标模块名、`.method` 目标方法名 |
 | `ModuleCallTimeoutError` | 继承 `.module/.method`，另有 `.timeout` 超时时限（秒） |
 | `InteractionCancelled` | `.reason` 取消原因、`.wait_key` 会话键 |
@@ -111,13 +113,18 @@ except ClientTimeoutError:
 | 异常 | 发生位置 | 典型场景 |
 |------|----------|----------|
 | `StorageError` | 存储层 | 存储相关异常基类 |
+| `StorageOperationError` | KV 写路径 / 事务开启（2.12 起） | 写锁竞争超时 / SQL 错误 / 约束冲突 / 事务开启超时——**默认抛出** |
 | `StorageUnreachableError` | 建池阶段 | 数据库不可达 / 凭据错误 / 网络隔离，重试耗尽 |
 
-> **存储操作的失败语义**：KV 与查询操作**默认不抛出**——失败时记录 ERROR 日志并
-> 返回 `False` / `None` / `default`（避免连接问题阻塞框架运行）。因此业务代码通常
-> **不会**捕获到 `StorageUnreachableError`（它主要供直接操作存储底层或自定义后端使用）。
-> 运行时感知连接状态请订阅生命周期事件 `storage.unreachable` / `storage.recovered`
-> （详见[生命周期事件](lifecycle.md#存储连接状态)）。
+> **存储操作的失败语义（2.12 起分层）**：
+> - **写路径执行失败默认抛出** `StorageOperationError`（`aset` / `adelete` / `aclear` / `set_multi`
+>   及同步桥同路径）——库可达而写失败意味着数据未写入，静默返回会让调用方无感知丢数据；
+>   重要写入请 try/except 并做补偿
+> - **连接级不可达**（冷却期快速失败）仍返回 `False` / `None` / `default`（框架韧性语义），
+>   业务代码通常不会捕获到 `StorageUnreachableError`；运行时感知连接状态请订阅生命周期事件
+>   `storage.unreachable` / `storage.recovered`（详见[生命周期事件](lifecycle.md#存储连接状态)）
+> - **事务开启超过 30s** 抛 `StorageOperationError`（`STORAGE_TXN_BEGIN_TIMEOUT_SECS`）——
+>   并发长事务无限死等属框架缺陷，必须可观测
 
 连接失败行为详见[存储后端 → 连接失败行为](storage-backends.md#连接失败行为)。
 

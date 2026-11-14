@@ -113,14 +113,14 @@ SendDSL / ApiDSL / RequestDSL 在授权闸口处调用。
 用于实现 Send.To(...).Func(...) 风格的链式调用接口
 
 内置支持 At/AtAll/Reply 修饰器，适配器子类无需重复实现。
-内置标准发送方法（Text/Image/Voice/Video/File），默认委托给 Raw_ob12，
+内置标准发送方法（Text/Image/Voice/Video/File/Location），默认委托给 Raw_ob12，
 适配器只需实现 Raw_ob12 即可获得全部标准发送能力，也可覆盖单个方法以提供平台特定逻辑。
 通过 send_context 属性可显式获取发送上下文（目标类型、目标ID、发送账号）。
 通过 _apply_modifiers() 方法可自动将修饰器状态合并到消息段。
 
 > **提示**
 > 1. 适配器必须实现 Raw_ob12（OneBot12 消息段 → 平台 API 的统一入口）
-> 2. 标准发送方法（Text/Image/Voice/Video/File）已内置并委托给 Raw_ob12，无需子类重复实现
+> 2. 标准发送方法（Text/Image/Voice/Video/File/Location）已内置并委托给 Raw_ob12，无需子类重复实现
 > 3. 子类可覆盖标准方法以提供平台特定逻辑，也可添加平台特有方法（如 Sticker）
 > 4. At/AtAll/Reply 已内置实现，无需子类覆盖
 > 5. 使用 self.send_context 获取发送上下文
@@ -401,6 +401,28 @@ await adapter.Send.To("user", "123").Video("https://example.com/video.mp4")
 
 ```python
 await adapter.Send.To("user", "123").File("https://example.com/doc.pdf")
+```
+
+---
+
+
+##### `Location(latitude: float, longitude: float, title: str = '', content: str = '') -> Awaitable[Any]`
+
+发送位置消息
+
+默认实现委托给 :meth:`Raw_ob12`，适配器可覆盖以提供平台特定逻辑。
+
+- **latitude**: 纬度
+- **longitude**: 经度
+- **title**: 位置标题（可选）
+- **content**: 位置地址内容（可选）
+
+**返回值**: asyncio.Task，await 后返回标准响应格式
+
+**示例**:
+
+```python
+await adapter.Send.To("group", "123").Location(39.9, 116.4, "北京")
 ```
 
 ---
@@ -833,6 +855,9 @@ result = await adapter.Request("req_123").reject(comment="暂不添加")
 
 获取当前请求操作上下文
 
+account_id 优先取显式 ``Using()`` 指定值；未指定时兜底当前事件分发
+链路的触发账户（无事件上下文时为 None）。
+
 **返回值**: 包含 request_id, account_id 的字典
 
 ---
@@ -846,7 +871,7 @@ result = await adapter.Request("req_123").reject(comment="暂不添加")
 
 > **提示**
 > 1. 必须实现call_api, start和shutdown方法
-> 2. Send 子类只需实现 Raw_ob12，即可获得全部标准发送方法（Text/Image/Voice/Video/File）
+> 2. Send 子类只需实现 Raw_ob12，即可获得全部标准发送方法（Text/Image/Voice/Video/File/Location）
 > 3. 可以自定义Request类实现平台特定的请求操作逻辑
 > 4. 通过on装饰器注册事件处理器
 > 5. 支持OneBot12协议的事件处理
@@ -893,7 +918,7 @@ result = await adapter.Request("req_123").reject(comment="暂不添加")
 
 > **提示**
 > 1. 必须重写 Raw_ob12 方法（OneBot12 消息段 → 平台 API）
-> 2. 标准方法（Text/Image/Voice/Video/File）已从 SendDSL 基类继承，默认委托 Raw_ob12
+> 2. 标准方法（Text/Image/Voice/Video/File/Location）已从 SendDSL 基类继承，默认委托 Raw_ob12
 > 3. 如需平台特定逻辑，可覆盖单个标准方法（如 Text）
 > 4. 可添加平台特有的发送方法（如 Sticker）
 
@@ -1154,6 +1179,21 @@ def Raw_ob12(self, message: dict, **kwargs):
 ---
 
 
+##### `update_bot_id(account_name: str, bot_id: str) -> None`
+
+运行期识别 bot_id 并持久化到账户配置
+
+适配器在连接建立 / 事件到达时调用（协议事件的 self.user_id 即 bot_id）。
+框架维护 bot_id → 账户名注册表（本进程解析链第一优先级），并在配置值
+变化时把 ``accounts.<账户名>.bot_id`` 写入配置存储（无损路径）——
+重启后账户实例重建即自带 bot_id，解析不再依赖账户活动回填。
+
+- **account_name**: 账户名（accounts 配置键）
+- **bot_id**: 协议侧机器人标识
+
+---
+
+
 ##### `_resolve_account(account_id: str | None = None) -> tuple`
 
 解析目标账户
@@ -1161,7 +1201,8 @@ def Raw_ob12(self, message: dict, **kwargs):
 - account_id 为 None → 返回第一个启用的账户
 - account_id 匹配账户名 → 返回该账户
 - account_id 匹配 bot_id 等字段 → 返回该账户
-- 未找到 → 抛出 ValueError
+- account_id 非 None 但无法匹配 → 记录 WARNING 并返回第一个启用的账户
+- 没有任何启用账户 → 抛出 ValueError
 
 匹配字段优先级：账户名 > dataclass 中名为 bot_id 的字段 > 任意 str 类型字段
 

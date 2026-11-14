@@ -21,9 +21,11 @@ import os
 import sys
 import time
 from collections.abc import Callable
+from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 from .Core.constants import (
+    ENV_SCRIPT_RELOAD,
     ENV_SUPERVISED,
     HARD_RESTART_EXIT_CODE,
     LIFECYCLE_TIMER_CORE_INIT,
@@ -787,6 +789,7 @@ class SDK:
                     self.logger.error(i18n.t("core.sdk.callback.on_ready_failed", error=e))
 
             if keep_running:
+                self._start_script_dev_watcher()
                 self._shutdown_event = asyncio.Event()
                 self._register_signal_handlers()
                 await self._shutdown_event.wait()
@@ -804,11 +807,63 @@ class SDK:
             # 模块/适配器不应能终止进程
             self.logger.error(i18n.t("core.sdk.run.unexpected_error", error=repr(e)))
         finally:
+            self._stop_script_dev_watcher()
             if keep_running:
                 try:
                     await self.uninit()
                 except Exception:
                     pass
+
+    def _start_script_dev_watcher(self) -> None:
+        """{!--< internal-use >!--} 脚本模式：挂载细粒度 watcher 并写入能力标记"""
+        if not os.environ.get(ENV_SCRIPT_RELOAD):
+            return
+        if getattr(self, "_dev_watcher", None) is not None:
+            return
+        try:
+            from .runtime import process_state
+            from .runtime.dev_watch import DevWatcher
+
+            entry_paths = (sys.argv[0],) if sys.argv else ()
+            watcher = DevWatcher(self, entry_paths=entry_paths)
+
+            def _notify(paths: set[str]) -> None:
+                for path in sorted(paths):
+                    self.logger.info(
+                        i18n.t(
+                            "runtime.dev_reload.file_changed",
+                            file=Path(path).name,
+                        )
+                    )
+
+            if not watcher.start(
+                ".", asyncio.get_running_loop(), notify=_notify
+            ):
+                return
+            self._dev_watcher = watcher
+            process_state.mark_component_reload(os.getpid())
+            self.logger.info(i18n.t("core.sdk.dev_reload.started"))
+        except Exception as e:
+            self.logger.warning(
+                i18n.t("core.sdk.dev_reload.failed", error=e)
+            )
+
+    def _stop_script_dev_watcher(self) -> None:
+        """{!--< internal-use >!--} 停止脚本模式 watcher 并清除能力标记"""
+        watcher = getattr(self, "_dev_watcher", None)
+        if watcher is None:
+            return
+        try:
+            watcher.stop()
+        except Exception:
+            pass
+        self._dev_watcher = None
+        try:
+            from .runtime import process_state
+
+            process_state.clear_component_reload()
+        except Exception:
+            pass
 
     def shutdown(self) -> None:
         """
@@ -1008,7 +1063,11 @@ class SDK:
     def _register_signal_handlers(self) -> None:
         """
         {!--< internal-use >!--}
-        注册进程信号处理器，将 SIGTERM / SIGHUP 等信号转为优雅关闭
+        注册进程信号处理器：SIGTERM / SIGHUP 转为优雅关闭，SIGUSR1 转为
+        进程内软重启（组件级热重载）
+
+        SIGUSR1 供 ``epsdk restart`` 对容器内 PID 1 实例使用——容器主进程
+        被终止即容器退出，外部「停止后重拉」不可用，改由框架进程内完成重启。
 
         Windows 不支持 ``loop.add_signal_handler``，捕获异常后跳过
         （Windows 下仍可通过 ``sdk.shutdown()`` 或 Ctrl+C 触发关闭）。
@@ -1021,6 +1080,12 @@ class SDK:
             self.logger.info(i18n.t("core.sdk.run.shutdown_signal"))
             self.shutdown()
 
+        def _on_restart_signal():
+            from .runtime.tasks import spawn_background
+
+            self.logger.info(i18n.t("core.sdk.run.restart_signal"))
+            spawn_background(self.restart())
+
         for sig_name in ("SIGTERM", "SIGHUP"):
             sig = getattr(signal, sig_name, None)
             if sig is None:
@@ -1029,6 +1094,13 @@ class SDK:
                 loop.add_signal_handler(sig, _on_signal)
             except (NotImplementedError, RuntimeError, ValueError):
                 # Windows / 某些事件循环不支持 add_signal_handler
+                pass
+
+        sigusr1 = getattr(signal, "SIGUSR1", None)
+        if sigusr1 is not None:
+            try:
+                loop.add_signal_handler(sigusr1, _on_restart_signal)
+            except (NotImplementedError, RuntimeError, ValueError):
                 pass
 
     async def _do_restart(self) -> bool:
@@ -1324,6 +1396,7 @@ class SDK:
         :example:
         >>> await sdk.uninit()
         """
+        self._stop_script_dev_watcher()
         # 创建反初始化协调器
         uninitializer = self._kernel.get_uninitializer()
 

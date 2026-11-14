@@ -669,6 +669,35 @@ await sdk.adapter.emit({
 ---
 
 
+##### `_cross_receipt_active_policy() -> str`
+
+**内部方法**
+读取跨账户重复受理策略（``ErisPulse.framework.cross_account_policy``）
+
+**返回值**: "off" / "mark" / "drop"（非法值按 "off" 处理）
+
+---
+
+
+##### `_cross_receipt_check(data: dict, platform: str, trace_id: str) -> bool`
+
+**内部方法**
+跨账户重复受理关联判定（内容级，需策略 mark / drop）
+
+同平台 + 同会话 + 同发送者 + 同 alt_message 在
+``DEFAULT_CROSS_RECEIPT_WINDOW_SECS`` 窗口内再次到达（无论经哪个 self_id）
+视为同一物理消息的重复受理：mark 注入 ``multi_receipt`` 字段后放行，
+drop 直接丢弃。alt_message 为空（无法安全比对内容）的事件不参与关联。
+
+- **data**: 事件数据
+- **platform**: 平台名
+- **trace_id**: 事件 id
+
+**返回值**: 是否为重复受理且策略为 drop（True 时调用方应丢弃）
+
+---
+
+
 ##### `async _emit_dispatch(data: Any, platform: str, event_type: str, detail_type: str, platform_raw: Any, raw_event_type: Any, trace_id: str) -> None`
 
 **内部方法** emit 的事件分发主体（trace-id 上下文内执行）
@@ -796,7 +825,7 @@ self字段标准扩展：
 - self.user_id (必须) - Bot用户ID
 - self.user_name (可选) - Bot昵称
 - self.avatar (可选) - Bot头像URL
-- self.account_id (可选) - 多账户标识
+- self.account_id (可选) - 动态账户代位标识：机器人 user_id 尚未获取时填充账户名/账户标识，user_id 可用后优先填 self.user_id
 
 - **platform**: 平台名称
 - **self_info**: 事件中的self字段内容
@@ -1036,7 +1065,7 @@ meta["description"]  # 当前语言下的适配器简介
 > 返回类型为泛型 ``_TAdapter``（默认为 BaseAdapter）。
 > 由于框架通过 entry_points 动态发现适配器，入口点无法静态获知
 > 具体平台类型；但返回的实例始终是具体适配器子类的实例，
-> 其 ``Send`` 属性提供标准发送方法（Text/Image/Voice/Video/File）的补全。
+> 其 ``Send`` 属性提供标准发送方法（Text/Image/Voice/Video/File/Location）的补全。
 > 若调用方与适配器同项目且能导入适配器类，可添加类型注解获得更精确补全：
 > ```python
 > adapter: MyAdapter = sdk.adapter.get("MyPlatform")
@@ -1139,7 +1168,7 @@ info = sdk.adapter.get_connection_info("onebot11")
 
 列出指定平台支持的发送方法
 
-包含标准发送方法（Text/Image/Voice/Video/File/Raw_ob12）和平台特有方法，
+包含标准发送方法（Text/Image/Voice/Video/File/Location/Raw_ob12）和平台特有方法，
 排除链式修饰方法（At/To/Hook/Retry 等）和属性。
 
 - **platform**: 平台名称

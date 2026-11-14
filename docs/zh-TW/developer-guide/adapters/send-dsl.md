@@ -38,17 +38,17 @@ await adapter.Send.Using("bot1").To("group", "123").Text("Hello")
 flowchart LR
     A["Using / Account<br/>（選發送帳號，可選）"] --> B["To<br/>（選目標類型與 ID）"]
     B --> C["修飾方法<br/>At / Reply / Expire / ForMember 等"]
-    C --> D["發送方法<br/>Text / Image / Voice / Raw_ob12"]
+    C --> D["發送方法<br/>Text / Image / Voice / Video / File / Location / Raw_ob12"]
     D --> E["返回 asyncio.Task"]
 ```
 
 ## 發送方法
 
-所有發送方法返回 `asyncio.Task` 物件。
+所有發送方法返回 `asyncio.Task` 對象。
 
 ### 基本方法（基類內建）
 
-以下標準方法已由 `SendDSL` 基類內建實現，**預設委派給 `Raw_ob12`**，適配器子類無需重複實現即可直接使用，且 IDE 能自動補全：
+以下標準方法已由 `SendDSL` 基類內建實現，**預設委託給 `Raw_ob12`**，適配器子類無需重複實現即可直接使用，且 IDE 能自動補全：
 
 | 方法名 | 說明 | 返回值 |
 |--------|------|---------|
@@ -57,6 +57,7 @@ flowchart LR
 | `Voice(file: bytes \| str)` | 發送語音（OneBot12 `audio` 段） | `asyncio.Task` |
 | `Video(file: bytes \| str)` | 發送影片 | `asyncio.Task` |
 | `File(file: bytes \| str, filename: str = None)` | 發送檔案 | `asyncio.Task` |
+| `Location(latitude: float, longitude: float, title: str = "", content: str = "")` | 發送位置訊息（OneBot12 `location` 段） | `asyncio.Task` |
 
 適配器可覆蓋單個標準方法以提供平台特定邏輯：
 
@@ -77,7 +78,7 @@ class Send(SendDSL):
 |--------|------|---------|---------|
 | `Raw_ob12(message)` | 發送 OneBot12 格式訊息 | `asyncio.Task` | **必須實現** |
 
-> **重要**：`Raw_ob12` 是適配器的核心方法，**必須實現**。它是反向轉換（OneBot12 → 平台）的統一入口。未實現時基類會記錄 error 日誌並返回標準錯誤回應（`status: "failed"`, `retcode: 10002`）。標準方法（`Text`、`Image` 等）預設委派給 `Raw_ob12`。
+> **重要**：`Raw_ob12` 是適配器的核心方法，**必須實現**。它是反向轉換（OneBot12 → 平台）的統一入口。未實現時基類會記錄 error 日誌並返回標準錯誤回應（`status: "failed"`, `retcode: 10002`）。標準方法（`Text`、`Image` 等）預設委託給 `Raw_ob12`。
 
 ### 平台特有方法
 
@@ -226,10 +227,10 @@ results = await (event.send_chain()
 
 ### Using 方法
 
-`Using()` 用於指定發送訊息的帳戶。傳入的識別符會透過 `_resolve_account()` 按以下優先級進行匹配：
+`Using()` 用於指定發送訊息的帳戶。傳入的標識符按以下優先級匹配到具體帳戶（解析由框架自動完成）：
 
 1. **帳戶名** — 配置中的鍵名（如 `"default"`、`"bot1"`）
-2. **執行時注入的 bot_id** — 從事件轉換時自動注入的識別符
+2. **`bot_id` 字段** — 帳戶配置中的 `bot_id` 字段（執行期由適配器回填，通常即機器人的 `self.user_id`）
 3. **任意 str 字段** — 配置中其他字串字段
 4. **兜底** — 第一個啟用的帳戶
 
@@ -237,9 +238,11 @@ results = await (event.send_chain()
 # 使用帳戶名
 await adapter.Send.Using("account1").To("user", "123").Text("Hello")
 
-# 使用 bot_id（即事件中的 self.user_id）
+# 使用 bot_id（通常即事件中的 self.user_id）
 await adapter.Send.Using("bot_123").To("user", "123").Text("Hello")
 ```
+
+> 處理事件的鏈路內未顯式 `Using()` 時，框架自動綁定觸發事件的帳戶（見[無感語法糖](#無感語法糖)）；定時器 / 啟動任務等無事件上下文場景走預設帳戶。
 
 ### Account 方法
 
@@ -585,34 +588,46 @@ flowchart TD
     F --> G["emit message.sending（fire-and-forget）"]
     G --> H{"聲明了發送規則？"}
     H -->|"否"| I["Task done_callback → emit message.sent"]
-    H -->|"是"| J["apply_send_rules 包成外層 Task<br/>重試/超時/延遲/优先級"]
+    H -->|"是"| J["apply_send_rules 包成外層 Task<br/>重試/超時/延遲/優先級"]
     J --> I
-    I --> K["await 得到標準回應 dict"]
+    I --> K["await 得到標準響應 dict"]
 ```
 
 **每一步框架做了什麼：**
 
 | 階段 | 框架做了什麼 |
 |------|-------------|
-| 鏈式合併 | `To`/`Using`/`Account` 每次呼叫都**新建不可變實例**並繼承已設欄位，因此 `To(...).Using(...)` 與 `Using(...).To(...)` **等價**、順序無關 |
+| 鏈式合併 | `To`/`Using`/`Account` 每次調用都**新建不可變實例**並繼承已設字段，因此 `To(...).Using(...)` 與 `Using(...).To(...)` **等價**、順序無關 |
 | 方法包裝 | 發送方法（`Text` 等）被 `__getattribute__` 拦截包一層；修飾方法（`To`/`Using`/`At`/`Retry` 等）**不包裝**。嵌套的 `Raw_ob12` 調用靠 `_in_rule_wrap` 標記防重複包裝 |
-| Task 建立 | `Raw_ob12` 內部 `asyncio.create_task()` 才是 Task 真正的建立點；`Text()` 只是同步返回這個 Task，**不阻塞** |
+| Task 創建 | `Raw_ob12` 內部 `asyncio.create_task()` 才是 Task 真正的創建點；`Text()` 只是同步返回這個 Task，**不阻塞** |
 | 發送日誌 | 寫 `[Send] platform/method -> target` 事件日誌（`exclude_levels=["EVENT"]` 可屏蔽） |
-| `message.sending` | 發送方法被呼叫時**立即**以 fire-and-forget 觸發（僅當存在監聽者，先 `has_handlers` 短路） |
+| `message.sending` | 發送方法被調用時**立即**以 fire-and-forget 觸發（僅當存在監聽者，先 `has_handlers` 短路） |
 | `message.sent` | 綁定在 Task 的 `done_callback` 上——**有規則時覆蓋整個重試流程的最終結果**，無規則時即原始 Task 完成 |
 
 ### 帳戶解析回退鏈
 
-當適配器內部呼叫 `_resolve_account(account_id)` 時，按以下順序解析到具體帳戶：
+`Using()` 明確指定（含 `reply()` 自動注入）或事件鏈自動綁定的帳戶標識，按以下順序解析到具體帳戶：
 
 1. 單帳戶適配器（無 `AccountConfigClass`）→ 直接返回
 2. 帳戶名精確匹配 `account_id`
-3. 各帳戶 `bot_id` 欄位匹配
-4. 各帳戶任意 `str` 欄位值匹配（排除 `enabled`/`name`）
-5. 兜底第一個啟用的帳戶
-6. 全部失敗 → 抛 `ValueError`
+3. 各帳戶 `bot_id` 字段匹配
+4. 各帳戶任意 `str` 字段值匹配（排除 `enabled`/`name`）
+5. 兜底第一個啟用的帳戶：未傳 `account_id` 時直接採用（預設帳戶語義）；明確傳入的 `account_id` 無法解析時記錄 WARNING 後採用（WARNING 中的 `platform` / `account_id` / `account` 用於定位未歸屬到帳戶的事件來源）
+6. 沒有任何啟用帳戶（含全部帳戶已禁用）→ 抛 `ValueError`：無帳戶可發送
 
-> 你傳的 `account_id` 來自：`Using()` 明確指定 > 事件 `self` 欄位（`account_id` 优先於 `user_id`，由 `event.reply()` 自動注入）> 不指定（由適配器兜底第一個啟用帳戶）。
+> 你傳的 `account_id` 來自：`Using()` 明確指定（含 `event.reply()` 自動注入的 `self.user_id` / `self.account_id` 代位）> **事件分發鏈兜底**（處理事件時未明確指定的發送，自動綁定觸發事件的帳戶）> 不指定（預設帳戶語義，定時器 / 啟動任務等無事件上下文場景）。
+
+### 無感語法糖
+
+> 「事件鏈內免 `Using()`」「代位帳戶名路由」需要 ErisPulse **2.12+**。
+
+| 語法糖 | 觸發條件 | 效果 |
+|--------|----------|------|
+| 事件鏈內免 `Using()` | 處理事件的鏈路內調用 `Send` / `Api` / `Request` | 自動綁定觸發事件的帳戶（分發入口注入調用上下文；`send_context` / `api_context` / `request_context` 同口徑） |
+| `reply()` 自動引用 | `quote=True` | 自動取事件 `message_id` 構造 `Reply` 段 |
+| `reply()` 自動帳戶綁定 | reply 鏈路 | 自動 `Using(self.account_id or self.user_id)`——代位帳戶名直接可路由 |
+| 代位帳戶名路由 | 動態帳戶未獲取 user_id | 事件 `self.account_id` = 帳戶名 → 帳戶名匹配解析回正確帳戶 |
+| 預設帳戶兜底 | 無事件上下文（定時器 / 啟動任務） | 第一個啟用帳戶（既有語義不變） |
 
 ### 發送規則引擎（重試/超時/延遲）
 
@@ -623,19 +638,19 @@ flowchart TD
 | `Retry(n)` | 總嘗試 `n+1` 次；**失敗後立即重發，無指數退避** |
 | `Timeout(s)` | 單次發送超時取消（`asyncio.wait_for`），未耗盡則重試 |
 | `Defer(s)` | 發送前延遲 sleep |
-| `Priority(level, drop_if_busy)` | 积壓超閾值時直接回傳 `{status:"failed", retcode:10002, message:"dropped_low_priority"}` |
+| `Priority(level, drop_if_busy)` | 积壓超閾值時直接返回 `{status:"failed", retcode:10002, message:"dropped_low_priority"}` |
 | `Hook(fn)` | 僅最終成功時按序執行 |
 | `on_progress` / `on_error` | 各階段 / 最終失敗回調 |
 
-> **注意**：重試是「立即重發」，沒有退避間隔；若平台限流需要退避，請在 `on_error` 回調裡自行 sleep 後再手動重發。規則的成功判定以回傳 dict 的 `status == "ok"` 為準（`retcode == 0`）。
+> **注意**：重試是「立即重發」，沒有退避間隔；若平台限流需要退避，請在 `on_error` 回調裡自行 sleep 後再手動重發。規則的成功判定以返回 dict 的 `status == "ok"` 為準（`retcode == 0`）。
 
-> 標準回應格式與 `retcode` 完整語義見 [API 回應規範](../../standards/api-response.md)。
+> 標準響應格式與 `retcode` 完整語義見 [API 響應規範](../../standards/api-response.md)。
 
 ## 返回值
 
-### Task 對象
+### Task 物件
 
-所有發送方法返回 `asyncio.Task`。適配器只需實現 `Raw_ob12`，標準方法（Text/Image 等）預設委派給它：
+所有發送方法返回 `asyncio.Task`。適配器只需實現 `Raw_ob12`，標準方法（Text/Image 等）預設委託給它：
 
 ```python
 import asyncio
@@ -651,7 +666,7 @@ def Raw_ob12(self, message, **kwargs):
         )
     return asyncio.create_task(_do_send())
 
-# Text/Image/Voice/Video/File 已從基類繼承，自動委派給 Raw_ob12
+# Text/Image/Voice/Video/File/Location 已從基類繼承，自動委託給 Raw_ob12
 # 如需覆蓋標準方法，返回 asyncio.Task 即可：
 # def Text(self, text: str):
 #     return self.Raw_ob12([{"type": "text", "data": {"text": text}}])
@@ -664,6 +679,7 @@ def Raw_ob12(self, message, **kwargs):
 ```python
 async def call_api(self, endpoint: str, **params):
     try:
+        # _do_api_call 為適配器自行實現的平台請求（範例占位）
         result = await self._do_api_call(endpoint, **params)
         return self.make_response(
             data=result.get("data"),

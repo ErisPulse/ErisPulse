@@ -106,6 +106,33 @@
 3. 返回码必须严格遵循OneBot12规范
 4. 错误信息(message)应当是人类可读的描述
 
+### 4.1 响应构造助手：`make_response` / `make_error`
+
+适配器构造标准响应统一用 `BaseAdapter` 上的两个助手，不必手写 dict：
+
+```python
+# 成功（send / call_api / _do_accept 等所有返回标准响应的位置）
+return self.make_response(
+    data=result,                    # 响应数据
+    message_id=result.get("message_id", ""),
+    raw=result,                     # 平台原始响应 → 自动挂到 {platform}_raw 字段
+)
+
+# 失败（status 固定 "failed"）
+return self.make_error(
+    retcode=34100,                  # 默认 34600（SDK Failure）；平台错误应传自定的 34xxx
+    message="平台风控拒绝",
+    raw=response,
+)
+```
+
+| 助手 | 签名 | 语义 |
+|------|------|------|
+| `make_response` | `(*, status="ok", retcode=0, data=None, message_id="", message="", raw=None)` | 按标准结构组装；`raw` 非 `None` 时自动挂 `{platform}_raw` 键（平台名取 `self._platform`） |
+| `make_error` | `(retcode=34600, message="", raw=None)` | `make_response(status="failed", ...)` 的快捷方式 |
+
+> 手写等价 dict 亦合法（结构一致即可）；助手的价值是 `{platform}_raw` 的平台名拼接与字段完整性不遗漏。
+
 ## 5. 扩展规范
 
 ErisPulse 在 OneBot12 标准返回结构之上做了以下扩展：
@@ -116,6 +143,8 @@ OneBot12 标准中 `message_id` 位于 `data` 对象内部且非强制。ErisPul
 
 - 无法获取 `message_id` 时应设为空字符串 `""`
 - 确保 `message_id` 始终存在，模块无需做 null 检查
+
+> **注意区分两侧**：本节的顶层提升仅针对**动作响应**（出站）。入站 message **事件**的 `message_id` 是 OneBot12 基线顶层必选字段，见[事件转换标准](event-conversion.md)。
 
 ### 5.2 `{platform}_raw` 原始响应字段
 

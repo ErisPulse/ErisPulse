@@ -250,6 +250,18 @@ if __name__ == "__main__":
 
 ## 运行时细粒度控制
 
+### 本地插件热重载
+
+`sdk.enable_plugin_hot_reload()` 监控本地插件目录（`plugins/`）的源码变更并自动重载：
+`epsdk run` 已自动开启，无需手动调用；**裸 `sdk.run()` 启动**时如需插件热重载，
+在 `run()` 之前调用一次（只覆盖本地插件目录，不影响 pip 安装的模块/适配器）：
+
+```python
+sdk.enable_plugin_hot_reload()
+sdk.run()
+```
+
+
 即使用了 `sdk.run()` 完成启动，你仍然可以在运行时单独控制各子系统，而不必重启整个 SDK：
 
 ### 适配器热启停
@@ -302,7 +314,7 @@ async def shutdown_after_idle():
     sdk.shutdown()  # 空闲 1 小时后优雅退出
 ```
 
-**信号处理**：`run()` 内部会注册 `SIGTERM` / `SIGHUP` 处理器，将系统信号转为优雅关闭——容器编排（Docker `docker stop`）或 `systemd` 停止服务时，进程会走完 `uninit()` 清理而非被强杀。
+**信号处理**：`run()` 内部会注册 `SIGTERM` / `SIGHUP` 处理器，将系统信号转为优雅关闭——容器编排（Docker `docker stop`）或 `systemd` 停止服务时，进程会走完 `uninit()` 清理而非被强杀。另注册 `SIGUSR1` 处理器转为进程内软重启（`sdk.restart()`）——`epsdk restart` 对容器内 PID 1 实例（终止即容器退出，无法外部重拉）改发此信号触发组件热重载。SIGUSR1 热重启通道需要 ErisPulse **2.12+**。
 
 - Windows 不支持 `loop.add_signal_handler`，信号处理器会自动跳过（仍可用 `sdk.shutdown()` 或 Ctrl+C 触发关闭）
 - 反复调用 `sdk.shutdown()` 是安全的（事件已设置后再次调用为无操作）
@@ -383,6 +395,27 @@ epsdk run main.py
 
 `epsdk run --reload`（开发热重载模式，2.11.1 起）同样走「监督进程 + 重载 worker 子进程」结构：worker 内保存 `.py` 文件即触发**组件级热重载**（不整框架重启）；硬重启由监督进程重拉全新 worker，升级框架后新代码即刻生效。
 
+#### 细粒度重载判定（2.12+）
+
+保存 `.py` 后按运行时源码归属选择最小重载单元，不按路径字符串猜：
+
+| 变更文件 | 处理 |
+|----------|------|
+| 插件目录（`ErisPulse.framework.plugins_dir`）内 | 由插件热重载 watcher 处理，dev watcher 不重复触发 |
+| 已加载模块的源码（含 `pip install -e` 与 site-packages） | `sdk.reload_module(模块名)` |
+| 已注册适配器的源码 | `sdk.reload_adapter(平台名)` |
+| 入口脚本 | 进程级重启（退出码 42，由监督者重拉） |
+| 框架自身源码（`ErisPulse` 包内） | 进程级重启 |
+| 同时匹配多个 owner / 无法归属 | 保守走进程级重启 |
+
+`epsdk upgrade` 等批量升级场景可用 `sdk.reload_all_modules()` 一次重载全部已注册
+模块（按依赖拓扑序，单模块失败跳过不回滚），无需重启进程。
+
+脚本模式（`epsdk run main.py --reload`）不把脚本 worker 化：脚本子进程内挂载
+dev watcher，并把 `component_reload_pid` 写入 `.erispulse/runtime.json`；父进程
+看到该标记后，模块/适配器/插件变更交给子进程处理，只有入口脚本或框架源码
+变更才重启脚本进程。
+
 #### 2. systemd（Linux 服务器）
 
 `RestartForceExitStatus=42` 让退出码 42 也触发重启（默认 `on-failure` 只对非零码生效）：
@@ -406,6 +439,9 @@ services:
     build: .
     restart: unless-stopped   # 任何退出（含 42）都重启
 ```
+
+> 容器内 `epsdk restart` 对 PID 1 实例走 SIGUSR1 进程内热重启，不会退出容器；
+> 整进程重启由 `restart` 策略承载。详见 [部署 → 容器内重启](../user-guide/deployment.md#容器内重启pid-1-实例)。
 
 #### 4. PM2（Node 生态运维）
 

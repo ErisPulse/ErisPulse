@@ -134,7 +134,7 @@
           "icon": "fa-sliders"
         },
         {
-          "title": "CLI 指令參考",
+          "title": "CLI 命令參考",
           "path": "user-guide/cli-reference.md",
           "level": 1,
           "icon": "fa-terminal"
@@ -256,7 +256,7 @@
     "平台特性指南": {
       "description": "各平台特性和適配器說明",
       "icon": "fa-plug",
-      "count": 21,
+      "count": 22,
       "documents": [
         {
           "title": "ErisPulse PlatformFeatures 文件",
@@ -265,7 +265,7 @@
           "icon": "fa-server"
         },
         {
-          "title": "OneBot11 平台特性文件",
+          "title": "OneBot11平台特性文件",
           "path": "platform-guide/onebot11.md",
           "level": 1,
           "icon": "fa-comments"
@@ -301,13 +301,13 @@
           "icon": "fa-user"
         },
         {
-          "title": "QQBot 平台特性文件",
+          "title": "QQBot平台特性文件",
           "path": "platform-guide/qqbot.md",
           "level": 1,
           "icon": "fa-comment-dots"
         },
         {
-          "title": "Kook 平台特性文件",
+          "title": "Kook平台特性文檔",
           "path": "platform-guide/kook.md",
           "level": 1,
           "icon": "fa-headset"
@@ -331,7 +331,7 @@
           "icon": "fa-mobile-screen"
         },
         {
-          "title": "平台特性說明 — Webhook 通用橋接適配器",
+          "title": "Webhook 通用橋接適配器平台特性文件",
           "path": "platform-guide/webhook.md",
           "level": 1,
           "icon": "fa-link"
@@ -361,6 +361,12 @@
           "icon": "fa-plug"
         },
         {
+          "title": "Oopz 平台特性文檔",
+          "path": "platform-guide/oopz.md",
+          "level": 1,
+          "icon": "fa-plug"
+        },
+        {
           "title": "Sandbox 平台特性文件",
           "path": "platform-guide/sandbox.md",
           "level": 1,
@@ -373,7 +379,7 @@
           "icon": "fa-plug"
         },
         {
-          "title": "終端平台特性文件",
+          "title": "Terminal 平台特性文件",
           "path": "platform-guide/terminal.md",
           "level": 1,
           "icon": "fa-plug"
@@ -422,7 +428,7 @@
     "進階主題": {
       "description": "深入理解框架的進階特性",
       "icon": "fa-fire",
-      "count": 19,
+      "count": 21,
       "documents": [
         {
           "title": "高級主題",
@@ -431,7 +437,7 @@
           "icon": "fa-fire"
         },
         {
-          "title": "生命週期管理",
+          "title": "生命周期管理",
           "path": "advanced/lifecycle.md",
           "level": 1,
           "icon": "fa-clock-rotate-left"
@@ -462,7 +468,7 @@
         },
         {
           "title": "網路用戶端",
-          "path": "advanced/http-client.md",
+          "path": "advanced/client.md",
           "level": 1,
           "icon": "fa-globe"
         },
@@ -485,7 +491,7 @@
           "icon": "fa-shield-halved"
         },
         {
-          "title": "所屬權（owner）系統",
+          "title": "归屬權（owner）系統",
           "path": "advanced/ownership.md",
           "level": 1,
           "icon": "fa-user-tag"
@@ -515,7 +521,7 @@
           "icon": "fa-server"
         },
         {
-          "title": "異常體系與捕獲指南",
+          "title": "錯誤體系與捕獲指南",
           "path": "advanced/errors.md",
           "level": 1,
           "icon": "fa-triangle-exclamation"
@@ -523,6 +529,18 @@
         {
           "title": "連接池與廣播",
           "path": "advanced/connections.md",
+          "level": 1,
+          "icon": "fa-fire"
+        },
+        {
+          "title": "效能基準與調優",
+          "path": "advanced/performance.md",
+          "level": 1,
+          "icon": "fa-fire"
+        },
+        {
+          "title": "runtime 工具帶",
+          "path": "advanced/runtime.md",
           "level": 1,
           "icon": "fa-fire"
         },
@@ -577,7 +595,7 @@
           "icon": "fa-image"
         },
         {
-          "title": "ErisPulse-ApiMCP 使用 AI 客戶端控制機器人",
+          "title": "ErisPulse-ApiMCP 用 AI 客戶端操控機器人",
           "path": "ecosystem/apimcp.md",
           "level": 1,
           "icon": "fa-cubes"
@@ -594,7 +612,7 @@
     "AI 輔助開發": {
       "description": "使用 AI 輔助開發 ErisPulse",
       "icon": "fa-robot",
-      "count": 12,
+      "count": 1,
       "documents": [
         {
           "title": "AI 輔助開發",
@@ -603,80 +621,7 @@
           "icon": "fa-robot"
         }
       ],
-      "subgroups": {
-        "skills": {
-          "name": "Skills",
-          "icon": "fa-folder",
-          "documents": [
-            {
-              "title": "ErisPulse 适配器开发",
-              "path": "ai-support/skills/erispulse-adapter-dev/SKILL.md",
-              "level": 1,
-              "icon": "fa-robot"
-            },
-            {
-              "title": "ErisPulse 适配器技术标准",
-              "path": "ai-support/skills/erispulse-adapter-standards/SKILL.md",
-              "level": 1,
-              "icon": "fa-robot"
-            },
-            {
-              "title": "ErisPulse 通信与连接",
-              "path": "ai-support/skills/erispulse-communication/SKILL.md",
-              "level": 1,
-              "icon": "fa-robot"
-            },
-            {
-              "title": "ErisPulse 配置系统与 CLI 工具链",
-              "path": "ai-support/skills/erispulse-config-cli/SKILL.md",
-              "level": 1,
-              "icon": "fa-robot"
-            },
-            {
-              "title": "ErisPulse 生态与多平台",
-              "path": "ai-support/skills/erispulse-ecosystem/SKILL.md",
-              "level": 1,
-              "icon": "fa-robot"
-            },
-            {
-              "title": "ErisPulse 异常体系与排障",
-              "path": "ai-support/skills/erispulse-errors-troubleshooting/SKILL.md",
-              "level": 1,
-              "icon": "fa-robot"
-            },
-            {
-              "title": "ErisPulse 快速上手与核心概念",
-              "path": "ai-support/skills/erispulse-getting-started/SKILL.md",
-              "level": 1,
-              "icon": "fa-robot"
-            },
-            {
-              "title": "ErisPulse 热重载与懒加载休眠",
-              "path": "ai-support/skills/erispulse-hot-reload/SKILL.md",
-              "level": 1,
-              "icon": "fa-robot"
-            },
-            {
-              "title": "ErisPulse 模块开发",
-              "path": "ai-support/skills/erispulse-module-dev/SKILL.md",
-              "level": 1,
-              "icon": "fa-robot"
-            },
-            {
-              "title": "ErisPulse 权限作用域与归属权",
-              "path": "ai-support/skills/erispulse-scope-ownership/SKILL.md",
-              "level": 1,
-              "icon": "fa-robot"
-            },
-            {
-              "title": "ErisPulse 影子灰度与消息追踪",
-              "path": "ai-support/skills/erispulse-shadow-transcript/SKILL.md",
-              "level": 1,
-              "icon": "fa-robot"
-            }
-          ]
-        }
-      }
+      "subgroups": {}
     },
     "技術標準": {
       "description": "框架的技術規範和標準",

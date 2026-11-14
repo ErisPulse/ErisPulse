@@ -1,0 +1,24 @@
+[project]
+name = "ErisPulse-WebModule"
+version = "1.0.0"
+description = "Web 能力示例模块：router.http / ws / middleware 与 router.app 逃生舱"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { file = "LICENSE" }
+authors = [ { name = "yourname", email = "your@mail.com" } ]
+
+dependencies = [
+]
+
+[project.urls]
+"homepage" = "https://github.com/yourname/WebModule"
+
+[project.entry-points]
+"erispulse.module" = { "WebModule" = "WebModule:Main" }
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["WebModule"]

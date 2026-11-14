@@ -518,3 +518,27 @@ class TestShadowErrorHierarchy:
         with pytest.raises(ShadowStateError) as exc_info:
             asyncio.run(shadow_manager.promote("never_shadowed_xyz", manager=None, sdk=None))
         assert isinstance(exc_info.value, ErisPulseError)
+
+
+# ==================== 绑定视图（list_shadows） ====================
+
+
+class TestShadowBindingsView:
+    """ShadowManager.bindings / ModuleManager.list_shadows 只读视图"""
+
+    def test_bindings_empty_when_no_shadow(self):
+        assert shadow_manager.bindings() == {}
+
+    def test_bindings_and_module_view(self):
+        from ErisPulse.Core.module import ModuleManager
+
+        shadow_manager.bind("Roll", "Roll_shadow")
+        shadow_manager.bind("Weather", "Weather_shadow")
+        assert shadow_manager.bindings() == {
+            "Roll": "Roll_shadow",
+            "Weather": "Weather_shadow",
+        }
+        assert ModuleManager().list_shadows() == shadow_manager.bindings()
+
+        shadow_manager.unbind("Roll_shadow")
+        assert shadow_manager.bindings() == {"Weather": "Weather_shadow"}

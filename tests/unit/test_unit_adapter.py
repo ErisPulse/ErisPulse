@@ -12,6 +12,7 @@ import pytest
 from ErisPulse.Core import router
 from ErisPulse.Core.adapter import AdapterManager
 from ErisPulse.Core.Bases import BaseAdapter, SendDSL
+from ErisPulse.Core.Bases.adapter import RequestDSL
 from ErisPulse.Core.config import config
 from ErisPulse.Core.i18n import i18n
 from ErisPulse.Core.lifecycle import lifecycle
@@ -1065,6 +1066,43 @@ class TestBaseAdapter:
         assert name == "custom"
         assert cfg.bot_id == "custom_999"
 
+    def test_resolve_account_unresolved_falls_back_with_warning(self):
+        """显式 account_id 无法解析时回退首个启用账户，并记录 WARNING"""
+        from dataclasses import dataclass
+
+        @dataclass
+        class BotConfig:
+            enabled: bool = True
+            token: str = ""
+
+        class NoAliasAdapter(BaseAdapter):
+            ConfigClass = None
+            AccountConfigClass = BotConfig
+
+            async def start(self):
+                pass
+
+            async def shutdown(self):
+                pass
+
+            async def call_api(self, endpoint: str, **params):
+                return {"status": "ok"}
+
+        adapter = NoAliasAdapter()
+        adapter._accounts_data = {
+            "first": BotConfig(enabled=True, token="t1"),
+            "second": BotConfig(enabled=True, token="t2"),
+        }
+        warnings: list[str] = []
+        adapter._get_logger = lambda: Mock(
+            warning=lambda message, *args, **kwargs: warnings.append(message)
+        )
+
+        name, _ = adapter._resolve_account("999")
+        assert name == "first"
+        assert len(warnings) == 1
+        assert "account_id=999" in warnings[0]
+
 
 # ==================== SendDSL Raw_ob12 测试 ====================
 
@@ -1113,6 +1151,66 @@ class TestSendDSLRawMethods:
             send = SendDSL(base_adapter, "user", "123", None)
             await send.Raw_ob12([{"type": "text", "data": {"text": "hi"}}])
             mock_logger.error.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_location_builds_baseline_segment(self, base_adapter):
+        """Location 构造 OneBot12 基线 location 段（经 Raw_ob12 发送）"""
+        captured: list = []
+
+        class CapturingAdapter(BaseAdapter):
+            async def start(self):
+                pass
+
+            async def shutdown(self):
+                pass
+
+            async def call_api(self, endpoint: str, **params):
+                return {"status": "ok", "retcode": 0, "data": {}, "message_id": "m1"}
+
+            class Send(BaseAdapter.Send):
+                async def Raw_ob12(self, message, **kwargs):
+                    captured.append(message)
+                    return await self._adapter.call_api("send_message")
+
+        adapter = CapturingAdapter()
+        send = adapter.Send.To("group", "123")
+        await send.Location(39.9, 116.4, title="北京", content="东城区")
+        assert captured[0] == [
+            {
+                "type": "location",
+                "data": {
+                    "latitude": 39.9,
+                    "longitude": 116.4,
+                    "title": "北京",
+                    "content": "东城区",
+                },
+            }
+        ]
+
+    @pytest.mark.asyncio
+    async def test_location_omits_empty_title_and_content(self, base_adapter):
+        """Location 的 title/content 缺省时不进 data"""
+        captured: list = []
+
+        class CapturingAdapter(BaseAdapter):
+            async def start(self):
+                pass
+
+            async def shutdown(self):
+                pass
+
+            async def call_api(self, endpoint: str, **params):
+                return {"status": "ok", "retcode": 0, "data": {}, "message_id": "m1"}
+
+            class Send(BaseAdapter.Send):
+                async def Raw_ob12(self, message, **kwargs):
+                    captured.append(message)
+                    return await self._adapter.call_api("send_message")
+
+        adapter = CapturingAdapter()
+        send = adapter.Send.To("group", "123")
+        await send.Location(39.9, 116.4)
+        assert captured[0][0]["data"] == {"latitude": 39.9, "longitude": 116.4}
 
     @pytest.mark.asyncio
     async def test_raw_ob12_with_overridden(self):
@@ -2329,7 +2427,7 @@ class TestApiDSL:
 
     @pytest.fixture
     def api_adapter(self):
-        """创建带 call_api 记录的测试适配器"""
+        """创建带 call_api 记录的测试适配器（签名声明标准账户字段）"""
         call_log = []
 
         class _ApiAdapter(BaseAdapter):
@@ -2342,7 +2440,8 @@ class TestApiDSL:
             async def shutdown(self):
                 pass
 
-            async def call_api(self, endpoint: str, **params):
+            async def call_api(self, endpoint: str, account_id: str | None = None, **params):
+                params["account_id"] = account_id
                 call_log.append((endpoint, params))
                 return {
                     "status": "ok",
@@ -2469,6 +2568,56 @@ class TestApiDSL:
         adapter, call_log = api_adapter
         await adapter.Api.Using("bot1").get_user_info("123")
         assert call_log[0][1]["account_id"] == "bot1"
+
+    @pytest.mark.asyncio
+    async def test_legacy_account_param_rewritten(self):
+        """旧名 _account_id 适配器：框架将 account_id 改写为旧名下发"""
+        call_log = []
+
+        class _LegacyAdapter(BaseAdapter):
+            def __init__(self):
+                super().__init__()
+
+            async def start(self):
+                pass
+
+            async def shutdown(self):
+                pass
+
+            async def call_api(self, endpoint: str, _account_id: str | None = None, **params):
+                call_log.append((endpoint, _account_id, params))
+                return {"status": "ok", "retcode": 0, "data": {}, "message_id": "", "message": ""}
+
+        adapter = _LegacyAdapter()
+        await adapter.Api.Using("bot1").get_user_info("123")
+        endpoint, account_id, params = call_log[0]
+        assert endpoint == "get_user_info"
+        assert account_id == "bot1"
+        assert "account_id" not in params and "_account_id" not in params
+
+    @pytest.mark.asyncio
+    async def test_unconsumed_account_param_dropped(self):
+        """不消费账户字段的适配器：account_id 被剔除，不泄漏进平台参数"""
+        call_log = []
+
+        class _PlainAdapter(BaseAdapter):
+            def __init__(self):
+                super().__init__()
+
+            async def start(self):
+                pass
+
+            async def shutdown(self):
+                pass
+
+            async def call_api(self, endpoint: str, **params):
+                call_log.append((endpoint, params))
+                return {"status": "ok", "retcode": 0, "data": {}, "message_id": "", "message": ""}
+
+        adapter = _PlainAdapter()
+        await adapter.Api.Using("bot1").get_user_info("123")
+        assert call_log[0][0] == "get_user_info"
+        assert "account_id" not in call_log[0][1]
 
     # ---- 频道（Guild）相关动作 ----
 
@@ -3349,3 +3498,379 @@ class TestSendWrapCache:
         dsl.Hook(hook)
         second = dsl.Text
         assert first is not second
+
+
+# ==================== 事件账户上下文兜底绑定测试 ====================
+
+
+class TestEventAccountContext:
+    """分发入口注入触发账户，Send / Api 链路未显式指定时兜底绑定"""
+
+    @pytest.fixture
+    def manager(self):
+        return AdapterManager()
+
+    def _message_event(self, event_id, self_id="bot_a"):
+        return {
+            "id": event_id,
+            "time": 1234567890,
+            "type": "message",
+            "detail_type": "group",
+            "platform": "test",
+            "self": {"platform": "test", "user_id": self_id},
+            "user_id": "u1",
+            "group_id": "group_1",
+            "message": [{"type": "text", "data": {"text": "hello"}}],
+            "alt_message": "hello",
+        }
+
+    @pytest.mark.asyncio
+    async def test_emit_injects_event_account(self, manager):
+        from ErisPulse.runtime.context import get_current_event_account
+
+        seen: list[str] = []
+
+        @manager.on("message")
+        async def handler(data):
+            seen.append(get_current_event_account())
+
+        await manager.emit(self._message_event("ev_ctx_1"))
+        await asyncio.sleep(0)
+
+        assert seen == ["bot_a"]
+
+    def test_send_context_falls_back_to_event_account(self):
+        from ErisPulse.runtime.context import current_event_account
+
+        token = current_event_account.set("bot_a")
+        try:
+            send = SendDSL(base_adapter_stub(), "group", "123", None)
+            assert send.send_context["account_id"] == "bot_a"
+        finally:
+            current_event_account.reset(token)
+
+    def test_explicit_using_wins_over_context(self):
+        from ErisPulse.runtime.context import current_event_account
+
+        token = current_event_account.set("bot_a")
+        try:
+            send = SendDSL(base_adapter_stub(), "group", "123", "explicit")
+            assert send.send_context["account_id"] == "explicit"
+        finally:
+            current_event_account.reset(token)
+
+    def test_no_event_context_keeps_none(self):
+        send = SendDSL(base_adapter_stub(), "group", "123", None)
+        assert send.send_context["account_id"] is None
+
+    def test_api_merge_falls_back_and_params_win(self):
+        from ErisPulse.Core.Bases.api_dsl import ApiDSL
+        from ErisPulse.runtime.context import current_event_account
+
+        adapter = base_adapter_stub()
+        token = current_event_account.set("bot_a")
+        try:
+            merged = ApiDSL(adapter)._merge_context({"x": 1})
+            assert merged["account_id"] == "bot_a"
+            # params 内显式携带 account_id 时不被上下文覆盖
+            merged = ApiDSL(adapter)._merge_context({"account_id": "param"})
+            assert merged["account_id"] == "param"
+            # 显式 Using 永远优先
+            merged = ApiDSL(adapter).Using("explicit")._merge_context({})
+            assert merged["account_id"] == "explicit"
+        finally:
+            current_event_account.reset(token)
+
+    def test_api_context_property_falls_back_to_event_account(self):
+        from ErisPulse.Core.Bases.api_dsl import ApiDSL
+        from ErisPulse.runtime.context import current_event_account
+
+        token = current_event_account.set("bot_a")
+        try:
+            assert ApiDSL(base_adapter_stub()).api_context["account_id"] == "bot_a"
+            assert ApiDSL(base_adapter_stub()).Using("explicit").api_context["account_id"] == "explicit"
+        finally:
+            current_event_account.reset(token)
+
+    def test_request_context_falls_back_to_event_account(self):
+        from ErisPulse.runtime.context import current_event_account
+
+        token = current_event_account.set("bot_a")
+        try:
+            request = RequestDSL(base_adapter_stub(), "req_1", None)
+            assert request.request_context["account_id"] == "bot_a"
+            assert request.request_context["request_id"] == "req_1"
+            explicit = request.Using("explicit")
+            assert explicit.request_context["account_id"] == "explicit"
+        finally:
+            current_event_account.reset(token)
+
+
+def base_adapter_stub():
+    class StubAdapter(BaseAdapter):
+        async def start(self):
+            pass
+
+        async def shutdown(self):
+            pass
+
+        async def call_api(self, endpoint: str, **params):
+            return {"status": "ok", "retcode": 0, "data": {}, "message_id": "m1"}
+
+    return StubAdapter()
+
+
+# ==================== 跨账户重复受理关联测试 ====================
+
+
+class TestCrossAccountReceipt:
+    """跨账户重复受理关联（ErisPulse.framework.cross_account_policy）测试"""
+
+    @pytest.fixture
+    def manager(self):
+        """创建适配器管理器实例"""
+        manager = AdapterManager()
+        manager._adapters.clear()
+        manager._started_instances.clear()
+        manager._adapter_info.clear()
+        manager._onebot_handlers.clear()
+        manager._raw_handlers.clear()
+        manager._onebot_middlewares.clear()
+        return manager
+
+    @pytest.fixture
+    def test_adapter_class(self):
+        """创建测试适配器类"""
+        class TestAdapter(BaseAdapter):
+            ConfigClass = None
+
+            async def start(self):
+                pass
+
+            async def shutdown(self):
+                pass
+
+            async def call_api(self, endpoint, **params):
+                return {"status": "ok"}
+
+        return TestAdapter
+
+    @staticmethod
+    def _message_event(event_id: str, self_id: str, sender_id: str = "user_1") -> dict:
+        return {
+            "id": event_id,
+            "time": 1234567890,
+            "type": "message",
+            "detail_type": "group",
+            "platform": "test",
+            "self": {"platform": "test", "user_id": self_id},
+            "user_id": sender_id,
+            "group_id": "group_1",
+            "message": [{"type": "text", "data": {"text": "hello"}}],
+            "alt_message": "hello",
+        }
+
+    @pytest.mark.asyncio
+    async def test_off_by_default_both_dispatched_without_field(self, manager):
+        """默认 off：两个账户的同内容事件照常分发，不注入 multi_receipt"""
+        handler_called = []
+
+        @manager.on("message")
+        async def handler(data):
+            handler_called.append(data)
+
+        await manager.emit(self._message_event("ev_1", "bot_a"))
+        await manager.emit(self._message_event("ev_2", "bot_b"))
+        await asyncio.sleep(0)
+
+        assert len(handler_called) == 2
+        assert "multi_receipt" not in handler_called[0]
+        assert "multi_receipt" not in handler_called[1]
+
+    @pytest.mark.asyncio
+    async def test_mark_injects_field_on_later_copy(self, manager):
+        """mark：后续副本注入 multi_receipt 并照常分发，指向首个受理事件"""
+        manager._cross_receipt_policy = "mark"
+        handler_called = []
+
+        @manager.on("message")
+        async def handler(data):
+            handler_called.append(data)
+
+        await manager.emit(self._message_event("ev_1", "bot_a"))
+        await manager.emit(self._message_event("ev_2", "bot_b"))
+        await asyncio.sleep(0)
+
+        assert len(handler_called) == 2
+        assert "multi_receipt" not in handler_called[0]
+        receipt = handler_called[1]["multi_receipt"]
+        assert receipt == {"event_id": "ev_1", "self_id": "bot_a"}
+
+    @pytest.mark.asyncio
+    async def test_drop_discards_later_copy(self, manager):
+        """drop：后续副本在分发入口丢弃，处理器只收到首个"""
+        manager._cross_receipt_policy = "drop"
+        handler_called = []
+
+        @manager.on("message")
+        async def handler(data):
+            handler_called.append(data)
+
+        await manager.emit(self._message_event("ev_1", "bot_a"))
+        await manager.emit(self._message_event("ev_2", "bot_b"))
+        await manager.emit(self._message_event("ev_3", "bot_c"))
+        await asyncio.sleep(0)
+
+        assert len(handler_called) == 1
+        assert handler_called[0]["id"] == "ev_1"
+
+    @pytest.mark.asyncio
+    async def test_different_sender_not_correlated(self, manager):
+        """不同发送者的同内容消息不判重"""
+        manager._cross_receipt_policy = "drop"
+        handler_called = []
+
+        @manager.on("message")
+        async def handler(data):
+            handler_called.append(data)
+
+        await manager.emit(self._message_event("ev_1", "bot_a", sender_id="user_1"))
+        await manager.emit(self._message_event("ev_2", "bot_b", sender_id="user_2"))
+        await asyncio.sleep(0)
+
+        assert len(handler_called) == 2
+
+    @pytest.mark.asyncio
+    async def test_empty_alt_message_skipped(self, manager):
+        """无 alt_message（无法安全比对内容）的事件不参与关联"""
+        manager._cross_receipt_policy = "drop"
+        handler_called = []
+
+        @manager.on("message")
+        async def handler(data):
+            handler_called.append(data)
+
+        event = self._message_event("ev_1", "bot_a")
+        event["alt_message"] = ""
+        await manager.emit(event)
+        await manager.emit(self._message_event("ev_2", "bot_b"))
+        await asyncio.sleep(0)
+
+        assert len(handler_called) == 2
+
+    @pytest.mark.asyncio
+    async def test_non_message_events_skipped(self, manager):
+        """非 message 事件不参与关联"""
+        manager._cross_receipt_policy = "drop"
+        handler_called = []
+
+        @manager.on("notice")
+        async def handler(data):
+            handler_called.append(data)
+
+        for event_id, self_id in (("ev_1", "bot_a"), ("ev_2", "bot_b")):
+            await manager.emit(
+                {
+                    "id": event_id,
+                    "type": "notice",
+                    "detail_type": "group_member_increase",
+                    "platform": "test",
+                    "self": {"platform": "test", "user_id": self_id},
+                    "group_id": "group_1",
+                    "user_id": "user_1",
+                    "alt_message": "hello",
+                }
+            )
+        await asyncio.sleep(0)
+
+        assert len(handler_called) == 2
+
+    def test_adapter_registration_clears_receipts(self, manager, test_adapter_class):
+        """适配器注册重置关联缓存（与事件去重缓存同口径）"""
+        manager._cross_receipts[("test", "group_1", "user_1", "hash")] = (
+            "bot_a",
+            "ev_1",
+            0.0,
+        )
+        manager.register("test_platform", test_adapter_class, {"version": "1.0.0"})
+        assert len(manager._cross_receipts) == 0
+
+
+class TestUpdateBotId:
+    """运行期 bot_id 注册表与持久化"""
+
+    def _make_multi(self):
+        from dataclasses import dataclass
+
+        @dataclass
+        class BotConfig:
+            bot_id: str = ""
+            enabled: bool = True
+            token: str = ""
+
+        class MultiAdapter(BaseAdapter):
+            ConfigClass = None
+            AccountConfigClass = BotConfig
+
+            async def start(self):
+                pass
+
+            async def shutdown(self):
+                pass
+
+            async def call_api(self, endpoint: str, **params):
+                return {"status": "ok"}
+
+        return MultiAdapter()
+
+    def test_registry_lookup_resolves_before_property_scan(self):
+        """注册表反查优先：bot_id 首次识别后立即可解析（不等快照刷新）"""
+        adapter = self._make_multi()
+        adapter._accounts_data = {
+            "a": adapter.AccountConfigClass(bot_id="", enabled=True),
+            "b": adapter.AccountConfigClass(bot_id="", enabled=True),
+        }
+        adapter.update_bot_id("b", "90001")
+        name, cfg = adapter._resolve_account("90001")
+        assert name == "b"
+        assert cfg.bot_id == "90001"
+
+    def test_persist_writes_config_only_on_change(self, monkeypatch):
+        """配置持久化：值变化时写一次，重复识别不重复写"""
+        adapter = self._make_multi()
+        writes = []
+        monkeypatch.setattr(
+            "ErisPulse.Core.config.getConfig",
+            lambda key, default=None: {},
+        )
+        monkeypatch.setattr(
+            "ErisPulse.Core.config.setConfig",
+            lambda key, value: writes.append((key, value)),
+        )
+        adapter.update_bot_id("default", "90001")
+        adapter.update_bot_id("default", "90001")   # 重复识别（注册表已一致）
+        assert len(writes) == 1
+        assert writes[0][0].endswith("accounts.default.bot_id")
+        assert writes[0][1] == "90001"
+
+    def test_reassign_warns_on_owner_change(self, monkeypatch):
+        """bot_id 归属变更（同 id 换账户）→ 告警且写新账户配置"""
+        adapter = self._make_multi()
+        writes = []
+        monkeypatch.setattr(
+            "ErisPulse.Core.config.getConfig", lambda key, default=None: {}
+        )
+        monkeypatch.setattr(
+            "ErisPulse.Core.config.setConfig",
+            lambda key, value: writes.append((key, value)),
+        )
+        adapter.update_bot_id("a", "90001")
+        adapter.update_bot_id("b", "90001")   # 归属变更
+        assert adapter._bot_id_registry["90001"] == "b"
+        assert any("accounts.b.bot_id" in k for k, _ in writes)
+
+    def test_empty_inputs_are_noop(self):
+        adapter = self._make_multi()
+        adapter.update_bot_id("", "90001")
+        adapter.update_bot_id("a", "")
+        assert adapter._bot_id_registry == {}

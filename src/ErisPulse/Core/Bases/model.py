@@ -25,6 +25,12 @@ ErisPulse 数据模型层（ORM）—— 声明式模型与 Active Record CRUD
    随事务统一提交/回滚
 6. 关系映射：``relationship()`` 声明 has-many / belongs-to，实例上链式查询
    或直接 await（见 :class:`Relationship`）
+7. 复合主键：多个 ``Field(primary_key=True)`` 组成表级 ``PRIMARY KEY (a, b)``
+   约束（自增主键仅单列）；``__unique_together__`` 声明联合唯一（唯一索引
+   实现，已存在的表自动补建）
+8. 惯用快捷：``get_or_create`` / ``update_or_create``、
+   ``save(update_fields=[...])`` 部分列更新、``Field(auto_now_add=True /
+   auto_now=True)`` 时间戳列、``Field(on_delete="CASCADE")`` 外键删除动作
 {!--< /tips >!--}
 
 :example:
@@ -45,7 +51,15 @@ import copy
 import hashlib
 import json
 import re
+import sys
+import time
 from typing import Any, ClassVar
+
+if sys.version_info >= (3, 11):
+    from typing import dataclass_transform
+else:
+    from typing_extensions import dataclass_transform
+
 
 from .config_schema import python_type_category, validate_field_constraints
 from .sql_base import BaseStorage, SQLDialect, SQLStorageBase
@@ -68,14 +82,19 @@ _CATEGORY_TO_SQL: dict[str, str] = {
 # 需要读写 JSON 序列化的类别
 _JSON_CATEGORIES = frozenset({"list", "dict"})
 
+# Field(on_delete=...) 允许的外键删除动作（SQL 标准，三后端通用）
+_ON_DELETE_ACTIONS = frozenset({"CASCADE", "SET NULL", "RESTRICT", "NO ACTION", "SET DEFAULT"})
+
 
 class Field:
     """
     模型字段描述符（声明式列定义）
 
     :param default: 字段默认值（未提供且非自增主键 → 必填 NOT NULL）
-    :param primary_key: 是否主键
-    :param autoincrement: 是否自增主键（隐含 primary_key，整型）
+    :param primary_key: 是否主键；多个 ``primary_key=True`` 字段组成复合主键
+        （DDL 收敛为表级 ``PRIMARY KEY (a, b)`` 约束）
+    :param autoincrement: 是否自增主键（隐含 primary_key，整型；单列主键专用，
+        与其他主键字段共存时模型定义报错）
     :param max_length: 字符串最大长度（生成 VARCHAR(n)，并参与写入校验）
     :param nullable: 是否允许 NULL（默认 False → NOT NULL）
     :param index: 是否生成普通索引
@@ -87,11 +106,31 @@ class Field:
     :param column_type: 覆写 SQL 列类型定义（如 ``"TEXT"``）；默认按类型注册表派生
     :param foreign_key: 列级外键约束（``"表.列"``，如 ``"users.id"``）——DDL 生成
         ``REFERENCES`` 约束（关系映射的基础设施；ORM 级关系对象后续版本交付）
+    :param on_delete: 外键删除动作（``foreign_key`` 声明时生效）：``"CASCADE"``
+        / ``"SET NULL"`` / ``"RESTRICT"`` / ``"NO ACTION"`` / ``"SET DEFAULT"``，
+        生成 ``ON DELETE`` 子句；其他值模型定义报错
+    :param auto_now_add: 插入时自动写入当前时间戳（``time.time()`` 浮点纪秒）
+    :param auto_now: 插入与实例 ``save()`` 更新时均自动写入当前时间戳
+        （隐含插入侧行为；``QuerySet.update`` 批量路径不触发）
 
     :example:
     >>> id: int = Field(primary_key=True, autoincrement=True)
     >>> name: str = Field(max_length=64)
+    >>> created_at: float = Field(auto_now_add=True)
+    >>> user_id: int = Field(foreign_key="users.id", on_delete="CASCADE")
     """
+
+    def __new__(cls, *args: Any, **kwargs: Any) -> Any:
+        """
+        实例化类型标注为 ``Any``
+
+        类体声明 ``name: str = Field(...)`` 的赋值侧类型检查：Field 是声明
+        哨兵（类属性由 Model 机制消费、实例属性由 ``__init__`` 写入真实值），
+        哨兵本身与声明类型不匹配——返回 ``Any`` 让类型检查器跳过赋值侧检查
+        （pydantic v2 ``Field() -> Any`` 同款口径）；实例属性读取类型由
+        声明注解（``str`` / ``int``）提供。
+        """
+        return super().__new__(cls)
 
     def __init__(
         self,
@@ -110,9 +149,18 @@ class Field:
         description: dict | None = None,
         column_type: str | None = None,
         foreign_key: str | None = None,
+        on_delete: str | None = None,
+        auto_now_add: bool = False,
+        auto_now: bool = False,
     ):
         if autoincrement:
             primary_key = True
+        action = (on_delete or "").strip().upper()
+        if action and action not in _ON_DELETE_ACTIONS:
+            raise ValueError(
+                f"invalid on_delete action: {on_delete!r} "
+                f"(expected one of {', '.join(sorted(_ON_DELETE_ACTIONS))})"
+            )
         self.default = default
         self.default_factory = default_factory
         self.primary_key = primary_key
@@ -127,6 +175,9 @@ class Field:
         self.description = description
         self.column_type = column_type
         self.foreign_key = foreign_key
+        self.on_delete = action or None
+        self.auto_now_add = auto_now_add or auto_now
+        self.auto_now = auto_now
         self.name: str = ""
         self.owner: type[Model] | None = None
         self.category: str = "str"
@@ -149,8 +200,13 @@ class Field:
 
     @property
     def required(self) -> bool:
-        """是否必填（无默认值且非自增）"""
-        return self.default is _UNSET and self.default_factory is None and not self.autoincrement
+        """是否必填（无默认值且非自增且非自动时间列；自动时间列插入时必然打点）"""
+        return (
+            self.default is _UNSET
+            and self.default_factory is None
+            and not self.autoincrement
+            and not self.auto_now_add
+        )
 
     def effective_default(self) -> Any:
         """运行时默认值（default 优先，其次 default_factory，否则 None）"""
@@ -206,9 +262,9 @@ class Field:
         if self.autoincrement:
             # 自增主键交给方言钩子（aCreateTable 翻译 AUTOINCREMENT 记号）
             parts = ["INTEGER PRIMARY KEY AUTOINCREMENT"]
-        elif self.primary_key:
+        elif self.primary_key and not self._is_composite_pk():
             parts.append("PRIMARY KEY")
-        emit_not_null = not self.nullable and not self.primary_key
+        emit_not_null = not self.nullable and not (self.primary_key and not self._is_composite_pk())
         if nullable_override is not None:
             emit_not_null = not nullable_override
         if emit_not_null:
@@ -223,7 +279,15 @@ class Field:
             ref_table, _, ref_col = (self.foreign_key or "").partition(".")
             if ref_table and ref_col:
                 parts.append(f"REFERENCES {ref_table}({ref_col})")
+                if self.on_delete:
+                    parts.append(f"ON DELETE {self.on_delete}")
         return " ".join(parts)
+
+    def _is_composite_pk(self) -> bool:
+        """{!--< internal-use >!--} 所属模型是否复合主键（inline PRIMARY KEY 仅单主键列合法）"""
+        if self.owner is None:
+            return False
+        return sum(1 for f in self.owner._fields.values() if f.primary_key) > 1
 
     def _sql_literal(self, value: Any) -> str:
         """默认值的 DDL 字面量（仅声明性默认值，运行值走参数绑定）
@@ -541,13 +605,24 @@ class _RelatedMany(QuerySet):
         :example:
         >>> await user.messages.create(content="hi")   # user_id 自动 = user.id
         """
-        pk = type(self._owner)._pk_field()
-        if pk is None or self._owner.__dict__.get(pk.name) is None:
+        pks = type(self._owner)._pk_fields()
+        if not pks:
+            raise ValueError(
+                f"{type(self._owner).__name__} has no primary key; "
+                f"cannot backfill {self._fk!r} via relationship create"
+            )
+        if len(pks) > 1:
+            raise ValueError(
+                f"{type(self._owner).__name__} has a composite primary key; "
+                f"relationship create backfills a single fk column only"
+            )
+        pk_value = self._owner.__dict__.get(pks[0].name)
+        if pk_value is None:
             raise ValueError(
                 f"{type(self._owner).__name__} has no primary key value; "
                 f"cannot backfill {self._fk!r} via relationship create"
             )
-        kwargs[self._fk] = self._owner.__dict__.get(pk.name)
+        kwargs[self._fk] = pk_value
         return await self._model.create(**kwargs)
 
 
@@ -661,10 +736,16 @@ class Relationship:
             pass
 
         if fk in host._fields:
-            # belongs-to：外键在本表 → 对方主键 = 本表外键值
-            related_pk = related._pk_field()
-            if related_pk is None:
+            # belongs-to：外键在本表 → 对方主键 = 本表外键值（单列外键仅锚单列主键）
+            related_pks = related._pk_fields()
+            if len(related_pks) > 1:
+                raise ValueError(
+                    f"relationship {host.__name__}.{self.name}: belongs-to does not "
+                    f"support composite primary key on {related.__name__}"
+                )
+            if not related_pks:
                 raise ValueError(f"{related.__name__} has no primary key for relationship {host.__name__}.{self.name}")
+            related_pk = related_pks[0]
             own_value = instance.__dict__.get(fk)
             if own_value is None:
                 # 外键为 None：对方主键不可能匹配，短路返回 None 不发起查询
@@ -680,10 +761,16 @@ class Relationship:
                 f"foreign key column {fk!r} is declared on neither {host.__name__} "
                 f"nor {related.__name__} (relationship {host.__name__}.{self.name})"
             )
-        # has-many：外键在对方表 → 对方外键 = 本表主键值
-        own_pk = host._pk_field()
-        if own_pk is None:
+        # has-many：外键在对方表 → 对方外键 = 本表主键值（单列外键仅锚单列主键）
+        own_pks = host._pk_fields()
+        if len(own_pks) > 1:
+            raise ValueError(
+                f"relationship {host.__name__}.{self.name}: has-many does not "
+                f"support composite primary key on {host.__name__}"
+            )
+        if not own_pks:
             raise ValueError(f"{host.__name__} needs a primary key for relationship {self.name!r}")
+        own_pk = own_pks[0]
         return _RelatedMany(related, ColumnExpr(fk)._cond("=", instance.__dict__.get(own_pk.name)), instance, fk)
 
 
@@ -726,7 +813,10 @@ class Model:
     # 关系解析注册表：{模型类名: 模型类}（__init_subclass__ 自动登记，
     # 供 Relationship 按类名字符串惰性解析，声明顺序无关）
     _model_registry: ClassVar[dict[str, type[Model]]] = {}
+    # 联合唯一分组（__unique_together__ 归一化结果；create_table 建唯一索引）
+    _unique_groups: ClassVar[tuple[tuple[str, ...], ...]] = ()
 
+    @dataclass_transform(field_specifiers=(Field,))
     def __init_subclass__(cls, **kwargs: Any) -> None:
         super().__init_subclass__(**kwargs)
         collected: dict[str, Field] = {}
@@ -735,6 +825,15 @@ class Model:
                 {n: a for n, a in vars(klass).items() if isinstance(a, Field)}
             )
         cls._fields = collected
+        pk_names = [n for n, f in collected.items() if f.primary_key]
+        if any(collected[n].autoincrement for n in pk_names) and len(pk_names) > 1:
+            raise ValueError(
+                f"{cls.__name__}: autoincrement implies a single-column primary key; "
+                f"got composite primary key fields {pk_names}"
+            )
+        cls._unique_groups = cls._normalize_unique_together(
+            getattr(cls, "__unique_together__", None)
+        )
         # 只认子类自身声明的 __tablename__（cls.__tablename__ 会取到父类已
         # 固化的表名，导致子类静默共享父表）；未声明时按本类名 snake 派生
         table = cls.__dict__.get("__tablename__") or _SNAKE_RE.sub("_", cls.__name__).lower()
@@ -756,9 +855,42 @@ class Model:
         Model._model_registry[cls.__name__] = cls
 
     @classmethod
+    def _normalize_unique_together(cls, declared: Any) -> tuple[tuple[str, ...], ...]:
+        """{!--< internal-use >!--}
+        __unique_together__ 归一化为分组元组：字符串序列收单组，序列的序列
+        按多组展开；字段名未声明时定义期报错
+        """
+        if declared is None:
+            return ()
+        if isinstance(declared, (str, bytes)) or not hasattr(declared, "__iter__"):
+            raise ValueError(f"{cls.__name__}.__unique_together__ must be a sequence of field names or a sequence of such sequences")
+        items = list(declared)
+        groups = (
+            [tuple(items)]
+            if items and all(isinstance(i, str) for i in items)
+            else [tuple(g) for g in items]
+        )
+        for group in groups:
+            if not group or not all(isinstance(n, str) for n in group):
+                raise ValueError(
+                    f"{cls.__name__}.__unique_together__ groups must be non-empty sequences of field names"
+                )
+            unknown = [n for n in group if n not in cls._fields]
+            if unknown:
+                raise ValueError(
+                    f"{cls.__name__}.__unique_together__ references unknown fields: {', '.join(unknown)}"
+                )
+        return tuple(groups)
+
+    @classmethod
     def _pk_field(cls) -> Field | None:
-        """主键字段（Field 实例不可作类属性暴露——描述符协议会劫持类访问）"""
+        """首个主键字段（单主键模型；复合主键语义请用 :meth:`_pk_fields`）"""
         return next((f for f in cls._fields.values() if f.primary_key), None)
+
+    @classmethod
+    def _pk_fields(cls) -> list[Field]:
+        """全部主键字段（按声明顺序；复合主键返回多列）"""
+        return [f for f in cls._fields.values() if f.primary_key]
 
     # ---- 元信息 ----
 
@@ -880,8 +1012,9 @@ class Model:
         """
         storage = cls._get_storage()
         cols = {name: f.column_definition() for name, f in cls._fields.items()}
+        constraints = cls._table_constraints(storage.dialect)
         if not await storage.aHasTable(cls.table_name()):
-            if not await storage.aCreateTable(cls.table_name(), cols):
+            if not await storage.aCreateTable(cls.table_name(), cols, constraints or None):
                 return False
         else:
             await cls._migrate_new_columns(storage)
@@ -895,16 +1028,46 @@ class Model:
                     await storage._execute_query(
                         "dml", dialect.create_index_sql(cls.table_name(), idx, name), []
                     )
+        await cls._create_unique_indexes(storage, dialect)
         return True
 
     @classmethod
-    def _index_name(cls, table: str, column: str) -> str:
+    def _table_constraints(cls, dialect) -> list[str]:
+        """{!--< internal-use >!--} 表级 DDL 约束片段（复合主键收敛为 ``PRIMARY KEY (a, b)``）"""
+        pks = cls._pk_fields()
+        if len(pks) <= 1:
+            return []
+        quoted = ", ".join(_quote_ident(f.name, dialect) for f in pks)
+        return [f"PRIMARY KEY ({quoted})"]
+
+    @classmethod
+    async def _create_unique_indexes(cls, storage, dialect) -> None:
         """{!--< internal-use >!--}
-        索引名派生：``idx_<表>_<列>``。超过 63 字符（PostgreSQL 标识符上限，
+        联合唯一分组建唯一索引（``CREATE UNIQUE INDEX``；存在性预检幂等，
+        已存在的表无需重建即可补索引）
+        """
+        for group in cls._unique_groups:
+            idx = cls._index_name(cls.table_name(), "_".join(group), prefix="uq")
+            exists_sql, exists_params = dialect.has_index_sql(cls.table_name(), idx)
+            row, _ = await storage._execute_query("one", exists_sql, exists_params)
+            if row is not None:
+                continue
+            quoted_cols = ", ".join(_quote_ident(c, dialect) for c in group)
+            await storage._execute_query(
+                "dml",
+                f"CREATE UNIQUE INDEX {dialect.quote(idx)} "
+                f"ON {dialect.quote(cls.table_name())} ({quoted_cols})",
+                [],
+            )
+
+    @classmethod
+    def _index_name(cls, table: str, column: str, prefix: str = "idx") -> str:
+        """{!--< internal-use >!--}
+        索引名派生：``<prefix>_<表>_<列>``。超过 63 字符（PostgreSQL 标识符上限，
         超长会被静默截断导致存在性预检永不命中、每次建表重复 CREATE INDEX
         失败）时截断并追加稳定哈希后缀，保证跨运行确定性
         """
-        name = f"idx_{table}_{column}"
+        name = f"{prefix}_{table}_{column}"
         if len(name) <= 63:
             return name
         suffix = hashlib.md5(name.encode("utf-8")).hexdigest()[:8]
@@ -1017,6 +1180,10 @@ class Model:
         cols, params = [], []
         for name, field_obj in cls._fields.items():
             value = instance.__dict__.get(name)
+            # 自动时间列：插入打点（auto_now 隐含 auto_now_add）
+            if field_obj.auto_now_add:
+                value = time.time()
+                setattr(instance, name, value)
             # 自增主键由数据库生成
             if field_obj.autoincrement and value is None:
                 continue
@@ -1104,58 +1271,138 @@ class Model:
         """批量更新（``await User.update_all(User.age > 18, name="adult")``）"""
         return await QuerySet(cls, _combine(conditions)).update(**values)
 
+    @classmethod
+    async def get_or_create(
+        cls, defaults: dict[str, Any] | None = None, **kwargs: Any
+    ) -> tuple[Any, bool]:
+        """
+        查得即返回（ ``(实例, False)`` ）；无则以 ``kwargs + defaults`` 创建（ ``(实例, True)`` ）
+
+        :param defaults: 仅创建路径补齐的非过滤字段
+        :param kwargs: 等值过滤条件（同时作为创建值）
+        :return: (实例, 是否新建)
+        :raises ValueError: 条件字段未在模型中声明时
+
+        并发竞争下两个协程可能同时走到创建分支——唯一约束（主键 / unique /
+        ``__unique_together__``）会让后到者收到 :class:`StorageOperationError`；
+        需要幂等语义时捕获后重查一次。
+        """
+        instance = await cls.get(**kwargs)
+        if instance is not None:
+            return instance, False
+        return await cls.create(**{**kwargs, **(defaults or {})}), True
+
+    @classmethod
+    async def update_or_create(
+        cls, defaults: dict[str, Any] | None = None, **kwargs: Any
+    ) -> tuple[Any, bool]:
+        """
+        查得则更新 ``defaults`` 字段并保存；无则创建
+
+        :param defaults: 查得路径的更新字段 / 创建路径的补齐字段（过滤条件字段除外）
+        :param kwargs: 等值过滤条件（同时作为创建值）
+        :return: (实例, 是否新建)
+        :raises ValueError: 条件字段未在模型中声明时
+        """
+        instance = await cls.get(**kwargs)
+        if instance is None:
+            return await cls.create(**{**kwargs, **(defaults or {})}), True
+        updates = {
+            k: v for k, v in (defaults or {}).items() if k in cls._fields and k not in kwargs
+        }
+        for name, value in updates.items():
+            setattr(instance, name, value)
+        if updates:
+            await instance.save()
+        return instance, False
+
     # ---- CRUD：实例操作 ----
 
-    async def save(self) -> int:
+    async def save(self, update_fields: list[str] | None = None) -> int:
         """
         按主键更新本行（先约束校验）；主键缺失时退化为插入（自增主键同样回填到本实例）
 
-        注意：本方法为**整行覆盖**语义——更新除主键外的全部列、无脏检查；
-        并发场景下会覆盖其他写入方对同一行的修改（丢失更新），且每次写全列。
-        需要部分列更新请用 ``Model.where(...).update(**values)`` 或
-        ``update_all(...)``；乐观锁需自行以版本列条件实现。
+        默认**整行覆盖**语义——更新除主键外的全部列、无脏检查；并发场景下会
+        覆盖其他写入方对同一行的修改（丢失更新），且每次写全列。``update_fields``
+        指定部分列更新白名单；乐观锁需自行以版本列条件实现。
 
+        :param update_fields: 仅更新白名单列（主键列被忽略；空列表为无操作
+            返回 0；模型需走插入路径时报错）
         :return: 受影响行数
+        :raises ValueError: ``update_fields`` 含未声明字段 / 模型需插入 /
+            复合主键字段值不全（复合主键无法退化为插入）
         """
+        pk_fields = self._pk_fields()
+        missing_pk = [f.name for f in pk_fields if self.__dict__.get(f.name) is None]
+        if len(pk_fields) > 1 and missing_pk:
+            raise ValueError(
+                f"{type(self).__name__} composite primary key fields must all be "
+                f"set to update: missing {', '.join(missing_pk)}"
+            )
         self._validate()
-        pk = self._pk_field()
-        if pk is None or self.__dict__.get(pk.name) is None:
+        insert_path = not pk_fields or (len(pk_fields) == 1 and missing_pk)
+        if update_fields is not None:
+            unknown = [n for n in update_fields if n not in self._fields]
+            if unknown:
+                raise ValueError(
+                    f"unknown fields for {type(self).__name__}.save update_fields: "
+                    f"{', '.join(sorted(unknown))}"
+                )
+            if insert_path:
+                raise ValueError(
+                    f"{type(self).__name__} has no primary key value; "
+                    f"update_fields requires an existing row"
+                )
+        if insert_path:
             await type(self)._insert_and_backfill(self)
             return 1
+        pk_names = {f.name for f in pk_fields}
+        targets = (
+            [n for n in dict.fromkeys(update_fields) if n not in pk_names]
+            if update_fields is not None
+            else [n for n in self._fields if n not in pk_names]
+        )
+        if not targets:
+            return 0
         storage = self._get_storage()
         dialect = storage.dialect
         sets, params = [], []
-        for name in self._fields:
-            if name == pk.name:
-                continue
+        for name in targets:
+            field_obj = self._fields[name]
+            value = self.__dict__.get(name)
+            # 自动时间列：实例更新打点（QuerySet.update 批量路径不触发）
+            if field_obj.auto_now:
+                value = time.time()
+                setattr(self, name, value)
             sets.append(f"{_quote_ident(name, dialect)} = ?")
-            params.append(self._fields[name].to_db_value(self.__dict__.get(name)))
-        if not sets:
-            return 0
+            params.append(field_obj.to_db_value(value))
+        where_sql = " AND ".join(f"{_quote_ident(f.name, dialect)} = ?" for f in pk_fields)
         sql = (
             f"UPDATE {_quote_ident(type(self).table_name(), dialect)} "
-            f"SET {', '.join(sets)} WHERE {_quote_ident(pk.name, dialect)} = ?"
+            f"SET {', '.join(sets)} WHERE {where_sql}"
         )
-        params.append(self.__dict__.get(pk.name))
+        params.extend(self.__dict__.get(f.name) for f in pk_fields)
         return int(await storage._execute_query("dml", sql, params))
 
     async def delete(self) -> int:
         """
-        按主键删除本行
+        按主键删除本行（复合主键按全部主键列定位）
 
-        :raises ValueError: 模型无主键或实例主键为空时
+        :raises ValueError: 模型无主键或任一主键字段值为空时
         :return: 受影响行数
         """
-        pk = self._pk_field()
-        if pk is None or self.__dict__.get(pk.name) is None:
+        pk_fields = self._pk_fields()
+        pk_values = [(f, self.__dict__.get(f.name)) for f in pk_fields]
+        if not pk_fields or any(v is None for _, v in pk_values):
             raise ValueError(f"{type(self).__name__} has no primary key value to delete")
         storage = self._get_storage()
         dialect = storage.dialect
+        where_sql = " AND ".join(f"{_quote_ident(f.name, dialect)} = ?" for f, _ in pk_values)
         sql = (
             f"DELETE FROM {_quote_ident(type(self).table_name(), dialect)} "
-            f"WHERE {_quote_ident(pk.name, dialect)} = ?"
+            f"WHERE {where_sql}"
         )
-        return int(await storage._execute_query("dml", sql, [self.__dict__.get(pk.name)]))
+        return int(await storage._execute_query("dml", sql, [v for _, v in pk_values]))
 
 
 def _combine(conditions: tuple) -> Condition | None:

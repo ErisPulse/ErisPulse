@@ -22,10 +22,12 @@ import sys
 import threading
 import time
 from argparse import ArgumentParser, BooleanOptionalAction, Namespace
+from collections.abc import Callable
 from pathlib import Path
 
 from rich.panel import Panel
 
+from ...runtime.dev_watch import DevReloadHandler, DevWatcher
 from ...runtime.file_watcher import (
     FileChangeEvent,
     FileSystemEventHandler,
@@ -36,6 +38,7 @@ from ..console import console
 from ..constants import (
     CLI_CHILD_TERMINATE_WAIT_SECS,
     ENV_RELOAD_WORKER,
+    ENV_SCRIPT_RELOAD,
     ENV_SUPERVISED,
     HARD_RESTART_EXIT_CODE,
     RUN_CRASH_BACKOFF_MAX_SECS,
@@ -66,175 +69,48 @@ _SDK_BOOTSTRAP = (
 )
 
 
-class ReloadHandler(FileSystemEventHandler):
-    """
-    文件系统事件处理器
-
-    监控 .py 文件变更并触发 sdk.restart() 组件级热重载
-
-    {!--< tips >!--}
-    1. 文件监控运行在独立线程，通过 run_coroutine_threadsafe 安全调度到事件循环
-    2. 合并去抖：首个事件立即触发，窗口（FILE_RELOAD_DEBOUNCE_SECS）内的后续
-       变更合并且窗口静默后统一补发一次（不丢弃）
-    3. 新建 .py 文件（on_created）同样触发热重载；删除不触发（插件目录的删除
-       清理由插件热重载 watcher 负责）
-    {!--< /tips >!--}
-    """
-
-    def __init__(self, loop: asyncio.AbstractEventLoop):
-        """
-        初始化热重载处理器
-
-        :param loop: [asyncio.AbstractEventLoop] 用于调度重载协程的事件循环
-        """
-        super().__init__()
-        from ...Core.constants import FILE_RELOAD_DEBOUNCE_SECS
-
-        self._loop = loop
-        self._debounce = FILE_RELOAD_DEBOUNCE_SECS
-        self._lock = threading.Lock()
-        self._pending: set[str] = set()
-        self._timer: threading.Timer | None = None
-
-    def on_modified(self, event: FileChangeEvent) -> None:
-        """
-        文件修改事件回调，对 .py 文件触发热重载
-
-        :param event: [FileChangeEvent] 文件系统事件
-        """
-        self._on_event(event.src_path)
-
-    def on_created(self, event: FileChangeEvent) -> None:
-        """
-        文件创建事件回调（新建 .py 文件同样触发热重载）
-
-        :param event: [FileChangeEvent] 文件系统事件
-        """
-        self._on_event(event.src_path)
-
-    def _on_event(self, src_path: str) -> None:
-        """{!--< internal-use >!--} 合并去抖入口"""
-        if not src_path.endswith(".py"):
-            return
-        with self._lock:
-            if self._timer is not None:
-                # 去抖窗口内：合并入队，窗口静默后由定时器统一补发
-                self._pending.add(src_path)
-                return
-            # 窗口外：立即触发（保持「保存即重载」的即时性），并武装补发定时器。
-            # 定时器先存字段再在锁外 start：并发 close() 可能把字段置 None，
-            # 锁外必须用局部引用，否则 watcher 线程内 AttributeError
-            paths = {src_path}
-            timer = threading.Timer(self._debounce, self._flush_pending)
-            timer.daemon = True
-            self._timer = timer
-        timer.start()
-        self._dispatch(paths)
-
-    def _flush_pending(self) -> None:
-        """去抖窗口到期：补发窗口内合并的变更（可为空）"""
-        with self._lock:
-            self._timer = None
-            if not self._pending:
-                return
-            paths = set(self._pending)
-            self._pending.clear()
-        self._dispatch(paths)
-
-    def close(self) -> None:
-        """停止补发定时器（监控停止时调用）"""
-        with self._lock:
-            if self._timer is not None:
-                self._timer.cancel()
-                self._timer = None
-            self._pending.clear()
-
-    def _dispatch(self, paths: set[str]) -> None:
-        """
-        {!--< internal-use >!--}
-        先提示变更文件（在调度重载之前——用户应先看到触发原因），再调度热重载
-        """
-        for path in sorted(paths):
-            console.print(i18n.t("cli.run.file_changed", file=Path(path).name))
-
-        async def _do_reload():
-            """执行 SDK 组件级热重载"""
-            try:
-                from ... import sdk
-
-                await sdk.restart()
-            except Exception as e:
-                console.print(
-                    f"[error]{i18n.t('cli.run.hot_reload_failed', error=e)}[/]"
-                )
-
-        try:
-            asyncio.run_coroutine_threadsafe(_do_reload(), self._loop)
-        except RuntimeError:
-            pass
+# 兼容旧导入名（实现在 runtime.dev_watch）
+ReloadHandler = DevReloadHandler
 
 
-class _DevWatchdog:
+class _DevWatchdog(DevWatcher):
     """
     {!--< internal-use >!--}
     dev 模式文件监控（reload worker 内运行）
 
-    忽略 .venv/.git 等目录；插件目录默认移交插件热重载 watcher 处理
-    （全量 restart 本就覆盖插件代码，避免双重触发）。
+    细粒度判定与调度由 ``runtime.dev_watch`` 提供；忽略 .venv/.git 等目录，
+    插件目录默认移交插件热重载 watcher 处理。
     """
 
-    def __init__(self) -> None:
-        self._observer: PollingObserver | None = None
-        self._handler: ReloadHandler | None = None
+    def __init__(self, sdk=None) -> None:
+        if sdk is None:
+            from ... import sdk as sdk_instance
 
-    @staticmethod
-    def _resolve_excludes() -> "tuple[list[str] | None, list[str]]":
-        """
-        解析 dev 监控的忽略目录与插件目录移交清单
+            sdk = sdk_instance
+        super().__init__(sdk)
 
-        :return: (PollingObserver ignore_dirs——None = 内置默认清单, 需移交
-            插件 watcher 并从自身监控排除的插件目录名列表)
-        """
-        from ...runtime.frame_config import get_framework_config
-
-        try:
-            framework = get_framework_config()
-        except Exception:
-            framework = {}
-        raw = framework.get("watch_ignore_dirs")
-        ignore: list[str] | None = None
-        if isinstance(raw, (list, tuple)):
-            ignore = [str(d) for d in raw]
-        plugin_dirs: list[str] = []
-        if framework.get("watch_include_plugin_dirs", True):
-            raw_dirs = framework.get("plugins_dir", "plugins")
-            if isinstance(raw_dirs, str):
-                plugin_dirs = [raw_dirs]
-            elif isinstance(raw_dirs, (list, tuple)):
-                plugin_dirs = [str(d) for d in raw_dirs]
-        return ignore, plugin_dirs
-
-    def start(self, watch_dir: str, loop: asyncio.AbstractEventLoop) -> None:
+    def start(
+        self,
+        watch_dir: str = ".",
+        loop: asyncio.AbstractEventLoop | None = None,
+        notify: "Callable[[set[str]], None] | None" = None,
+    ) -> bool:
         """
         启动 dev 文件监控并打印模式面板
 
         :param watch_dir: 监控目录
-        :param loop: 用于调度重载的事件循环
+        :param loop: 用于调度重载的事件循环（缺省取当前运行循环）
+        :param notify: 文件变更提示回调（本覆写忽略，固定使用面板打印）
+        :return: 是否启动成功
         """
         from ...Core.constants import FILE_WATCHER_IGNORED_DIRS
 
-        if not Path(watch_dir).exists():
-            return
-
-        ignore, plugin_dirs = self._resolve_excludes()
-        merged_ignore = set(FILE_WATCHER_IGNORED_DIRS) if ignore is None else set(ignore)
-        merged_ignore.update(plugin_dirs)
-
-        self._observer = PollingObserver(ignore_dirs=sorted(merged_ignore))
-        self._handler = ReloadHandler(loop=loop)
-        self._observer.schedule(self._handler, watch_dir, recursive=True)
-        self._observer.start()
-
+        ignore = self._resolve_ignore_dirs()
+        merged_ignore = (
+            set(FILE_WATCHER_IGNORED_DIRS) if ignore is None else set(ignore)
+        )
+        if not super().start(watch_dir, loop, notify=self._notify):
+            return False
         console.print(
             Panel(
                 i18n.t(
@@ -246,23 +122,13 @@ class _DevWatchdog:
                 border_style="info",
             )
         )
+        return True
 
-    def stop(self) -> None:
-        """停止 dev 文件监控（幂等）"""
-        if self._handler is not None:
-            self._handler.close()
-            self._handler = None
-        if self._observer is not None:
-            from ...Core.constants import FILE_WATCH_POLL_INTERVAL_SECS
-            from ...Core.logger import logger
-
-            try:
-                self._observer.stop()
-                # 有限等待：轮询线程为守护线程，超时后自行退出
-                self._observer.join(timeout=FILE_WATCH_POLL_INTERVAL_SECS * 2)
-            except Exception as e:
-                logger.debug(f"dev watcher stop failed: {e!r}")
-            self._observer = None
+    @staticmethod
+    def _notify(paths: set[str]) -> None:
+        """{!--< internal-use >!--} 打印本批变更文件"""
+        for path in sorted(paths):
+            console.print(i18n.t("cli.run.file_changed", file=Path(path).name))
 
 
 def run_reload_worker(script: str | None) -> int:
@@ -688,6 +554,7 @@ class RunCommand(Command):
             """启动脚本子进程并记录到 reload_state（注入监督者标记）"""
             child_env = dict(os.environ)
             child_env[ENV_SUPERVISED] = "cli"
+            child_env[ENV_SCRIPT_RELOAD] = "1"
             child_env.setdefault("PYTHONIOENCODING", "utf-8")
             reload_state["process"] = subprocess.Popen(
                 [python_exe, script_path_abs], env=child_env
@@ -723,9 +590,35 @@ class RunCommand(Command):
                     return
                 if not event.src_path.endswith(".py"):
                     return
+                if self._needs_process_restart(event.src_path):
+                    reload_state["last_reload"] = now
+                    reload_state["changed_file"] = Path(event.src_path).name
+                    reload_state["reload_event"].set()
+                    return
+                state = runtime_state.read() or {}
+                process = reload_state["process"]
+                if (
+                    process is not None
+                    and state.get("component_reload_pid") == process.pid
+                ):
+                    # 子进程已挂载细粒度 watcher：模块/适配器/插件变更
+                    # 由子进程处理，父进程不再重启脚本进程
+                    return
                 reload_state["last_reload"] = now
                 reload_state["changed_file"] = Path(event.src_path).name
                 reload_state["reload_event"].set()
+
+            @staticmethod
+            def _needs_process_restart(src_path: str) -> bool:
+                """入口脚本或框架源码变更需要父进程重启脚本子进程"""
+                changed = Path(src_path).resolve()
+                if changed == Path(script_path_abs).resolve():
+                    return True
+                try:
+                    changed.relative_to(Path(__file__).resolve().parents[2])
+                    return True
+                except ValueError:
+                    return False
 
         observer = PollingObserver()
         observer.schedule(_ScriptReloadHandler(), watch_dir, recursive=True)

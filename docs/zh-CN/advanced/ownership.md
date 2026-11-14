@@ -50,6 +50,32 @@ with owner_scope("MyModule"):
 注册型 API（如 `sdk.adapter.on()`、`overrides.*.set(persist=False)`），
 同样会自动归属本模块。
 
+### bind_owner：把归属缝进回调与线程入口
+
+`owner_scope` 作用于代码块；`bind_owner(fn)` 把上下文"缝进"函数本身——
+包装瞬间捕获 `current_owner`，此后无论谁、从哪个线程或事件循环调用，都以
+原 owner 身份执行。新线程默认空上下文（Timer / watcher / 第三方线程池的
+触发路径 `current_owner` 为 None），其内创建的任务不进归属表、模块卸载时
+取消不掉（跨 loop 残留的来源之一），经包装后归属随身携带：
+
+```python
+from ErisPulse.runtime import bind_owner
+
+class MyModule(BaseModule):
+    async def on_load(self, event):
+        # 交给第三方调度器 / 线程池前先包装：
+        external_scheduler.submit(bind_owner(self._poll))
+
+    async def _poll(self):
+        # 运行期间 current_owner == "MyModule"，卸载时可被正确回收
+        ...
+```
+
+- `async` 函数保持 `async`，owner 跨全部 `await` 生效；普通函数仅在同步
+  执行期间生效
+- 框架自有入口（`self.spawn()` / 命令处理器）已自动携带归属，本函数只用于
+  **框架之外的触发路径**（外部调度器、`threading.Timer`、回调注册表等）
+
 ## 归属资源全景
 
 模块在加载上下文内注册的以下资源均记录归属，卸载/禁用时自动回收：
@@ -143,6 +169,45 @@ ownership.orphans()                      # [{"owner": "ghost", "total": 2, ...}]
   给出引用方类型（定位"谁攥着旧实例"）；有全局暂停开销，仅显式排障使用
 - 深普查属显式操作，不设配置键、不做自动修复
 
+## 嵌套生命周期（ownership.nest）
+
+> 本节特性需要 ErisPulse **2.12+**。
+
+允许一个模块（父）托管另一批 owner（子），父被回收时子整体回收。典型场景：
+脚本引擎模块内跑子插件、Dashboard 托管面板扩展、工具模块代管外部注册表条目。
+
+```python
+from ErisPulse.Core import ownership
+
+ownership.nest("ScriptEngine", "ScriptEngine.plugin_a")
+ownership.nest("ScriptEngine", "ScriptEngine.plugin_b")
+
+ownership.nested_children("ScriptEngine")
+# frozenset({"ScriptEngine.plugin_a", "ScriptEngine.plugin_b"})
+
+ownership.unnest("ScriptEngine", "ScriptEngine.plugin_a")
+```
+
+| 项 | 约定 |
+|----|------|
+| 回收顺序 | 子先于父；同级按注册逆序（后注册的先回收） |
+| 回收范围 | 资源级（任务 / 连接 / 路由 / 命令 / tracked 资源 / 清理钩子），**不触发子的模块级 `on_unload`** |
+| 环检测 | `nest` 拒绝自环与已存在的反向链，返回 `False` 并告警 |
+| 子先亡 | 子被独立回收（`reclaim` / `reclaim_sync`）时自动 `unnest`，父侧不保留悬挂关系 |
+| 超时 | 单个子回收受 `CLEANUP_CALLBACK_TIMEOUT_SECS` 约束；超时告警、移除父子关系并继续 |
+| 可观测 | `ownership.counts(parent)` 增加 `nested` 计数；`ownership.orphans()` 对嵌套关系做传递闭包，父已消失的残留关系仍会暴露 |
+
+**为什么不触发子的 `on_unload`**：模块完整卸载需要走管理器级流程（懒代理、
+sdk 属性、事件广播），而 `ownership` 门面只负责资源回收，跨层调用会引入
+卸载锁重入风险。需要子的 `on_unload` 时，由父在自己的 `on_unload` 里显式调用：
+
+```python
+await self.sdk.module.unload(child, reason="cascade")
+```
+
+同步入口（如 `sdk.module.disable`）会先标记异步级联，后台任务回收子资源；
+`reclaim_sync` 只在没有异步级联进行时自行级联子的注册类资源。
+
 ## 热重载失败回滚
 
 热重载为"**卸载前快照 → 失败自动恢复 → 重放 on_load**"：新版本语法错误、
@@ -150,6 +215,11 @@ ownership.orphans()                      # [{"owner": "ghost", "total": 2, ...}]
 条目）自动还原，随后在归属上下文内**重放旧实例的 `on_load`**（`reason`
 为 `"rollback"`），让卸载阶段断开的外部资源重新建立；结束后发射
 `module.rollback` 事件（载荷 `{module_name, success}`）。
+
+适配器热重载失败同样恢复旧注册态；旧实例原处于运行态且旧启动任务已结束时，
+回滚后会重放 `start()`，并发射 `adapter.rollback` 事件（载荷
+`{adapter_name, replayed, success}`）。断连 / bot offline 等 unload 副作用
+仍不可撤销。重放与 `adapter.rollback` 事件需要 ErisPulse **2.12+**。
 
 边界说明：
 
@@ -184,7 +254,6 @@ ownership.orphans()                      # [{"owner": "ghost", "total": 2, ...}]
 | 持久化覆写（`persist=True`）/ 配置文件 | 不处理，保留 | 用户资产 |
 | 第三方库内部缓存的对象引用 | 不处理 | 框架看不到，需模块自行解引用 |
 | 模块自己 `new` 的事件循环 / 裸线程 | 不回收 | 见下方守则 |
-| 适配器回滚后的资源 | 未对齐 | 适配器侧暂不重放 `start()` |
 
 ### 三层资源治理
 

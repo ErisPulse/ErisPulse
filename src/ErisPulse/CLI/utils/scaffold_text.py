@@ -57,13 +57,13 @@ _EN_FALLBACK: dict[str, str] = {
     "adapter.converter_doc": "{name} event converter\n\nConverts platform-native events to "
     "the OneBot12 standard format using BaseConverter helpers.",
     "adapter.dsl.send_doc": "Send message DSL\n\nAt / AtAll / Reply / Using / To are handled "
-    "by the framework base class. Standard send methods (Text/Image/Voice/Video/File) are "
+    "by the framework base class. Standard send methods (Text/Image/Voice/Video/File/Location) are "
     "inherited from the SendDSL base class, delegating to Raw_ob12 by default, so no need to "
     "re-implement. Use self._apply_modifiers(message) to merge modifiers into the message "
     "segments. Use self.send_context to get the send context (target_type, target_id, "
     "account_id).\n\nSupports chained calls:\n"
     'Send.To("group", "123").At("456").Reply("789").Text("hi")',
-    "adapter.dsl.send_std_methods_hint": "Standard send methods (Text/Image/Voice/Video/File) "
+    "adapter.dsl.send_std_methods_hint": "Standard send methods (Text/Image/Voice/Video/File/Location) "
     "are inherited from the base class, delegating to Raw_ob12 by default.",
     "adapter.dsl.send_override_hint": "To use platform-specific logic, override a single method:",
     "adapter.dsl.send_extra_methods_hint": "You can add platform-specific send methods "
@@ -176,6 +176,9 @@ _EN_FALLBACK: dict[str, str] = {
     "cfg.framework.watch_ignore_dirs_line1": "#   Non-empty list replaces the built-in list entirely; [] disables ignoring",
     "cfg.framework.watch_ignore_dirs_line2": "uncomment to override the built-in ignore list",
     "cfg.framework.watch_include_plugin_dirs": "CLI --reload delegates plugin dirs to the plugin hot-reload watcher",
+    "cfg.framework.cross_account_policy": "Cross-account duplicate receipt policy for multi-account adapters: "
+    '"off" = dispatch every copy (default) / "mark" = annotate later copies with multi_receipt field '
+    'or "drop" = discard later copies at dispatch',
     "cfg.transcript.enabled": "Auto record inbound/outbound messages per session (history stays queryable when disabled)",
     "cfg.transcript.max_per_session": "Max records kept per session",
     "cfg.transcript.ttl_hours": "Global expiry (hours), lazily cleaned",
@@ -212,13 +215,13 @@ _TRANSLATIONS: dict[str, dict[str, str]] = {
         "adapter.i18n_hint": "I18nClass 声明翻译键，框架自动注册；配置描述引用的键必须在此声明。",
         "adapter.converter_doc": "{name} 事件转换器\n\n使用 BaseConverter 辅助方法，将平台原生事件转换为 OneBot12 标准格式。",
         "adapter.dsl.send_doc": "Send 消息发送 DSL\n\nAt / AtAll / Reply / Using / To 由框架基类内置处理。"
-        "标准发送方法（Text/Image/Voice/Video/File）已从 SendDSL 基类继承，"
+        "标准发送方法（Text/Image/Voice/Video/File/Location）已从 SendDSL 基类继承，"
         "默认委托给 Raw_ob12，无需重复实现。"
         "使用 self._apply_modifiers(message) 合并修饰器到消息段。"
         "使用 self.send_context 获取发送上下文 (target_type, target_id, account_id)。\n\n"
         "支持链式调用:\n"
         'Send.To("group", "123").At("456").Reply("789").Text("hi")',
-        "adapter.dsl.send_std_methods_hint": "标准发送方法（Text/Image/Voice/Video/File）已从基类继承，默认委托给 Raw_ob12。",
+        "adapter.dsl.send_std_methods_hint": "标准发送方法（Text/Image/Voice/Video/File/Location）已从基类继承，默认委托给 Raw_ob12。",
         "adapter.dsl.send_override_hint": "如需平台特定逻辑，可覆盖单个方法：",
         "adapter.dsl.send_extra_methods_hint": "可添加平台特有的发送方法（会被 event.supports() 识别）：",
         "adapter.dsl.request_doc": "Request 请求操作 DSL\n\n适配器应重写 accept / reject 实现平台特定的请求处理逻辑。"
@@ -311,6 +314,9 @@ _TRANSLATIONS: dict[str, dict[str, str]] = {
     "cfg.framework.watch_ignore_dirs_line1": "#   非空列表 = 整体替换内置清单；[] = 不忽略任何目录",
     "cfg.framework.watch_ignore_dirs_line2": "取消注释以覆盖内置忽略清单",
     "cfg.framework.watch_include_plugin_dirs": "CLI --reload 将插件目录交给插件热重载监控处理",
+    "cfg.framework.cross_account_policy": "多账户适配器的跨账户重复受理策略："
+    "\"off\" = 每个副本照常分发（默认）/ \"mark\" = 后续副本注入 multi_receipt 字段"
+    " / \"drop\" = 后续副本在分发入口丢弃",
     "cfg.transcript.enabled": "自动记录每会话入站/出站消息（关闭后停止写入，历史仍可查询）",
     "cfg.transcript.max_per_session": "每会话保留的最大条数",
     "cfg.transcript.ttl_hours": "全局过期时间（小时），过期记录惰性清理",
@@ -344,13 +350,13 @@ _TRANSLATIONS: dict[str, dict[str, str]] = {
         "adapter.i18n_hint": "I18nClass 宣告翻譯鍵，框架自動註冊；設定描述引用的鍵必須在此宣告。",
         "adapter.converter_doc": "{name} 事件轉換器\n\n使用 BaseConverter 輔助方法，將平台原生事件轉換為 OneBot12 標準格式。",
         "adapter.dsl.send_doc": "Send 訊息傳送 DSL\n\nAt / AtAll / Reply / Using / To 由框架基類內建處理。"
-        "標準傳送方法（Text/Image/Voice/Video/File）已從 SendDSL 基類繼承，"
+        "標準傳送方法（Text/Image/Voice/Video/File/Location）已從 SendDSL 基類繼承，"
         "預設委派給 Raw_ob12，無需重複實作。"
         "使用 self._apply_modifiers(message) 合併修飾器到訊息區段。"
         "使用 self.send_context 取得傳送上下文 (target_type, target_id, account_id)。\n\n"
         "支援鏈式呼叫:\n"
         'Send.To("group", "123").At("456").Reply("789").Text("hi")',
-        "adapter.dsl.send_std_methods_hint": "標準傳送方法（Text/Image/Voice/Video/File）已從基類繼承，預設委派給 Raw_ob12。",
+        "adapter.dsl.send_std_methods_hint": "標準傳送方法（Text/Image/Voice/Video/File/Location）已從基類繼承，預設委派給 Raw_ob12。",
         "adapter.dsl.send_override_hint": "如需平台特定邏輯，可覆寫單一方法：",
         "adapter.dsl.send_extra_methods_hint": "可新增平台特有的傳送方法（會被 event.supports() 識別）：",
         "adapter.dsl.request_doc": "Request 請求操作 DSL\n\n適配器應覆寫 accept / reject 實作平台特定的請求處理邏輯。"
@@ -411,13 +417,13 @@ _TRANSLATIONS: dict[str, dict[str, str]] = {
         "adapter.i18n_hint": "I18nClass で翻訳キーを宣言すると自動登録されます。設定説明で参照するキーはここで宣言してください。",
         "adapter.converter_doc": "{name} イベントコンバーター\n\nBaseConverter ヘルパーを使い、プラットフォームイベントを OneBot12 形式に変換します。",
         "adapter.dsl.send_doc": "Send メッセージ送信 DSL\n\nAt / AtAll / Reply / Using / To はフレームワークのベースクラスで処理されます。"
-        "標準送信メソッド（Text/Image/Voice/Video/File）は SendDSL ベースクラスから継承され、"
+        "標準送信メソッド（Text/Image/Voice/Video/File/Location）は SendDSL ベースクラスから継承され、"
         "デフォルトでは Raw_ob12 に委譲されるため、再実装は不要です。"
         "self._apply_modifiers(message) でメッセージセグメントに修飾子をマージします。"
         "self.send_context で送信コンテキスト（target_type, target_id, account_id）を取得します。\n\n"
         "チェーン呼び出しに対応:\n"
         'Send.To("group", "123").At("456").Reply("789").Text("hi")',
-        "adapter.dsl.send_std_methods_hint": "標準送信メソッド（Text/Image/Voice/Video/File）はベースクラスから継承され、デフォルトで Raw_ob12 に委譲されます。",
+        "adapter.dsl.send_std_methods_hint": "標準送信メソッド（Text/Image/Voice/Video/File/Location）はベースクラスから継承され、デフォルトで Raw_ob12 に委譲されます。",
         "adapter.dsl.send_override_hint": "プラットフォーム固有のロジックが必要な場合は、単一のメソッドをオーバーライドしてください：",
         "adapter.dsl.send_extra_methods_hint": "プラットフォーム固有の送信メソッドを追加できます（event.supports() で認識されます）：",
         "adapter.dsl.request_doc": "Request リクエスト操作 DSL\n\nアダプターは accept / reject をオーバーライドして、プラットフォーム固有のリクエスト処理を実装してください。"
@@ -482,13 +488,13 @@ _TRANSLATIONS: dict[str, dict[str, str]] = {
         "adapter.i18n_hint": "Ключи переводов объявляются в I18nClass и регистрируются автоматически; ключи из описания должны быть здесь.",
         "adapter.converter_doc": "{name} конвертер событий\n\nИспользует вспомогательные методы BaseConverter для преобразования в OneBot12.",
         "adapter.dsl.send_doc": "Send — DSL отправки сообщений\n\nAt / AtAll / Reply / Using / To обрабатываются базовым классом фреймворка. "
-        "Стандартные методы отправки (Text/Image/Voice/Video/File) наследуются из базового класса SendDSL "
+        "Стандартные методы отправки (Text/Image/Voice/Video/File/Location) наследуются из базового класса SendDSL "
         "и по умолчанию делегируются Raw_ob12, повторная реализация не нужна. "
         "Используйте self._apply_modifiers(message) для слияния модификаторов в сегменты сообщения. "
         "Используйте self.send_context для получения контекста отправки (target_type, target_id, account_id).\n\n"
         "Поддерживается цепной вызов:\n"
         'Send.To("group", "123").At("456").Reply("789").Text("hi")',
-        "adapter.dsl.send_std_methods_hint": "Стандартные методы отправки (Text/Image/Voice/Video/File) наследуются из базового класса и по умолчанию делегируются Raw_ob12.",
+        "adapter.dsl.send_std_methods_hint": "Стандартные методы отправки (Text/Image/Voice/Video/File/Location) наследуются из базового класса и по умолчанию делегируются Raw_ob12.",
         "adapter.dsl.send_override_hint": "Для платформо-специфичной логики переопределите отдельный метод:",
         "adapter.dsl.send_extra_methods_hint": "Можно добавить платформо-специфичные методы отправки (распознаются через event.supports()):",
         "adapter.dsl.request_doc": "Request — DSL операций запроса\n\nАдаптер должен переопределить accept / reject для реализации логики обработки запросов платформы. "

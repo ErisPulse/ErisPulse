@@ -59,27 +59,30 @@
 
 ### Шаблоны проектов
 
-ErisPulse предоставляет примеры проектов для справки:
+ErisPulse предоставляет примеры проектов в качестве справочного материала:
 
-- [Пример модуля](https://github.com/ErisPulse/ErisPulse/tree/main/examples/example-module) - полная структура проекта модуля
-- [Пример адаптера](https://github.com/ErisPulse/ErisPulse/tree/main/examples/example-adapter) - полная структура проекта адаптера
+- [Пример модуля](https://github.com/ErisPulse/ErisPulse/tree/main/examples/example-module) - полная структура проекта модуля (команды / конфигурация / ORM / внедрение зависимостей)
+- [Пример веб-возможностей](https://github.com/ErisPulse/ErisPulse/tree/main/examples/example-module-web) - маршрутизатор декораторов / промежуточные обработчики / WebSocket хуки / escape hatch router.app
+- [Продвинутый пример взаимодействия](https://github.com/ErisPulse/ErisPulse/tree/main/examples/example-module-interactive) - транзакции сообщений и подтверждения / совместные уникальные и транзакции ORM / утверждение запросов / цепочка отправки
+- [Пример управления эксплуатацией](https://github.com/ErisPulse/ErisPulse/tree/main/examples/example-module-ops) - принадлежность потоковых задач / отложенные задачи / проверка памяти / переключатели конфиденциальности
+- [Пример адаптера](https://github.com/ErisPulse/ErisPulse/tree/main/examples/example-adapter) - полная структура проекта адаптера (дополнительно доступны варианты [опроса](https://github.com/ErisPulse/ErisPulse/tree/main/examples/example-adapter-polling) / [вебхуков](https://github.com/ErisPulse/ErisPulse/tree/main/examples/example-adapter-webhook))
 
 ### Режим разработки
 
-Используйте режим горячей перезагрузки для разработки, при изменении кода он автоматически перезагружается:
+Для разработки используйте режим горячей перезагрузки, при котором изменения в коде автоматически перезагружаются:
 
 ```bash
 epsdk run main.py --reload
 ```
 
-### Советы по отладке
+### Техники отладки
 
-Включите отладочное или трассировочное логирование в `config/config.toml`:
+В файле `config/config.toml` включите уровни логирования DEBUG или TRACE:
 
 ```toml
 [ErisPulse.logger]
-# DEBUG: выводит информацию о загрузке модулей, регистрации маршрутов и другие отладочные данные
-# TRACE: самый низкий уровень, выводит подробные внутренние процессы фреймворка, такие как распределение событий, запись в хранилище, ленивая загрузка и т.д.
+# DEBUG: Вывод информации о загрузке модулей, регистрации маршрутов и других отладочных данных
+# TRACE: Самый низкий уровень, вывод подробных внутренних процессов фреймворка, таких как распределение событий, запись в хранилище и ленивая загрузка
 level = "DEBUG"
 ```
 

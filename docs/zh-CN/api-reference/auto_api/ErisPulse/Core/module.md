@@ -398,7 +398,10 @@ await sdk.module.reload_all()
 卸载单个模块（``sleep=True`` 时为归眠：释放资源但保留懒加载代理）
 
 - **module_name**: 模块名称
-- **reason**: 卸载来意（透传给 on_before_unload 钩子与 before_unload 事件）
+- **reason**: 卸载来意（透传给 on_before_unload / on_unload 钩子与
+
+    before_unload 事件；``"reload"`` 时模块可推迟关闭外部资源，
+    回滚重放 on_load 后仍可继续服务）
 - **sleep**: 归眠模式——保留懒加载代理与注册存根，模块回到"已注册未加载"状态
 
 **返回值**: 是否卸载成功
@@ -494,6 +497,67 @@ True
 - **module_name**: 模块名
 
 **返回值**: 是否为影子 owner
+
+---
+
+
+##### `list_shadows() -> 'dict[str, str]'`
+
+当前全部影子绑定（Dashboard 聚合展示用）
+
+**返回值**: ``{原模块名: 影子 owner 名}``
+
+---
+
+
+##### `shadow_ingest_whl(module_name: str, *, data: bytes, filename: str) -> 'dict[str, str]'`
+
+摄取 whl 作为影子源：校验 → 原件落盘 → 解包 → 推导 source
+
+- **module_name**: 被影子测试的模块名（仅作落盘目录段）
+- **data** (`whl`): 文件字节
+- **filename** (`whl`): 文件名（PEP 427）
+
+**返回值**: ``{"source": 解包源目录, "whl_path": 原件路径}``
+
+**异常**: `ShadowSourceError` - 文件名/大小非法或无法推导源目录
+
+**示例**:
+
+```python
+sdk.module.shadow_ingest_whl("roll", data=whl_bytes, filename="roll-2.0-py3-none-any.whl")
+```
+
+---
+
+
+##### `async shadow_promote_persist(module_name: str, *, whl_path: str) -> 'dict[str, Any]'`
+
+转正并持久化：promote 成功后后台 pip 安装落盘的 whl 原件
+
+- **module_name**: 原模块名
+- **whl_path**: :meth:`shadow_ingest_whl` 返回的原件路径
+
+**返回值**: ``{"task_id": 后台安装任务 ID}``
+
+**异常**: `ShadowSourceError` - whl_path 缺失 / 越界
+
+**示例**:
+
+```python
+await sdk.module.shadow_promote_persist("roll", whl_path=info["whl_path"])
+```
+
+---
+
+
+##### `shadow_persist_status(task_id: str) -> 'dict[str, Any] | None'`
+
+查询「转正并持久化」后台 pip 任务状态
+
+- **task_id**: :meth:`shadow_promote_persist` 返回的任务 ID
+
+**返回值**: ``{"status": running/success/error, "output": [...], ...}``；未知任务为 None
 
 ---
 

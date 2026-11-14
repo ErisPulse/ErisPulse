@@ -1,33 +1,35 @@
 # ErisPulse API アクション標準
 
 > [!TIP]
-> **このドキュメントを読むべきケース**：アダプタに Api DSL の標準アクション（get_user_info / delete_message など）を実装する場合や、モジュールからこれらの標準アクションをクロスプラットフォームで呼び出す際にパラメータや data フィールドを確認する必要がある場合に、本文を参照してください。必要なければ読み飛ばして構いません。
+> **このドキュメントを読むべきタイミング**：アダプター内で Api DSL の標準アクション（get_user_info / delete_message など）を実装する場合、またはモジュールからこれらの標準アクションをクロスプラットフォームで呼び出す際に、パラメータや data フィールドを確認したいときに本書を参照してください。必要なければ読み飛ばして構いません。
 
-このドキュメントは、ErisPulse アダプタにおける **OneBot12 標準 API アクション**の統一インターフェース仕様を定義するものであり、モジュール開発者が標準インターフェースに向けてプログラミングできるようにし、プラットフォームネイティブ API へのマッピングはアダプタが担います。
+このドキュメントは、ErisPulse アダプターにおける **OneBot12 標準 API アクション**の統一インターフェース仕様を定義するものであり、モジュール開発者が標準インターフェースに向けてプログラミングできるようにし、プラットフォームネイティブ API へのマッピングはアダプターが担当します。
 
-> **カバー範囲**：OneBot12 標準アクションのうち、`ApiDSL` はユーザー / グループ / ギルド（Guild）/
-> メッセージ管理 / メタ（Meta）の通常インターフェースに対する強い型付けのメソッドを提供します（`send_message` は
-> `SendDSL.Raw_ob12` が担当）。ファイルリソースアクション（`upload_file` / `get_file` / チャンク転送）は
-> フォールバック用の透過転送としてのみ保持されており、§3.5 の説明を参照してください。プラットフォーム拡張アクションは `Api.call("prefix.action", ...)`
-> というエスケープハッチで呼び出します。アクションのパラメータと返却構造は OneBot12 仕様（リポジトリ内 `onebot/specs/interface/`）に準拠します。
+> **対象範囲**：OneBot12 標準アクションのうち、`ApiDSL` はユーザー / グループ / ギルド（Guild）/
+> メッセージ管理 / メタ（Meta）の通常インターフェースに対する強く型付けされたメソッドを提供します
+> （`send_message` は `SendDSL.Raw_ob12` が担当）。ファイルリソースアクション
+> （`upload_file` / `get_file` / 分割転送）はフォールバックのパススルーとしてのみ保持されており、
+> §3.5 の説明を参照してください。プラットフォーム拡張アクションは `Api.call("prefix.action", ...)`
+> というエスケープハッチで呼び出します。アクションのパラメータと戻り値の構造は
+> OneBot12 仕様（リポジトリ内 `onebot/specs/interface/`）を正とします。
 
-## 1. 設計背景
+## 1. 設計の背景
 
-ErisPulse では、メッセージセグメント（メッセージの送受信）とイベント形式はすでに完全に OneBot12 標準に準拠していますが、**API アクション呼び出し**（ユーザー情報の取得、グループリストの取得、メッセージの取り消しなど）はこれまで統一されておらず、モジュール開発者はプラットフォームごとに異なる `call_api` 呼び出しを書く必要がありました。
+ErisPulse では、メッセージセグメント（メッセージの送受信）とイベント形式はすでに OneBot12 標準に完全に準拠していますが、**API アクション呼び出し**（ユーザー情報の取得、グループ一覧の取得、メッセージの取り消しなど）はこれまで統一されておらず——モジュール開発者はプラットフォームごとに異なる `call_api` 呼び出しを書く必要がありました。
 
-`ApiDSL` は、強い型付けの標準アクションメソッドを提供することでこの問題を解決します：
+`ApiDSL` は強く型付けされた標準アクションメソッドを提供することで、この問題を解決します：
 
 ```
-モジュールコード（クロスプラットフォーム統一）      アダプタ実装（プラットフォーム固有）
+モジュールコード（クロスプラットフォーム統一）   アダプター実装（プラットフォーム固有）
 ─────────────────              ──────────────────
-adapter.Api.get_user_info("123")  →  アダプタ call_api / オーバーライド
-adapter.Api.get_group_list()      →  アダプタ call_api / オーバーライド
-adapter.Api.delete_message("id")  →  アダプタ call_api / オーバーライド
+adapter.Api.get_user_info("123")  →  アダプターの call_api / オーバーライド
+adapter.Api.get_group_list()      →  アダプターの call_api / オーバーライド
+adapter.Api.delete_message("id")  →  アダプターの call_api / オーバーライド
 ```
 
-## 2. 三層 DSL 並列構造
+## 2. 3 層 DSL の並列構造
 
-ErisPulse アダプタには、それぞれの役割を持つ 3 つの並列な DSL 内部クラスがあります：
+ErisPulse のアダプターには、それぞれが役割を担う 3 つの並列した DSL 内部クラスが存在します：
 
 ```
 BaseAdapter
@@ -36,9 +38,9 @@ BaseAdapter
 └── Api(ApiDSL)          ← 標準 API アクション（ユーザー/グループ/ギルド/メッセージ管理/ファイル/メタ）★
 ```
 
-| DSL | 責務 | メソッドスタイル | 戻り値 |
+| DSL | 役割 | メソッドスタイル | 戻り値 |
 |-----|------|---------|--------|
-| `Send` | メッセージ送信 | チェーン + `asyncio.Task` | 標準レスポンス |
+| `Send` | メッセージ送信 | メソッドチェーン + `asyncio.Task` | 標準レスポンス |
 | `Request` | リクエストイベントの処理 | `asyncio.Task` | 標準レスポンス |
 | `Api` | クエリ/管理操作 | `async` メソッド | 標準レスポンス |
 
@@ -46,7 +48,7 @@ BaseAdapter
 
 ### 3.1 ユーザー関連
 
-| メソッド | OB12 アクション | パラメータ | data の戻り値 |
+| メソッド | OB12 アクション | パラメータ | data 戻り値 |
 |------|----------|------|----------|
 | `get_self_info()` | `get_self_info` | なし | `user_id`, `user_name`, `user_displayname` |
 | `get_user_info(user_id)` | `get_user_info` | `user_id: str` | `user_id`, `user_name`, `user_displayname`, `user_remark` |
@@ -54,7 +56,7 @@ BaseAdapter
 
 ### 3.2 グループ関連
 
-| メソッド | OB12 アクション | パラメータ | data の戻り値 |
+| メソッド | OB12 アクション | パラメータ | data 戻り値 |
 |------|----------|------|----------|
 | `get_group_info(group_id)` | `get_group_info` | `group_id: str` | `group_id`, `group_name` |
 | `get_group_list()` | `get_group_list` | なし | `list[get_group_info レスポンス]` |
@@ -69,13 +71,13 @@ BaseAdapter
 |------|----------|------|------|
 | `delete_message(message_id)` | `delete_message` | `message_id: str` | メッセージの取り消し/削除 |
 
-> **メッセージ送信**（`send_message`）は `SendDSL` の `Raw_ob12` が処理するため、`ApiDSL` では重複して提供しません。
+> **メッセージ送信**（`send_message`）は `SendDSL` の `Raw_ob12` が担当するため、`ApiDSL` では重複提供しません。
 
 ### 3.4 ギルド（Guild）関連
 
-OneBot12 のギルド体系は 2 つの階層に分かれています：**ギルド（guild）** と **サブチャンネル（channel）**。
+OneBot12 のギルド体系は 2 階層に分かれます：**ギルド（guild）** と **サブチャンネル（channel）**。
 
-| メソッド | OB12 アクション | パラメータ | data の戻り値 |
+| メソッド | OB12 アクション | パラメータ | data 戻り値 |
 |------|----------|------|----------|
 | `get_guild_info(guild_id)` | `get_guild_info` | `guild_id: str` | `guild_id`, `guild_name` |
 | `get_guild_list()` | `get_guild_list` | なし | `list[get_guild_info レスポンス]` |
@@ -96,20 +98,20 @@ OneBot12 のギルド体系は 2 つの階層に分かれています：**ギル
 ### 3.5 ファイルリソース操作
 
 > [!WARNING]
-> **ファイルリソースモデル（file_id 二段階方式）は ErisPulse では「フォールバック対応」に位置付けられます**：
-> ErisPulse のファイル送受信は「先にアップロードして file_id を取得してから参照する」モデルを採用していません。モジュールがファイルを送信するには
-> `SendDSL.File(file, filename)` を使用します（URL / パス / バイトを**送信時に直接送信**、
+> **ファイルリソースモデル（file_id 2 段階方式）は ErisPulse では「フォールバックで利用可能」に位置づけられます**：
+> ErisPulse のファイル送受信は「先にアップロードして file_id を取得し、それを参照する」モデルを採用していません——モジュールがファイルを送信するには
+> `SendDSL.File(file, filename)` を使用します（URL / パス / バイトは**送信時に直接転送**、
 > [送信メソッド仕様](send-method-spec.md) を参照）。
-> 本節の `upload_file` / `get_file` / チャンク転送アクションはプラットフォーム固有の `file_id` ファイルリソース
-> 機能に依存しており、**汎用性が不十分**です。アダプタのバックエンドが元々この機能を備えている場合にのみ透過転送が可能で、フレームワーク内蔵の
-> アダプタでは**実装せず、実装も推奨しません**。呼び出した場合は通常 `retcode=10002` が返されます。
-> モジュールがクロスプラットフォームでファイルを送信する必要がある場合は、`SendDSL.File` を使用し、file_id に依存しないでください。
+> 本節の `upload_file` / `get_file` / 分割転送アクションはプラットフォーム固有の `file_id` ファイルリソース
+> 機能に依存しており、**汎用性が不十分**です。アダプターのバックエンドが当該機能を本来備えている場合にのみパススルーが可能で、フレームワーク内蔵の
+> アダプターは**実装せず、実装も推奨しません**。呼び出すと通常 `retcode=10002` が返されます。
+> モジュールがクロスプラットフォームでファイルを送信する必要がある場合は `SendDSL.File` を使用し、file_id に依存しないでください。
 >
-> **展望**：`file_id` リソースモデルのフレームワーク層への標準化は今後の方向性ですが、現行バージョンでは提供されません。
+> **展望**：`file_id` リソースモデルのフレームワーク層への標準化は今後の方向性ですが、現在のバージョンでは提供されていません。
 
-一括転送（小ファイル）：
+一括転送（小さいファイル）：
 
-| メソッド | OB12 アクション | パラメータ | data の戻り値 |
+| メソッド | OB12 アクション | パラメータ | data 戻り値 |
 |------|----------|------|----------|
 | `upload_file(*, type, name, ...)` | `upload_file` | `type`, `name`, `url`/`path`/`data`, `headers?`, `sha256?` | `file_id` |
 | `get_file(file_id, type)` | `get_file` | `file_id: str`, `type: str` | `name`, `url`/`path`/`data` |
@@ -119,15 +121,15 @@ OneBot12 のギルド体系は 2 つの階層に分かれています：**ギル
 - `"path"`：ローカルパス経由でアップロード（`path` の指定が必要）
 - `"data"`：バイナリデータ経由でアップロード（`data` の指定が必要）
 
-#### 3.5.1 チャンク転送（大きなファイル、上記のフォールバック範囲に該当）
+#### 3.5.1 分割転送（大きなファイル、上記のフォールバック対象）
 
-OneBot12 のチャンクアクションは `stage` でフェーズを区別します。`ApiDSL` は同一アクションの 3 段階/2 段階を独立したメソッドに分割します
-（`offset` はバイトオフセット、`data` は JSON 内では Base64）。以下の表は参照用に保持しているだけで、
-アダプタが実装する必要はなく、強制的に実装すべきでもありません：
+OneBot12 の分割アクションは `stage` で段階を区別します。`ApiDSL` は同一アクションの 3 段階/2 段階を独立したメソッドに分割します
+（`offset` はバイトオフセット、`data` は JSON 内では Base64）。以下の表は参照用にのみ残しており、
+アダプターは実装する必要がなく、強制的に実装すべきでもありません：
 
-**チャンクアップロードの 3 ステップ**：`prepare` → `transfer`（チャンクごとにループ）→ `finish`
+**分割アップロードの 3 ステップ**：`prepare` → `transfer`（断片ごとにループ）→ `finish`
 
-| メソッド | 対応 stage | パラメータ | data の戻り値 |
+| メソッド | 対応 stage | パラメータ | data 戻り値 |
 |------|-----------|------|----------|
 | `upload_file_fragmented_prepare(name, total_size)` | `prepare` | `name: str`, `total_size: int` | `file_id`（転送中に使用） |
 | `upload_file_fragmented_transfer(file_id, offset, data)` | `transfer` | `file_id`, `offset: int`, `data: bytes` | なし |
@@ -146,18 +148,18 @@ sha256 = hashlib.sha256(open(path, "rb").read()).hexdigest()
 await adapter.Api.upload_file_fragmented_finish(fid, sha256)
 ```
 
-**チャンクダウンロードの 2 ステップ**：`prepare` → `transfer`（ループでチャンクを取得）
+**分割ダウンロードの 2 ステップ**：`prepare` → `transfer`（断片を取得するループ）
 
-| メソッド | 対応 stage | パラメータ | data の戻り値 |
+| メソッド | 対応 stage | パラメータ | data 戻り値 |
 |------|-----------|------|----------|
 | `get_file_fragmented_prepare(file_id)` | `prepare` | `file_id` | `name`, `total_size`, `sha256` |
-| `get_file_fragmented_transfer(file_id, offset, size)` | `transfer` | `file_id`, `offset: int`, `size: int` | `data`（今回のチャンクのバイト） |
+| `get_file_fragmented_transfer(file_id, offset, size)` | `transfer` | `file_id`, `offset: int`, `size: int` | `data`（今回の分割断片のバイト列） |
 
 ### 3.6 メタ（Meta）アクション
 
 メタアクションは特定のアカウントを対象としないため、`Using()` で Bot を指定する必要はありません。
 
-| メソッド | OB12 アクション | パラメータ | data の戻り値 |
+| メソッド | OB12 アクション | パラメータ | data 戻り値 |
 |------|----------|------|----------|
 | `get_latest_events(limit, timeout)` | `get_latest_events` | `limit: int=0`, `timeout: int=0` | イベントオブジェクトの配列（メタイベントを除く） |
 | `get_supported_actions()` | `get_supported_actions` | なし | `list[str]` サポート対象のアクション名 |
@@ -177,17 +179,17 @@ await adapter.Api.upload_file_fragmented_finish(fid, sha256)
 ```python
 from ErisPulse import adapter
 
-# ユーザー情報の取得（クロスプラットフォーム統一）
+# ユーザー情報を取得（クロスプラットフォーム統一）
 result = await adapter.myplatform.Api.get_user_info("123456")
 if result["status"] == "ok":
     user_name = result["data"]["user_name"]
     print(f"ユーザー名: {user_name}")
 
-# グループリストの取得
+# グループ一覧を取得
 result = await adapter.myplatform.Api.get_group_list()
 groups = result["data"]
 
-# メッセージの取り消し
+# メッセージを取り消し
 await adapter.myplatform.Api.delete_message("msg_123456")
 ```
 
@@ -201,14 +203,14 @@ info = await adapter.myplatform.Api.Using("bot1").get_self_info()
 ### 4.3 プラットフォーム拡張アクション
 
 ```python
-# プラットフォーム固有の拡張アクションを呼び出し（{prefix}.{action} の命名を推奨）
+# プラットフォーム固有の拡張アクションを呼び出す（{prefix}.{action} の命名を推奨）
 result = await adapter.telegram.Api.call(
     "telegram.send_sticker",
     sticker_id="CAACAgIAAxkBAA...",
 )
 ```
 
-### 4.4 イベントハンドラでの使用
+### 4.4 イベントハンドラーでの使用
 
 ```python
 from ErisPulse.Core.Event import message
@@ -225,36 +227,38 @@ async def handle(event):
         await event.reply(f"こんにちは、{user_name}さん！")
 ```
 
-## 5. アダプタの実装
+## 5. アダプター実装
 
-### 5.1 デフォルト動作（設定不要）
+### 5.1 デフォルト動作（ゼロコンフィグ）
 
 `ApiDSL` のデフォルト実装は、標準アクション名を `endpoint` としてそのまま `adapter.call_api()` に渡します：
 
 ```python
-# ApiDSL のデフォルト実装は以下と等価：
+# ApiDSL のデフォルト実装と等価：
 async def get_user_info(self, user_id: str) -> dict:
     return await self._adapter.call_api("get_user_info", user_id=user_id, account_id=self._account_id)
 ```
 
-**適用シーン**：アダプタの基盤となるバックエンド自体が OneBot12 標準アクションプロトコルに準拠している場合、
-`call_api` は標準アクション名をそのままサポートします（同プロトコルに準拠したサーバーに直接接続する場合など）。
+> **アカウントフィールド**：フレームワークはアダプターの `call_api` における実際の消費方法に応じてアカウントバインディングを自動で適合させます（標準名は `account_id`；旧名 `_account_id` は自動書き換え；関数本体内の `params.pop` も同様に認識）。消費されない場合は、プラットフォームパラメータへの漏出を避けるためこのフィールドを除去し、一度だけヒントを表示します——消費形態の詳細は [アダプター開発 - アカウント解決](../developer-guide/adapters/core-concepts.md#アカウント解決) を参照してください。
+
+**適用シナリオ**：アダプターの基盤となるバックエンド自体が OneBot12 標準アクションプロトコルに準拠している場合、
+`call_api` は標準アクション名をそのままサポートします（当該プロトコルに準拠するサーバーに直接接続する場合など）。
 
 ### 5.2 標準メソッドのオーバーライド（プラットフォームネイティブ API へのマッピング）
 
-アダプタは個々の標準メソッドをオーバーライドし、プラットフォームネイティブ API にマッピングできます：
+アダプターは個々の標準メソッドをオーバーライドし、プラットフォームネイティブ API にマッピングできます：
 
 ```python
 class MyAdapter(BaseAdapter):
 
     class Api(BaseAdapter.Api):
-        """MyPlatform 標準 API アクション実装"""
+        """MyPlatform 標準 API アクションの実装"""
 
         async def get_user_info(self, user_id: str) -> dict:
-            # プラットフォームネイティブ API にマッピング
+            # プラットフォームネイティブ API へのマッピング
             raw = await self._adapter._request("GET", f"/users/{user_id}")
             if raw.get("code") != 0:
-                # プラットフォーム側エラー：341xx～345xx の下 3 桁をカスタムで使用（346xx はフレームワーク予約のため使用禁止）
+                # プラットフォーム側エラー：341xx～345xx 段の下 3 桁をカスタム使用（346xx はフレームワーク予約のため使用しないこと）
                 return self._adapter.make_error(retcode=34400, message="ユーザーが存在しません")
 
             user = raw["data"]
@@ -282,15 +286,15 @@ class MyAdapter(BaseAdapter):
             return self._adapter.make_response(data=friends, raw=raw)
 ```
 
-### 5.3 未対応のアクション
+### 5.3 サポートされていないアクション
 
-アダプタがオーバーライドしていない標準メソッドはデフォルト実装（`call_api` への委譲）になります。`call_api` もそのアクションをサポートしていない場合は、標準エラーレスポンスを返すべきです：
+アダプターがオーバーライドしていない標準メソッドはデフォルト実装（`call_api` への委譲）に従います。`call_api` もそのアクションをサポートしていない場合は、標準エラーレスポンスを返す必要があります：
 
 ```python
 async def call_api(self, endpoint: str, **params):
     if endpoint not in self._supported_endpoints:
-        return self.make_error(retcode=10002, message=f"未対応のアクション: {endpoint}")
-    # ... プラットフォーム API 呼び出し
+        return self.make_error(retcode=10002, message=f"サポートされていないアクション: {endpoint}")
+    # ... プラットフォーム API の呼び出し
 ```
 
 モジュール開発者は戻り値の `retcode` でサポートされているかどうかを判断できます：
@@ -298,7 +302,7 @@ async def call_api(self, endpoint: str, **params):
 ```python
 result = await adapter.myplatform.Api.get_friend_list()
 if result["retcode"] == 10002:
-    print("このプラットフォームはフレンドリストの取得に対応していません")
+    print("このプラットフォームはフレンドリストの取得をサポートしていません")
 ```
 
 ## 6. レスポンス形式
@@ -316,7 +320,7 @@ if result["retcode"] == 10002:
 }
 ```
 
-> **注意**：情報照会系アクションの `message_id` は空文字列です（メッセージ送信系アクションのみが `message_id` を持ちます）。
+> **注意**：情報照会系アクションの `message_id` は空文字列です（`message_id` が設定されるのはメッセージ送信系アクションのみです）。
 
 ## 7. SendDSL / RequestDSL との関係
 
@@ -326,31 +330,31 @@ if result["retcode"] == 10002:
 | リクエストの承認/拒否 | `Request` | `adapter.Request("req_id").accept()` |
 | ユーザー/グループ情報の取得 | `Api` | `adapter.Api.get_user_info("123")` |
 | メッセージの取り消し | `Api` | `adapter.Api.delete_message("msg_id")` |
-| グループ退出 | `Api` | `adapter.Api.leave_group("group_id")` |
+| グループからの退出 | `Api` | `adapter.Api.leave_group("group_id")` |
 
-## 8. アダプタ実装チェックリスト
+## 8. アダプター実装チェックリスト
 
 ### 標準アクション
-- [ ] `call_api` が標準アクション名を処理できること（または対応する `ApiDSL` メソッドをオーバーライド）
-- [ ] 未対応のアクションは `retcode=10002` を返すこと
-- [ ] 戻り値が標準 API レスポンス形式に準拠していること
-- [ ] `data` フィールドに OB12 標準定義のフィールドが含まれていること
-- [ ] ギルドプラットフォームは `get_guild_*` / `get_channel_*` / `leave_guild` / `leave_channel` を実装すること
+- [ ] `call_api` が標準アクション名を処理できる（または対応する `ApiDSL` メソッドをオーバーライドする）
+- [ ] サポートされていないアクションは `retcode=10002` を返す
+- [ ] 戻り値は標準 API レスポンス形式に従う
+- [ ] `data` フィールドに OB12 標準で定義されたフィールドが含まれている
+- [ ] ギルドプラットフォームは `get_guild_*` / `get_channel_*` / `leave_guild` / `leave_channel` を実装する必要がある
 - [ ] メタアクション（`get_status` / `get_version` / `get_supported_actions`）の実装を推奨
-- [ ] **ファイルの送受信は `SendDSL.File`（直接送信）を使用**。ファイルリソースアクション（upload_file/get_file/チャンク転送）は**実装必須ではない**。バックエンドが `file_id` リソース機能を備える場合にのみ透過転送が必要
+- [ ] **ファイル送受信は `SendDSL.File`（直接転送）を使用**；ファイルリソースアクション（upload_file/get_file/分割転送）の実装は**強制ではない**。バックエンドが `file_id` リソース機能を備えている場合にのみパススルーが必要
 
 ### 拡張アクション
-- [ ] プラットフォーム拡張アクションは `{prefix}.{action}` の命名を使用
-- [ ] 拡張アクションのパラメータとレスポンスも OB12 アクションのリクエスト/レスポンス構造に準拠
+- [ ] プラットフォーム拡張アクションは `{prefix}.{action}` の命名を使用する
+- [ ] 拡張アクションのパラメータとレスポンスも OB12 のアクション要求/レスポンス構造に従う
 
 ## 9. 関連ドキュメント
 
-**Api DSL の戻り値実装時に併せて参照**：
-- [API レスポンス標準](api-response.md) - アダプタ API レスポンス形式標準
+**Api DSL の戻り値実装時の対照資料**：
+- [API レスポンス標準](api-response.md) - アダプター API レスポンス形式の標準
 
-**同一アダプタのその他の DSL**：
+**同一アダプターのその他の DSL**：
 - [送信メソッド仕様](send-method-spec.md) - Send クラスのメソッド命名とパラメータ仕様
 - [リクエスト操作仕様](request-action-spec.md) - Request DSL の使用方法
 
 **イベント側の関連資料**：
-- [イベント変換標準](event-conversion.md) - イベント形式とメッセージセグメント標準
+- [イベント変換標準](event-conversion.md) - イベント形式とメッセージセグメントの標準

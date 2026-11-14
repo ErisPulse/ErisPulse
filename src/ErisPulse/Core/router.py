@@ -36,6 +36,7 @@ if TYPE_CHECKING:
     from starlette.routing import WebSocketRoute
 
 from ..runtime.context import current_owner
+from ..runtime.metrics import metrics as runtime_metrics
 from .Bases.errors import WebSocketDisconnect as _EPWebSocketDisconnect
 from .Bases.router import HttpRequest, SseEmitter, WebSocketConnection
 from .connections import connections
@@ -910,13 +911,42 @@ class RouterManager:
             """
             from . import adapter, module, storage
 
+            counters = runtime_metrics.snapshot()
             return {
                 "status": "ok" if adapter._started_instances else "degraded",
                 "router": self._uvicorn_server is not None,
                 "storage": storage._is_ready(),
                 "adapter": len(adapter._started_instances) > 0,
                 "module": len(module._loaded_modules) > 0,
+                "instance_id": runtime_metrics.instance_id,
+                "uptime_seconds": round(runtime_metrics.uptime_seconds, 1),
+                "events_received": counters.get("events.received_total", 0),
             }
+
+        @self.app.get("/metrics", include_in_schema=False)
+        async def metrics_endpoint() -> Any:
+            """
+            Prometheus 文本格式指标（默认关闭）
+
+            由 ``ErisPulse.server.metrics_enabled`` 配置开关控制；输出事件
+            接收计数（含按类型）与进程运行时长。无鉴权，公网部署时建议由
+            反向代理限制访问。
+
+            :return: Response 文本格式指标
+            """
+            from fastapi import Response
+
+            from .config import config as config_mgr
+
+            enabled = bool(
+                config_mgr.getConfig("ErisPulse.server.metrics_enabled", False)
+            )
+            if not enabled:
+                return Response(status_code=404)
+            return Response(
+                content=runtime_metrics.render_prometheus(),
+                media_type="text/plain; version=0.0.4; charset=utf-8",
+            )
 
         @self.app.get("/ping")
         async def ping() -> dict[str, Any]:
@@ -2587,6 +2617,27 @@ class RouterManager:
     # 路由限流
 
     @_web_stack_required
+    def _rate_limit_client_ip(self, request: Request) -> str:
+        """
+        限流键客户端地址
+
+        默认取直连地址（``request.client.host``）；配置
+        ``ErisPulse.router.rate_limit_trust_proxy`` 为 true 后取
+        ``X-Forwarded-For`` 首个地址（仅在可信反向代理后启用，避免伪造）。
+
+        :param request: 请求对象
+        :return: str 用于限流键的客户端地址
+        """
+        from .config import config as config_mgr
+
+        if config_mgr.getConfig("ErisPulse.router.rate_limit_trust_proxy", False):
+            forwarded = request.headers.get("x-forwarded-for")
+            if forwarded:
+                first = forwarded.split(",")[0].strip()
+                if first:
+                    return first
+        return request.client.host if request.client else "unknown"
+
     def _apply_rate_limit(self, full_path: str, limit: str | dict):
         """
         为路由应用限流
@@ -2599,7 +2650,7 @@ class RouterManager:
         self._ensure_middleware_installed()
 
         async def rate_limit_check(request: Request):
-            client_ip = request.client.host if request.client else "unknown"
+            client_ip = self._rate_limit_client_ip(request)
             key = f"route:{full_path}:{client_ip}"
             now = time.monotonic()
 

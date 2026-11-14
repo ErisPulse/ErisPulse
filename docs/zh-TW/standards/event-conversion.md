@@ -10,52 +10,56 @@
 4. 時間統一：所有時間戳必須轉換為 10 位 Unix 時間戳（秒級）
 5. 平台統一：platform 項命名必須與你在 ErisPulse 中註冊的名稱/別稱一致
 
-## 2. 標準字段要求
+## 2. 標準欄位要求
 
-### 2.1 必須字段
-| 字段 | 類型 | 說明 |
+### 2.1 必須欄位
+| 欄位 | 類型 | 說明 |
 |------|------|------|
-| id | string | 事件唯一標識符 |
-| time | integer | Unix時間戳（秒級） |
+| id | string | 事件唯一識別碼 |
+| time | integer | Unix時間戳記（秒級） |
 | type | string | 事件類型 |
 | detail_type | string | 事件詳細類型（詳見[會話類型標準](session-types.md)） |
+| sub_type | string | 事件子類型 |
 | platform | string | 平台名稱 |
-| self | object | 机器人自身資訊 |
+| self | object | 機器人自身資訊 |
 | self.platform | string | 平台名稱 |
-| self.user_id | string | 机器人用戶ID |
+| self.user_id | string | 機器人使用者ID |
+
+> **OneBot12 基線**：`self.platform` / `self.user_id` 與訊息事件的 `message_id` 均為 OneBot12 基線已定義的欄位，框架直接採用基線定義，不再引入自有擴充鍵（`self.account_id` 為限定擴充鍵，僅用於動態帳戶未取得 user_id 前的代位標識，見 §6）。
 
 **detail_type 規範**：
 - 必須使用 ErisPulse 標準會話類型（詳見 [會話類型標準](session-types.md)）
 - 支援的類型：`private`, `group`, `user`, `channel`, `guild`, `thread`
-- 适配器負責將平台原生類型映射到標準類型
+- 適配器負責將平台原生類型映射到標準類型
 
-### 2.2 消息事件字段
-| 字段 | 類型 | 說明 |
+### 2.2 訊息事件欄位
+| 欄位 | 類型 | 說明 |
 |------|------|------|
-| message | array | 消息段陣列 |
-| alt_message | string | 消息段備用文字 |
-| user_id | string | 用戶ID |
-| user_nickname | string | 用戶暱稱（可選） |
+| message_id | string | 訊息ID（OneBot12 基線標準必選欄位，適配器必須產出事件頂層） |
+| message | array | 訊息段陣列 |
+| alt_message | string | 訊息段備用文字 |
+| user_id | string | 使用者ID |
+| user_nickname | string | 使用者暱稱（可選） |
 
-### 2.3 通知事件字段
-| 字段 | 類型 | 說明 |
+### 2.3 通知事件欄位
+| 欄位 | 類型 | 說明 |
 |------|------|------|
-| user_id | string | 用戶ID |
-| user_nickname | string | 用戶暱稱（可選） |
+| user_id | string | 使用者ID |
+| user_nickname | string | 使用者暱稱（可選） |
 | operator_id | string | 操作者ID（可選） |
 
-### 2.4 請求事件字段
-| 字段 | 類型 | 說明 |
+### 2.4 請求事件欄位
+| 欄位 | 類型 | 說明 |
 |------|------|------|
-| user_id | string | 用戶ID |
-| user_nickname | string | 用戶暱稱（可選） |
+| user_id | string | 使用者ID |
+| user_nickname | string | 使用者暱稱（可選） |
 | comment | string | 請求附言（可選） |
-| request_id | string | 請求標識符（**強烈推薦**，用於同意/拒絕請求操作） |
+| request_id | string | 請求識別碼（**強烈推薦**，用於同意/拒絕請求操作） |
 
-**`request_id` 字段說明**：
-- `request_id` 是請求事件的唯一操作標識符，用於透過 `HandleRequest` DSL 執行同意/拒絕操作
-- 适配器在轉換請求事件時，應將平台原生的請求標識映射到此字段
-- 如果平台本身沒有請求ID，适配器應產生一個唯一標識（例如基於時間戳+用戶ID的雜湊）
+**`request_id` 欄位說明**：
+- `request_id` 是請求事件的唯一操作識別碼，用於透過 `Request` DSL 執行同意/拒絕操作
+- 適配器在轉換請求事件時，應將平台原生的請求識別碼映射到此欄位
+- 如果平台本身沒有請求ID，適配器應產生一個唯一標識（如基於時間戳記+使用者ID的雜湊值）
 - 當 `request_id` 缺失時，`event.approve()` / `event.reject()` 將拋出 `ValueError`
 
 ## 3. 事件格式示例
@@ -135,44 +139,48 @@
 }
 ```
 
-## 4. 消息段標準
+## 4. 訊息段標準
 
-### 4.1 標準消息段
+### 4.1 標準訊息段
 
-標準消息段**不需要**平台前綴。
+標準訊息段**不需要**平台前綴。
 
-| 類型 | 說明 | data 字段 |
+| 類型 | 說明 | data 欄位 |
 |------|------|----------|
-| `text` | 純文本 | `text: str` |
+| `text` | 純文字 | `text: str` |
 | `image` | 圖片 | `file`, `url: str` |
-| `audio` | 音頻 | `file`, `url: str` |
-| `video` | 視頻 | `file`, `url: str` |
-| `file` | 文件 | `file`, `url: str`, `filename: str` |
-| `mention` | @用戶 | `user_id: str`, `user_name: str` |
-| `reply` | 回覆 | `message_id: str` |
-| `face` | 表情 | `id: str` |
-| `location` | 位置 | `latitude: float`, `longitude: float` |
-| `keyboard` | 按鈕/內聯鍵盤 | `rows: list[list[button]]`（見 4.1.1） |
+| `voice` | 語音（當場錄製的聲音，區別於 `audio`） | `file`, `url: str` |
+| `audio` | 音訊（可直接播放的音樂檔案，區別於 `voice`） | `file`, `url: str` |
+| `video` | 影片 | `file`, `url: str` |
+| `file` | 檔案 | `file`, `url: str`, `filename: str` |
+| `mention` | @使用者 | `user_id: str`, `user_name: str` |
+| `mention_all` | @全體成員 | 無 data 欄位 |
+| `reply` | 回覆 | `message_id: str`, `user_id: str`（回覆的原發送者，接收方向由適配器盡可能填入） |
+| `location` | 位置 | `latitude: float`, `longitude: float`, `title: str`（可選）, `content: str`（可選） |
+| `face` | 表情（ErisPulse 跨平台擴展段） | `id: str` |
+| `keyboard` | 按鈕/行內鍵盤（ErisPulse 跨平台擴展段） | `rows: list[list[button]]`（見 4.1.1） |
 
-**媒體段 `file` 字段格式**（發送方向，`image` / `audio` / `video` / `file` 通用）：
+> **與 OneBot12 基線的欄位映射**：媒體段（`image` / `voice` / `audio` / `video` / `file`）在 OneBot12 基線中為 `file_id: str`；本標準的 `file`（發送形態超集：URL / 本地路徑 / bytes）與 `url`（接收回鏈）由適配器雙向映射到平台的 `file_id` 資源。`face` / `keyboard` 為 OneBot12 基線之外的擴展段。
 
-| 形態 | 示例 | 适配器要求 |
+**媒體段 `file` 欄位格式**（發送方向，`image` / `audio` / `video` / `file` 通用）：
+
+| 形態 | 範例 | 適配器要求 |
 |------|------|-----------|
 | HTTP(S) URL | `https://example.com/a.png` | **必須**接受 |
-| 本地文件路徑 | `/tmp/a.png`、`C:\tmp\a.png` | **必須**接受 |
-| 二進制數據 | `bytes` | **必須**接受 |
+| 本地檔案路徑 | `/tmp/a.png`、`C:\tmp\a.png` | **必須**接受 |
+| 二進位資料 | `bytes` | **必須**接受 |
 | `file://` URI / Base64 / Data URI | `file:///tmp/a.png`、`data:image/png;base64,...` | **應當**接受 |
 
-> 完整的媒體發送協議（形態判定順序、文件名推導、能力降級階梯）見
-> [發送方法規範 §2.1](send-method-spec.md#21-媒體消息發送協議image--voice--video--file)。
+> 完整的媒體發送協議（形態判定順序、檔案名推導、能力降級階梯）見
+> [發送方法規範 §2.1](send-method-spec.md#21-媒體訊息發送協議image--voice--video--file)。
 
-**字段方向語義**：
+**欄位方向語義**：
 
-- `file`：**發送方向**的內容來源（上述形態）；**接收方向**由适配器填平台可取回的形態
+- `file`：**發送方向**的內容來源（上述形態）；**接收方向**由適配器填平台可取回的形態
   （通常為可下載 URL，或 `get_file` 類動作可用的資源標識）
-- `url`：接收方向的平台回鏈（适配器轉換平台事件時盡可能填入，供模塊直接取用）；發送方向可不填
-- `filename`：`file` 段的文件名（發送方向可選，缺省時适配器按
-  [發送方法規範 §2.1.3](send-method-spec.md) 的推導順序生成；接收方向**應當**填平台原始文件名）
+- `url`：接收方向的平台回鏈（適配器轉換平台事件時盡可能填入，供模組直接取用）；發送方向可不填
+- `filename`：`file` 段的檔案名（發送方向可選，預設時適配器按
+  [發送方法規範 §2.1.3](send-method-spec.md) 的推導順序生成；接收方向**應當**填平台原始檔案名）
 
 ```json
 {
@@ -183,10 +191,10 @@
 }
 ```
 
-### 4.1.1 keyboard 按鈕/內聯鍵盤段（跨平台通用）
+### 4.1.1 keyboard 按鈕/行內鍵盤段（跨平台通用）
 
-按鈕/內聯鍵盤在多個平台（Telegram / 云湖 / QQBot / Kook / Discord 等）均有對應能力，
-屬於**跨平台通用概念**，因此作為標準消息段（無平台前綴）。适配器應將標準段轉換為
+按鈕/行內鍵盤在多個平台（Telegram / 雲湖 / QQBot / Kook / Discord 等）均有對應能力，
+屬於**跨平台通用概念**，因此作為標準訊息段（無平台前綴）。適配器應將標準段轉換為
 平台原生結構；平台原生擴展段（如 `telegram_inline_keyboard`）繼續保留透傳。
 
 ```json
@@ -203,42 +211,42 @@
 }
 ```
 
-**字段說明：**
+**欄位說明：**
 
-| 字段 | 類型 | 必填 | 說明 |
+| 欄位 | 類型 | 必填 | 說明 |
 |------|------|------|------|
-| `rows` | 二維數組 | 是 | 每個子數組為一行按鈕 |
-| `rows[][].label` | str | 是 | 按鈕顯示文本 |
-| `rows[][].type` | str | 是 | `callback`（點擊回傳數據）/ `link`（跳轉URL） |
-| `rows[][].data` | str | 是 | 回調數據（type=callback）或跳轉地址（type=link） |
-| `rows[][].*` | Any | 否 | 平台特有可選字段（如 `web_app`、`menus`），适配器按能力映射或忽略 |
+| `rows` | 二維陣列 | 是 | 每個子陣列為一行按鈕 |
+| `rows[][].label` | str | 是 | 按鈕顯示文字 |
+| `rows[][].type` | str | 是 | `callback`（點擊回傳資料）/ `link`（跳轉URL） |
+| `rows[][].data` | str | 是 | 回呼資料（type=callback）或跳轉地址（type=link） |
+| `rows[][].*` | Any | 否 | 平台特有可選欄位（如 `web_app`、`menus`），適配器按能力映射或忽略 |
 
-**适配器轉換參考**（完整映射與交互回調事件標準見 [跨平台交互組件標準](standardization-guide.md)）：
+**適配器轉換參考**（完整映射與互動回呼事件標準見 [跨平台互動元件標準](standardization-guide.md)）：
 
 | 平台 | 標準段 → 平台原生 |
 |------|------------------|
 | Telegram | `inline_keyboard`：`[{text, callback_data \| url}]` |
-| 云湖 | `buttons`：`[{label, action_type: 2=回調 \| 1=跳轉, ...}]` |
-| QQBot | `keyboard.content.rows`：`[{label, type: 2=回調 \| 0=跳轉, data}]`（需 markdown 類型消息） |
-| Kook | 卡片 action-group 模塊 |
+| 雲湖 | `buttons`：`[{label, action_type: 2=回呼 \| 1=跳轉, ...}]` |
+| QQBot | `keyboard.content.rows`：`[{label, type: 2=回呼 \| 0=跳轉, data}]`（需 markdown 類型訊息） |
+| Kook | 卡片 action-group 模組 |
 | Discord | components：`action_row` + `buttons`（custom_id/url） |
 
-### 4.2 平台擴展消息段
+### 4.2 平台擴展訊息段
 
-平台特有的消息段需要添加平台前綴：
+平台特有的訊息段需要添加平台前綴：
 
 ```json
-// 云湖 - 表單
+// 雲湖 - 表單
 {"type": "yunhu_form", "data": {"form_id": "123456", "form_name": "報名表"}}
 
 // Telegram - 貼紙
 {"type": "telegram_sticker", "data": {"file_id": "CAACAgIAAxkBAA...", "emoji": "😂"}}
 ```
 
-**擴展消息段要求**：
-1. **data 內部字段不加前綴**：`{"type": "yunhu_form", "data": {"form_id": "..."}}` 而非 `{"type": "yunhu_form", "data": {"yunhu_form_id": "..."}}`
-2. **提供降級方案**：模塊可能不識別擴展消息段，适配器應在 `alt_message` 中提供文本替代
-3. **文檔完備**：每個擴展消息段必須在适配器文檔中說明 `type`、`data` 結構和使用場景
+**擴展訊息段要求**：
+1. **data 內部欄位不加前綴**：`{"type": "yunhu_form", "data": {"form_id": "..."}}` 而非 `{"type": "yunhu_form", "data": {"yunhu_form_id": "..."}}`
+2. **提供降級方案**：模組可能不識別擴展訊息段，適配器應在 `alt_message` 中提供文字替代
+3. **文件完備**：每個擴展訊息段必須在適配器文件中說明 `type`、`data` 結構和使用場景
 
 ## 5. 未知事件處理
 
@@ -257,7 +265,7 @@
 ```
 ---
 
-## 6. 擴展命名規範
+## 6. 擴充命名規範
 
 ### 6.1 欄位命名
 
@@ -273,32 +281,32 @@ email       subject           email_subject
 ```
 
 **要求**：
-- `platform` 必須與適配器註冊時的平台名完全一致（大小寫敏感）
+- `platform` 必須與配接器註冊時的平台名完全一致（區分大小寫）
 - `field_name` 使用 `snake_case` 命名
-- 禁止使用雙下劃線 `__` 開頭（Python 保留）
+- 禁止使用雙底線 `__` 開頭（Python 保留）
 - 禁止與標準欄位同名（如 `type`、`time`、`message` 等）
 
-### 6.2 消息段類型命名
+### 6.2 訊息段類型命名
 
 **規則**：`{platform}_{segment_type}`
 
-標準消息段類型（`text`、`image`、`audio`、`video`、`mention`、`reply` 等）**不得**添加平台前綴。只有平台特有的消息段類型才需要添加前綴。
+標準訊息段類型（`text`、`image`、`audio`、`video`、`mention`、`reply` 等）**不得**添加平台前綴。只有平台特有的訊息段類型才需要添加前綴。
 
-### 6.3 原始數據欄位命名
+### 6.3 原始資料欄位命名
 
-以下欄位名是**保留欄位**，所有適配器必須遵循：
+以下欄位名是**保留欄位**，所有配接器必須遵循：
 
 | 保留欄位 | 類型 | 說明 |
 |---------|------|------|
-| `{platform}_raw` | `any` | 平台原始事件數據的完整副本 |
-| `{platform}_raw_type` | `string` | 平台原始事件類型標識 |
+| `{platform}_raw` | `any` | 平台原始事件資料的完整副本 |
+| `{platform}_raw_type` | `string` | 平台原始事件類型識別碼 |
 
 **要求**：
-- `{platform}_raw` 必須是原始數據的深拷貝，而非引用
+- `{platform}_raw` 必須是原始資料的深層複製，而非參考
 - `{platform}_raw_type` 必須是字串，即使平台使用數字類型也要轉換為字串
-- 這兩個欄位在所有事件中**必須存在**（無法獲取時為 `null` 和空字串 `""`）
+- 這兩個欄位在所有事件中**必須存在**（無法取得時為 `null` 和空字串 `""`）
 
-### 6.4 平台特有欄位示例
+### 6.4 平台特有欄位範例
 
 ```json
 {
@@ -315,9 +323,9 @@ email       subject           email_subject
 }
 ```
 
-### 6.5 嵌套擴展欄位
+### 6.5 巢狀擴充欄位
 
-擴展欄位可以是簡單值，也可以是嵌套物件：
+擴充欄位可以是簡單值，也可以是巢狀物件：
 
 ```json
 {
@@ -333,22 +341,26 @@ email       subject           email_subject
 }
 ```
 
-**嵌套欄位要求**：
+**巢狀欄位要求**：
 - 頂層鍵必須帶平台前綴
-- 嵌套內部欄位**不添加**平台前綴
-- 嵌套深度建議不超過 3 層
+- 巢狀內部欄位**不添加**平台前綴
+- 巢狀深度建議不超過 3 層
 
-### 6.6 `self` 欄位擴展
+### 6.6 `self` 欄位擴充
 
-`self` 物件的標準必選欄位（`platform`、`user_id`）見 §2.1，以下是 ErisPulse 擴展的可選欄位：
+`self` 物件的標準必選欄位（`platform`、`user_id`）見 §2.1，以下是 ErisPulse 擴充的可選欄位：
 
 | 欄位 | 類型 | 說明 |
 |------|------|------|
 | `self.user_name` | `string` | 機器人暱稱 |
 | `self.avatar` | `string` | 機器人頭像 URL |
-| `self.account_id` | `string` | 多帳戶模式下的帳戶標識 |
+| `self.account_id` | `string` | **限定擴充鍵（帳戶名代位）**：動態注入的帳戶在尚未取得機器人 `user_id` 時，以帳戶名 / 帳戶識別碼代位填充，保證事件可歸屬；`self.user_id` 可用後必須優先填入。框架按 `account_id or user_id` 口徑相容兩者——帳戶名代位時 `reply()` 綁定經帳戶名匹配解析回正確帳戶 |
 
-> **Bot 狀態追蹤**：適配器通過發送 `type: "meta"` 事件告知框架 Bot 的連接狀態。支援的 `detail_type`：`connect`（上線）、`heartbeat`（心跳）、`disconnect`（離線）。系統自動從中提取 `self` 欄位的 Bot 元資訊進行狀態追蹤。此外，普通事件中的 `self` 欄位也會自動發現 Bot。詳見 [適配器系統 API - Bot 狀態管理](../api-reference/adapter-system.md)。
+> **執行期邊界：事件必須始終攜帶 `self.user_id`（含綁定未建立的期間）**。連線層在綁定表回填、connect meta 到達之前收到的事件，同樣要注入已知識別碼：機器人 `user_id` 尚未取得時以帳戶名填充 `self.account_id` 代位（框架按 `account_id or user_id` 口徑解析，帳戶名可經帳戶名匹配路由回正確帳戶），已取得則優先填 `self.user_id`——框架在事件的任何階段都需要能判斷「這條事件來自哪個帳戶」。缺失時的後果是確定的：`event.reply()` 不注入帳戶、未指定帳戶的傳送回落第一個啟用帳戶，多帳戶配接器即表現為「從預設帳戶發出」。
+
+> **Bot 狀態追蹤**：配接器透過傳送 `type: "meta"` 事件告知框架 Bot 的連線狀態。支援的 `detail_type`：`connect`（上線）、`heartbeat`（心跳）、`disconnect`（離線）。系統自動從中擷取 `self` 欄位的 Bot 元資訊進行狀態追蹤。此外，普通事件中的 `self` 欄位也會自動發現 Bot。詳見 [配接器系統 API - Bot 狀態管理](../api-reference/adapter-system.md)。
+
+---
 
 ## 7. 會話類型擴展
 

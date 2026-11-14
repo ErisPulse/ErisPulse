@@ -31,6 +31,12 @@ ErisPulse 数据模型层（ORM）—— 声明式模型与 Active Record CRUD
 > 随事务统一提交/回滚
 > 6. 关系映射：``relationship()`` 声明 has-many / belongs-to，实例上链式查询
 > 或直接 await（见 :class:`Relationship`）
+> 7. 复合主键：多个 ``Field(primary_key=True)`` 组成表级 ``PRIMARY KEY (a, b)``
+> 约束（自增主键仅单列）；``__unique_together__`` 声明联合唯一（唯一索引
+> 实现，已存在的表自动补建）
+> 8. 惯用快捷：``get_or_create`` / ``update_or_create``、
+> ``save(update_fields=[...])`` 部分列更新、``Field(auto_now_add=True /
+> auto_now=True)`` 时间戳列、``Field(on_delete="CASCADE")`` 外键删除动作
 
 **示例**:
 
@@ -107,8 +113,12 @@ msgs = await user.messages.all()
 模型字段描述符（声明式列定义）
 
 - **default**: 字段默认值（未提供且非自增主键 → 必填 NOT NULL）
-- **primary_key**: 是否主键
-- **autoincrement**: 是否自增主键（隐含 primary_key，整型）
+- **primary_key**: 是否主键；多个 ``primary_key=True`` 字段组成复合主键
+
+    （DDL 收敛为表级 ``PRIMARY KEY (a, b)`` 约束）
+- **autoincrement**: 是否自增主键（隐含 primary_key，整型；单列主键专用，
+
+    与其他主键字段共存时模型定义报错）
 - **max_length**: 字符串最大长度（生成 VARCHAR(n)，并参与写入校验）
 - **nullable**: 是否允许 NULL（默认 False → NOT NULL）
 - **index**: 是否生成普通索引
@@ -121,16 +131,39 @@ msgs = await user.messages.all()
 - **foreign_key**: 列级外键约束（``"表.列"``，如 ``"users.id"``）——DDL 生成
 
     ``REFERENCES`` 约束（关系映射的基础设施；ORM 级关系对象后续版本交付）
+- **on_delete**: 外键删除动作（``foreign_key`` 声明时生效）：``"CASCADE"``
+
+    / ``"SET NULL"`` / ``"RESTRICT"`` / ``"NO ACTION"`` / ``"SET DEFAULT"``，
+    生成 ``ON DELETE`` 子句；其他值模型定义报错
+- **auto_now_add**: 插入时自动写入当前时间戳（``time.time()`` 浮点纪秒）
+- **auto_now**: 插入与实例 ``save()`` 更新时均自动写入当前时间戳
+
+    （隐含插入侧行为；``QuerySet.update`` 批量路径不触发）
 
 **示例**:
 
 ```python
 id: int = Field(primary_key=True, autoincrement=True)
 name: str = Field(max_length=64)
+created_at: float = Field(auto_now_add=True)
+user_id: int = Field(foreign_key="users.id", on_delete="CASCADE")
 ```
 
 
 #### 方法列表
+
+
+##### `__new__(*args: Any, **kwargs: Any) -> Any`
+
+实例化类型标注为 ``Any``
+
+类体声明 ``name: str = Field(...)`` 的赋值侧类型检查：Field 是声明
+哨兵（类属性由 Model 机制消费、实例属性由 ``__init__`` 写入真实值），
+哨兵本身与声明类型不匹配——返回 ``Any`` 让类型检查器跳过赋值侧检查
+（pydantic v2 ``Field() -> Any`` 同款口径）；实例属性读取类型由
+声明注解（``str`` / ``int``）提供。
+
+---
 
 
 ##### `_annotation() -> Any`
@@ -142,7 +175,7 @@ name: str = Field(max_length=64)
 
 ##### `required -> bool`（property）
 
-是否必填（无默认值且非自增）
+是否必填（无默认值且非自增且非自动时间列；自动时间列插入时必然打点）
 
 ---
 
@@ -182,6 +215,13 @@ name: str = Field(max_length=64)
 - **nullable_override**: 覆写可空性渲染（如自动迁移为存量行回填
 
     而强制省略 NOT NULL）；None 表示按字段声明
+
+---
+
+
+##### `_is_composite_pk() -> bool`
+
+**内部方法** 所属模型是否复合主键（inline PRIMARY KEY 仅单主键列合法）
 
 ---
 
@@ -424,9 +464,25 @@ await user.save()
 #### 方法列表
 
 
+##### `_normalize_unique_together(declared: Any) -> tuple[tuple[str, ...], ...]`（classmethod）
+
+**内部方法**
+__unique_together__ 归一化为分组元组：字符串序列收单组，序列的序列
+按多组展开；字段名未声明时定义期报错
+
+---
+
+
 ##### `_pk_field() -> Field | None`（classmethod）
 
-主键字段（Field 实例不可作类属性暴露——描述符协议会劫持类访问）
+首个主键字段（单主键模型；复合主键语义请用 :meth:`_pk_fields`）
+
+---
+
+
+##### `_pk_fields() -> list[Field]`（classmethod）
+
+全部主键字段（按声明顺序；复合主键返回多列）
 
 ---
 
@@ -487,10 +543,26 @@ await user.save()
 ---
 
 
-##### `_index_name(table: str, column: str) -> str`（classmethod）
+##### `_table_constraints(dialect) -> list[str]`（classmethod）
+
+**内部方法** 表级 DDL 约束片段（复合主键收敛为 ``PRIMARY KEY (a, b)``）
+
+---
+
+
+##### `async _create_unique_indexes(storage, dialect) -> None`（classmethod）
 
 **内部方法**
-索引名派生：``idx_<表>_<列>``。超过 63 字符（PostgreSQL 标识符上限，
+联合唯一分组建唯一索引（``CREATE UNIQUE INDEX``；存在性预检幂等，
+已存在的表无需重建即可补索引）
+
+---
+
+
+##### `_index_name(table: str, column: str, prefix: str = 'idx') -> str`（classmethod）
+
+**内部方法**
+索引名派生：``<prefix>_<表>_<列>``。超过 63 字符（PostgreSQL 标识符上限，
 超长会被静默截断导致存在性预检永不命中、每次建表重复 CREATE INDEX
 失败）时截断并追加稳定哈希后缀，保证跨运行确定性
 
@@ -598,25 +670,63 @@ INSERT 一行并按需回填自增主键到实例（:meth:`create` 与 :meth:`sa
 ---
 
 
-##### `async save() -> int`
+##### `async get_or_create(defaults: dict[str, Any] | None = None, **kwargs: Any) -> tuple[Any, bool]`（classmethod）
+
+查得即返回（ ``(实例, False)`` ）；无则以 ``kwargs + defaults`` 创建（ ``(实例, True)`` ）
+
+- **defaults**: 仅创建路径补齐的非过滤字段
+- **kwargs**: 等值过滤条件（同时作为创建值）
+
+**返回值**: (实例, 是否新建)
+
+**异常**: `ValueError` - 条件字段未在模型中声明时
+
+并发竞争下两个协程可能同时走到创建分支——唯一约束（主键 / unique /
+``__unique_together__``）会让后到者收到 :class:`StorageOperationError`；
+需要幂等语义时捕获后重查一次。
+
+---
+
+
+##### `async update_or_create(defaults: dict[str, Any] | None = None, **kwargs: Any) -> tuple[Any, bool]`（classmethod）
+
+查得则更新 ``defaults`` 字段并保存；无则创建
+
+- **defaults**: 查得路径的更新字段 / 创建路径的补齐字段（过滤条件字段除外）
+- **kwargs**: 等值过滤条件（同时作为创建值）
+
+**返回值**: (实例, 是否新建)
+
+**异常**: `ValueError` - 条件字段未在模型中声明时
+
+---
+
+
+##### `async save(update_fields: list[str] | None = None) -> int`
 
 按主键更新本行（先约束校验）；主键缺失时退化为插入（自增主键同样回填到本实例）
 
-注意：本方法为**整行覆盖**语义——更新除主键外的全部列、无脏检查；
-并发场景下会覆盖其他写入方对同一行的修改（丢失更新），且每次写全列。
-需要部分列更新请用 ``Model.where(...).update(**values)`` 或
-``update_all(...)``；乐观锁需自行以版本列条件实现。
+默认**整行覆盖**语义——更新除主键外的全部列、无脏检查；并发场景下会
+覆盖其他写入方对同一行的修改（丢失更新），且每次写全列。``update_fields``
+指定部分列更新白名单；乐观锁需自行以版本列条件实现。
 
+- **update_fields**: 仅更新白名单列（主键列被忽略；空列表为无操作
+
+    返回 0；模型需走插入路径时报错）
 **返回值**: 受影响行数
+
+**异常**: `ValueError` - ``update_fields`` 含未声明字段 / 模型需插入 /
+
+    复合主键字段值不全（复合主键无法退化为插入）
 
 ---
 
 
 ##### `async delete() -> int`
 
-按主键删除本行
+按主键删除本行（复合主键按全部主键列定位）
 
-**异常**: `ValueError` - 模型无主键或实例主键为空时
+**异常**: `ValueError` - 模型无主键或任一主键字段值为空时
 
 **返回值**: 受影响行数
 

@@ -32,7 +32,7 @@
 | 事件转换 | [事件转换标准](event-conversion.md) | 事件结构、标准消息段（text/image/mention/reply/keyboard 等）、平台扩展段规范 |
 | 交互组件 | **本文档 §5** | 按钮/键盘、下拉选择、卡片、交互回调事件标准字段、修饰器约定、各平台映射 |
 | API 动作 | [API 动作标准](api-action-spec.md) | OneBot12 标准动作（用户/群/频道/消息管理/元动作）的统一接口与 `ApiDSL` |
-| 请求操作 | [请求操作规范](request-action-spec.md) | 请求事件字段（request_id）与 Request DSL（approve/reject） |
+| 请求操作 | [请求操作规范](request-action-spec.md) | 请求事件字段（request_id）、Request DSL（approve/reject）与请求类型上下文留存 |
 | 发送方法 | [发送方法规范](send-method-spec.md) | Send 类方法命名、参数、修饰器、反向转换（OB12→平台） |
 | 会话类型 | [会话类型标准](session-types.md) | user/group/channel/guild/dms 等会话类型定义与映射 |
 | API 响应 | [API 响应标准](api-response.md) | 标准响应结构与 retcode 约定 |
@@ -241,10 +241,10 @@ def get_interaction_id(self) -> str: ...  # interaction_id
       [发送方法规范 §2.1](send-method-spec.md) 的形态分级与降级阶梯处理）
 - [ ] ★ 实现 `Raw_ob12`（含标准段 → 平台结构转换；标准 `keyboard` 段必做）
 - [ ] ★ 返回标准响应结构（`make_response`/`make_error`）
-- [ ] ★ 多账户：`AccountConfigClass(BotAccountConfig)` + `_resolve_account`
+- [ ] ★ 多账户：`AccountConfigClass(BotAccountConfig)` + 账户解析（账户名 / `bot_id` 匹配）
 - [ ] ★ Send 类继承 `BaseAdapter.Send`，用 `_apply_modifiers`/`send_context`
 - [ ] ☆ Api DSL：标准动作映射到平台API（见 API 动作标准）
-- [ ] ☆ Request DSL：请求事件含 `request_id` + `accept/reject`
+- [ ] ☆ Request DSL：请求事件含 `request_id` + `accept/reject`（异构端点平台含请求类型上下文留存）
 - [ ] ☆ 交互组件：`keyboard` 段转换 + 交互回调标准字段 + `.Keyboard()`/`.Buttons()` 修饰器（适配器 Send 类实现）
 - [ ] ☆ EventMixin：`get_raw_event()` / `get_button_data()` 等平台扩展方法
 - [ ] ☆ 生命周期任务用 `runtime.spawn_background`

@@ -59,14 +59,17 @@ Choose the appropriate development type based on your needs:
 
 ### Project Templates
 
-ErisPulse provides example projects as references:
+ErisPulse provides example projects for reference:
 
-- [Module Example](https://github.com/ErisPulse/ErisPulse/tree/main/examples/example-module) - The complete project structure for a module
-- [Adapter Example](https://github.com/ErisPulse/ErisPulse/tree/main/examples/example-adapter) - The complete project structure for an adapter
+- [Module Example](https://github.com/ErisPulse/ErisPulse/tree/main/examples/example-module) - Complete project structure for a module (Commands / Config / ORM / Dependency Injection)
+- [Web Capability Example](https://github.com/ErisPulse/ErisPulse/tree/main/examples/example-module-web) - Route decorators / Middleware / WebSocket hooks / router.app escape hatch
+- [Advanced Interaction Example](https://github.com/ErisPulse/ErisPulse/tree/main/examples/example-module-interactive) - Message transactions and receipts / ORM composite unique constraints and transactions / Request approval / Send chains
+- [Ops Governance Example](https://github.com/ErisPulse/ErisPulse/tree/main/examples/example-module-ops) - Thread task ownership / Delayed tasks / Memory health checks / Privacy switches
+- [Adapter Example](https://github.com/ErisPulse/ErisPulse/tree/main/examples/example-adapter) - Complete project structure for an adapter (also available: [Polling](https://github.com/ErisPulse/ErisPulse/tree/main/examples/example-adapter-polling) / [Webhook](https://github.com/ErisPulse/ErisPulse/tree/main/examples/example-adapter-webhook) variants)
 
 ### Development Mode
 
-Use hot-reload mode for development, where code changes automatically trigger reloads:
+Use hot-reload mode for development, which automatically reloads after code changes:
 
 ```bash
 epsdk run main.py --reload
@@ -78,8 +81,8 @@ Enable DEBUG or TRACE level logging in `config/config.toml`:
 
 ```toml
 [ErisPulse.logger]
-# DEBUG: Outputs development and debugging information such as module loading and route registration
-# TRACE: The lowest level, outputs detailed framework internal processes such as event dispatching, storage writes, and lazy loading
+# DEBUG: Outputs development debugging information such as module loading and route registration
+# TRACE: Lowest level, outputs detailed internal framework processes such as event dispatching, storage writes, and lazy loading
 level = "DEBUG"
 ```
 

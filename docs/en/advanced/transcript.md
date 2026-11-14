@@ -130,25 +130,46 @@ transcript.recent(3600, session_key="onebot11:group:123")
 
 ## Runtime Override API
 
-When you need to adjust dynamically at runtime (e.g., temporarily extend retention for a particular scenario):
+When dynamic adjustment is needed during runtime (e.g., temporarily extending retention for a specific scenario):
 
 ```python
 from ErisPulse import transcript
 
-# Override (takes precedence over config; memory-only, config values are restored after restart)
+# Override (overrides configuration; only in-memory, resets to config values after restart)
 transcript.set_retention(max_per_session=500, ttl_hours=24 * 30)
 
 # Query effective values and their sources
 transcript.get_retention()
 # {'max_per_session': 500, 'ttl_hours': 720.0, 'overridden': ['max_per_session', 'ttl_hours']}
 
-# Restore config-driven behavior
+# Restore configuration-based behavior
 transcript.reset_retention()
 ```
 
-- Passing `0` disables the corresponding policy (a warning log is emitted for the record); negative values raise `ValueError`;
-- Overrides take effect at the next retention cleanup (lazy, delayed at most by the cadence of ~32 appends);
-- The `transcript` singleton can be imported from the root package, or accessed via `sdk.transcript`.
+- Passing `0` disables the corresponding policy (a warning log is recorded); negative numbers raise `ValueError`;
+- The override takes effect during the next retention cleanup (lazy, with a maximum delay of ~32 appended entries);
+- The `transcript` singleton can be imported from the root package or via `sdk.transcript`.
+
+### Manual Archiving and Disk Persistence (append / flush)
+
+Message records are automatically written by the framework pipeline; non-message interactions (button clicks, payment callbacks, external webhook) can also be archived into the same session timeline, allowing custom events to be diagnosed via `explain_trace` with `get_by_trace`:
+
+```python
+from ErisPulse import transcript
+
+transcript.append(
+    "onebot11:12345",                 # Event object / dict / session key string are all acceptable
+    role="bot",
+    text="User clicked button: pay_ok",
+    event_id="evt_click_1024",
+    meta={"order_id": "A-1024"},      # Attribution metadata (whitelist contract)
+)
+
+await transcript.aflush()             # Asynchronously force disk persistence (call before assertions in scripts/tests)
+```
+
+- `append` returns immediately after entering the memory buffer (microsecond level), and is cleaned up according to the retention policy; `flush` / `aflush` immediately writes to storage, and query interfaces automatically merge unflushed buffer entries
+- `session` must match the target session (reusing the session key from message events), otherwise the archive is placed in a separate session timeline
 
 ## Risks and Auditing: Must-Read Before Lifting Limits
 

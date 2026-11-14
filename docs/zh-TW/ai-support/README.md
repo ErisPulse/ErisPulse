@@ -17,70 +17,63 @@ ErisPulse 提供兩種互補的 AI 輔助開發方式，讓 AI 能基於最新�
 
 ## 物料文件
 
-物料文件位於 `prompts/` 目錄下，依據開發場景分為三種：
+物料文件位於 `prompts/` 目錄下，按開發場景分為三種：
 
 | 文件 | 場景 | 說明 |
 |------|------|------|
-| **ErisPulse-ModuleDev.md** | 模塊開發 | 覆蓋模塊開發全流程（事件處理、路由、生命週期等） |
-| **ErisPulse-AdapterDev.md** | 適配器開發 | 在模塊開發基礎上，外加適配器核心概念、SendDSL、平台適配指南 |
-| **ErisPulse-Full.md** | 全棧參考 | 上述全部內容 + 完整用戶指南與 API 參考合集 |
+| **ErisPulse-ModuleDev.md** | 模組開發 | 涵蓋模組開發全流程（事件處理、路由、生命週期等） |
+| **ErisPulse-AdapterDev.md** | 轉接器開發 | 在模組開發基礎上，外加轉接器核心概念、SendDSL、平台適配指南 |
+| **ErisPulse-Full.md** | 全端參考 | 上述全部內容 + 完整使用者指南與 API 參考合集 |
 
-獲取方式：從 `prompts/` 目錄直接獲取（與文件同步更新），或從 [GitHub Releases](https://github.com/ErisPulse/ErisPulse/releases) 下載對應版本。
+取得方式：從 [docs-generated 分支](https://github.com/ErisPulse/ErisPulse/tree/docs-generated) 的 `prompts/` 目錄取得（與文件同步更新），或經官網「AI 輔助開發」頁下載。
 
 ### 使用方式
 
-1. 根據目標選擇文件（模塊 → `ModuleDev`，適配器 → `AdapterDev`，複雜需求 → `Full`）
-2. 將文件內容作為上下文提供給 AI：IDE 內放入工作區，對話類直接貼上，API 調用作為 system message 注入
+1. 根據目標選擇文件（模組 → `ModuleDev`，轉接器 → `AdapterDev`，複雜需求 → `Full`）
+2. 將文件內容作為上下文提供給 AI：IDE 內放入工作區，對話類直接貼上，API 呼叫作為 system message 注入
 3. 用下方範本描述需求，越具體生成品質越高
 
 ### 需求描述範本
 
-**模塊：**
+**模組：**
 
 ```
-請基於 ErisPulse 模塊開發規範，生成一個 [模塊名稱] 模塊的完整程式碼。
+請基於 ErisPulse 模組開發規範，生成一個 [模組名稱] 模組的完整程式碼。
 
 功能描述：[核心功能]
 需要監聽的事件：[訊息 / 命令 / 通知 / 請求]，處理邏輯：[操作]
-需要的設定項：[鍵名]：[用途]（[必填/可選]，預設值：[值]）
-其他要求：[額外限制]
+需要的設定項目：[鍵名]：[用途]（[必填/可選]，預設值：[值]）
+其他要求：[額外約束]
 ```
 
-**適配器：**
+**轉接器：**
 
 ```
-請基於 ErisPulse 適配器開發規範，生成一個 [適配器名稱] 適配器的完整程式碼。
+請基於 ErisPulse 轉接器開發規範，生成一個 [轉接器名稱] 轉接器的完整程式碼。
 
-平台資訊：[名稱]，通訊協定：[WebSocket / WebHook / HTTP 輪詢]，API 文件：[位址]
+平台資訊：[名稱]，通訊協定：[WebSocket / WebHook / HTTP 輪詢]，API 文件：[地址]
 事件轉換：平台事件 [類型] → OneBot12 映射 [關係]
-需要實作的傳送方法：[文字 / 圖片 / 聲音 ...]
-設定項：[鍵名]：[用途]（[必填/可選]）
+需要實作的傳送方法：[Text / Image / Voice ...]
+設定項目：[鍵名]：[用途]（[必填/可選]）
 ```
 
-## Agent Skills
+## 文件全集包
 
-Agent Skills 是面向 AI 編碼智能體（ZCode / Claude Code 等）的技能包：每個技能是一個目錄（`SKILL.md` + frontmatter），智能體根據 `description` 自動發現、按需加載——僅在任務相關時讀取對應章節，不必全文灌入。
+`skills.zip` 將該語言全部文件原文打包（不合併、不改寫），根目錄附一份 README 總索引：按目錄分組，逐篇標註「什麼時候需要讀這篇」。AI 可以按索引只載入需要的文件。
 
-技能位於 `skills/` 目錄（與物料文件同步生成），每個 `SKILL.md` 開頭帶**行號大綱**：標註各章節的起止行號，AI 可只讀取需要的部分。
+### 與物料文件的區別
 
-### 部署方式
+| | 物料文件 | 文件全集包 |
+|---|---|---|
+| 形態 | 單個 `.md` 合併稿 | 全部文件原文 + 索引 README |
+| 使用方式 | 整段灌入上下文 | 解壓縮放進工作區，AI 按需挑文件讀 |
+| 適用 | 上下文視窗充足、整專案開發 | 長期駐留工作區、按需檢索 |
 
-1. 從 `skills/<語言>/` 目錄獲取技能（或下載對應版本的 artifact）
-2. 將技能目錄拷入智能體的技能目錄（按你的工具約定，如 `.zcode/skills/`、`.claude/skills/`）
-3. 之後智能體遇到相關任務會自動觸發加載，無需手動引用
+兩者由同一批文件生成、同步更新。
 
-### 大綱示例
+### 取得
 
-```markdown
-## 內容大綱
-AI 按需讀取：只讀取需要的章節即可，不必全文加載。
-
-- 慣性加載與休眠: 18-29 行
-- 概述: 30-38 行
-- 事件驅動慣性激活（activate_on）: 55-132 行
-```
-
-> 技能由 CI 自動建構（`python -m scripts.tools gen skills`），請勿手動修改。
+官網「AI 輔助開發」頁下載，或直接取 [docs-generated 分支](https://github.com/ErisPulse/ErisPulse/tree/docs-generated) 的 `docs/zh-TW/ai-support/skills.zip`。
 
 ## MCP 伺服器
 
