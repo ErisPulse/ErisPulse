@@ -17,29 +17,29 @@ ErisPulse フレームワーク自体はコア機能（イベントシステム�
 
 ## 推奨モジュール
 
-### ErisPulse-Dashboard：ブラウザ内管理パネル
+### ErisPulse-Dashboard：ブラウザ内の管理パネル
 
-サーバーにロボットを常駐させると、モジュールの起動・停止、設定の変更、ログの確認などはターミナルにログインする必要がありますか？Dashboard はこれらの機能をブラウザに移行します：モジュールの起動・停止、設定の編集、ログの確認、イベントの監視。他のモジュールはサイドバーにカスタムウィンドウを登録でき、管理ページを一か所に集めることができます。
+サーバーにロボットを常駐させている場合、モジュールの起動・停止、設定の変更、ログの確認などはターミナルにログインする必要がありますか？Dashboard はこれらの機能をブラウザに移し、モジュールの起動・停止、設定の編集、ログの確認、イベントの監視が可能になります。他のモジュールは、サイドバーにカスタムウィンドウを登録でき、管理ページを一箇所に集めることができます。
 
 ```bash
 epsdk install Dashboard
 ```
 
-ドキュメント：[Dashboard 使用とウィンドウ登録](dashboard.md) ｜ プロジェクトページ：[PyPI](https://pypi.org/project/ErisPulse-Dashboard/)
+ドキュメント：[Dashboard の使用とウィンドウ登録](dashboard.md) ｜ プロジェクトページ：[PyPI](https://pypi.org/project/ErisPulse-Dashboard/)
 
-### ErisPulse-Cron：スケジュールタスク
+### ErisPulse-Cron：定期実行
 
-毎日定期的なチェックイン通知を送信したり、Cron式で周期的なタスクを実行したり、数分ごとにデータをポーリングしたいですか？Cronは一回限りのタスク、間隔をあけたタスク、Cron式のタスクの3種類を提供し、コールバックにパラメータを渡すことができます。SQLiteで永続化（再起動してもタスクが失われません）。
+毎日自動でサインインのリマインダーを送信したり、Cron 表現式で周期的なタスクを実行したり、数分ごとにデータをポーリングしたいですか？Cron は一回限りのタスク、間隔ごとのタスク、Cron 表現式によるタスクの 3 種類を提供し、コールバックに引数を渡すことができます。SQLite で永続化（再起動してもタスクが失われません）。
 
 ```bash
 epsdk install Cron
 ```
 
-ドキュメント：[Cron 定時タスク](cron.md) ｜ プロジェクトページ：[GitHub](https://github.com/wsu2059q/ErisPulse-Cron)
+ドキュメント：[Cron 定期実行](cron.md) ｜ プロジェクトページ：[GitHub](https://github.com/wsu2059q/ErisPulse-Cron)
 
 ### ErisPulse-QvQChat：汎用エージェント
 
-グループに単なるキーワード応答を行うだけではなく、実用的なAIアシスタントを配置したいですか？QvQChatは汎用エージェントです：ツールのループでメッセージの送受信、コード実行、コンピュータ操作、画像生成、音声、MCP、サブエージェントをカバーします。ストリーミング対話とツールの連続実行がサポートされ、内蔵のDashboardウィンドウも備えています。QvQStalker（傍聴・介入）、QvQMemes（絵文字）、QvQCompanion（擬人化付き同伴）の3つの付属プラグインもあります。
+グループ内で単なるキーワード応答ではなく、実用的な AI ヘルパーを導入したいですか？QvQChat は汎用エージェントです：ツールのループでメッセージの送受信、コード実行、コンピュータ操作、画像生成、音声、MCP、サブエージェントをカバーし、ストリーミング対話とツールの連続実行が可能です。内蔵の Dashboard ウィンドウも備えています。さらに、QvQStalker（会話を傍受）、QvQMemes（絵文字）、QvQCompanion（擬人化の伴侶）の 3 つの付属プラグインも用意されています。
 
 ```bash
 epsdk install ErisPulse-QvQChat
@@ -47,9 +47,9 @@ epsdk install ErisPulse-QvQChat
 
 ドキュメント：[QvQChat エージェント](qvqchat.md) ｜ プロジェクトページ：[GitHub](https://github.com/wsu2059q/ErisPulse-QvQChat)
 
-### ErisPulse-ApiMCP：AIクライアントがロボットを操作する
+### ErisPulse-ApiMCP：AI クライアントがロボットを操作できるようにする
 
-Claude Desktop、Claude CodeなどのMCPに対応したAIクライアントを使用していますか？ApiMCPは14のMCPツールとしてロボットの実行時を逆方向に公開します：AIは直接メッセージの送受信、インストール済みモジュールの呼び出し、プラットフォームの状態の確認、グループチャットイベントのサブスクライブを行うことができます。ロボットはAIの「手と目」になります。
+Claude Desktop や Claude Code のような MCP をサポートする AI クライアントを使用していますか？ApiMCP はロボットの実行時を 17 個の MCP ツールとして逆方向に公開し、AI が直接メッセージの送受信、インストール済みモジュールの呼び出し、プラットフォームの状態の確認、グループチャットイベントのサブスクライブを行うことができます。ロボットは AI の「手と目」になります。
 
 ```bash
 epsdk install ErisPulse-ApiMCP
@@ -59,7 +59,7 @@ epsdk install ErisPulse-ApiMCP
 
 ### ErisPulse-Takumi：画像レンダリング
 
-ランキング、戦報、スケジュールカードなどの「画像を送る」必要がある場面では、テンプレートを書いて画像にレンダリングしてグループに送信するだけです：HTML / ノードツリー / Jinja / SVG / アニメーション（[takumi-py](https://github.com/BalconyJH/takumi-py) に基づく）をサポートし、内蔵の中英文字体を備え、すぐに使用できます。
+ランキング、戦報、スケジュールカードなど「画像を送る」必要がある場面では、テンプレートを書いて画像にレンダリングし、グループに送信するだけです：HTML / ノードツリー / Jinja / SVG / アニメーション（[takumi-py](https://github.com/BalconyJH/takumi-py) をベース）をサポートし、中英文字体が内蔵されており、すぐに使用できます。
 
 ```bash
 epsdk install Takumi

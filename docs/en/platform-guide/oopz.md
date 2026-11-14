@@ -7,16 +7,17 @@
 | Module Version | 0.1.0 |
 | Platform Identifier | `oopz` |
 | Maintainer | ErisPulse Team |
-| Last Updated | 2026-11-11 |
+| Last Updated | 2026-11-13 |
 
-> ⚠️ Oopz does not have an official bot platform. This adapter connects via a reverse-engineered community protocol as a **user account** and is not an official interface. The interface may become invalid at any time; use a test account. See the README for risk disclosures.
+> [!IMPORTANT]
+> This project has no relation to Oopz (not authorized by the official, not an official collaboration, and not supported by the official). Oopz does not have an official bot platform; this adapter connects via community reverse-engineered protocols as a **user account** and may become invalid at any time. Please use a secondary account. See the README for statements and risk warnings.
 
 ## Basic Information
 
 - Adapter class: `OopzAdapter` (entry-point `oopz`)
-- Access method: WebSocket (`wss://ws.oopz.cn`) + REST gateway (`https://gateway.oopz.cn`), RSA-signed request headers + JWT
-- Credentials: "either password or token" — `password` (phone number + password + client private key, auto-login session renewal) or `token` (uid/JWT/device_id/private key four-piece set)
-- Multi-account: Supported (`[Oopz_Adapter.accounts.<name>]`), events marked with `self.account_id` to indicate source
+- Access method: WebSocket (`wss://ws.oopz.cn`) + REST gateway (`https://gateway.oopz.cn`), RSA signed request headers + JWT
+- Credentials: "Password or Token" — `password` (phone number + password + client private key, auto-login renewal, **recommended**) or `token` (uid/JWT/device_id/private key four-piece set, backup when password login is restricted, JWT expiration requires manual re-extraction)
+- Multi-account: Supported (`[Oopz_Adapter.accounts.<name>]`), events use `self.account_id` to mark the source
 - Framework soft dependency: ErisPulse ≥ 2.7.1
 
 ## Session Model

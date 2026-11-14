@@ -472,12 +472,12 @@
         "title": "12. 関連ドキュメント"
       }
     ],
-    "14 個のツール一覧": [
+    "17個のツール一覧": [
       {
         "document": "ecosystem/apimcp.md",
         "line": 50,
         "level": 2,
-        "title": "14 個のツール一覧"
+        "title": "17個のツール一覧"
       }
     ],
     "1xxxx 動作リクエストエラー（Request Error）": [
@@ -3196,20 +3196,20 @@
         "title": "ErisPulse 送信メソッド規格"
       }
     ],
-    "ErisPulse-ApiMCP で AI クライアントからボットを操作する": [
+    "ErisPulse-ApiMCP — AI クライアントでボットを操作する": [
       {
         "document": "ecosystem/apimcp.md",
         "line": 1,
         "level": 1,
-        "title": "ErisPulse-ApiMCP で AI クライアントからボットを操作する"
+        "title": "ErisPulse-ApiMCP — AI クライアントでボットを操作する"
       }
     ],
-    "ErisPulse-ApiMCP：AIクライアントがロボットを操作する": [
+    "ErisPulse-ApiMCP：AI クライアントがロボットを操作できるようにする": [
       {
         "document": "ecosystem/README.md",
         "line": 50,
         "level": 3,
-        "title": "ErisPulse-ApiMCP：AIクライアントがロボットを操作する"
+        "title": "ErisPulse-ApiMCP：AI クライアントがロボットを操作できるようにする"
       }
     ],
     "ErisPulse-App": [
@@ -3236,12 +3236,12 @@
         "title": "ErisPulse-Cron"
       }
     ],
-    "ErisPulse-Cron：スケジュールタスク": [
+    "ErisPulse-Cron：定期実行": [
       {
         "document": "ecosystem/README.md",
         "line": 30,
         "level": 3,
-        "title": "ErisPulse-Cron：スケジュールタスク"
+        "title": "ErisPulse-Cron：定期実行"
       }
     ],
     "ErisPulse-Dashboard": [
@@ -3252,12 +3252,12 @@
         "title": "ErisPulse-Dashboard"
       }
     ],
-    "ErisPulse-Dashboard：ブラウザ内管理パネル": [
+    "ErisPulse-Dashboard：ブラウザ内の管理パネル": [
       {
         "document": "ecosystem/README.md",
         "line": 20,
         "level": 3,
-        "title": "ErisPulse-Dashboard：ブラウザ内管理パネル"
+        "title": "ErisPulse-Dashboard：ブラウザ内の管理パネル"
       }
     ],
     "ErisPulse-QvQChat 通用インテリジェントエージェント": [
@@ -6791,7 +6791,7 @@
     "イベントフィールドの完全性": [
       {
         "document": "platform-guide/oopz.md",
-        "line": 47,
+        "line": 48,
         "level": 3,
         "title": "イベントフィールドの完全性"
       }
@@ -7293,7 +7293,7 @@
     "エラーコードの規格": [
       {
         "document": "platform-guide/oopz.md",
-        "line": 32,
+        "line": 33,
         "level": 3,
         "title": "エラーコードの規格"
       }
@@ -8721,7 +8721,7 @@
     "セキュリティ上の要点": [
       {
         "document": "ecosystem/apimcp.md",
-        "line": 62,
+        "line": 63,
         "level": 2,
         "title": "セキュリティ上の要点"
       }
@@ -10183,7 +10183,7 @@
     "プラットフォーム拡張動作（oopz.*）": [
       {
         "document": "platform-guide/oopz.md",
-        "line": 83,
+        "line": 84,
         "level": 3,
         "title": "プラットフォーム拡張動作（oopz.*）"
       }
@@ -12679,7 +12679,7 @@
     "会話モデル": [
       {
         "document": "platform-guide/oopz.md",
-        "line": 22,
+        "line": 23,
         "level": 2,
         "title": "会話モデル"
       }
@@ -13423,7 +13423,7 @@
     "友人申請の処理": [
       {
         "document": "platform-guide/oopz.md",
-        "line": 104,
+        "line": 105,
         "level": 2,
         "title": "友人申請の処理"
       }
@@ -13785,7 +13785,7 @@
       },
       {
         "document": "platform-guide/oopz.md",
-        "line": 14,
+        "line": 15,
         "level": 2,
         "title": "基本情報"
       },
@@ -14497,7 +14497,7 @@
     "対応していない標準動作（retcode=10002）": [
       {
         "document": "platform-guide/oopz.md",
-        "line": 79,
+        "line": 80,
         "level": 3,
         "title": "対応していない標準動作（retcode=10002）"
       }
@@ -14505,7 +14505,7 @@
     "対応している標準動作": [
       {
         "document": "platform-guide/oopz.md",
-        "line": 75,
+        "line": 76,
         "level": 3,
         "title": "対応している標準動作"
       }
@@ -14763,7 +14763,7 @@
     "応答構造": [
       {
         "document": "platform-guide/oopz.md",
-        "line": 43,
+        "line": 44,
         "level": 3,
         "title": "応答構造"
       }
@@ -15317,7 +15317,7 @@
       },
       {
         "document": "platform-guide/oopz.md",
-        "line": 61,
+        "line": 62,
         "level": 2,
         "title": "支援されるメッセージ送信タイプ"
       },
@@ -15817,7 +15817,7 @@
     "標準 API 動作（ApiDSL）": [
       {
         "document": "platform-guide/oopz.md",
-        "line": 73,
+        "line": 74,
         "level": 2,
         "title": "標準 API 動作（ApiDSL）"
       }
@@ -16065,7 +16065,7 @@
     "標準化の整列（0.1.0）": [
       {
         "document": "platform-guide/oopz.md",
-        "line": 30,
+        "line": 31,
         "level": 2,
         "title": "標準化の整列（0.1.0）"
       }
@@ -16355,7 +16355,7 @@
       },
       {
         "document": "ecosystem/apimcp.md",
-        "line": 73,
+        "line": 74,
         "level": 2,
         "title": "次のステップ"
       },
@@ -16613,7 +16613,7 @@
     "特有イベントタイプ": [
       {
         "document": "platform-guide/oopz.md",
-        "line": 123,
+        "line": 124,
         "level": 2,
         "title": "特有イベントタイプ"
       },
@@ -17959,7 +17959,7 @@
       },
       {
         "document": "platform-guide/oopz.md",
-        "line": 110,
+        "line": 111,
         "level": 2,
         "title": "送信メソッドの戻り値"
       },
@@ -18619,7 +18619,7 @@
     "降格の意味": [
       {
         "document": "platform-guide/oopz.md",
-        "line": 55,
+        "line": 56,
         "level": 3,
         "title": "降格の意味"
       }

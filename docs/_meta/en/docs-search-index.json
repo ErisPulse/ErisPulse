@@ -3559,7 +3559,7 @@
       },
       {
         "document": "platform-guide/oopz.md",
-        "line": 14,
+        "line": 15,
         "level": 2,
         "title": "Basic Information"
       },
@@ -6757,7 +6757,7 @@
     "Downgrade Semantics": [
       {
         "document": "platform-guide/oopz.md",
-        "line": 55,
+        "line": 56,
         "level": 3,
         "title": "Downgrade Semantics"
       }
@@ -7000,12 +7000,12 @@
         "title": "ErisPulse-ApiMCP: Control Your Bot with AI Clients"
       }
     ],
-    "ErisPulse-ApiMCP: Let AI Clients Control Your Bot": [
+    "ErisPulse-ApiMCP: Let AI Clients Control the Bot": [
       {
         "document": "ecosystem/README.md",
         "line": 50,
         "level": 3,
-        "title": "ErisPulse-ApiMCP: Let AI Clients Control Your Bot"
+        "title": "ErisPulse-ApiMCP: Let AI Clients Control the Bot"
       }
     ],
     "ErisPulse-App": [
@@ -7048,12 +7048,12 @@
         "title": "ErisPulse-Dashboard"
       }
     ],
-    "ErisPulse-Dashboard: A management dashboard in your browser": [
+    "ErisPulse-Dashboard: Management Dashboard in the Browser": [
       {
         "document": "ecosystem/README.md",
         "line": 20,
         "level": 3,
-        "title": "ErisPulse-Dashboard: A management dashboard in your browser"
+        "title": "ErisPulse-Dashboard: Management Dashboard in the Browser"
       }
     ],
     "ErisPulse-QvQChat General Agent": [
@@ -7064,12 +7064,12 @@
         "title": "ErisPulse-QvQChat General Agent"
       }
     ],
-    "ErisPulse-QvQChat: General-purpose Agent": [
+    "ErisPulse-QvQChat: General-Purpose Agent": [
       {
         "document": "ecosystem/README.md",
         "line": 40,
         "level": 3,
-        "title": "ErisPulse-QvQChat: General-purpose Agent"
+        "title": "ErisPulse-QvQChat: General-Purpose Agent"
       }
     ],
     "ErisPulse-Takumi": [
@@ -7161,7 +7161,7 @@
       },
       {
         "document": "platform-guide/oopz.md",
-        "line": 32,
+        "line": 33,
         "level": 3,
         "title": "Error Code Specification"
       },
@@ -7419,7 +7419,7 @@
     "Event Field Completeness": [
       {
         "document": "platform-guide/oopz.md",
-        "line": 47,
+        "line": 48,
         "level": 3,
         "title": "Event Field Completeness"
       }
@@ -8447,7 +8447,7 @@
     "Friend Request Handling": [
       {
         "document": "platform-guide/oopz.md",
-        "line": 104,
+        "line": 105,
         "level": 2,
         "title": "Friend Request Handling"
       }
@@ -9541,7 +9541,7 @@
     "Intended Audience": [
       {
         "document": "advanced/README.md",
-        "line": 61,
+        "line": 62,
         "level": 2,
         "title": "Intended Audience"
       }
@@ -11629,7 +11629,7 @@
       },
       {
         "document": "ecosystem/apimcp.md",
-        "line": 73,
+        "line": 74,
         "level": 2,
         "title": "Next Steps"
       },
@@ -12270,6 +12270,14 @@
         "title": "Overview"
       }
     ],
+    "Overview of the 17 Tools": [
+      {
+        "document": "ecosystem/apimcp.md",
+        "line": 50,
+        "level": 2,
+        "title": "Overview of the 17 Tools"
+      }
+    ],
     "Owned Resources Overview": [
       {
         "document": "advanced/ownership.md",
@@ -12485,7 +12493,7 @@
     "Platform Extension Actions (oopz.*)": [
       {
         "document": "platform-guide/oopz.md",
-        "line": 83,
+        "line": 84,
         "level": 3,
         "title": "Platform Extension Actions (oopz.*)"
       }
@@ -12759,7 +12767,7 @@
     "Prerequisites": [
       {
         "document": "advanced/README.md",
-        "line": 69,
+        "line": 70,
         "level": 2,
         "title": "Prerequisites"
       }
@@ -14009,7 +14017,7 @@
     "Response Structure": [
       {
         "document": "platform-guide/oopz.md",
-        "line": 43,
+        "line": 44,
         "level": 3,
         "title": "Response Structure"
       }
@@ -14081,7 +14089,7 @@
     "Return Value of Send Method": [
       {
         "document": "platform-guide/oopz.md",
-        "line": 110,
+        "line": 111,
         "level": 2,
         "title": "Return Value of Send Method"
       }
@@ -14535,7 +14543,7 @@
     "Security Essentials": [
       {
         "document": "ecosystem/apimcp.md",
-        "line": 62,
+        "line": 63,
         "level": 2,
         "title": "Security Essentials"
       }
@@ -15005,7 +15013,7 @@
     "Session Model": [
       {
         "document": "platform-guide/oopz.md",
-        "line": 22,
+        "line": 23,
         "level": 2,
         "title": "Session Model"
       }
@@ -15263,7 +15271,7 @@
     "Standard API Actions (ApiDSL)": [
       {
         "document": "platform-guide/oopz.md",
-        "line": 73,
+        "line": 74,
         "level": 2,
         "title": "Standard API Actions (ApiDSL)"
       },
@@ -15523,7 +15531,7 @@
     "Standardized Alignment (0.1.0)": [
       {
         "document": "platform-guide/oopz.md",
-        "line": 30,
+        "line": 31,
         "level": 2,
         "title": "Standardized Alignment (0.1.0)"
       }
@@ -15917,7 +15925,7 @@
       },
       {
         "document": "platform-guide/oopz.md",
-        "line": 61,
+        "line": 62,
         "level": 2,
         "title": "Supported Message Sending Types"
       },
@@ -15985,7 +15993,7 @@
       },
       {
         "document": "platform-guide/oopz.md",
-        "line": 75,
+        "line": 76,
         "level": 3,
         "title": "Supported Standard Actions"
       },
@@ -16254,14 +16262,6 @@
         "line": 259,
         "level": 4,
         "title": "Text Message"
-      }
-    ],
-    "The 14 Tools at a Glance": [
-      {
-        "document": "ecosystem/apimcp.md",
-        "line": 50,
-        "level": 2,
-        "title": "The 14 Tools at a Glance"
       }
     ],
     "The Boundary Between Waiting and Commands (Command Bypass)": [
@@ -16601,7 +16601,7 @@
       },
       {
         "document": "platform-guide/oopz.md",
-        "line": 123,
+        "line": 124,
         "level": 2,
         "title": "Unique Event Types"
       }
@@ -16701,7 +16701,7 @@
     "Unsupported Standard Actions (retcode=10002)": [
       {
         "document": "platform-guide/oopz.md",
-        "line": 79,
+        "line": 80,
         "level": 3,
         "title": "Unsupported Standard Actions (retcode=10002)"
       }

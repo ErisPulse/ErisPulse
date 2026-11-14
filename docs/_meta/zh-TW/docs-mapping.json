@@ -595,7 +595,7 @@
           "icon": "fa-image"
         },
         {
-          "title": "ErisPulse-ApiMCP 使用 AI 客戶端控制機器人",
+          "title": "ErisPulse-ApiMCP 用 AI 客戶端操控機器人",
           "path": "ecosystem/apimcp.md",
           "level": 1,
           "icon": "fa-cubes"

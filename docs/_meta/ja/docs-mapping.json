@@ -595,7 +595,7 @@
           "icon": "fa-image"
         },
         {
-          "title": "ErisPulse-ApiMCP で AI クライアントからボットを操作する",
+          "title": "ErisPulse-ApiMCP — AI クライアントでボットを操作する",
           "path": "ecosystem/apimcp.md",
           "level": 1,
           "icon": "fa-cubes"

@@ -456,12 +456,12 @@
         "title": "12. 相關文件"
       }
     ],
-    "14 個工具概覽": [
+    "17 個工具一覽": [
       {
         "document": "ecosystem/apimcp.md",
         "line": 50,
         "level": 2,
-        "title": "14 個工具概覽"
+        "title": "17 個工具一覽"
       }
     ],
     "1xxxx 動作請求錯誤（Request Error）": [
@@ -2990,12 +2990,12 @@
         "title": "ErisPulse 轉接器標準化回傳規範"
       }
     ],
-    "ErisPulse-ApiMCP 使用 AI 客戶端控制機器人": [
+    "ErisPulse-ApiMCP 用 AI 客戶端操控機器人": [
       {
         "document": "ecosystem/apimcp.md",
         "line": 1,
         "level": 1,
-        "title": "ErisPulse-ApiMCP 使用 AI 客戶端控制機器人"
+        "title": "ErisPulse-ApiMCP 用 AI 客戶端操控機器人"
       }
     ],
     "ErisPulse-ApiMCP：讓 AI 用戶端操控機器人": [
@@ -3030,12 +3030,12 @@
         "title": "ErisPulse-Cron"
       }
     ],
-    "ErisPulse-Cron：排程任務": [
+    "ErisPulse-Cron：定時任務": [
       {
         "document": "ecosystem/README.md",
         "line": 28,
         "level": 3,
-        "title": "ErisPulse-Cron：排程任務"
+        "title": "ErisPulse-Cron：定時任務"
       }
     ],
     "ErisPulse-Dashboard": [
@@ -3062,12 +3062,12 @@
         "title": "ErisPulse-QvQChat 通用智慧代理"
       }
     ],
-    "ErisPulse-QvQChat：通用智慧代理": [
+    "ErisPulse-QvQChat：通用智慧代理人": [
       {
         "document": "ecosystem/README.md",
         "line": 38,
         "level": 3,
-        "title": "ErisPulse-QvQChat：通用智慧代理"
+        "title": "ErisPulse-QvQChat：通用智慧代理人"
       }
     ],
     "ErisPulse-Takumi": [
@@ -5679,7 +5679,7 @@
       },
       {
         "document": "ecosystem/apimcp.md",
-        "line": 71,
+        "line": 72,
         "level": 2,
         "title": "下一步"
       },
@@ -5841,7 +5841,7 @@
     "不支援的標準動作（retcode=10002）": [
       {
         "document": "platform-guide/oopz.md",
-        "line": 79,
+        "line": 80,
         "level": 3,
         "title": "不支援的標準動作（retcode=10002）"
       }
@@ -6141,7 +6141,7 @@
     "事件欄位完備性": [
       {
         "document": "platform-guide/oopz.md",
-        "line": 47,
+        "line": 48,
         "level": 3,
         "title": "事件欄位完備性"
       }
@@ -8419,7 +8419,7 @@
     "回應結構": [
       {
         "document": "platform-guide/oopz.md",
-        "line": 43,
+        "line": 44,
         "level": 3,
         "title": "回應結構"
       }
@@ -8853,7 +8853,7 @@
       },
       {
         "document": "platform-guide/oopz.md",
-        "line": 14,
+        "line": 15,
         "level": 2,
         "title": "基本資訊"
       },
@@ -9309,7 +9309,7 @@
     "好友申請處理": [
       {
         "document": "platform-guide/oopz.md",
-        "line": 104,
+        "line": 105,
         "level": 2,
         "title": "好友申請處理"
       }
@@ -9523,7 +9523,7 @@
     "安全要點": [
       {
         "document": "ecosystem/apimcp.md",
-        "line": 62,
+        "line": 63,
         "level": 2,
         "title": "安全要點"
       }
@@ -10377,7 +10377,7 @@
     "平台擴充動作（oopz.*）": [
       {
         "document": "platform-guide/oopz.md",
-        "line": 83,
+        "line": 84,
         "level": 3,
         "title": "平台擴充動作（oopz.*）"
       }
@@ -11461,7 +11461,7 @@
       },
       {
         "document": "platform-guide/oopz.md",
-        "line": 75,
+        "line": 76,
         "level": 3,
         "title": "支援的標準動作"
       },
@@ -11555,7 +11555,7 @@
       },
       {
         "document": "platform-guide/oopz.md",
-        "line": 61,
+        "line": 62,
         "level": 2,
         "title": "支援的訊息發送類型"
       },
@@ -12203,7 +12203,7 @@
     "會話模型": [
       {
         "document": "platform-guide/oopz.md",
-        "line": 22,
+        "line": 23,
         "level": 2,
         "title": "會話模型"
       }
@@ -12673,7 +12673,7 @@
     "標準 API 動作（ApiDSL）": [
       {
         "document": "platform-guide/oopz.md",
-        "line": 73,
+        "line": 74,
         "level": 2,
         "title": "標準 API 動作（ApiDSL）"
       },
@@ -12839,7 +12839,7 @@
     "標準化對齊（0.1.0）": [
       {
         "document": "platform-guide/oopz.md",
-        "line": 30,
+        "line": 31,
         "level": 2,
         "title": "標準化對齊（0.1.0）"
       }
@@ -13943,7 +13943,7 @@
       },
       {
         "document": "platform-guide/oopz.md",
-        "line": 123,
+        "line": 124,
         "level": 2,
         "title": "特有事件類型"
       },
@@ -14491,7 +14491,7 @@
       },
       {
         "document": "platform-guide/oopz.md",
-        "line": 110,
+        "line": 111,
         "level": 2,
         "title": "發送方法返回值"
       }
@@ -17995,7 +17995,7 @@
       },
       {
         "document": "platform-guide/oopz.md",
-        "line": 32,
+        "line": 33,
         "level": 3,
         "title": "錯誤碼規範"
       },
@@ -18493,7 +18493,7 @@
     "降級語義": [
       {
         "document": "platform-guide/oopz.md",
-        "line": 55,
+        "line": 56,
         "level": 3,
         "title": "降級語義"
       }

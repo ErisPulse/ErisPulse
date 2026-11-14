@@ -454,12 +454,12 @@
         "title": "12. 相关文档"
       }
     ],
-    "14 个工具一览": [
+    "17 个工具一览": [
       {
         "document": "ecosystem/apimcp.md",
         "line": 50,
         "level": 2,
-        "title": "14 个工具一览"
+        "title": "17 个工具一览"
       }
     ],
     "1xxxx 动作请求错误（Request Error）": [
@@ -5589,7 +5589,7 @@
       },
       {
         "document": "ecosystem/apimcp.md",
-        "line": 73,
+        "line": 74,
         "level": 2,
         "title": "下一步"
       },
@@ -5751,7 +5751,7 @@
     "不支持的标准动作（retcode=10002）": [
       {
         "document": "platform-guide/oopz.md",
-        "line": 79,
+        "line": 80,
         "level": 3,
         "title": "不支持的标准动作（retcode=10002）"
       }
@@ -6207,7 +6207,7 @@
     "事件字段完备性": [
       {
         "document": "platform-guide/oopz.md",
-        "line": 47,
+        "line": 48,
         "level": 3,
         "title": "事件字段完备性"
       }
@@ -6843,7 +6843,7 @@
     "会话模型": [
       {
         "document": "platform-guide/oopz.md",
-        "line": 22,
+        "line": 23,
         "level": 2,
         "title": "会话模型"
       }
@@ -8315,7 +8315,7 @@
       },
       {
         "document": "platform-guide/oopz.md",
-        "line": 110,
+        "line": 111,
         "level": 2,
         "title": "发送方法返回值"
       },
@@ -8747,7 +8747,7 @@
     "响应结构": [
       {
         "document": "platform-guide/oopz.md",
-        "line": 43,
+        "line": 44,
         "level": 3,
         "title": "响应结构"
       }
@@ -9079,7 +9079,7 @@
       },
       {
         "document": "platform-guide/oopz.md",
-        "line": 14,
+        "line": 15,
         "level": 2,
         "title": "基本信息"
       },
@@ -9819,7 +9819,7 @@
     "好友申请处理": [
       {
         "document": "platform-guide/oopz.md",
-        "line": 104,
+        "line": 105,
         "level": 2,
         "title": "好友申请处理"
       }
@@ -10055,7 +10055,7 @@
     "安全要点": [
       {
         "document": "ecosystem/apimcp.md",
-        "line": 62,
+        "line": 63,
         "level": 2,
         "title": "安全要点"
       }
@@ -10755,7 +10755,7 @@
     "平台扩展动作（oopz.*）": [
       {
         "document": "platform-guide/oopz.md",
-        "line": 83,
+        "line": 84,
         "level": 3,
         "title": "平台扩展动作（oopz.*）"
       }
@@ -11993,7 +11993,7 @@
       },
       {
         "document": "platform-guide/oopz.md",
-        "line": 75,
+        "line": 76,
         "level": 3,
         "title": "支持的标准动作"
       },
@@ -12049,7 +12049,7 @@
       },
       {
         "document": "platform-guide/oopz.md",
-        "line": 61,
+        "line": 62,
         "level": 2,
         "title": "支持的消息发送类型"
       },
@@ -12939,7 +12939,7 @@
     "标准 API 动作（ApiDSL）": [
       {
         "document": "platform-guide/oopz.md",
-        "line": 73,
+        "line": 74,
         "level": 2,
         "title": "标准 API 动作（ApiDSL）"
       },
@@ -13113,7 +13113,7 @@
     "标准化对齐（0.1.0）": [
       {
         "document": "platform-guide/oopz.md",
-        "line": 30,
+        "line": 31,
         "level": 2,
         "title": "标准化对齐（0.1.0）"
       }
@@ -14621,7 +14621,7 @@
       },
       {
         "document": "platform-guide/oopz.md",
-        "line": 123,
+        "line": 124,
         "level": 2,
         "title": "特有事件类型"
       },
@@ -18169,7 +18169,7 @@
       },
       {
         "document": "platform-guide/oopz.md",
-        "line": 32,
+        "line": 33,
         "level": 3,
         "title": "错误码规范"
       },
@@ -18287,7 +18287,7 @@
     "降级语义": [
       {
         "document": "platform-guide/oopz.md",
-        "line": 55,
+        "line": 56,
         "level": 3,
         "title": "降级语义"
       }

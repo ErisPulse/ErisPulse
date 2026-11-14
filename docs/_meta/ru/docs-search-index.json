@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 2064,
+  "total_keywords": 2065,
   "keywords": {
     "0 Успех (OK)": [
       {
@@ -2634,12 +2634,12 @@
         "title": "ErisPulse-ApiMCP 控制机器人的人工智能客户端"
       }
     ],
-    "ErisPulse-ApiMCP: позвольте ИИ-клиентам управлять ботом": [
+    "ErisPulse-ApiMCP: управление ботом из AI-клиентов": [
       {
         "document": "ecosystem/README.md",
         "line": 50,
         "level": 3,
-        "title": "ErisPulse-ApiMCP: позвольте ИИ-клиентам управлять ботом"
+        "title": "ErisPulse-ApiMCP: управление ботом из AI-клиентов"
       }
     ],
     "ErisPulse-App": [
@@ -4766,6 +4766,14 @@
         "title": "Возвращаемое значение метода отправки"
       }
     ],
+    "Возвращаемое значение методов отправки": [
+      {
+        "document": "platform-guide/oopz.md",
+        "line": 111,
+        "level": 2,
+        "title": "Возвращаемое значение методов отправки"
+      }
+    ],
     "Возвращаемое значение операций с запросами": [
       {
         "document": "platform-guide/onebot11.md",
@@ -4816,12 +4824,6 @@
       {
         "document": "platform-guide/onebot12.md",
         "line": 390,
-        "level": 2,
-        "title": "Возвращаемые значения методов отправки"
-      },
-      {
-        "document": "platform-guide/oopz.md",
-        "line": 110,
         "level": 2,
         "title": "Возвращаемые значения методов отправки"
       },
@@ -5321,7 +5323,7 @@
       },
       {
         "document": "ecosystem/apimcp.md",
-        "line": 71,
+        "line": 72,
         "level": 2,
         "title": "Далее"
       },
@@ -5720,14 +5722,6 @@
         "title": "Документация ErisPulse PlatformFeatures"
       }
     ],
-    "Документация по возможностям платформы Oopz": [
-      {
-        "document": "platform-guide/oopz.md",
-        "line": 1,
-        "level": 1,
-        "title": "Документация по возможностям платформы Oopz"
-      }
-    ],
     "Документация по возможностям платформы «Кафе Хуафэн» (RockyChat)": [
       {
         "document": "platform-guide/ideaura.md",
@@ -5766,6 +5760,14 @@
         "line": 1,
         "level": 1,
         "title": "Документация по особенностям платформы OneBot11"
+      }
+    ],
+    "Документация по особенностям платформы Oopz": [
+      {
+        "document": "platform-guide/oopz.md",
+        "line": 1,
+        "level": 1,
+        "title": "Документация по особенностям платформы Oopz"
       }
     ],
     "Документация по особенностям платформы WeCom (корпоративный WeChat)": [
@@ -7145,7 +7147,7 @@
     "Ключевые моменты безопасности": [
       {
         "document": "ecosystem/apimcp.md",
-        "line": 62,
+        "line": 63,
         "level": 2,
         "title": "Ключевые моменты безопасности"
       }
@@ -8393,7 +8395,7 @@
     "Модель сессий": [
       {
         "document": "platform-guide/oopz.md",
-        "line": 22,
+        "line": 23,
         "level": 2,
         "title": "Модель сессий"
       }
@@ -8727,7 +8729,7 @@
     "Неподдерживаемые стандартные действия (retcode=10002)": [
       {
         "document": "platform-guide/oopz.md",
-        "line": 79,
+        "line": 80,
         "level": 3,
         "title": "Неподдерживаемые стандартные действия (retcode=10002)"
       }
@@ -8812,12 +8814,12 @@
         "title": "Обзор"
       }
     ],
-    "Обзор 14 инструментов": [
+    "Обзор 17 инструментов": [
       {
         "document": "ecosystem/apimcp.md",
         "line": 50,
         "level": 2,
-        "title": "Обзор 14 инструментов"
+        "title": "Обзор 17 инструментов"
       }
     ],
     "Обзор API": [
@@ -9113,7 +9115,7 @@
     "Обработка заявок в друзья": [
       {
         "document": "platform-guide/oopz.md",
-        "line": 104,
+        "line": 105,
         "level": 2,
         "title": "Обработка заявок в друзья"
       }
@@ -10135,7 +10137,7 @@
       },
       {
         "document": "platform-guide/oopz.md",
-        "line": 14,
+        "line": 15,
         "level": 2,
         "title": "Основная информация"
       },
@@ -11439,7 +11441,7 @@
       },
       {
         "document": "platform-guide/oopz.md",
-        "line": 75,
+        "line": 76,
         "level": 3,
         "title": "Поддерживаемые стандартные действия"
       },
@@ -11489,7 +11491,7 @@
       },
       {
         "document": "platform-guide/oopz.md",
-        "line": 61,
+        "line": 62,
         "level": 2,
         "title": "Поддерживаемые типы отправки сообщений"
       },
@@ -11849,7 +11851,7 @@
     "Полнота полей событий": [
       {
         "document": "platform-guide/oopz.md",
-        "line": 47,
+        "line": 48,
         "level": 3,
         "title": "Полнота полей событий"
       }
@@ -13597,7 +13599,7 @@
     "Расширенные действия платформы (oopz.*)": [
       {
         "document": "platform-guide/oopz.md",
-        "line": 83,
+        "line": 84,
         "level": 3,
         "title": "Расширенные действия платформы (oopz.*)"
       }
@@ -14575,7 +14577,7 @@
     "Семантика деградации": [
       {
         "document": "platform-guide/oopz.md",
-        "line": 55,
+        "line": 56,
         "level": 3,
         "title": "Семантика деградации"
       }
@@ -15541,7 +15543,7 @@
     "Соответствие стандарту (0.1.0)": [
       {
         "document": "platform-guide/oopz.md",
-        "line": 30,
+        "line": 31,
         "level": 2,
         "title": "Соответствие стандарту (0.1.0)"
       }
@@ -15729,7 +15731,7 @@
       },
       {
         "document": "platform-guide/oopz.md",
-        "line": 32,
+        "line": 33,
         "level": 3,
         "title": "Спецификация кодов ошибок"
       },
@@ -15853,7 +15855,7 @@
       },
       {
         "document": "platform-guide/oopz.md",
-        "line": 123,
+        "line": 124,
         "level": 2,
         "title": "Специфические типы событий"
       },
@@ -16442,14 +16444,6 @@
         "title": "Стандартные API-действия (Api)"
       }
     ],
-    "Стандартные API-действия (ApiDSL)": [
-      {
-        "document": "platform-guide/oopz.md",
-        "line": 73,
-        "level": 2,
-        "title": "Стандартные API-действия (ApiDSL)"
-      }
-    ],
     "Стандартные API-действия OneBot12 (ново в v5)": [
       {
         "document": "platform-guide/qqbot.md",
@@ -16516,6 +16510,14 @@
         "line": 140,
         "level": 2,
         "title": "Стандартные действия API (Api)"
+      }
+    ],
+    "Стандартные действия API (ApiDSL)": [
+      {
+        "document": "platform-guide/oopz.md",
+        "line": 74,
+        "level": 2,
+        "title": "Стандартные действия API (ApiDSL)"
       }
     ],
     "Стандартные действия API (DSL API)": [
@@ -16779,7 +16781,7 @@
     "Структура ответа": [
       {
         "document": "platform-guide/oopz.md",
-        "line": 43,
+        "line": 44,
         "level": 3,
         "title": "Структура ответа"
       },

@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "b6f1278f31b56890ea180d05803ba34a",
-  "file_hash": "b6f1278f31b56890ea180d05803ba34a",
-  "translated_at": "2026-11-11T15:29:49.520234",
+  "hash": "fe2c52d2e6c85b56f8239280eb49a52a",
+  "file_hash": "fe2c52d2e6c85b56f8239280eb49a52a",
+  "translated_at": "2026-11-14T06:01:41.756030",
   "target_lang": "zh-TW",
   "chunks": [
     {
@@ -10,12 +10,12 @@
       "translation": "# Oopz 平台特性文檔"
     },
     {
-      "hash": "be1559cdda22d06e8b4b492f8c4353ab",
-      "translation": "## 文件資訊\n\n| 項目 | 內容 |\n|---|---|\n| 模組版本 | 0.1.0 |\n| 平台標識 | `oopz` |\n| 維護者 | ErisPulse 團隊 |\n| 最後更新 | 2026-11-11 |\n\n> ⚠️ Oopz 無官方機器人平台，本轉接器基於社群逆向協定以**使用者帳號身份**接入，非官方介面隨時可能失效，請使用小號。詳見 README 風險聲明。"
+      "hash": "c402fe109da4e8664d1980f9b0b79b90",
+      "translation": "## 文件資訊\n\n| 項目 | 內容 |\n|---|---|\n| 模組版本 | 0.1.0 |\n| 平台識別 | `oopz` |\n| 維護者 | ErisPulse 團隊 |\n| 最後更新 | 2026-11-13 |\n\n> [!IMPORTANT]\n> 本專案與 Oopz 沒有任何關係（未獲官方授權、非官方合作、官方不提供支援）。Oopz 無官方機器人平台，本適配器基於社群逆向協定以**使用者帳號身份**接入，隨時可能失效，請使用小號。詳見 README 聲明與風險提示。"
     },
     {
-      "hash": "099f82766d244980905d746b3c7530bf",
-      "translation": "## 基本資訊\n\n- 適配器類別：`OopzAdapter`（entry-point `oopz`）\n- 接入方式：WebSocket（`wss://ws.oopz.cn`）+ REST 閘道（`https://gateway.oopz.cn`），RSA 簽名請求標頭 + JWT\n- 憑證：「帳密二選一」——`password`（手機號碼+密碼+用戶端私鑰，自動登入續期）或 `token`（uid/JWT/device_id/私鑰四件套）\n- 多帳戶：支援（`[Oopz_Adapter.accounts.<name>]`），事件 `self.account_id` 標記來源\n- 框架軟依賴：ErisPulse ≥ 2.7.1"
+      "hash": "30883e7b779b6cb65d8a45449f430d3e",
+      "translation": "## 基本資訊\n\n- 適配器類別：`OopzAdapter`（entry-point `oopz`）\n- 接入方式：WebSocket（`wss://ws.oopz.cn`）+ REST 閘道（`https://gateway.oopz.cn`），RSA 簽名請求標頭 + JWT\n- 憑據：「帳密二選一」——`password`（手機號+密碼+客戶端私鑰，自動登入續期，**推薦**）或 `token`（uid/JWT/device_id/私鑰四件套，僅密碼登入被風控時的備用，JWT 過期需手動重新提取）\n- 多帳戶：支援（`[Oopz_Adapter.accounts.<name>]`），事件 `self.account_id` 標記來源\n- 框架軟依賴：ErisPulse ≥ 2.7.1"
     },
     {
       "hash": "a4ca879cb789fce28370aea7ca24de2e",

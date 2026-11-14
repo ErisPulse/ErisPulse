@@ -1,18 +1,18 @@
-# ErisPulse-ApiMCP で AI クライアントからボットを操作する
+# ErisPulse-ApiMCP — AI クライアントでボットを操作する
 
 > [!TIP]
-> **このドキュメントを読むべきタイミング**：Claude Desktop などの MCP 対応 AI クライアントに、あなたのボットを直接操作させたい場合——メッセージの送信、メッセージの閲覧、モジュールの呼び出し、アダプターの管理、イベントストリームの監視——に読んでください。必要なければ読み飛ばして構いません。
+> **このドキュメントが必要な場面**：Claude Desktop などの MCP 対応 AI クライアントに、ボットの直接操作——メッセージの送信、メッセージの確認、モジュールの呼び出し、アダプターの管理、イベントストリームの観測——をさせたいときに読んでください。不要であれば読み飛ばして構いません。
 
-[ErisPulse-ApiMCP](https://github.com/wsu2059q/ErisPulse-ApiMCP) は、ボットのランタイム機能を **MCP（Model Context Protocol）** 経由で AI クライアントに公開します：インストール後、Claude Desktop には 14 個のツールが追加され、AI があなたに代わってメッセージの送受信、モジュールの問題のトラブルシューティング、グループチャットイベントの購読を行えるようになります——ボットは「あなたが管理するプログラム」から「AI の手と目」へと変わります。
+[ErisPulse-ApiMCP](https://github.com/wsu2059q/ErisPulse-ApiMCP) は、ボットのランタイム機能を **MCP（Model Context Protocol）** 経由で AI クライアントに公開します。インストールすると、Claude Desktop に 17 個のツールが追加され、AI があなたに代わってメッセージの送受信、モジュールのトラブルシューティング、グループチャットイベントの購読、フレームワークドキュメントの検索を行えるようになります——ボットは「あなたが管理するプログラム」から「AI の手と目」へと変わります。
 
 > [!IMPORTANT]
-> ApiMCP は別途インストールが必要で、**token を明示的に設定して初めて**ブリッジが有効になります：
+> ApiMCP は別途インストールが必要で、**トークンを明示的に設定して初めて**ブリッジが有効になります：
 >
 > ```bash
 > epsdk install ErisPulse-ApiMCP
 > ```
 >
-> `config.toml` の `[ApiMCP]` セクションに `token = "長いランダム文字列"` を設定します（または環境変数 `ERISPULSE_APIMCP_TOKEN` を使用）。未設定の場合、ヘルスチェックを除くすべてのエンドポイントが 503 を返し、トークンの意図しない漏洩を防ぎます。
+> `config.toml` の `[ApiMCP]` セクションに `token = "長いランダム文字列"` を設定してください（または環境変数 `ERISPULSE_APIMCP_TOKEN`）。未設定の場合は、死活監視以外のすべてのエンドポイントが 503 を返し、トークンのサイレントリークを防ぎます。
 
 ## 仕組み
 
@@ -47,17 +47,18 @@ Claude Desktop ──MCP(stdio)──► erispulse-apimcp ──HTTP──► �
 
 保存後、Claude Desktop を完全に再起動し、ツールリストに `erispulse` サーバーが表示されれば接続成功です。MCP stdio server をサポートする任意のクライアント（Claude Code、Cursor など）でも、同じ方法で接続できます。
 
-## 14 個のツール一覧
+## 17個のツール一覧
 
 | カテゴリ | ツール | 説明 |
 |---|---|---|
-| モジュール | `list_modules` / `get_module_info` / `call_module` / `reload_module` | インストール済みモジュールの公開サービスの確認・呼び出し、ホットリロードの実行 |
+| モジュール | `list_modules` / `get_module_info` / `call_module` / `reload_module` | インストール済みモジュールの公開サービスの閲覧と呼び出し、ホットリロードの実行 |
 | アダプター | `list_adapters` / `get_adapter_status` / `reload_adapter` | プラットフォームのオンライン状態。アダプターのリロードはデフォルトで無効 |
-| メッセージ | `send_message` / `recent_messages` | 任意のプラットフォームへテキスト/画像/音声/動画/ファイルを送信。[transcript](../advanced/transcript.md) 経由で最近のメッセージを振り返る |
-| イベント | `subscribe_events` / `unsubscribe` / `poll_events` | メッセージ/通知などのイベントを購読、リングバッファ（デフォルト 1000 件）、増分ポーリング |
-| ランタイム | `get_topology` / `sdk_health` | ランタイムトポロジー（マスキング済み）と健全性サマリー |
+| メッセージ | `send_message` / `recent_messages` | 任意のプラットフォームへテキスト/画像/音声/動画/ファイルを送信。複数botデプロイでは `account` で送信アカウントを指定可能。[transcript](../advanced/transcript.md) で最近のメッセージを遡って確認 |
+| イベント | `subscribe_events` / `unsubscribe` / `poll_events` | メッセージ/通知などのイベントを購読。リングバッファ（デフォルト 1000 件）、差分ポーリング |
+| ドキュメント | `search_erispulse_docs` / `read_erispulse_doc` / `refresh_erispulse_docs` | ErisPulse フレームワークドキュメントの検索と閲覧。独立したドキュメントエンジンにより、フレームワークのバージョンに応じてダウンロード・キャッシュされ、他のモジュールに依存しない |
+| ランタイム | `get_topology` / `sdk_health` | ランタイムトポロジー（マスキング済み）とヘルスサマリー |
 
-典型的な使用例：AI はまず `subscribe_events(["message"])` を実行し、その後定期的に `poll_events` でグループ内の会話を観察し、`send_message` で発言に割り込むか、`call_module` で特定のモジュールの機能を呼び出すかを判断します。
+典型的な使用例：AI がまず `subscribe_events(["message"])` を行い、その後定期的に `poll_events` でグループチャット内の話題を観察し、`send_message` で割り込むべきか、あるいは `call_module` で特定のモジュールの機能を呼び出すべきかを判断します。フレームワークの機能の使い方が分からない場合は、AI がまず `search_erispulse_docs` でドキュメントを調べてから実行することもできます。
 
 ## セキュリティ上の要点
 

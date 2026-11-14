@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 2460,
+  "total_keywords": 2461,
   "keywords": {
     "ErisPulse API 文档": [
       {
@@ -3829,7 +3829,7 @@
     "`_cancel_all_timers(reason_hint: str) -> int`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/interaction.md",
-        "line": 471,
+        "line": 481,
         "level": 5,
         "title": "`_cancel_all_timers(reason_hint: str) -> int`"
       }
@@ -3845,7 +3845,7 @@
     "`_cancel_reminders_for_key(key: str, only_reply_cancellable: bool = True) -> int`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/interaction.md",
-        "line": 464,
+        "line": 474,
         "level": 5,
         "title": "`_cancel_reminders_for_key(key: str, only_reply_cancellable: bool = True) -> int`"
       }
@@ -5329,7 +5329,7 @@
     "`_get_active_entry(key: str) -> _Entry | None`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/interaction.md",
-        "line": 316,
+        "line": 326,
         "level": 5,
         "title": "`_get_active_entry(key: str) -> _Entry | None`"
       }
@@ -7553,7 +7553,7 @@
     "`_remove_timer_refs(reminder: Reminder) -> None`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/interaction.md",
-        "line": 446,
+        "line": 456,
         "level": 5,
         "title": "`_remove_timer_refs(reminder: Reminder) -> None`"
       }
@@ -7569,7 +7569,7 @@
     "`_renew_lease(entry: _Entry, ttl: float | None) -> bool`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/interaction.md",
-        "line": 410,
+        "line": 420,
         "level": 5,
         "title": "`_renew_lease(entry: _Entry, ttl: float | None) -> bool`"
       }
@@ -9049,7 +9049,7 @@
     "`acquire(event: Any, owner: str | None = None, ttl: float = DEFAULT_INTERACTION_LEASE_TTL_SECS) -> InteractionLease | None`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/interaction.md",
-        "line": 344,
+        "line": 354,
         "level": 5,
         "title": "`acquire(event: Any, owner: str | None = None, ttl: float = DEFAULT_INTERACTION_LEASE_TTL_SECS) -> InteractionLease | None`"
       }
@@ -9087,7 +9087,7 @@
     "`add_reminder(event: Any, delay: float, action: Any, cancellable_by_reply: bool = True, owner: str | None = None) -> Reminder | None`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/interaction.md",
-        "line": 417,
+        "line": 427,
         "level": 5,
         "title": "`add_reminder(event: Any, delay: float, action: Any, cancellable_by_reply: bool = True, owner: str | None = None) -> Reminder | None`"
       }
@@ -10247,7 +10247,7 @@
     "`async _run_reminder(reminder: Reminder) -> None`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/interaction.md",
-        "line": 439,
+        "line": 449,
         "level": 5,
         "title": "`async _run_reminder(reminder: Reminder) -> None`"
       }
@@ -12611,7 +12611,7 @@
     "`cancel_by_owner(owner: str) -> int`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/interaction.md",
-        "line": 285,
+        "line": 295,
         "level": 5,
         "title": "`cancel_by_owner(owner: str) -> int`"
       }
@@ -12619,15 +12619,23 @@
     "`cancel_by_platform(platform: str) -> int`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/interaction.md",
-        "line": 296,
+        "line": 306,
         "level": 5,
         "title": "`cancel_by_platform(platform: str) -> int`"
+      }
+    ],
+    "`cancel_if_current(key: str, entry: '_Entry', reason: str = REASON_CANCELLED) -> bool`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/Core/Event/interaction.md",
+        "line": 285,
+        "level": 5,
+        "title": "`cancel_if_current(key: str, entry: '_Entry', reason: str = REASON_CANCELLED) -> bool`"
       }
     ],
     "`cancel_reminder(reminder: Reminder) -> bool`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/interaction.md",
-        "line": 453,
+        "line": 463,
         "level": 5,
         "title": "`cancel_reminder(reminder: Reminder) -> bool`"
       }
@@ -14183,7 +14191,7 @@
     "`class _LeaseContext`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/interaction.md",
-        "line": 494,
+        "line": 504,
         "level": 3,
         "title": "`class _LeaseContext`"
       }
@@ -14389,7 +14397,7 @@
     "`clear() -> int`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/interaction.md",
-        "line": 307,
+        "line": 317,
         "level": 5,
         "title": "`clear() -> int`"
       }
@@ -14755,7 +14763,7 @@
     "`counts() -> dict[str, Any]`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/interaction.md",
-        "line": 478,
+        "line": 488,
         "level": 5,
         "title": "`counts() -> dict[str, Any]`"
       }
@@ -16307,7 +16315,7 @@
     "`get_owner_of(event: Any) -> str | None`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/interaction.md",
-        "line": 323,
+        "line": 333,
         "level": 5,
         "title": "`get_owner_of(event: Any) -> str | None`"
       }
@@ -16887,7 +16895,7 @@
     "`hold(event: Any, owner: str | None = None, ttl: float = DEFAULT_INTERACTION_LEASE_TTL_SECS) -> Any`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/interaction.md",
-        "line": 372,
+        "line": 382,
         "level": 5,
         "title": "`hold(event: Any, owner: str | None = None, ttl: float = DEFAULT_INTERACTION_LEASE_TTL_SECS) -> Any`"
       }
@@ -18957,7 +18965,7 @@
     "`release(key: str, owner: str | None = None) -> bool`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Event/interaction.md",
-        "line": 396,
+        "line": 406,
         "level": 5,
         "title": "`release(key: str, owner: str | None = None) -> bool`"
       }

@@ -17,55 +17,55 @@ The ErisPulse framework itself only provides core capabilities (event system, mo
 
 ## Recommended Modules
 
-### ErisPulse-Dashboard: A management dashboard in your browser
+### ErisPulse-Dashboard: Management Dashboard in the Browser
 
-Running your bot on a server, but still need to log into the terminal to start/stop modules, modify configurations, or view logs? Dashboard brings these functions into the browser: module start/stop, configuration editing, log viewing, and event monitoring. Other modules can also register custom panels to the sidebar, centralizing the management interface in one place.
+Running a bot on a server? Need to start/stop modules, modify configurations, or check logs? The Dashboard brings all these tasks into your browser: start/stop modules, edit configurations, view logs, and monitor events. Other modules can also register custom views to the sidebar, centralizing all management pages in one place.
 
 ```bash
 epsdk install Dashboard
 ```
 
-Docs: [Dashboard Usage & Panel Registration](dashboard.md) ｜ Project Homepage: [PyPI](https://pypi.org/project/ErisPulse-Dashboard/)
+Documentation: [Dashboard Usage and View Registration](dashboard.md) | Project Homepage: [PyPI](https://pypi.org/project/ErisPulse-Dashboard/)
 
 ### ErisPulse-Cron: Scheduled Tasks
 
-Need daily reminders, periodic tasks based on Cron expressions, or data polling every few minutes? Cron provides three types of tasks: one-time, interval-based, and Cron expression-based, with callback parameters and SQLite persistence (tasks are not lost after restart).
+Need to send daily check-in reminders, run periodic tasks using Cron expressions, or poll data every few minutes? Cron provides three task types: one-time, interval-based, and Cron expression-based tasks, with callback parameters and SQLite persistence (tasks are not lost after restarts).
 
 ```bash
 epsdk install Cron
 ```
 
-Docs: [Cron Scheduled Tasks](cron.md) ｜ Project Homepage: [GitHub](https://github.com/wsu2059q/ErisPulse-Cron)
+Documentation: [Cron Scheduled Tasks](cron.md) | Project Homepage: [GitHub](https://github.com/wsu2059q/ErisPulse-Cron)
 
-### ErisPulse-QvQChat: General-purpose Agent
+### ErisPulse-QvQChat: General-Purpose Agent
 
-Want an AI assistant in your group that can perform tasks, rather than just reply with keywords? QvQChat is a general-purpose agent: tools cycle through message sending/receiving, code execution, computer operations, image generation, voice, MCP, and sub-agents. It supports streaming conversations and sequential tool replay, and comes with a built-in Dashboard panel. Also included are three companion plugins: QvQStalker (eavesdropping and interjecting), QvQMemes (meme generation), and QvQCompanion (human-like companionship).
+Want a bot in your group that can perform tasks, rather than just reply with keywords? QvQChat is a general-purpose agent: it cycles through sending and receiving messages, executing code, operating the computer, generating images, handling voice, integrating with MCP, and managing sub-agents. It supports streaming conversations and sequential tool playback, and comes with a built-in Dashboard view. It also includes three companion plugins: QvQStalker (eavesdropping and interjecting), QvQMemes (emoticons), and QvQCompanion (human-like companionship).
 
 ```bash
 epsdk install ErisPulse-QvQChat
 ```
 
-Docs: [QvQChat Agent](qvqchat.md) ｜ Project Homepage: [GitHub](https://github.com/wsu2059q/ErisPulse-QvQChat)
+Documentation: [QvQChat Agent](qvqchat.md) | Project Homepage: [GitHub](https://github.com/wsu2059q/ErisPulse-QvQChat)
 
-### ErisPulse-ApiMCP: Let AI Clients Control Your Bot
+### ErisPulse-ApiMCP: Let AI Clients Control the Bot
 
-Using AI clients like Claude Desktop or Claude Code that support MCP? ApiMCP exposes 14 MCP tools from the bot runtime, allowing AI to directly send/receive messages, call installed modules, check platform status, and subscribe to group chat events—effectively turning the bot into the AI’s "hands and eyes."
+Using AI clients like Claude Desktop or Claude Code that support MCP? ApiMCP exposes the bot's runtime as 17 MCP tools: AI can directly send and receive messages, call installed modules, check platform status, and subscribe to group chat events—turning the bot into the AI's "hands and eyes."
 
 ```bash
 epsdk install ErisPulse-ApiMCP
 ```
 
-Docs: [ApiMCP User Guide](apimcp.md) ｜ Project Homepage: [GitHub](https://github.com/wsu2059q/ErisPulse-ApiMCP)
+Documentation: [ApiMCP User Guide](apimcp.md) | Project Homepage: [GitHub](https://github.com/wsu2059q/ErisPulse-ApiMCP)
 
 ### ErisPulse-Takumi: Image Rendering
 
-For scenarios requiring image generation—such as leaderboards, match reports, or schedules—simply create a template and render it as an image to send into the group: supports HTML / node trees / Jinja / SVG / animations (based on [takumi-py](https://github.com/BalconyJH/takumi-py)), with built-in Chinese and English fonts, ready to use out of the box.
+For scenarios requiring "image posting," such as leaderboards, reports, or schedules, simply write a template and render it into an image to post in the group: supports HTML / node tree / Jinja / SVG / animation (based on [takumi-py](https://github.com/BalconyJH/takumi-py)), comes with built-in Chinese and English fonts, ready to use out of the box.
 
 ```bash
 epsdk install Takumi
 ```
 
-Docs: [Takumi Image Rendering](takumi.md) ｜ Project Homepage: [GitHub](https://github.com/ccd2s/ErispulseTakumi) (by [@ccd2s](https://github.com/ccd2s))
+Documentation: [Takumi Image Rendering](takumi.md) | Project Homepage: [GitHub](https://github.com/ccd2s/ErispulseTakumi) (Author: [@ccd2s](https://github.com/ccd2s))
 
 ## Official Client (Standalone Application)
 

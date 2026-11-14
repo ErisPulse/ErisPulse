@@ -22,7 +22,7 @@
 - **模块总数**: 143
 - **类总数**: 198（包括 5 个嵌套类）
 - **函数总数**: 410
-- **方法总数**: 1801
+- **方法总数**: 1802
 
 ---
 
@@ -346,7 +346,7 @@
 
 ### [ErisPulse.Core.Event.interaction](ErisPulse/Core/Event/interaction.md)
 
-5 个类 | 32 个方法
+5 个类 | 33 个方法
 
 
 ### [ErisPulse.Core.Event.message](ErisPulse/Core/Event/message.md)

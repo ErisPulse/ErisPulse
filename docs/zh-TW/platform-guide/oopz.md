@@ -5,17 +5,18 @@
 | 項目 | 內容 |
 |---|---|
 | 模組版本 | 0.1.0 |
-| 平台標識 | `oopz` |
+| 平台識別 | `oopz` |
 | 維護者 | ErisPulse 團隊 |
-| 最後更新 | 2026-11-11 |
+| 最後更新 | 2026-11-13 |
 
-> ⚠️ Oopz 無官方機器人平台，本轉接器基於社群逆向協定以**使用者帳號身份**接入，非官方介面隨時可能失效，請使用小號。詳見 README 風險聲明。
+> [!IMPORTANT]
+> 本專案與 Oopz 沒有任何關係（未獲官方授權、非官方合作、官方不提供支援）。Oopz 無官方機器人平台，本適配器基於社群逆向協定以**使用者帳號身份**接入，隨時可能失效，請使用小號。詳見 README 聲明與風險提示。
 
 ## 基本資訊
 
 - 適配器類別：`OopzAdapter`（entry-point `oopz`）
 - 接入方式：WebSocket（`wss://ws.oopz.cn`）+ REST 閘道（`https://gateway.oopz.cn`），RSA 簽名請求標頭 + JWT
-- 憑證：「帳密二選一」——`password`（手機號碼+密碼+用戶端私鑰，自動登入續期）或 `token`（uid/JWT/device_id/私鑰四件套）
+- 憑據：「帳密二選一」——`password`（手機號+密碼+客戶端私鑰，自動登入續期，**推薦**）或 `token`（uid/JWT/device_id/私鑰四件套，僅密碼登入被風控時的備用，JWT 過期需手動重新提取）
 - 多帳戶：支援（`[Oopz_Adapter.accounts.<name>]`），事件 `self.account_id` 標記來源
 - 框架軟依賴：ErisPulse ≥ 2.7.1
 
