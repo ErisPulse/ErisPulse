@@ -346,9 +346,9 @@ epsdk run main.py --reload
 </tr>
 </table>
 
-## ## 生态模块
+## 生态模块
 
-一切皆模块。装上 [Dashboard](https://github.com/ErisPulse/ErisPulse-Dashboard) 管理面板、[MyServer](https://github.com/wsu2059q/ErisPulse-MyServer) 聊天里的 AI 原生机房、[QvQChat](https://github.com/wsu2059q/ErisPulse-QvQChat) AI 智能体，几十个社区模块按需安装：
+官方与社区共同维护的模块生态——[Dashboard](https://github.com/ErisPulse/ErisPulse-Dashboard) 管理面板、[MyServer](https://github.com/wsu2059q/ErisPulse-MyServer) 聊天里的 AI 原生机房、[QvQChat](https://github.com/wsu2059q/ErisPulse-QvQChat) AI 智能体模块，以及几十个社区贡献的功能模块：
 
 <table>
 <tr>
@@ -356,27 +356,27 @@ epsdk run main.py --reload
 
 **Dashboard** — Web 管理面板
 
-<img src="https://raw.githubusercontent.com/ErisPulse/ErisPulse-Dashboard/main/.github/assets/overview.png" alt="Dashboard** — Web 管理面板" />
+<img src="https://raw.githubusercontent.com/ErisPulse/ErisPulse-Dashboard/main/.github/assets/overview.png" alt="Dashboard" />
 
 </td>
 <td align="center" width="33%">
 
 **MyServer** — 聊天里的 AI 原生机房
 
-<img src="https://raw.githubusercontent.com/wsu2059q/ErisPulse-MyServer/main/.github/assets/console.png" alt="MyServer** — 聊天里的 AI 原生机房" />
+<img src="https://raw.githubusercontent.com/wsu2059q/ErisPulse-MyServer/main/.github/assets/console.png" alt="MyServer" />
 
 </td>
 <td align="center" width="33%">
 
 **QvQChat** — AI 智能体模块
 
-<img src="https://raw.githubusercontent.com/wsu2059q/ErisPulse-QvQChat/main/.github/assets/fleet-demo.png" alt="QvQChat** — AI 智能体模块" />
+<img src="https://raw.githubusercontent.com/wsu2059q/ErisPulse-QvQChat/main/.github/assets/fleet-demo.png" alt="QvQChat" />
 
 </td>
 </tr>
 </table>
 
-模块市场：https://www.erisdev.com/#market · `epsdk install MyServer QvQChat`
+模块市场：https://www.erisdev.com/#market
 
 ---
 
