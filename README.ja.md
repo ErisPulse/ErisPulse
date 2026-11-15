@@ -2,7 +2,6 @@
 
 [English](README.md) | [简体中文](README.zh-CN.md) | [繁體中文](README.zh-TW.md) | [日本語](README.ja.md) | [Русский](README.ru.md)
 
-> ✦ **こんにちは、私は小erisです！** ErisPulseの看板娘であり、ドキュメント内のガイドです。エラーが表示されても慌てないでください。たいていは私が代わりに試行錯誤しているだけです。
 
 # ErisPulse
 

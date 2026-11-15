@@ -2,8 +2,6 @@
 
 [English](README.md) | [简体中文](README.zh-CN.md) | [繁體中文](README.zh-TW.md) | [日本語](README.ja.md) | [Русский](README.ru.md)
 
-> ✦ **Всем привет, я 小eris!** Маскот ErisPulse и ваш проводник по документации. Не пугайтесь ошибок в демо — скорее всего, это я тестирую всё за вас~
-
 # ErisPulse
 
 **Пишите один раз — разворачивайте на QQ / Telegram / Kook / Yunhu / WeChat Official Account / OneBot12 / ... и множестве других платформ.**
