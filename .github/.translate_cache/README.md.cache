@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "7a126f0c473c85dba05ba148710af211",
-  "file_hash": "7a126f0c473c85dba05ba148710af211",
-  "translated_at": "2026-11-15T04:55:16.382335",
+  "hash": "e0ca3d93c09e322e6ca40ed5d53f0df0",
+  "file_hash": "e0ca3d93c09e322e6ca40ed5d53f0df0",
+  "translated_at": "2026-11-15T05:36:40.392585",
   "target_lang": "en",
   "chunks": [
     {
@@ -26,8 +26,8 @@
       "translation": "## The Same Code. Multiple Platforms.\n\n*Identical command handlers. Different platforms. No business logic modification required.*\n\n<table>\n<tr>\n<td align=\"center\" width=\"33%\">\n\n**Kook**\n\n<img src=\".github/assets/demo-kook.png\" alt=\"Kook demo\" />\n\n</td>\n<td align=\"center\" width=\"33%\">\n\n**QQ**\n\n<img src=\".github/assets/demo-qq.png\" alt=\"QQ demo\" />\n\n</td>\n<td align=\"center\" width=\"33%\">\n\n**Yunhu**\n\n<img src=\".github/assets/demo-yunhu.png\" alt=\"Yunhu demo\" />\n\n</td>\n</tr>\n</table>"
     },
     {
-      "hash": "f31bbe9a24074eb3b8643ffcff08862a",
-      "translation": "## ## Ecosystem Modules\n\nEverything is a module. Install the [Dashboard](https://github.com/ErisPulse/ErisPulse-Dashboard) management panel, [MyServer](https://github.com/wsu2059q/ErisPulse-MyServer) AI native computing room in chat, [QvQChat](https://github.com/wsu2059q/ErisPulse-QvQChat) AI agent module, and dozens of community modules as needed:\n\n<table>\n<tr>\n<td align=\"center\" width=\"33%\">\n\n**Dashboard** — Web management panel\n\n<img src=\"https://raw.githubusercontent.com/ErisPulse/ErisPulse-Dashboard/main/.github/assets/overview.png\" alt=\"Dashboard** — Web management panel\" />\n\n</td>\n<td align=\"center\" width=\"33%\">\n\n**MyServer** — AI native computing room in chat\n\n<img src=\"https://raw.githubusercontent.com/wsu2059q/ErisPulse-MyServer/main/.github/assets/console.png\" alt=\"MyServer** — AI native computing room in chat\" />\n\n</td>\n<td align=\"center\" width=\"33%\">\n\n**QvQChat** — AI agent module\n\n<img src=\"https://raw.githubusercontent.com/wsu2059q/ErisPulse-QvQChat/main/.github/assets/fleet-demo.png\" alt=\"QvQChat** — AI agent module\" />\n\n</td>\n</tr>\n</table>\n\nModule marketplace: https://www.erisdev.com/#market · `epsdk install MyServer QvQChat`\n\n---"
+      "hash": "7780c13e29471594cd49dbe26abf848c",
+      "translation": "## Ecosystem Modules\n\nThe official and community-maintained module ecosystem includes the [Dashboard](https://github.com/ErisPulse/ErisPulse-Dashboard) management panel, [MyServer](https://github.com/wsu2059q/ErisPulse-MyServer) AI-native server room in chat, [QvQChat](https://github.com/wsu2059q/ErisPulse-QvQChat) AI agent module, and dozens of feature modules contributed by the community:\n\n<table>\n<tr>\n<td align=\"center\" width=\"33%\">\n\n**Dashboard** — Web management panel\n\n<img src=\"https://raw.githubusercontent.com/ErisPulse/ErisPulse-Dashboard/main/.github/assets/overview.png\" alt=\"Dashboard\" />\n\n</td>\n<td align=\"center\" width=\"33%\">\n\n**MyServer** — AI-native server room in chat\n\n<img src=\"https://raw.githubusercontent.com/wsu2059q/ErisPulse-MyServer/main/.github/assets/console.png\" alt=\"MyServer\" />\n\n</td>\n<td align=\"center\" width=\"33%\">\n\n**QvQChat** — AI agent module\n\n<img src=\"https://raw.githubusercontent.com/wsu2059q/ErisPulse-QvQChat/main/.github/assets/fleet-demo.png\" alt=\"QvQChat\" />\n\n</td>\n</tr>\n</table>\n\nModule marketplace: https://www.erisdev.com/#market\n\n---"
     },
     {
       "hash": "4575c6b8db2a776447c4c1a77047c37c",

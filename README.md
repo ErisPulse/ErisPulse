@@ -347,9 +347,9 @@ For more detailed instructions, see:
 </tr>
 </table>
 
-## ## Ecosystem Modules
+## Ecosystem Modules
 
-Everything is a module. Install the [Dashboard](https://github.com/ErisPulse/ErisPulse-Dashboard) management panel, [MyServer](https://github.com/wsu2059q/ErisPulse-MyServer) AI native computing room in chat, [QvQChat](https://github.com/wsu2059q/ErisPulse-QvQChat) AI agent module, and dozens of community modules as needed:
+The official and community-maintained module ecosystem includes the [Dashboard](https://github.com/ErisPulse/ErisPulse-Dashboard) management panel, [MyServer](https://github.com/wsu2059q/ErisPulse-MyServer) AI-native server room in chat, [QvQChat](https://github.com/wsu2059q/ErisPulse-QvQChat) AI agent module, and dozens of feature modules contributed by the community:
 
 <table>
 <tr>
@@ -357,27 +357,27 @@ Everything is a module. Install the [Dashboard](https://github.com/ErisPulse/Eri
 
 **Dashboard** — Web management panel
 
-<img src="https://raw.githubusercontent.com/ErisPulse/ErisPulse-Dashboard/main/.github/assets/overview.png" alt="Dashboard** — Web management panel" />
+<img src="https://raw.githubusercontent.com/ErisPulse/ErisPulse-Dashboard/main/.github/assets/overview.png" alt="Dashboard" />
 
 </td>
 <td align="center" width="33%">
 
-**MyServer** — AI native computing room in chat
+**MyServer** — AI-native server room in chat
 
-<img src="https://raw.githubusercontent.com/wsu2059q/ErisPulse-MyServer/main/.github/assets/console.png" alt="MyServer** — AI native computing room in chat" />
+<img src="https://raw.githubusercontent.com/wsu2059q/ErisPulse-MyServer/main/.github/assets/console.png" alt="MyServer" />
 
 </td>
 <td align="center" width="33%">
 
 **QvQChat** — AI agent module
 
-<img src="https://raw.githubusercontent.com/wsu2059q/ErisPulse-QvQChat/main/.github/assets/fleet-demo.png" alt="QvQChat** — AI agent module" />
+<img src="https://raw.githubusercontent.com/wsu2059q/ErisPulse-QvQChat/main/.github/assets/fleet-demo.png" alt="QvQChat" />
 
 </td>
 </tr>
 </table>
 
-Module marketplace: https://www.erisdev.com/#market · `epsdk install MyServer QvQChat`
+Module marketplace: https://www.erisdev.com/#market
 
 ---
 

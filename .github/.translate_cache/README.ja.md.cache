@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "7a126f0c473c85dba05ba148710af211",
-  "file_hash": "7a126f0c473c85dba05ba148710af211",
-  "translated_at": "2026-11-15T04:55:31.674407",
+  "hash": "e0ca3d93c09e322e6ca40ed5d53f0df0",
+  "file_hash": "e0ca3d93c09e322e6ca40ed5d53f0df0",
+  "translated_at": "2026-11-15T05:36:54.416108",
   "target_lang": "ja",
   "chunks": [
     {
@@ -26,8 +26,8 @@
       "translation": "## 同じコード。複数のプラットフォーム。\n\n*まったく同じコマンドハンドラ。異なるプラットフォーム。業務ロジックを一切変更せずに利用可能。*\n\n<table>\n<tr>\n<td align=\"center\" width=\"33%\">\n\n**Kook**\n\n<img src=\".github/assets/demo-kook.png\" alt=\"Kook デモ\" />\n\n</td>\n<td align=\"center\" width=\"33%\">\n\n**QQ**\n\n<img src=\".github/assets/demo-qq.png\" alt=\"QQ デモ\" />\n\n</td>\n<td align=\"center\" width=\"33%\">\n\n**云湖**\n\n<img src=\".github/assets/demo-yunhu.png\" alt=\"云湖 デモ\" />\n\n</td>\n</tr>\n</table>"
     },
     {
-      "hash": "f31bbe9a24074eb3b8643ffcff08862a",
-      "translation": "## ## エコシステムモジュール\n\nすべてがモジュールです。[Dashboard](https://github.com/ErisPulse/ErisPulse-Dashboard) 管理パネル、[MyServer](https://github.com/wsu2059q/ErisPulse-MyServer) チャット内の AI 原生クラウド、[QvQChat](https://github.com/wsu2059q/ErisPulse-QvQChat) AI エージェントなど、数十のコミュニティモジュールを必要に応じてインストールできます：\n\n<table>\n<tr>\n<td align=\"center\" width=\"33%\">\n\n**Dashboard** — Web 管理パネル\n\n<img src=\"https://raw.githubusercontent.com/ErisPulse/ErisPulse-Dashboard/main/.github/assets/overview.png\" alt=\"Dashboard** — Web 管理パネル\" />\n\n</td>\n<td align=\"center\" width=\"33%\">\n\n**MyServer** — チャット内の AI 原生クラウド\n\n<img src=\"https://raw.githubusercontent.com/wsu2059q/ErisPulse-MyServer/main/.github/assets/console.png\" alt=\"MyServer** — チャット内の AI 原生クラウド\" />\n\n</td>\n<td align=\"center\" width=\"33%\">\n\n**QvQChat** — AI エージェントモジュール\n\n<img src=\"https://raw.githubusercontent.com/wsu2059q/ErisPulse-QvQChat/main/.github/assets/fleet-demo.png\" alt=\"QvQChat** — AI エージェントモジュール\" />\n\n</td>\n</tr>\n</table>\n\nモジュールマーケット: https://www.erisdev.com/#market · `epsdk install MyServer QvQChat`\n\n---"
+      "hash": "7780c13e29471594cd49dbe26abf848c",
+      "translation": "## エコシステムモジュール\n\n公式およびコミュニティが共同で維持するモジュールエコシステム —— [Dashboard](https://github.com/ErisPulse/ErisPulse-Dashboard) 管理パネル、[MyServer](https://github.com/wsu2059q/ErisPulse-MyServer) チャット内の AI 原生コンピューティングリソース、[QvQChat](https://github.com/wsu2059q/ErisPulse-QvQChat) AI エージェントモジュール、および数十のコミュニティが提供する機能モジュール：\n\n<table>\n<tr>\n<td align=\"center\" width=\"33%\">\n\n**Dashboard** — Web 管理パネル\n\n<img src=\"https://raw.githubusercontent.com/ErisPulse/ErisPulse-Dashboard/main/.github/assets/overview.png\" alt=\"Dashboard\" />\n\n</td>\n<td align=\"center\" width=\"33%\">\n\n**MyServer** — チャット内の AI 原生コンピューティングリソース\n\n<img src=\"https://raw.githubusercontent.com/wsu2059q/ErisPulse-MyServer/main/.github/assets/console.png\" alt=\"MyServer\" />\n\n</td>\n<td align=\"center\" width=\"33%\">\n\n**QvQChat** — AI エージェントモジュール\n\n<img src=\"https://raw.githubusercontent.com/wsu2059q/ErisPulse-QvQChat/main/.github/assets/fleet-demo.png\" alt=\"QvQChat\" />\n\n</td>\n</tr>\n</table>\n\nモジュールマーケット: https://www.erisdev.com/#market\n\n---"
     },
     {
       "hash": "4575c6b8db2a776447c4c1a77047c37c",

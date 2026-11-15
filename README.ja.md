@@ -346,9 +346,9 @@ epsdk run main.py --reload
 </tr>
 </table>
 
-## ## エコシステムモジュール
+## エコシステムモジュール
 
-すべてがモジュールです。[Dashboard](https://github.com/ErisPulse/ErisPulse-Dashboard) 管理パネル、[MyServer](https://github.com/wsu2059q/ErisPulse-MyServer) チャット内の AI 原生クラウド、[QvQChat](https://github.com/wsu2059q/ErisPulse-QvQChat) AI エージェントなど、数十のコミュニティモジュールを必要に応じてインストールできます：
+公式およびコミュニティが共同で維持するモジュールエコシステム —— [Dashboard](https://github.com/ErisPulse/ErisPulse-Dashboard) 管理パネル、[MyServer](https://github.com/wsu2059q/ErisPulse-MyServer) チャット内の AI 原生コンピューティングリソース、[QvQChat](https://github.com/wsu2059q/ErisPulse-QvQChat) AI エージェントモジュール、および数十のコミュニティが提供する機能モジュール：
 
 <table>
 <tr>
@@ -356,27 +356,27 @@ epsdk run main.py --reload
 
 **Dashboard** — Web 管理パネル
 
-<img src="https://raw.githubusercontent.com/ErisPulse/ErisPulse-Dashboard/main/.github/assets/overview.png" alt="Dashboard** — Web 管理パネル" />
+<img src="https://raw.githubusercontent.com/ErisPulse/ErisPulse-Dashboard/main/.github/assets/overview.png" alt="Dashboard" />
 
 </td>
 <td align="center" width="33%">
 
-**MyServer** — チャット内の AI 原生クラウド
+**MyServer** — チャット内の AI 原生コンピューティングリソース
 
-<img src="https://raw.githubusercontent.com/wsu2059q/ErisPulse-MyServer/main/.github/assets/console.png" alt="MyServer** — チャット内の AI 原生クラウド" />
+<img src="https://raw.githubusercontent.com/wsu2059q/ErisPulse-MyServer/main/.github/assets/console.png" alt="MyServer" />
 
 </td>
 <td align="center" width="33%">
 
 **QvQChat** — AI エージェントモジュール
 
-<img src="https://raw.githubusercontent.com/wsu2059q/ErisPulse-QvQChat/main/.github/assets/fleet-demo.png" alt="QvQChat** — AI エージェントモジュール" />
+<img src="https://raw.githubusercontent.com/wsu2059q/ErisPulse-QvQChat/main/.github/assets/fleet-demo.png" alt="QvQChat" />
 
 </td>
 </tr>
 </table>
 
-モジュールマーケット: https://www.erisdev.com/#market · `epsdk install MyServer QvQChat`
+モジュールマーケット: https://www.erisdev.com/#market
 
 ---
 
