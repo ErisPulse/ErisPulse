@@ -346,6 +346,41 @@ epsdk run main.py --reload
 </tr>
 </table>
 
+## ## エコシステムモジュール
+
+すべてがモジュールです。[Dashboard](https://github.com/ErisPulse/ErisPulse-Dashboard) 管理パネル、[MyServer](https://github.com/wsu2059q/ErisPulse-MyServer) チャット内 AI ネイティブサーバーコンソール、[QvQChat](https://github.com/wsu2059q/ErisPulse-QvQChat) AI エージェントモジュールをはじめ、多数のコミュニティモジュールを必要に応じてインストール：
+
+<table>
+<tr>
+<td align="center" width="33%">
+
+**Dashboard** — Web 管理パネル
+
+<img src="https://raw.githubusercontent.com/ErisPulse/ErisPulse-Dashboard/main/.github/assets/overview.png" alt="Dashboard** — Web 管理パネル" />
+
+</td>
+<td align="center" width="33%">
+
+**MyServer** — チャット内 AI ネイティブサーバーコンソール
+
+<img src="https://raw.githubusercontent.com/wsu2059q/ErisPulse-MyServer/main/.github/assets/console.png" alt="MyServer** — チャット内 AI ネイティブサーバーコンソール" />
+
+</td>
+<td align="center" width="33%">
+
+**QvQChat** — AI エージェントモジュール
+
+<img src="https://raw.githubusercontent.com/wsu2059q/ErisPulse-QvQChat/main/.github/assets/fleet-demo.png" alt="QvQChat** — AI エージェントモジュール" />
+
+</td>
+</tr>
+</table>
+
+モジュールマーケット：https://www.erisdev.com/#market · `epsdk install MyServer QvQChat`
+
+---
+
+
 ---
 
 ## 鏈式送信 DSL

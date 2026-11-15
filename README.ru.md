@@ -346,6 +346,41 @@ epsdk run main.py --reload
 </tr>
 </table>
 
+## ## Модули экосистемы
+
+Всё — модули. Установите [Dashboard](https://github.com/ErisPulse/ErisPulse-Dashboard) (веб-панель), [MyServer](https://github.com/wsu2059q/ErisPulse-MyServer) (AI-консоль управления серверами в чате) и [QvQChat](https://github.com/wsu2059q/ErisPulse-QvQChat) (ИИ-агент) — десятки модулей сообщества, ставьте что нужно:
+
+<table>
+<tr>
+<td align="center" width="33%">
+
+**Dashboard** — веб-панель
+
+<img src="https://raw.githubusercontent.com/ErisPulse/ErisPulse-Dashboard/main/.github/assets/overview.png" alt="Dashboard** — веб-панель" />
+
+</td>
+<td align="center" width="33%">
+
+**MyServer** — AI-консоль серверов в чате
+
+<img src="https://raw.githubusercontent.com/wsu2059q/ErisPulse-MyServer/main/.github/assets/console.png" alt="MyServer** — AI-консоль серверов в чате" />
+
+</td>
+<td align="center" width="33%">
+
+**QvQChat** — ИИ-агент
+
+<img src="https://raw.githubusercontent.com/wsu2059q/ErisPulse-QvQChat/main/.github/assets/fleet-demo.png" alt="QvQChat** — ИИ-агент" />
+
+</td>
+</tr>
+</table>
+
+Маркет модулей: https://www.erisdev.com/#market · `epsdk install MyServer QvQChat`
+
+---
+
+
 ---
 
 ## Цепочечный DSL отправки

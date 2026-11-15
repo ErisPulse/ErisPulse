@@ -346,6 +346,41 @@ epsdk run main.py --reload
 </tr>
 </table>
 
+## ## 生态模块
+
+一切皆模块。装上 [Dashboard](https://github.com/ErisPulse/ErisPulse-Dashboard) 管理面板、[MyServer](https://github.com/wsu2059q/ErisPulse-MyServer) 聊天里的 AI 原生机房、[QvQChat](https://github.com/wsu2059q/ErisPulse-QvQChat) AI 智能体，几十个社区模块按需安装：
+
+<table>
+<tr>
+<td align="center" width="33%">
+
+**Dashboard** — Web 管理面板
+
+<img src="https://raw.githubusercontent.com/ErisPulse/ErisPulse-Dashboard/main/.github/assets/overview.png" alt="Dashboard** — Web 管理面板" />
+
+</td>
+<td align="center" width="33%">
+
+**MyServer** — 聊天里的 AI 原生机房
+
+<img src="https://raw.githubusercontent.com/wsu2059q/ErisPulse-MyServer/main/.github/assets/console.png" alt="MyServer** — 聊天里的 AI 原生机房" />
+
+</td>
+<td align="center" width="33%">
+
+**QvQChat** — AI 智能体模块
+
+<img src="https://raw.githubusercontent.com/wsu2059q/ErisPulse-QvQChat/main/.github/assets/fleet-demo.png" alt="QvQChat** — AI 智能体模块" />
+
+</td>
+</tr>
+</table>
+
+模块市场：https://www.erisdev.com/#market · `epsdk install MyServer QvQChat`
+
+---
+
+
 ---
 
 ## 链式发送 DSL

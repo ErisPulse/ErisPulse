@@ -347,6 +347,41 @@ For more detailed instructions, see:
 </tr>
 </table>
 
+## ## Ecosystem Modules
+
+Everything is a module. Install the [Dashboard](https://github.com/ErisPulse/ErisPulse-Dashboard) admin panel, [MyServer](https://github.com/wsu2059q/ErisPulse-MyServer) — the AI-native server console in chat, and [QvQChat](https://github.com/wsu2059q/ErisPulse-QvQChat) — the AI agent module. Dozens of community modules, install what you need:
+
+<table>
+<tr>
+<td align="center" width="33%">
+
+**Dashboard** — web admin panel
+
+<img src="https://raw.githubusercontent.com/ErisPulse/ErisPulse-Dashboard/main/.github/assets/overview.png" alt="Dashboard** — web admin panel" />
+
+</td>
+<td align="center" width="33%">
+
+**MyServer** — AI-native server console in chat
+
+<img src="https://raw.githubusercontent.com/wsu2059q/ErisPulse-MyServer/main/.github/assets/console.png" alt="MyServer** — AI-native server console in chat" />
+
+</td>
+<td align="center" width="33%">
+
+**QvQChat** — AI agent module
+
+<img src="https://raw.githubusercontent.com/wsu2059q/ErisPulse-QvQChat/main/.github/assets/fleet-demo.png" alt="QvQChat** — AI agent module" />
+
+</td>
+</tr>
+</table>
+
+Module market: https://www.erisdev.com/#market · `epsdk install MyServer QvQChat`
+
+---
+
+
 ---
 
 ## Chained Send DSL
