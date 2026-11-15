@@ -319,7 +319,7 @@ For more detailed instructions, see:
 
 ## The Same Code. Multiple Platforms.
 
-*Identical command handlers. Different platforms. No changes to business logic required.*
+*Identical command handlers. Different platforms. No business logic modification required.*
 
 <table>
 <tr>
@@ -349,22 +349,22 @@ For more detailed instructions, see:
 
 ## ## Ecosystem Modules
 
-Everything is a module. Install the [Dashboard](https://github.com/ErisPulse/ErisPulse-Dashboard) admin panel, [MyServer](https://github.com/wsu2059q/ErisPulse-MyServer) — the AI-native server console in chat, and [QvQChat](https://github.com/wsu2059q/ErisPulse-QvQChat) — the AI agent module. Dozens of community modules, install what you need:
+Everything is a module. Install the [Dashboard](https://github.com/ErisPulse/ErisPulse-Dashboard) management panel, [MyServer](https://github.com/wsu2059q/ErisPulse-MyServer) AI native computing room in chat, [QvQChat](https://github.com/wsu2059q/ErisPulse-QvQChat) AI agent module, and dozens of community modules as needed:
 
 <table>
 <tr>
 <td align="center" width="33%">
 
-**Dashboard** — web admin panel
+**Dashboard** — Web management panel
 
-<img src="https://raw.githubusercontent.com/ErisPulse/ErisPulse-Dashboard/main/.github/assets/overview.png" alt="Dashboard** — web admin panel" />
+<img src="https://raw.githubusercontent.com/ErisPulse/ErisPulse-Dashboard/main/.github/assets/overview.png" alt="Dashboard** — Web management panel" />
 
 </td>
 <td align="center" width="33%">
 
-**MyServer** — AI-native server console in chat
+**MyServer** — AI native computing room in chat
 
-<img src="https://raw.githubusercontent.com/wsu2059q/ErisPulse-MyServer/main/.github/assets/console.png" alt="MyServer** — AI-native server console in chat" />
+<img src="https://raw.githubusercontent.com/wsu2059q/ErisPulse-MyServer/main/.github/assets/console.png" alt="MyServer** — AI native computing room in chat" />
 
 </td>
 <td align="center" width="33%">
@@ -377,10 +377,7 @@ Everything is a module. Install the [Dashboard](https://github.com/ErisPulse/Eri
 </tr>
 </table>
 
-Module market: https://www.erisdev.com/#market · `epsdk install MyServer QvQChat`
-
----
-
+Module marketplace: https://www.erisdev.com/#market · `epsdk install MyServer QvQChat`
 
 ---
 

@@ -318,7 +318,7 @@ epsdk run main.py --reload
 
 ## 同じコード。複数のプラットフォーム。
 
-*まったく同じコマンドハンドラ。異なるプラットフォーム。ビジネスロジックを一切変更することなく利用可能。*
+*まったく同じコマンドハンドラ。異なるプラットフォーム。業務ロジックを一切変更せずに利用可能。*
 
 <table>
 <tr>
@@ -326,21 +326,21 @@ epsdk run main.py --reload
 
 **Kook**
 
-<img src=".github/assets/demo-kook.png" alt="Kook 演示" />
+<img src=".github/assets/demo-kook.png" alt="Kook デモ" />
 
 </td>
 <td align="center" width="33%">
 
 **QQ**
 
-<img src=".github/assets/demo-qq.png" alt="QQ 演示" />
+<img src=".github/assets/demo-qq.png" alt="QQ デモ" />
 
 </td>
 <td align="center" width="33%">
 
 **云湖**
 
-<img src=".github/assets/demo-yunhu.png" alt="云湖 演示" />
+<img src=".github/assets/demo-yunhu.png" alt="云湖 デモ" />
 
 </td>
 </tr>
@@ -348,7 +348,7 @@ epsdk run main.py --reload
 
 ## ## エコシステムモジュール
 
-すべてがモジュールです。[Dashboard](https://github.com/ErisPulse/ErisPulse-Dashboard) 管理パネル、[MyServer](https://github.com/wsu2059q/ErisPulse-MyServer) チャット内 AI ネイティブサーバーコンソール、[QvQChat](https://github.com/wsu2059q/ErisPulse-QvQChat) AI エージェントモジュールをはじめ、多数のコミュニティモジュールを必要に応じてインストール：
+すべてがモジュールです。[Dashboard](https://github.com/ErisPulse/ErisPulse-Dashboard) 管理パネル、[MyServer](https://github.com/wsu2059q/ErisPulse-MyServer) チャット内の AI 原生クラウド、[QvQChat](https://github.com/wsu2059q/ErisPulse-QvQChat) AI エージェントなど、数十のコミュニティモジュールを必要に応じてインストールできます：
 
 <table>
 <tr>
@@ -361,9 +361,9 @@ epsdk run main.py --reload
 </td>
 <td align="center" width="33%">
 
-**MyServer** — チャット内 AI ネイティブサーバーコンソール
+**MyServer** — チャット内の AI 原生クラウド
 
-<img src="https://raw.githubusercontent.com/wsu2059q/ErisPulse-MyServer/main/.github/assets/console.png" alt="MyServer** — チャット内 AI ネイティブサーバーコンソール" />
+<img src="https://raw.githubusercontent.com/wsu2059q/ErisPulse-MyServer/main/.github/assets/console.png" alt="MyServer** — チャット内の AI 原生クラウド" />
 
 </td>
 <td align="center" width="33%">
@@ -376,10 +376,7 @@ epsdk run main.py --reload
 </tr>
 </table>
 
-モジュールマーケット：https://www.erisdev.com/#market · `epsdk install MyServer QvQChat`
-
----
-
+モジュールマーケット: https://www.erisdev.com/#market · `epsdk install MyServer QvQChat`
 
 ---
 

@@ -318,7 +318,7 @@ epsdk run main.py --reload
 
 ## 同一份程式碼。多個平台。
 
-*完全相同的命令處理器。不同的平台。無需修改任何業務邏輯。*
+*完全相同的指令處理器。不同的平台。無需修改任何業務邏輯。*
 
 <table>
 <tr>
@@ -348,7 +348,7 @@ epsdk run main.py --reload
 
 ## ## 生態模組
 
-一切皆模組。裝上 [Dashboard](https://github.com/ErisPulse/ErisPulse-Dashboard) 管理面板、[MyServer](https://github.com/wsu2059q/ErisPulse-MyServer) 聊天裡的 AI 原生機房、[QvQChat](https://github.com/wsu2059q/ErisPulse-QvQChat) AI 智能體，幾十個社區模組按需安裝：
+一切皆模組。裝上 [Dashboard](https://github.com/ErisPulse/ErisPulse-Dashboard) 管理面板、[MyServer](https://github.com/wsu2059q/ErisPulse-MyServer) 聊天裡的 AI 原生機房、[QvQChat](https://github.com/wsu2059q/ErisPulse-QvQChat) AI 智慧體，數十個社群模組按需安裝：
 
 <table>
 <tr>
@@ -368,15 +368,15 @@ epsdk run main.py --reload
 </td>
 <td align="center" width="33%">
 
-**QvQChat** — AI 智能體模組
+**QvQChat** — AI 智慧體模組
 
-<img src="https://raw.githubusercontent.com/wsu2059q/ErisPulse-QvQChat/main/.github/assets/fleet-demo.png" alt="QvQChat** — AI 智能體模組" />
+<img src="https://raw.githubusercontent.com/wsu2059q/ErisPulse-QvQChat/main/.github/assets/fleet-demo.png" alt="QvQChat** — AI 智慧體模組" />
 
 </td>
 </tr>
 </table>
 
-模組市場：https://www.erisdev.com/#market · `epsdk install MyServer QvQChat`
+模組市集：https://www.erisdev.com/#market · `epsdk install MyServer QvQChat`
 
 ---
 
