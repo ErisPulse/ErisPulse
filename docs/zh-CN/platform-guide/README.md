@@ -37,8 +37,9 @@
 - [Discord](discord.md)
 - [Webhook协议桥](webhook.md)
 - [微信公众号](wechatmp.md)
-
-> 此外还有 `sandbox` 适配器，但此适配器无需维护平台特性文档
+- [微信ClawBot](wechatclaw.md)
+- [Sandbox 沙盒](sandbox.md)
+- [Terminal 终端](terminal.md)
 
 ---
 
