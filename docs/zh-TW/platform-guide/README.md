@@ -15,7 +15,7 @@
 
 ## 平台特定功能
 
-此部分由各轉接器開發者維護，用於說明該轉接器與 OneBot12 標準的差異和擴充功能。請參考以下各平台的詳細文件：
+此部分由各适配器开发者维护，用于说明该适配器与 OneBot12 标準的差異和擴展功能。請參考以下各平台的詳細文件：
 
 - [維護說明](maintain-notes.md)
 
@@ -37,8 +37,9 @@
 - [Discord](discord.md)
 - [Webhook協定橋](webhook.md)
 - [微信公眾號](wechatmp.md)
-
-> 此外還有 `sandbox` 轉接器，但此轉接器無需維護平台特性文件
+- [微信ClawBot](wechatclaw.md)
+- [Sandbox 沙盒](sandbox.md)
+- [Terminal 終端](terminal.md)
 
 ---
 

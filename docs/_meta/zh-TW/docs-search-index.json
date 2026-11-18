@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 2034,
+  "total_keywords": 2043,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -3935,7 +3935,7 @@
     "Send 鏈式呼叫": [
       {
         "document": "platform-guide/README.md",
-        "line": 47,
+        "line": 48,
         "level": 3,
         "title": "Send 鏈式呼叫"
       }
@@ -5538,6 +5538,14 @@
         "title": "三種模式怎麼選"
       }
     ],
+    "上下文令牌與回覆": [
+      {
+        "document": "platform-guide/wechatclaw.md",
+        "line": 44,
+        "level": 3,
+        "title": "上下文令牌與回覆"
+      }
+    ],
     "上下文管理": [
       {
         "document": "advanced/client.md",
@@ -6115,7 +6123,7 @@
       },
       {
         "document": "platform-guide/README.md",
-        "line": 175,
+        "line": 176,
         "level": 3,
         "title": "事件監聽"
       }
@@ -7861,7 +7869,7 @@
     "參考連結": [
       {
         "document": "platform-guide/README.md",
-        "line": 283,
+        "line": 284,
         "level": 2,
         "title": "參考連結"
       }
@@ -7869,7 +7877,7 @@
     "參與貢獻": [
       {
         "document": "platform-guide/README.md",
-        "line": 295,
+        "line": 296,
         "level": 2,
         "title": "參與貢獻"
       }
@@ -8786,6 +8794,12 @@
       {
         "document": "platform-guide/webhook.md",
         "line": 13,
+        "level": 2,
+        "title": "基本資訊"
+      },
+      {
+        "document": "platform-guide/wechatclaw.md",
+        "line": 3,
         "level": 2,
         "title": "基本資訊"
       },
@@ -10270,6 +10284,14 @@
         "title": "平台原生事件"
       }
     ],
+    "平台定位": [
+      {
+        "document": "platform-guide/wechatclaw.md",
+        "line": 11,
+        "level": 2,
+        "title": "平台定位"
+      }
+    ],
     "平台專有修飾方法": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
@@ -10436,6 +10458,14 @@
         "title": "平台能力查詢"
       }
     ],
+    "平台限制": [
+      {
+        "document": "platform-guide/wechatclaw.md",
+        "line": 71,
+        "level": 2,
+        "title": "平台限制"
+      }
+    ],
     "廣播": [
       {
         "document": "advanced/connections.md",
@@ -10594,6 +10624,14 @@
         "line": 395,
         "level": 3,
         "title": "循環對話"
+      }
+    ],
+    "微信 ClawBot（WechatClaw）適配器 - 平台特性文件": [
+      {
+        "document": "platform-guide/wechatclaw.md",
+        "line": 1,
+        "level": 1,
+        "title": "微信 ClawBot（WechatClaw）適配器 - 平台特性文件"
       }
     ],
     "微信公眾號（WechatMp）適配器 - 平台特性文件": [
@@ -10932,6 +10970,14 @@
         "title": "手動部署（pip）"
       }
     ],
+    "扩展 API（call_api）": [
+      {
+        "document": "platform-guide/wechatclaw.md",
+        "line": 64,
+        "level": 2,
+        "title": "扩展 API（call_api）"
+      }
+    ],
     "扩展字段說明": [
       {
         "document": "platform-guide/telegram.md",
@@ -10965,7 +11011,7 @@
       },
       {
         "document": "platform-guide/README.md",
-        "line": 142,
+        "line": 143,
         "level": 4,
         "title": "批量建構模式（Build）"
       }
@@ -11112,6 +11158,14 @@
         "title": "捕獲建議"
       }
     ],
+    "掃碼登入端點（第三方前端可對接）": [
+      {
+        "document": "platform-guide/wechatclaw.md",
+        "line": 22,
+        "level": 3,
+        "title": "掃碼登入端點（第三方前端可對接）"
+      }
+    ],
     "排序、分頁": [
       {
         "document": "advanced/sql-builder.md",
@@ -11134,6 +11188,14 @@
         "line": 299,
         "level": 3,
         "title": "排查清单"
+      }
+    ],
+    "接入與綁定": [
+      {
+        "document": "platform-guide/wechatclaw.md",
+        "line": 15,
+        "level": 2,
+        "title": "接入與綁定"
       }
     ],
     "接收訊息": [
@@ -11420,6 +11482,12 @@
       {
         "document": "platform-guide/sandbox.md",
         "line": 96,
+        "level": 2,
+        "title": "支援的消息發送類型"
+      },
+      {
+        "document": "platform-guide/wechatclaw.md",
+        "line": 51,
         "level": 2,
         "title": "支援的消息發送類型"
       }
@@ -12689,7 +12757,7 @@
     "標準事件格式": [
       {
         "document": "platform-guide/README.md",
-        "line": 230,
+        "line": 231,
         "level": 3,
         "title": "標準事件格式"
       }
@@ -12752,6 +12820,12 @@
       {
         "document": "platform-guide/qqbot.md",
         "line": 70,
+        "level": 2,
+        "title": "標準化對齊"
+      },
+      {
+        "document": "platform-guide/wechatclaw.md",
+        "line": 30,
         "level": 2,
         "title": "標準化對齊"
       }
@@ -12869,7 +12943,7 @@
     "標準回應格式": [
       {
         "document": "platform-guide/README.md",
-        "line": 251,
+        "line": 252,
         "level": 3,
         "title": "標準回應格式"
       }
@@ -12885,7 +12959,7 @@
     "標準格式": [
       {
         "document": "platform-guide/README.md",
-        "line": 225,
+        "line": 226,
         "level": 2,
         "title": "標準格式"
       }
@@ -13408,6 +13482,14 @@
         "title": "流式訊息（v5 新增，單聊）"
       }
     ],
+    "消息事件": [
+      {
+        "document": "platform-guide/wechatclaw.md",
+        "line": 38,
+        "level": 3,
+        "title": "消息事件"
+      }
+    ],
     "消息事件 (message)": [
       {
         "document": "platform-guide/wechatmp.md",
@@ -13541,7 +13623,7 @@
     "消息發送失敗": [
       {
         "document": "platform-guide/README.md",
-        "line": 268,
+        "line": 269,
         "level": 4,
         "title": "消息發送失敗"
       }
@@ -13549,7 +13631,7 @@
     "消息發送成功": [
       {
         "document": "platform-guide/README.md",
-        "line": 252,
+        "line": 253,
         "level": 4,
         "title": "消息發送成功"
       }
@@ -14169,7 +14251,7 @@
     "異步發送與結果處理": [
       {
         "document": "platform-guide/README.md",
-        "line": 92,
+        "line": 93,
         "level": 4,
         "title": "異步發送與結果處理"
       }
@@ -14443,7 +14525,7 @@
     "發送規則裝飾器": [
       {
         "document": "platform-guide/README.md",
-        "line": 107,
+        "line": 108,
         "level": 4,
         "title": "發送規則裝飾器"
       }
@@ -16893,7 +16975,7 @@
     "通用介面": [
       {
         "document": "platform-guide/README.md",
-        "line": 45,
+        "line": 46,
         "level": 2,
         "title": "通用介面"
       }
@@ -17548,6 +17630,14 @@
         "line": 43,
         "level": 2,
         "title": "配置"
+      }
+    ],
+    "配置參考": [
+      {
+        "document": "platform-guide/wechatclaw.md",
+        "line": 77,
+        "level": 2,
+        "title": "配置參考"
       }
     ],
     "配置命令": [

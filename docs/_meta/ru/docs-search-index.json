@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 2067,
+  "total_keywords": 2075,
   "keywords": {
     "0 Успех (OK)": [
       {
@@ -4062,6 +4062,14 @@
         "title": "Адаптер"
       }
     ],
+    "Адаптер WeChat ClawBot (WechatClaw) - Документация по функциональным возможностям платформы": [
+      {
+        "document": "platform-guide/wechatclaw.md",
+        "line": 1,
+        "level": 1,
+        "title": "Адаптер WeChat ClawBot (WechatClaw) - Документация по функциональным возможностям платформы"
+      }
+    ],
     "Адаптер официального аккаунта WeChat (WechatMp) — документация по особенностям платформы": [
       {
         "document": "platform-guide/wechatmp.md",
@@ -4214,12 +4222,12 @@
         "title": "Асинхронная обработка"
       }
     ],
-    "Асинхронная отправка и обработка результата": [
+    "Асинхронная отправка и обработка результатов": [
       {
         "document": "platform-guide/README.md",
-        "line": 92,
+        "line": 93,
         "level": 4,
-        "title": "Асинхронная отправка и обработка результата"
+        "title": "Асинхронная отправка и обработка результатов"
       }
     ],
     "Асинхронное программирование": [
@@ -4708,14 +4716,6 @@
         "line": 252,
         "level": 3,
         "title": "Внедрение зависимостей (Depends)"
-      }
-    ],
-    "Внесение вклада": [
-      {
-        "document": "platform-guide/README.md",
-        "line": 297,
-        "level": 2,
-        "title": "Внесение вклада"
       }
     ],
     "Внешние ключи (основа сопоставления отношений)": [
@@ -5575,7 +5575,7 @@
     "Декораторы правил отправки": [
       {
         "document": "platform-guide/README.md",
-        "line": 107,
+        "line": 108,
         "level": 4,
         "title": "Декораторы правил отправки"
       }
@@ -5708,14 +5708,6 @@
         "title": "Документация ErisPulse"
       }
     ],
-    "Документация ErisPulse PlatformFeatures": [
-      {
-        "document": "platform-guide/README.md",
-        "line": 1,
-        "level": 1,
-        "title": "Документация ErisPulse PlatformFeatures"
-      }
-    ],
     "Документация по возможностям платформы «Кафе Хуафэн» (RockyChat)": [
       {
         "document": "platform-guide/ideaura.md",
@@ -5826,6 +5818,14 @@
         "line": 1,
         "level": 1,
         "title": "Документация по функциям платформы Bilibili"
+      }
+    ],
+    "Документация по функциям платформы ErisPulse": [
+      {
+        "document": "platform-guide/README.md",
+        "line": 1,
+        "level": 1,
+        "title": "Документация по функциям платформы ErisPulse"
       }
     ],
     "Документация по функциям платформы Kook": [
@@ -7382,6 +7382,14 @@
         "title": "Контекстное управление"
       }
     ],
+    "Контекстные токены и ответы": [
+      {
+        "document": "platform-guide/wechatclaw.md",
+        "line": 44,
+        "level": 3,
+        "title": "Контекстные токены и ответы"
+      }
+    ],
     "Контракт сервиса: meta.services": [
       {
         "document": "advanced/module-communication.md",
@@ -8739,7 +8747,7 @@
     "Неудачная отправка сообщения": [
       {
         "document": "platform-guide/README.md",
-        "line": 270,
+        "line": 271,
         "level": 4,
         "title": "Неудачная отправка сообщения"
       }
@@ -9312,6 +9320,12 @@
         "line": 375,
         "level": 2,
         "title": "Обработка событий"
+      },
+      {
+        "document": "platform-guide/README.md",
+        "line": 176,
+        "level": 3,
+        "title": "Обработка событий"
       }
     ],
     "Обработка событий взаимодействия": [
@@ -9474,6 +9488,14 @@
         "title": "Общая обработка"
       }
     ],
+    "Общие интерфейсы": [
+      {
+        "document": "platform-guide/README.md",
+        "line": 46,
+        "level": 2,
+        "title": "Общие интерфейсы"
+      }
+    ],
     "Общие ключи": [
       {
         "document": "developer-guide/configuration.md",
@@ -9528,14 +9550,6 @@
         "line": 175,
         "level": 3,
         "title": "Общий входной интерфейс действий"
-      }
-    ],
-    "Общий интерфейс": [
-      {
-        "document": "platform-guide/README.md",
-        "line": 45,
-        "level": 2,
-        "title": "Общий интерфейс"
       }
     ],
     "Общий метод request": [
@@ -9680,6 +9694,14 @@
         "line": 128,
         "level": 2,
         "title": "Ограничения и замечания"
+      }
+    ],
+    "Ограничения платформы": [
+      {
+        "document": "platform-guide/wechatclaw.md",
+        "line": 71,
+        "level": 2,
+        "title": "Ограничения платформы"
       }
     ],
     "Ограничения циклов событий": [
@@ -10170,6 +10192,12 @@
       {
         "document": "platform-guide/webhook.md",
         "line": 13,
+        "level": 2,
+        "title": "Основная информация"
+      },
+      {
+        "document": "platform-guide/wechatclaw.md",
+        "line": 3,
         "level": 2,
         "title": "Основная информация"
       },
@@ -11250,6 +11278,14 @@
         "title": "Платформенно-специфические методы"
       }
     ],
+    "Платформенно-специфические функции": [
+      {
+        "document": "platform-guide/README.md",
+        "line": 16,
+        "level": 2,
+        "title": "Платформенно-специфические функции"
+      }
+    ],
     "Платформенные расширения": [
       {
         "document": "api-reference/event-system.md",
@@ -11660,6 +11696,14 @@
         "title": "Подключение Claude Desktop"
       }
     ],
+    "Подключение и привязка": [
+      {
+        "document": "platform-guide/wechatclaw.md",
+        "line": 15,
+        "level": 2,
+        "title": "Подключение и привязка"
+      }
+    ],
     "Подключение к Gateway": [
       {
         "document": "platform-guide/discord.md",
@@ -11786,6 +11830,14 @@
         "line": 836,
         "level": 3,
         "title": "Подтверждение диалога (confirm)"
+      }
+    ],
+    "Позиционирование платформы": [
+      {
+        "document": "platform-guide/wechatclaw.md",
+        "line": 11,
+        "level": 2,
+        "title": "Позиционирование платформы"
       }
     ],
     "Полезные ссылки": [
@@ -13130,14 +13182,6 @@
         "title": "Прослушивание с подстановочными знаками и регулярными выражениями"
       }
     ],
-    "Прослушивание событий": [
-      {
-        "document": "platform-guide/README.md",
-        "line": 175,
-        "level": 3,
-        "title": "Прослушивание событий"
-      }
-    ],
     "Просмотр доступных модулей": [
       {
         "document": "quick-start.md",
@@ -13494,6 +13538,14 @@
         "title": "Распространённые ошибки"
       }
     ],
+    "Расширение API (call_api)": [
+      {
+        "document": "platform-guide/wechatclaw.md",
+        "line": 64,
+        "level": 2,
+        "title": "Расширение API (call_api)"
+      }
+    ],
     "Расширение для всех платформ (шаблон)": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
@@ -13834,12 +13886,12 @@
         "title": "Режим быстрого построения (статический)"
       }
     ],
-    "Режим пакетной сборки (Build)": [
+    "Режим построения пакета (Build)": [
       {
         "document": "platform-guide/README.md",
-        "line": 142,
+        "line": 143,
         "level": 4,
-        "title": "Режим пакетной сборки (Build)"
+        "title": "Режим построения пакета (Build)"
       }
     ],
     "Режим разработки": [
@@ -15252,6 +15304,12 @@
         "line": 158,
         "level": 3,
         "title": "События сообщений"
+      },
+      {
+        "document": "platform-guide/wechatclaw.md",
+        "line": 38,
+        "level": 3,
+        "title": "События сообщений"
       }
     ],
     "События сообщений (Message Events)": [
@@ -16156,6 +16214,14 @@
         "title": "Справочник методов"
       }
     ],
+    "Справочник по конфигурации": [
+      {
+        "document": "platform-guide/wechatclaw.md",
+        "line": 77,
+        "level": 2,
+        "title": "Справочник по конфигурации"
+      }
+    ],
     "Справочник по установке": [
       {
         "document": "user-guide/installation.md",
@@ -16207,7 +16273,7 @@
     "Ссылки": [
       {
         "document": "platform-guide/README.md",
-        "line": 285,
+        "line": 286,
         "level": 2,
         "title": "Ссылки"
       }
@@ -16288,6 +16354,14 @@
         "line": 68,
         "level": 3,
         "title": "Стандартизация detail_type для событий входа/выхода (0.1.2)"
+      }
+    ],
+    "Стандартизация выравнивания": [
+      {
+        "document": "platform-guide/wechatclaw.md",
+        "line": 30,
+        "level": 2,
+        "title": "Стандартизация выравнивания"
       }
     ],
     "Стандартизация выравнивания (1.2.2)": [
@@ -16592,6 +16666,14 @@
         "title": "Стандартные типы сообщений"
       }
     ],
+    "Стандартные форматы": [
+      {
+        "document": "platform-guide/README.md",
+        "line": 228,
+        "level": 2,
+        "title": "Стандартные форматы"
+      }
+    ],
     "Стандартный маппинг OB12": [
       {
         "document": "platform-guide/onebot11.md",
@@ -16622,18 +16704,10 @@
         "title": "Стандартный список документов"
       }
     ],
-    "Стандартный формат": [
-      {
-        "document": "platform-guide/README.md",
-        "line": 227,
-        "level": 2,
-        "title": "Стандартный формат"
-      }
-    ],
     "Стандартный формат ответа": [
       {
         "document": "platform-guide/README.md",
-        "line": 253,
+        "line": 254,
         "level": 3,
         "title": "Стандартный формат ответа"
       }
@@ -16649,7 +16723,7 @@
     "Стандартный формат событий": [
       {
         "document": "platform-guide/README.md",
-        "line": 232,
+        "line": 233,
         "level": 3,
         "title": "Стандартный формат событий"
       }
@@ -17048,6 +17122,12 @@
       {
         "document": "platform-guide/email.md",
         "line": 103,
+        "level": 2,
+        "title": "Типы поддерживаемых сообщений"
+      },
+      {
+        "document": "platform-guide/wechatclaw.md",
+        "line": 51,
         "level": 2,
         "title": "Типы поддерживаемых сообщений"
       }
@@ -17591,7 +17671,7 @@
     "Успешная отправка сообщения": [
       {
         "document": "platform-guide/README.md",
-        "line": 254,
+        "line": 255,
         "level": 4,
         "title": "Успешная отправка сообщения"
       }
@@ -17696,6 +17776,14 @@
         "line": 100,
         "level": 2,
         "title": "Утилитные методы"
+      }
+    ],
+    "Участие в разработке": [
+      {
+        "document": "platform-guide/README.md",
+        "line": 299,
+        "level": 2,
+        "title": "Участие в разработке"
       }
     ],
     "Участники канала": [
@@ -17818,14 +17906,6 @@
         "title": "Формы регистрации: с одним аргументом (рекомендуется) и с двумя"
       }
     ],
-    "Функции конкретных платформ": [
-      {
-        "document": "platform-guide/README.md",
-        "line": 16,
-        "level": 2,
-        "title": "Функции конкретных платформ"
-      }
-    ],
     "Функции управления": [
       {
         "document": "platform-guide/onebot12.md",
@@ -17928,6 +18008,14 @@
         "title": "Цепочечные модификаторы (можно комбинировать)"
       }
     ],
+    "Цепочечный вызов Send": [
+      {
+        "document": "platform-guide/README.md",
+        "line": 48,
+        "level": 3,
+        "title": "Цепочечный вызов Send"
+      }
+    ],
     "Цепочечный запрос": [
       {
         "document": "advanced/sql-builder.md",
@@ -18010,14 +18098,6 @@
         "line": 132,
         "level": 2,
         "title": "Цепочка решений диспетчеризации (диагностика «почему команда не сработала»; требуется EP>=2.9.0-dev)"
-      }
-    ],
-    "Цепочные вызовы Send": [
-      {
-        "document": "platform-guide/README.md",
-        "line": 47,
-        "level": 3,
-        "title": "Цепочные вызовы Send"
       }
     ],
     "Цепочные методы (можно комбинировать)": [
@@ -18306,6 +18386,14 @@
         "line": 297,
         "level": 2,
         "title": "Элегантное завершение"
+      }
+    ],
+    "Эндпоинты для входа по QR-коду (для внешних фронтенд-интерфейсов)": [
+      {
+        "document": "platform-guide/wechatclaw.md",
+        "line": 22,
+        "level": 3,
+        "title": "Эндпоинты для входа по QR-коду (для внешних фронтенд-интерфейсов)"
       }
     ],
     "Этапы миграции": [

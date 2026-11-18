@@ -256,7 +256,7 @@
     "平台特性指南": {
       "description": "各平台特性和适配器说明",
       "icon": "fa-plug",
-      "count": 22,
+      "count": 23,
       "documents": [
         {
           "title": "ErisPulse PlatformFeatures 文档",
@@ -381,6 +381,12 @@
         {
           "title": "Terminal 平台特性文档",
           "path": "platform-guide/terminal.md",
+          "level": 1,
+          "icon": "fa-plug"
+        },
+        {
+          "title": "微信 ClawBot（WechatClaw）适配器 - 平台特性文档",
+          "path": "platform-guide/wechatclaw.md",
           "level": 1,
           "icon": "fa-plug"
         },

@@ -582,29 +582,35 @@ ErisPulse は単なるフレームワークではありません。ゼロから�
 
 ---
 
-## サポートされるプラットフォーム
+## サポートされているプラットフォーム
 
-アダプターの貢献を歓迎します！どこから始めたらいいか分からない？ [貢献ガイド](docs/ja/contributing/README.md) をご覧ください。
+アダプターの貢献を歓迎します！どこから始めたらよいか分からないですか？ [貢献ガイド](docs/ja/contributing/README.md) をご覧ください。
 
 | アダプター | 説明 |
 |--------|------|
-| <img src=".github/assets/adapter_logo/kook.svg" height="20" alt="Kook" /> [Kook](https://github.com/shanfishapp/ErisPulse-KookAdapter) | Kook（開黒啦）即時メッセージングプラットフォーム |
-| <img src=".github/assets/adapter_logo/matrix.svg" height="20" alt="Matrix" /> [Matrix](https://github.com/ErisPulse/ErisPulse-MatrixAdapter) | Matrix で分散型コミュニケーションプロトコル |
+| <img src=".github/assets/adapter_logo/kook.svg" height="20" alt="Kook" /> [Kook](https://github.com/shanfishapp/ErisPulse-KookAdapter) | Kook（開黑啦）即時メッセージングプラットフォーム |
+| <img src=".github/assets/adapter_logo/matrix.svg" height="20" alt="Matrix" /> [Matrix](https://github.com/ErisPulse/ErisPulse-MatrixAdapter) | Matrix ディセントラライズドコミュニケーションプロトコル |
 | <img src=".github/assets/adapter_logo/onebot.png" height="20" alt="OneBot" /> [OneBot11](https://github.com/ErisPulse/ErisPulse-OneBot11Adapter) | OneBot v11 一般的なロボットプロトコル |
 | <img src=".github/assets/adapter_logo/onebot.png" height="20" alt="OneBot" /> [OneBot12](https://github.com/ErisPulse/ErisPulse-OneBot12Adapter) | OneBot v12 標準プロトコル |
+| <img src=".github/assets/adapter_logo/onebot.png" height="20" alt="OneBot" /> [SnowLuma](https://github.com/ErisPulse/ErisPulse-SnowLumaAdapter) | SnowLuma バックエンド（NTQQ hook）を基にした OneBot v11 アダプター |
 | <img src=".github/assets/adapter_logo/qqbot.svg" height="20" alt="QQ" /> [QQ](https://github.com/ErisPulse/ErisPulse-QQBotAdapter) | QQ 公式ロボットプラットフォーム |
-| <img src=".github/assets/adapter_logo/sandbox.png" height="20" alt="Sandbox" /> [Sandbox](https://github.com/ErisPulse/ErisPulse-SandboxAdapter) | ブラウザでのデバッグ、実際のプラットフォームに接続する必要なし |
-| <img src=".github/assets/adapter_logo/terminal.svg" height="20" alt="Terminal" /> [Terminal](https://github.com/ErisPulse/ErisPulse-TerminalAdapter) | コマンドラインによるチャット、ゼロ設定で開発・デバッグ |
+| <img src=".github/assets/adapter_logo/sandbox.png" height="20" alt="Sandbox" /> [サンドボックス](https://github.com/ErisPulse/ErisPulse-SandboxAdapter) | ウェブ端末でのデバッグ、実際のプラットフォームに接続する必要なし |
+| <img src=".github/assets/adapter_logo/terminal.svg" height="20" alt="Terminal" /> [ターミナル](https://github.com/ErisPulse/ErisPulse-TerminalAdapter) | コマンドラインでチャット、ゼロ設定で開発・デバッグ |
 | <img src=".github/assets/adapter_logo/telegram.svg" height="20" alt="Telegram" /> [Telegram](https://github.com/ErisPulse/ErisPulse-TelegramAdapter) | グローバルな即時メッセージングプラットフォーム |
-| <img src=".github/assets/adapter_logo/email.svg" height="20" alt="Email" /> [メール](https://github.com/ErisPulse/ErisPulse-EmailAdapter) | メールプロトコルの送受信アダプター |
-| <img src=".github/assets/adapter_logo/yunhu.png" height="20" alt="Yunhu" /> [Yunhu](https://github.com/ErisPulse/ErisPulse-YunhuAdapter) | 企業向け即時メッセージングプラットフォーム（ロボット接続） |
-| <img src=".github/assets/adapter_logo/yunhu.png" height="20" alt="Yunhu" /> [Yunhu ユーザー](https://github.com/wsu2059q/ErisPulse-YunhuUserAdapter) | Yunhu ユーザープロトコルに基づく接続アダプター |
+| [Bilibili](https://github.com/ErisPulse/ErisPulse-BilibiliAdapter) | B 站のプライベートメッセージ、Cookie / スキャンログインの両方をサポート |
+| <img src=".github/assets/adapter_logo/email.svg" height="20" alt="Email" /> [メール](https://github.com/ErisPulse/ErisPulse-EmailAdapter) | メールプロトコルによる送受信アダプター |
+| <img src=".github/assets/adapter_logo/yunhu.png" height="20" alt="Yunhu" /> [雲湖](https://github.com/ErisPulse/ErisPulse-YunhuAdapter) | 企業向け即時メッセージングプラットフォーム（ロボット接続） |
+| <img src=".github/assets/adapter_logo/yunhu.png" height="20" alt="Yunhu" /> [雲湖人](https://github.com/wsu2059q/ErisPulse-YunhuUserAdapter) | 雲湖人プロトコルに基づく接続アダプター |
+| [Oopz](https://github.com/ErisPulse/ErisPulse-OopzAdapter) | Oopz 音声コミュニティ（コミュニティプロトコル、ユーザーアカウント接続、サブアカウントの使用を推奨） |
 | [花楓カフェ](https://github.com/ErisPulse/ErisPulse-Ideaura/) | Allons! \(・ω・) / |
-| <img src=".github/assets/adapter_logo/discord.svg" height="20" alt="Discord" /> [Discord](https://github.com/ErisPulse/ErisPulse-DiscordAdapter) | グローバルなコミュニティコミュニケーションプラットフォーム、サーバー、チャンネル、プライベートメッセージに対応 |
-| <img src=".github/assets/adapter_logo/webhook.svg" height="20" alt="Webhook" /> [Webhook](https://github.com/ErisPulse/ErisPulse-WebhookAdapter) | 一般的な HTTP ブリッジアダプター、任意のシステムに接続 |
+| <img src=".github/assets/adapter_logo/discord.svg" height="20" alt="Discord" /> [Discord](https://github.com/ErisPulse/ErisPulse-DiscordAdapter) | グローバルなコミュニティコミュニケーションプラットフォーム、サーバー、チャンネル、プライベートメッセージをサポート |
+| [Minecraft](https://github.com/ErisPulse/ErisPulse-MinecraftAdapter) | Minecraft Java 版サーバー（RCON）、コマンドの実行とログの監視 |
+| <img src=".github/assets/adapter_logo/webhook.svg" height="20" alt="Webhook" /> [Webhook](https://github.com/ErisPulse/ErisPulse-WebhookAdapter) | 一般的な HTTP ブリッジアダプター、任意のシステムと接続 |
 | <img src=".github/assets/adapter_logo/wechatmp.svg" height="20" alt="WechatMp" /> [WeChat 公衆号](https://github.com/ErisPulse/ErisPulse-WechatMpAdapter) | WeChat 公式の公衆号プラットフォーム |
+| [企業 WeChat](https://github.com/ErisPulse/ErisPulse-WeComAdapter) | 企業 WeChat 自建アプリのロボット、コールバック受信と自動メッセージ |
+| [WeChat ClawBot](https://github.com/ErisPulse/ErisPulse-WechatClaw) | WeChat 公式の ClawBot チャネル（iLink Bot API）、スキャンで個人アカウントをバインド |
 
-アダプターの詳細情報は [アダプター詳細紹介](docs/ja/platform-guide/README.md) をご覧ください。
+アダプターの詳細については [アダプター詳細](docs/ja/platform-guide/README.md) をご覧ください。
 
 ---
 
@@ -620,9 +626,9 @@ ErisPulse は単なるフレームワークではありません。ゼロから�
 
 ---
 
-## Star History
+## スター履歴
 
-ErisPulse が役立ったなら、ぜひ Star ⭐ を押してください。これは他の開発者がプロジェクトを知る最も直接的な方法です。
+ErisPulse が役立ったなら、ぜひスター ⭐ を押してください。これは他の開発者がプロジェクトを知る最も直接的な方法です。
 
 [![Star History Chart](https://api.star-history.com/svg?repos=ErisPulse/ErisPulse&type=Date)](https://star-history.com/#ErisPulse/ErisPulse&Date)
 
@@ -630,29 +636,29 @@ ErisPulse が役立ったなら、ぜひ Star ⭐ を押してください。こ
 
 ### 貢献ガイド
 
-ErisPulse プロジェクトの健全性は、皆様の貢献によって支えられています！あらゆる形での貢献を歓迎します：
+ErisPulse プロジェクトの健全性は、皆様の貢献によってさらに発展します！私たちはあらゆる形態の貢献を歓迎します：
 
-1. **問題の報告** — [GitHub Issues](https://github.com/ErisPulse/ErisPulse/issues) でバグ報告を送信
-2. **機能リクエスト** — [コミュニティディスカッション](https://github.com/ErisPulse/ErisPulse/discussions) で新しいアイデアを提案
-3. **コード貢献** — PR を送信する前に [コードスタイル](docs/ja/styleguide/) と [貢献ガイド](CONTRIBUTING.md) をご確認ください
-4. **ドキュメントの改善** — ドキュメントやサンプルコードを補完してください
+1. **問題の報告** — [GitHub Issues](https://github.com/ErisPulse/ErisPulse/issues) にバグ報告を投稿
+2. **機能リクエスト** — [コミュニティ討議](https://github.com/ErisPulse/ErisPulse/discussions) で新アイデアを提案
+3. **コードの貢献** — PR を提出する前に [コードスタイル](docs/ja/styleguide/) と [貢献ガイド](CONTRIBUTING.md) をご確認ください
+4. **ドキュメントの改善** — ドキュメントやサンプルコードの充実を支援
 
-**初めての貢献ですか？** ここから始めましょう 👉 [初めての貢献実践](docs/ja/contributing/first-contribution.md)
+**初めて貢献しますか？** ここから始めましょう 👉 [初めての貢献](docs/ja/contributing/first-contribution.md)
 
-[コミュニティディスカッションに参加](https://github.com/ErisPulse/ErisPulse/discussions)
+[コミュニティ討議に参加](https://github.com/ErisPulse/ErisPulse/discussions)
 
 ---
 
 <div align="center">
 
-### 謝辞
+### 感謝
 
 <img src=".github/assets/thanks.png" width="200" alt="感謝" />
 
-本プロジェクトの一部のコードは [sdkFrame](https://github.com/runoneall/sdkFrame) を基にしています。コアアダプターの標準化層は、[OneBot12 規格](https://12.onebot.dev/) を参考にしており、その恩恵を受けています。
+コアアダプタ標準化層は、[OneBot12 規格](https://12.onebot.dev/) を参考にし、その恩恵を受けています。
 
-ErisPulse の初期の探求と成長は、雲湖開発者コミュニティのサポートに支えられています。多くのアイデア、アダプター、実践的な経験は、ここから生まれました。
+ErisPulse の初期の探求と成長は、雲湖開発者コミュニティの支援に欠かせませんでした。多くのアイデア、アダプタ、実践的な経験がここから生まれました。
 
-また、ErisPulse、OneBot エコシステム、およびオープンソースコミュニティに貢献されたすべての開発者やプロジェクト作者に感謝いたします。
+また、ErisPulse、OneBot エコシステム、およびオープンソースコミュニティに貢献してくださったすべての開発者とプロジェクト作者に感謝いたします。
 
 </div>

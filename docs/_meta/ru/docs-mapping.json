@@ -256,10 +256,10 @@
     "Руководство по платформам": {
       "description": "Возможности платформ и документация адаптеров",
       "icon": "fa-plug",
-      "count": 22,
+      "count": 23,
       "documents": [
         {
-          "title": "Документация ErisPulse PlatformFeatures",
+          "title": "Документация по функциям платформы ErisPulse",
           "path": "platform-guide/README.md",
           "level": 1,
           "icon": "fa-server"
@@ -381,6 +381,12 @@
         {
           "title": "Документация по функциональным возможностям платформы Terminal",
           "path": "platform-guide/terminal.md",
+          "level": 1,
+          "icon": "fa-plug"
+        },
+        {
+          "title": "Адаптер WeChat ClawBot (WechatClaw) - Документация по функциональным возможностям платформы",
+          "path": "platform-guide/wechatclaw.md",
           "level": 1,
           "icon": "fa-plug"
         },
