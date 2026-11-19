@@ -115,9 +115,12 @@ async with sdk.storage.atransaction():
 ```
 
 同步 API（`get/set/transaction/Table(...).Execute()`）继续可用，内部经
-`AsyncBridge` 后台事件循环桥接执行——在异步 handler 中调用会短暂阻塞
-该事件循环，**首次调用会输出一次性告警**（"建议改用 a 前缀异步方法"），
-推荐优先使用 a 前缀异步方法。两条边界必须知晓：
+`AsyncBridge` 后台事件循环桥接执行——**推荐一律使用 a 前缀异步方法**
+（`aget` / `aset` / `adelete` / `atransaction` / `aExecute`）：同步接口在
+异步 handler 中调用会阻塞该事件循环直到存储操作完成（高频调用下表现为
+handler 超时、事件处理停摆），框架会对每个调用点输出限频告警（附
+`文件:行号 (函数名)` 调用点，按点冷却防刷屏）——收到告警即应把对应调用
+迁移为 a 前缀异步方法。两条边界必须知晓：
 
 - **桥接线程内禁止再调同步接口**：同步接口在桥接线程内执行，此时再调
   同步接口会抛 `RuntimeError`（防重入保护，避免自死锁）
@@ -141,18 +144,21 @@ async with sdk.storage.atransaction():
 
 ## SQLite "database is locked" 排查
 
-框架 SQLite 后端已内建：**WAL 日志模式**（读写不互斥）+ **busy_timeout 5000ms**（写锁竞争自动等待）+ autocommit 连接 + 多事件循环各持共享连接 + **事务 `BEGIN IMMEDIATE`**（2.12 起——事务开始即取写锁，消除 deferred 事务「先读后写」升级时的 `SQLITE_BUSY_SNAPSHOT`，该 busy 不重试、`busy_timeout` 无法缓解，是高频读写混合下间歇性 locked 的框架内根因）。
+框架 SQLite 后端已内建：**WAL 日志模式**（读写不互斥）+ **busy_timeout**（写锁竞争自动等待，默认 5000ms，配置项见下）+ autocommit 连接 + 多事件循环各持共享连接 + **事务 `BEGIN IMMEDIATE`**（2.12 起——事务开始即取写锁，消除 deferred 事务「先读后写」升级时的 `SQLITE_BUSY_SNAPSHOT`，该 busy 不重试、`busy_timeout` 无法缓解，是高频读写混合下间歇性 locked 的框架内根因）。
 
 2.12+ 纯框架使用（存储 / ORM / 混合双路径交错写）不应再出现 locked；仍遇到时按以下顺序排查：
 
 | 场景 | 判定 | 处置 |
 |------|------|------|
-| 事务内慢操作 | `atransaction` 块内有慢活（外部 HTTP、大计算），持锁超过 busy_timeout | 事务块内只做库操作，慢操作移出 |
+| 事务内慢操作 | `atransaction` 块内有慢活（外部 HTTP、大计算），持锁超过 busy_timeout——框架对持锁超过 1s（`STORAGE_TXN_SLOW_WARN_SECS`）的事务输出告警并附开启位置，可据此直接定位 | 事务块内只做库操作，慢操作移出 |
+| 同步 API 阻塞事件循环 | 事件 handler 大量超时 + 按调用点的「存储同步 API 在异步上下文调用」告警 | 告警指出的调用点迁移为 a 前缀异步方法（`set` → `aset` 等） |
 | 混用第二套 ORM | 同一进程内 sqlmodel / SQLAlchemy / 裸 sqlite3 自开连接写同一个库文件 | **同一库文件只用一套 ORM**（内置本就是异步原生），不要混用过渡 |
 | 多进程同文件 | 多实例 / Dashboard / 数据库工具打开同一 sqlite | 各实例独立 `config/` 目录；管理工具用只读模式打开；高频写场景切 mysql / postgres（配置一改零代码迁移） |
 | 旧版本框架 | `<2.12` 的 deferred 事务升级问题 | 升级框架 |
 
-> `busy_timeout` 当前为类常量 `_SQLITE_BUSY_TIMEOUT_MS = 5000`（`Core/storage/sqlite.py`）；如需调整属于源码级修改，不作为运行时配置暴露。
+锁互斥矩阵（WAL 模式）：**读与读、读与写不互斥**；互斥只发生在**写与写**之间——事务专用连接（`BEGIN IMMEDIATE` 持锁至提交）与各事件循环的共享连接写操作竞争同一把写锁，长事务是写等待超时的首要嫌疑。
+
+> `busy_timeout` 经 `ErisPulse.storage.sqlite.busy_timeout` 配置（毫秒，默认 5000）；调大可延长写锁排队耐心，改动需重启生效（PRAGMA 应用于连接建立时）。
 
 ## 自定义 SQL 后端
 

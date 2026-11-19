@@ -355,9 +355,9 @@ jobs:
         run: uv sync --all-extras
 
       - name: Run basedpyright type check
-        # 正式门禁：src/ErisPulse 基线 0 error（Any/Unknown 豁免由
-        # pyproject 配置管理），新增错误必须清零
-        run: uv run basedpyright src/ErisPulse
+        # 正式门禁：pyproject include（src/ErisPulse + tests/typing）基线 0 error
+        # （Any/Unknown 豁免由 pyproject 配置管理），新增错误必须清零
+        run: uv run basedpyright
 
   security-audit:
     runs-on: ubuntu-latest

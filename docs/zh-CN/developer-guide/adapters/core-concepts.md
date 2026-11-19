@@ -799,6 +799,21 @@ OneBot12 标准事件
 
 - `mark`：后续副本注入顶层字段 `"multi_receipt": {"event_id": 首受理事件id, "self_id": 首受理账户}` 后照常分发，模块读取该字段自行裁决
 - `drop`：后续副本在分发入口直接丢弃
+- **at 点名优待**：`message` 段的 mention 目标命中接收账户自身身份（`self.user_id` / `self.account_id`）的副本不参与关联（`mark` / `drop` 均豁免）——被点名的账户必定收到自己的事件，`drop` 不会误伤 @ 驱动的多账户模块；@ 消息可能在多个账户各分发一次，@ 驱动模块用 `on_at_message` 条件天然只响应一次
+
+#### 会话账户绑定（精确归属声明）
+
+内容级关联靠启发式判定"谁先到谁赢"；需要**精确声明会话归属**时，用 `ErisPulse.framework.session_accounts` 配置把会话绑定到唯一账户：
+
+```toml
+[ErisPulse.framework.session_accounts.snowluma]
+"643319481" = "1325859446"   # 会话ID → 归属账户 bot_id
+```
+
+- 绑定**独立于 `cross_account_policy` 生效**（配置绑定即等于为该会话开启去重）：归属账户的事件照常分发，其他账户副本在分发入口丢弃
+- **at 点名优待同样生效**：被 @ 的非归属账户副本仍放行
+- 绑定实时读配置，热更新生效；未配置绑定的会话完全不受影响
+- 适用于「单会话多账户只想让一个账户响应」的部署：比内容级关联更精确，无 3 秒窗口与内容比对的启发式误差
 
 `multi_receipt` 为框架注入的可选字段，适配器 Converter 不产出也不消费；策略默认 `off` 时事件结构与既有契约完全一致。
 
@@ -808,9 +823,9 @@ OneBot12 标准事件
 |------|------|----------|----------|
 | 事件幂等去重 | `ErisPulse.framework.event_dedupe`（默认开） | 同一事件 id 的重连重推（同连接） | 事件 `id` |
 | 本号回声过滤 | `ErisPulse.event.message.ignore_self`（默认开） | 接收账户自己的消息（发送者 == 接收账户） | `self.user_id` vs `user_id` |
-| 跨账户重复受理 | `ErisPulse.framework.cross_account_policy`（默认 `off`，`drop` 启用） | **同一物理消息经其它账户的副本**——多账户同群时 bot A 发言、bot B 也收到一份 | 内容级关联（同平台 + 同会话 + 同发送者 + 同内容，短窗口），键不含 self_id |
+| 跨账户重复受理 | `ErisPulse.framework.cross_account_policy`（默认 `off`，`drop` 启用） | **同一物理消息经其它账户的副本**——多账户同群时 bot A 发言、bot B 也收到一份（mention 命中本账户的副本豁免） | 内容级关联（同平台 + 同会话 + 同发送者 + 同内容，短窗口），键不含 self_id |
 
-**典型场景——多账户同群复读**：bot A 发言，同群的其他账户（bot B）也会收到一份，复读类模块看到同一内容出现两次。启用 `cross_account_policy = "drop"` 后，后续账户的副本在分发入口丢弃，任何模块至多看到一次。
+**典型场景——多账户同群复读**：bot A 发言，同群的其他账户（bot B）也会收到一份，复读类模块看到同一内容出现两次。启用 `cross_account_policy = "drop"` 后，后续账户的副本在分发入口丢弃，任何模块至多看到一次。**例外：at 点名消息**——被 @ 的账户副本始终放行（@ 驱动模块依赖它响应），其余账户副本照常去重。
 
 与 `ignore_self` 的语义正交，两者组合决定可见次数：
 

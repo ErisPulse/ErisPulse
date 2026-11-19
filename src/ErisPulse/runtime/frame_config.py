@@ -64,6 +64,7 @@ from ..Core.constants import (
     DEFAULT_WAIT_REPLY_BLOCK,
     DEFAULT_WAIT_REPLY_CMDPASS,
     HANDLER_QUEUE_MAX_PENDING,
+    SQLITE_BUSY_TIMEOUT_MS,
 )
 
 # 默认配置
@@ -108,6 +109,11 @@ DEFAULT_ERISPULSE_CONFIG = {
         # 存储后端："sqlite"（默认，零配置）/ "mysql" / "postgres"（需安装可选驱动）
         "backend": DEFAULT_STORAGE_BACKEND,
         "use_global_db": DEFAULT_USE_GLOBAL_DB,
+        # SQLite 后端写锁等待上限（毫秒，PRAGMA busy_timeout）；
+        # 应用于每连接 PRAGMA，已打开连接不随配置刷新（改动需重启生效）
+        "sqlite": {
+            "busy_timeout": SQLITE_BUSY_TIMEOUT_MS,
+        },
         # MySQL 后端连接参数（backend = "mysql" 时生效），需 pip install ErisPulse[mysql]
         "mysql": {
             "host": DEFAULT_STORAGE_MYSQL_HOST,
@@ -208,6 +214,12 @@ DEFAULT_ERISPULSE_CONFIG = {
         #        照常分发，模块读取该字段自行裁决是否响应；
         # "drop"=后续副本在分发入口直接丢弃（框架层去重，模块无感）
         "cross_account_policy": DEFAULT_CROSS_RECEIPT_POLICY,
+        # 会话账户绑定：会话归属精确声明（独立于 cross_account_policy 生效，
+        # 配置绑定即等于为该会话开启去重）。结构 {"平台名": {"会话ID": "账户标识"}}，
+        # 账户标识为 bot_id（account_id 优先 / user_id 口径，与事件侧同源）；
+        # 绑定会话仅归属账户的事件照常分发，其他账户副本在分发入口丢弃，
+        # mention 命中被点名账户时仍放行（at 点名优待）；实时读配置，热更新生效
+        "session_accounts": {},
         # CLI `epsdk run --reload` 是否把插件目录交给插件热重载 watcher 处理
         # 并从自身监控中排除（True 时插件文件变更走单模块重载而非全量 restart）
         "watch_include_plugin_dirs": True,

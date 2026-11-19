@@ -73,6 +73,37 @@
 
 ---
 
+## [2.12.1-dev.0] - 2026/11/19
+> 开发版
+
+**版本摘要**
+本版本修复多账户部署下 `cross_account_policy` 误伤 at 点名消息的严重缺陷，完成 ORM 条件查询的类型检查边界收口（`where(Field == value)` 在 mypy / pyright / ty 下不再误报），并为 SQLite 写锁竞争提供可观测性与配置逃生口。
+
+**升级建议**
+- **是否建议升级**：建议升级
+- 多账户 @ 驱动模块恢复正响应；ORM 条件查询处生态侧的 `type: ignore` 注释可整体摘除；事件 handler 内使用同步存储 API 的模块按运行期限频告警的调用点迁移为 a 前缀异步方法
+
+**注意事项**
+- ORM 条件入口（`where` / `count` / `delete_all` / `update_all`）签名纳入 `bool`（检查器视角的虚拟类型），运行时真布尔入参会被显式拒绝并给出指引；IN 条件新增 `Model.where_in()`，`in_()` 运行时行为不变（值注解声明风格下静态不可达）
+- `cross_account_policy` 支持热更新（此前策略变更需重启或重注册才生效）
+- 存储同步 API 在异步上下文调用的告警由「进程级一次性」改为「按调用点限频」（附调用点位置，60s 冷却）；事务持锁超过 1s 输出慢事务告警（附开启位置）
+- 新增 `ErisPulse.storage.sqlite.busy_timeout` 配置（毫秒，默认 5000），改动需重启生效
+- `Model.__storage__` 契约收窄为 SQL 存储后端（`SQLStorageBase`；ORM 依赖方言与参数化查询漏斗，非 SQL 后端本就无法工作）
+
+### 修复
+
+- @wsu2059q
+  - `适配器` 跨账户重复受理（mark / drop）不再误伤 at 点名消息：mention 命中本账户身份（user_id / account_id）的副本豁免关联，被 @ 的账户必定收到事件；新增 `ErisPulse.framework.session_accounts` 会话账户绑定（会话精确归属唯一账户，独立于策略生效，热更新）
+
+### 优化
+
+- @wsu2059q
+  - `ORM` 条件查询类型边界收口与查询返回值静态类型化（`first()` / `all()` / `get()` / `create()` 等返回模型实例类型），新增 `where_in`
+  - `存储` SQLite 写锁竞争可观测：长事务持锁告警（附开启位置）+ 同步 API 异步上下文调用按调用点限频告警（附调用点）；`busy_timeout` 开放为配置项
+  - `存储` 查询构建器基类泛型化（KV / SQL 各自参数化），消除内部 `_storage` 二次收窄与 5 处 type: ignore
+
+---
+
 ## [2.12.0] - 2026/11/14
 > 正式发布
 

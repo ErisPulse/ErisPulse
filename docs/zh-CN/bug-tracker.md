@@ -93,14 +93,14 @@
 |--------|------|
 | 🔴 严重 | 17 |
 | 🟡 中等 | 28 |
-| 🟢 轻微 | 3 |
-| **合计** | **48** |
+| 🟢 轻微 | 4 |
+| **合计** | **49** |
 
 | 类型 | 数量 |
 |------|------|
 | 事件系统 | 13 |
 | 配置系统 | 14 |
-| 适配器 | 5 |
+| 适配器 | 6 |
 | CLI | 4 |
 | 存储 | 4 |
 | 加载系统 | 4 |
@@ -1153,3 +1153,15 @@ _apply_rate_limit 解析 window=3600（100/hour）
 
 **严重性**: 🔴 严重（容器部署重启即服务中断）
 **类型**: CLI / 部署
+
+### [BUG-051] 跨账户重复受理（drop）误伤 at 点名消息，多账户部署消息随机丢失
+
+**问题**: 多账户部署启用 `ErisPulse.framework.cross_account_policy = "drop"` 后，群里用户 @ 某一账户时该账户经常收不到事件（框架事件流中该账户连事件都未出现），时好时坏。实测同一群 22 条消息仅 3 条到达被点名的账户，@ 驱动的多账户模块随机失聪，下游模块无任何报错。
+**原因**: `_cross_receipt_check` 的内容级去重键为四元组（同平台 + 同会话 + 同发送者 + 同 `alt_message` 摘要），不含账户与 mention 维度。同一群消息经多个账户连接各自 emit 时，先到者占位、后到者按 drop 在分发入口直接丢弃——被 @ 的目标账户常是"后到者"，事件被吞且下游无感。
+**影响版本**: 2.12.0（cross_account_policy 随 2.12.0 引入）
+**修复版本**: 2.12.1-dev.0
+**修复内容**: mention 目标命中接收账户自身身份（`self.user_id` / `self.account_id` 双口径）的副本不参与跨账户关联（mark / drop 均豁免）——被点名的账户必定收到自己的事件，其余账户副本照常去重（@ 驱动模块以 `on_at_message` 条件过滤，天然单次响应）。顺带修复：`cross_account_policy` 配置变更不热生效（惰性缓存随 config.set / config.updated 失效）；`core.adapter.event_duplicated` 翻译键缺失（trace 原样输出键名）。
+**回归测试**: tests/unit/test_unit_adapter.py::TestCrossAccountReceipt（test_drop_preserves_mentioned_account_copy 等 6 项新增用例）
+
+**严重性**: 🟢 轻微（drop 为显式配置启用的非默认路径，仅影响 @ 点名消息的分发）
+**类型**: 适配器

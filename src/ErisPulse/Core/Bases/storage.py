@@ -13,15 +13,23 @@ ErisPulse 存储基类
 
 import asyncio
 import atexit
+import sys
 import threading
+import time
 from abc import ABC, abstractmethod
+from collections import OrderedDict
 from collections.abc import AsyncIterator
 from concurrent.futures import TimeoutError as _FutureTimeout
-from contextlib import asynccontextmanager
+from contextlib import AbstractAsyncContextManager, asynccontextmanager
 from contextvars import ContextVar
-from typing import Any
+from typing import Any, Generic, TypeVar
 
-from ..constants import STORAGE_BRIDGE_JOIN_TIMEOUT_SECS
+from ..constants import (
+    STORAGE_BRIDGE_JOIN_TIMEOUT_SECS,
+    STORAGE_SYNC_IN_ASYNC_WARN_COOLDOWN_SECS,
+    STORAGE_SYNC_WARN_SITES_CAPACITY,
+    STORAGE_TXN_SLOW_WARN_SECS,
+)
 from ..i18n import i18n
 from .errors import StorageOperationError
 
@@ -33,8 +41,70 @@ _current_txn: ContextVar["_AsyncTransaction | None"] = ContextVar(
     "erispulse_storage_current_txn", default=None
 )
 
-# 同步接口在异步上下文中调用的警告只提示一次（进程级）
-_sync_in_loop_warned = False
+# sync-in-async 警告的调用点登记表（调用点描述 → 最近一次警告的单调时间戳）
+_sync_in_async_warn_sites: "OrderedDict[str, float]" = OrderedDict()
+
+# 用户帧判定：模块名以此表为前缀的帧视为框架/标准库内部帧，跳过采集
+# （模块名而非文件路径——用户项目路径可能包含任何子串）
+_INTERNAL_FRAME_MODULE_PREFIXES = ("ErisPulse", "asyncio", "contextlib")
+
+
+def _capture_user_frames(limit: int) -> list[str]:
+    """
+    {!--< internal-use >!--}
+    跳过框架与标准库内部帧，采集最近的用户层调用帧描述（``文件:行号 (函数名)``）
+
+    供 sync-in-async 警告与慢事务观测定位调用来源；最多回溯 16 帧或采满
+    limit 个即止，采集不足 limit 个时以实际数量返回。内部帧按模块名判定
+    （``ErisPulse*`` / ``asyncio*`` / ``contextlib``），同步调用链上的用户帧
+    必然可达；协程/异步生成器边界可能截断帧链（f_back 为 None），此时以
+    实际采集结果为准（可能为空）。
+
+    :param limit: 最多采集的帧数
+    :return: 用户层调用帧描述列表（按调用链由近及远排序）
+    """
+    sites: list[str] = []
+    try:
+        frame = sys._getframe(1)
+    except ValueError:  # 无帧支持的环境（嵌入解释器等）
+        return sites
+    for _ in range(16):
+        if frame is None or len(sites) >= limit:
+            break
+        module_name = str(frame.f_globals.get("__name__") or "")
+        if not module_name.startswith(_INTERNAL_FRAME_MODULE_PREFIXES):
+            sites.append(
+                f"{frame.f_code.co_filename}:{frame.f_lineno} ({frame.f_code.co_name})"
+            )
+        frame = frame.f_back
+    return sites
+
+
+def _warn_sync_in_async() -> None:
+    """
+    {!--< internal-use >!--}
+    同步存储 API 在异步上下文调用的按调用点限频警告
+
+    同步接口从协程线程调用会阻塞该事件循环（桥接等待）；进程级一次性警告
+    无法帮模块定位调用点，改为按「文件:行号 (函数名)」登记——首次警告，
+    冷却期内静默，冷却期满再次触发时重新提醒。
+    """
+    sites = _capture_user_frames(limit=1)
+    callsite = sites[0] if sites else "<未知调用点>"
+    now = time.monotonic()
+    last = _sync_in_async_warn_sites.get(callsite)
+    if last is not None and now - last < STORAGE_SYNC_IN_ASYNC_WARN_COOLDOWN_SECS:
+        _sync_in_async_warn_sites.move_to_end(callsite)
+        return
+    _sync_in_async_warn_sites[callsite] = now
+    while len(_sync_in_async_warn_sites) > STORAGE_SYNC_WARN_SITES_CAPACITY:
+        _sync_in_async_warn_sites.popitem(last=False)
+    try:
+        from ..logger import logger
+
+        logger.warning(i18n.t("core.storage.sync_in_loop_warn_site", callsite=callsite))
+    except Exception:
+        pass
 
 
 def _has_running_loop() -> bool:
@@ -138,15 +208,8 @@ class AsyncBridge:
             coro.close()
             raise RuntimeError(i18n.t("core.storage.bridge_reentrant"))
 
-        global _sync_in_loop_warned
-        if not _sync_in_loop_warned and _has_running_loop():
-            _sync_in_loop_warned = True
-            try:
-                from ..logger import logger
-
-                logger.warning(i18n.t("core.storage.sync_in_loop_warn"))
-            except Exception:
-                pass
+        if _has_running_loop():
+            _warn_sync_in_async()
 
         future = asyncio.run_coroutine_threadsafe(coro, loop)
         try:
@@ -182,12 +245,14 @@ class _AsyncTransaction:
     连接的获取/提交/回滚/释放委托给后端的对应 hook。
     """
 
-    __slots__ = ("conn", "handle", "storage")
+    __slots__ = ("_open_site", "_started_at", "conn", "handle", "storage")
 
     def __init__(self, storage: "BaseStorage"):
         self.storage = storage
         self.conn: Any = None
         self.handle: Any = None
+        self._started_at: float | None = None
+        self._open_site: str = ""
 
     async def start(self) -> None:
         """
@@ -212,6 +277,8 @@ class _AsyncTransaction:
                 "存在长时间持锁的事务或连接池不可用",
                 operation="transaction_begin",
             ) from e
+        # 持锁时长观测锚点：BEGIN 成功即计时（覆盖事务块内全部用户代码耗时）
+        self._started_at = time.monotonic()
 
     async def finish(self, exc: BaseException | None) -> None:
         """
@@ -221,6 +288,7 @@ class _AsyncTransaction:
         """
         conn, self.conn = self.conn, None
         handle, self.handle = self.handle, None
+        started_at, self._started_at = self._started_at, None
         if conn is None:
             return
         try:
@@ -230,6 +298,29 @@ class _AsyncTransaction:
                 await self.storage._rollback_txn(conn, handle)
         finally:
             await self.storage._release_txn_conn(conn)
+            # 回滚路径同样持锁，一并纳入观测
+            self._warn_slow_txn(started_at)
+
+    def _warn_slow_txn(self, started_at: float | None) -> None:
+        """{!--< internal-use >!--} 持锁时长超过 STORAGE_TXN_SLOW_WARN_SECS 时告警并附开启位置"""
+        if started_at is None:
+            return
+        duration = time.monotonic() - started_at
+        if duration <= STORAGE_TXN_SLOW_WARN_SECS:
+            return
+        try:
+            from ..logger import logger
+
+            logger.warning(
+                i18n.t(
+                    "core.storage.txn_slow",
+                    duration=f"{duration:.2f}",
+                    threshold=f"{STORAGE_TXN_SLOW_WARN_SECS:g}",
+                    frames=self._open_site,
+                )
+            )
+        except Exception:
+            pass
 
 
 class _EmptyTransaction:
@@ -284,7 +375,11 @@ class _SyncTransaction:
         # 不吞异常：与旧版 _Transaction 一致，异常照常向外传播
 
 
-class BaseQueryBuilder(ABC):
+# 构建器绑定的存储后端类型（KV / SQL 各自参数化，_storage 免二次收窄）
+_StorageT = TypeVar("_StorageT", bound="BaseStorage")
+
+
+class BaseQueryBuilder(ABC, Generic[_StorageT]):
     """
     查询构建器抽象基类
 
@@ -301,7 +396,7 @@ class BaseQueryBuilder(ABC):
     {!--< /tips >!--}
     """
 
-    def __init__(self, storage: "BaseStorage", table: str):
+    def __init__(self, storage: _StorageT, table: str):
         self._storage = storage
         self._table = table
         self._operation: str | None = None
@@ -314,7 +409,7 @@ class BaseQueryBuilder(ABC):
         self._offset: int | None = None
         self._as_dict: bool = False
 
-    def ToDict(self) -> "BaseQueryBuilder":
+    def ToDict(self) -> "BaseQueryBuilder[_StorageT]":
         """
         将 SELECT 结果以字典形式返回（链式修饰，返回 self）
 
@@ -331,7 +426,7 @@ class BaseQueryBuilder(ABC):
         self._as_dict = True
         return self
 
-    def Select(self, *columns: str) -> "BaseQueryBuilder":
+    def Select(self, *columns: str) -> "BaseQueryBuilder[_StorageT]":
         """
         指定查询列
 
@@ -345,7 +440,7 @@ class BaseQueryBuilder(ABC):
         self._columns = list(columns)
         return self
 
-    def Insert(self, data: dict[str, Any]) -> "BaseQueryBuilder":
+    def Insert(self, data: dict[str, Any]) -> "BaseQueryBuilder[_StorageT]":
         """
         插入一行数据
 
@@ -359,7 +454,7 @@ class BaseQueryBuilder(ABC):
         self._data = data
         return self
 
-    def InsertMulti(self, data: list[dict[str, Any]]) -> "BaseQueryBuilder":
+    def InsertMulti(self, data: list[dict[str, Any]]) -> "BaseQueryBuilder[_StorageT]":
         """
         批量插入多行数据
 
@@ -376,7 +471,7 @@ class BaseQueryBuilder(ABC):
         self._data = data
         return self
 
-    def Update(self, data: dict[str, Any]) -> "BaseQueryBuilder":
+    def Update(self, data: dict[str, Any]) -> "BaseQueryBuilder[_StorageT]":
         """
         更新数据
 
@@ -390,7 +485,7 @@ class BaseQueryBuilder(ABC):
         self._data = data
         return self
 
-    def Delete(self) -> "BaseQueryBuilder":
+    def Delete(self) -> "BaseQueryBuilder[_StorageT]":
         """
         删除行
 
@@ -402,7 +497,7 @@ class BaseQueryBuilder(ABC):
         self._operation = "delete"
         return self
 
-    def Where(self, condition: str, *params: Any) -> "BaseQueryBuilder":
+    def Where(self, condition: str, *params: Any) -> "BaseQueryBuilder[_StorageT]":
         """
         添加 WHERE 条件
 
@@ -419,7 +514,7 @@ class BaseQueryBuilder(ABC):
         self._where_params.extend(params)
         return self
 
-    def OrderBy(self, column: str, desc: bool = False) -> "BaseQueryBuilder":
+    def OrderBy(self, column: str, desc: bool = False) -> "BaseQueryBuilder[_StorageT]":
         """
         添加排序规则
 
@@ -435,7 +530,7 @@ class BaseQueryBuilder(ABC):
         self._order_by.append((column, desc))
         return self
 
-    def Limit(self, count: int) -> "BaseQueryBuilder":
+    def Limit(self, count: int) -> "BaseQueryBuilder[_StorageT]":
         """
         限制返回条数
 
@@ -448,7 +543,7 @@ class BaseQueryBuilder(ABC):
         self._limit = count
         return self
 
-    def Offset(self, count: int) -> "BaseQueryBuilder":
+    def Offset(self, count: int) -> "BaseQueryBuilder[_StorageT]":
         """
         设置偏移量
 
@@ -461,7 +556,7 @@ class BaseQueryBuilder(ABC):
         self._offset = count
         return self
 
-    def copy(self) -> "BaseQueryBuilder":
+    def copy(self) -> "BaseQueryBuilder[_StorageT]":
         """
         深拷贝当前构建器状态
 
@@ -485,7 +580,7 @@ class BaseQueryBuilder(ABC):
         new._as_dict = self._as_dict
         return new
 
-    def clear(self) -> "BaseQueryBuilder":
+    def clear(self) -> "BaseQueryBuilder[_StorageT]":
         """
         重置构建器状态
 
@@ -812,7 +907,7 @@ class BaseStorage(ABC):
         ...
 
     @abstractmethod
-    def Table(self, table_name: str) -> BaseQueryBuilder:
+    def Table(self, table_name: str) -> BaseQueryBuilder[Any]:
         """
         获取指定表的查询构建器
 
@@ -857,8 +952,7 @@ class BaseStorage(ABC):
 
     # 异步事务
 
-    @asynccontextmanager
-    async def atransaction(self) -> AsyncIterator[_AsyncTransaction | None]:
+    def atransaction(self) -> "AbstractAsyncContextManager[_AsyncTransaction | None]":
         """
         异步事务上下文管理器
 
@@ -873,6 +967,17 @@ class BaseStorage(ABC):
         ...     await storage.aset("key1", "value1")
         ...     await storage.aset("key2", "value2")
         """
+        # 开启位置在同步调用瞬间采集：async with 表达式位于用户帧链上，
+        # 协程/异步生成器边界会截断帧链，事务体内采集拿不到用户帧
+        txn = _AsyncTransaction(self)
+        txn._open_site = " <- ".join(_capture_user_frames(limit=2)) or "<未知调用点>"
+        return self._atransaction_cm(txn)
+
+    @asynccontextmanager
+    async def _atransaction_cm(
+        self, txn: _AsyncTransaction
+    ) -> AsyncIterator[_AsyncTransaction | None]:
+        """{!--< internal-use >!--} :meth:`atransaction` 的上下文管道（事务生命周期）"""
         if not self._is_ready():
             yield None
             return
@@ -883,7 +988,6 @@ class BaseStorage(ABC):
             yield existing
             return
 
-        txn = _AsyncTransaction(self)
         await txn.start()
         token = _current_txn.set(txn)
         try:

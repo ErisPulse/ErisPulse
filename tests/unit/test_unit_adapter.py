@@ -3656,7 +3656,9 @@ class TestCrossAccountReceipt:
         return TestAdapter
 
     @staticmethod
-    def _message_event(event_id: str, self_id: str, sender_id: str = "user_1") -> dict:
+    def _message_event(
+        event_id: str, self_id: str, sender_id: str = "user_1", group_id: str = "group_1"
+    ) -> dict:
         return {
             "id": event_id,
             "time": 1234567890,
@@ -3665,7 +3667,7 @@ class TestCrossAccountReceipt:
             "platform": "test",
             "self": {"platform": "test", "user_id": self_id},
             "user_id": sender_id,
-            "group_id": "group_1",
+            "group_id": group_id,
             "message": [{"type": "text", "data": {"text": "hello"}}],
             "alt_message": "hello",
         }
@@ -3794,6 +3796,279 @@ class TestCrossAccountReceipt:
         )
         manager.register("test_platform", test_adapter_class, {"version": "1.0.0"})
         assert len(manager._cross_receipts) == 0
+
+    @staticmethod
+    def _mention_message_event(
+        event_id: str,
+        self_id: str,
+        mentioned_ids: list[str],
+        sender_id: str = "user_1",
+        account_id: str | None = None,
+    ) -> dict:
+        self_info: dict = {"platform": "test", "user_id": self_id}
+        if account_id:
+            self_info["account_id"] = account_id
+        return {
+            "id": event_id,
+            "time": 1234567890,
+            "type": "message",
+            "detail_type": "group",
+            "platform": "test",
+            "self": self_info,
+            "user_id": sender_id,
+            "group_id": "group_1",
+            "message": [
+                *(
+                    {"type": "mention", "data": {"user_id": target}}
+                    for target in mentioned_ids
+                ),
+                {"type": "text", "data": {"text": "hello"}},
+            ],
+            "alt_message": "hello",
+        }
+
+    @pytest.mark.asyncio
+    async def test_drop_preserves_mentioned_account_copy(self, manager):
+        """drop：被 @ 的账户副本不参与关联——先到者占位也不丢被点名账户（误伤回归）"""
+        manager._cross_receipt_policy = "drop"
+        handler_called = []
+
+        @manager.on("message")
+        async def handler(data):
+            handler_called.append(data)
+
+        # 用户 @ bot_b：bot_a 副本先到、bot_b 副本后到——两者都应分发
+        await manager.emit(
+            self._mention_message_event("ev_1", "bot_a", mentioned_ids=["bot_b"])
+        )
+        await manager.emit(
+            self._mention_message_event("ev_2", "bot_b", mentioned_ids=["bot_b"])
+        )
+        await asyncio.sleep(0)
+
+        assert len(handler_called) == 2
+        assert {event["id"] for event in handler_called} == {"ev_1", "ev_2"}
+
+    @pytest.mark.asyncio
+    async def test_mention_exempt_regardless_of_arrival_order(self, manager):
+        """drop：@ 点名优待与到达顺序无关（后到的非点名副本仍被关联丢弃）"""
+        manager._cross_receipt_policy = "drop"
+        handler_called = []
+
+        @manager.on("message")
+        async def handler(data):
+            handler_called.append(data)
+
+        # 被 @ 的 bot_b 先到（豁免，不占关联位），bot_a 副本后到（首个受理，照常分发）
+        await manager.emit(
+            self._mention_message_event("ev_1", "bot_b", mentioned_ids=["bot_b"])
+        )
+        await manager.emit(
+            self._mention_message_event("ev_2", "bot_a", mentioned_ids=["bot_b"])
+        )
+        await asyncio.sleep(0)
+
+        assert len(handler_called) == 2
+
+    @pytest.mark.asyncio
+    async def test_mention_of_other_user_still_correlated(self, manager):
+        """drop：mention 目标非任何本账户身份时不豁免（精确豁免，不放开泛 @）"""
+        manager._cross_receipt_policy = "drop"
+        handler_called = []
+
+        @manager.on("message")
+        async def handler(data):
+            handler_called.append(data)
+
+        await manager.emit(
+            self._mention_message_event("ev_1", "bot_a", mentioned_ids=["user_9"])
+        )
+        await manager.emit(
+            self._mention_message_event("ev_2", "bot_b", mentioned_ids=["user_9"])
+        )
+        await asyncio.sleep(0)
+
+        assert len(handler_called) == 1
+        assert handler_called[0]["id"] == "ev_1"
+
+    @pytest.mark.asyncio
+    async def test_mention_matches_account_id_alias(self, manager):
+        """drop：mention 目标命中 account_id（动态账户别名）同样豁免"""
+        manager._cross_receipt_policy = "drop"
+        handler_called = []
+
+        @manager.on("message")
+        async def handler(data):
+            handler_called.append(data)
+
+        await manager.emit(
+            self._mention_message_event(
+                "ev_1", "bot_a", mentioned_ids=["acct_b"], account_id="acct_a"
+            )
+        )
+        await manager.emit(
+            self._mention_message_event(
+                "ev_2", "bot_b", mentioned_ids=["acct_b"], account_id="acct_b"
+            )
+        )
+        await asyncio.sleep(0)
+
+        assert len(handler_called) == 2
+
+    @pytest.mark.asyncio
+    async def test_mark_does_not_mark_mentioned_copy(self, manager):
+        """mark：被 @ 的账户副本不注入 multi_receipt；非点名副本仍照常标记"""
+        manager._cross_receipt_policy = "mark"
+        handler_called = []
+
+        @manager.on("message")
+        async def handler(data):
+            handler_called.append(data)
+
+        # bot_a 先到（首个受理），bot_b 副本被 @ bot_b（豁免不标记），bot_c 非点名（标记）
+        await manager.emit(
+            self._mention_message_event("ev_1", "bot_a", mentioned_ids=["bot_b"])
+        )
+        await manager.emit(
+            self._mention_message_event("ev_2", "bot_b", mentioned_ids=["bot_b"])
+        )
+        await manager.emit(
+            self._mention_message_event("ev_3", "bot_c", mentioned_ids=["bot_b"])
+        )
+        await asyncio.sleep(0)
+
+        assert len(handler_called) == 3
+        assert "multi_receipt" not in handler_called[0]
+        assert "multi_receipt" not in handler_called[1]
+        assert handler_called[2]["multi_receipt"] == {"event_id": "ev_1", "self_id": "bot_a"}
+
+    async def test_policy_hot_reload_on_config_change(self, manager):
+        """策略配置变更热生效：惰性缓存随 config.set 事件失效并按新值重读"""
+        handler_called = []
+
+        @manager.on("message")
+        async def handler(data):
+            handler_called.append(data)
+
+        config.setConfig("ErisPulse.framework.cross_account_policy", "drop", immediate=True)
+        assert manager._cross_receipt_active_policy() == "drop"
+
+        await manager.emit(self._message_event("ev_1", "bot_a"))
+        await manager.emit(self._message_event("ev_2", "bot_b"))
+        await asyncio.sleep(0)
+        assert len(handler_called) == 1
+
+        config.setConfig("ErisPulse.framework.cross_account_policy", "off", immediate=True)
+        assert manager._cross_receipt_policy is None
+
+        await manager.emit(self._message_event("ev_3", "bot_a"))
+        await manager.emit(self._message_event("ev_4", "bot_b"))
+        await asyncio.sleep(0)
+        assert len(handler_called) == 3
+
+    @pytest.mark.asyncio
+    async def test_session_binding_drops_non_bound_copy(self, manager):
+        """会话绑定（独立于 cross_account_policy）：非归属账户副本丢弃，归属账户照常分发"""
+        handler_called = []
+
+        @manager.on("message")
+        async def handler(data):
+            handler_called.append(data)
+
+        config.setConfig(
+            "ErisPulse.framework.session_accounts",
+            {"test": {"group_1": "bot_a"}},
+            immediate=True,
+        )
+        try:
+            await manager.emit(self._message_event("ev_1", "bot_a"))
+            await manager.emit(self._message_event("ev_2", "bot_b"))
+            await asyncio.sleep(0)
+        finally:
+            config.setConfig("ErisPulse.framework.session_accounts", {}, immediate=True)
+
+        assert len(handler_called) == 1
+        assert handler_called[0]["id"] == "ev_1"
+
+    @pytest.mark.asyncio
+    async def test_session_binding_mention_exempts_non_bound(self, manager):
+        """会话绑定下 at 点名优待：被点名的非归属账户副本仍放行"""
+        handler_called = []
+
+        @manager.on("message")
+        async def handler(data):
+            handler_called.append(data)
+
+        config.setConfig(
+            "ErisPulse.framework.session_accounts",
+            {"test": {"group_1": "bot_a"}},
+            immediate=True,
+        )
+        try:
+            # 归属账户普通消息分发
+            await manager.emit(self._message_event("ev_1", "bot_a"))
+            # 非归属账户的普通副本丢弃
+            await manager.emit(self._message_event("ev_2", "bot_b"))
+            # 非归属账户被 @ 的副本放行
+            await manager.emit(
+                self._mention_message_event("ev_3", "bot_b", mentioned_ids=["bot_b"])
+            )
+            await asyncio.sleep(0)
+        finally:
+            config.setConfig("ErisPulse.framework.session_accounts", {}, immediate=True)
+
+        assert {event["id"] for event in handler_called} == {"ev_1", "ev_3"}
+
+    @pytest.mark.asyncio
+    async def test_session_binding_other_session_unaffected(self, manager):
+        """绑定仅作用于声明的会话：未绑定会话（策略默认 off）多账户副本照常逐一分发"""
+        handler_called = []
+
+        @manager.on("message")
+        async def handler(data):
+            handler_called.append(data)
+
+        config.setConfig(
+            "ErisPulse.framework.session_accounts",
+            {"test": {"group_1": "bot_a"}},
+            immediate=True,
+        )
+        try:
+            await manager.emit(self._message_event("ev_1", "bot_a", group_id="group_2"))
+            await manager.emit(self._message_event("ev_2", "bot_b", group_id="group_2"))
+            await asyncio.sleep(0)
+        finally:
+            config.setConfig("ErisPulse.framework.session_accounts", {}, immediate=True)
+
+        assert len(handler_called) == 2
+
+    @pytest.mark.asyncio
+    async def test_session_binding_hot_reconfig(self, manager):
+        """绑定实时读配置：运行中添加绑定立即生效"""
+        handler_called = []
+
+        @manager.on("message")
+        async def handler(data):
+            handler_called.append(data)
+
+        await manager.emit(self._message_event("ev_1", "bot_a"))
+        await manager.emit(self._message_event("ev_2", "bot_b"))
+        await asyncio.sleep(0)
+        assert len(handler_called) == 2
+
+        config.setConfig(
+            "ErisPulse.framework.session_accounts",
+            {"test": {"group_1": "bot_a"}},
+            immediate=True,
+        )
+        try:
+            await manager.emit(self._message_event("ev_3", "bot_a"))
+            await manager.emit(self._message_event("ev_4", "bot_b"))
+            await asyncio.sleep(0)
+        finally:
+            config.setConfig("ErisPulse.framework.session_accounts", {}, immediate=True)
+
+        assert {event["id"] for event in handler_called} == {"ev_1", "ev_2", "ev_3"}
 
 
 class TestUpdateBotId:

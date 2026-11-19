@@ -27,14 +27,14 @@ import json
 from typing import Any, TypeVar
 
 from ..i18n import i18n
-from .storage import BaseQueryBuilder
+from .storage import BaseQueryBuilder, BaseStorage
 
 T = TypeVar("T")
 
 _TABLE_PREFIX = "__erispulse_sql__"
 
 
-class KVQueryBuilder(BaseQueryBuilder):
+class KVQueryBuilder(BaseQueryBuilder["BaseStorage"]):
     """
     基于 KV 存储的查询构建器
 
@@ -42,7 +42,7 @@ class KVQueryBuilder(BaseQueryBuilder):
     映射为对 BaseStorage KV 接口的调用。
     """
 
-    def __init__(self, storage, table: str):
+    def __init__(self, storage: "BaseStorage", table: str):
         super().__init__(storage, table)
         self._table_prefix = f"{_TABLE_PREFIX}:{table}"
         self._bound_clauses: list[str] | None = None

@@ -310,6 +310,8 @@ await adapter.Send.To("group", target_id).Text(event.get_text())
 
 - `mark`：后续副本照常分发，但事件顶层注入 `multi_receipt` 字段（`{"event_id": 首个受理事件id, "self_id": 首个受理账户}`）——模块读取该字段自行裁决是否跳过响应
 - `drop`：副本在分发入口直接丢弃，模块无感
+- **at 点名优待**：mention 目标命中本账户身份（`self.user_id` / `self.account_id`）的副本不参与关联（不注入 `multi_receipt`、不被 `drop`）——被 @ 的账户模块（`on_at_message` 驱动）始终能收到自己的事件
+- **会话账户绑定**：`ErisPulse.framework.session_accounts` 可把会话精确绑定到唯一归属账户（绑定会话仅归属账户分发，其他账户副本丢弃；独立于策略生效，at 点名优待同样保留）
 
 ### 等待回复功能
 

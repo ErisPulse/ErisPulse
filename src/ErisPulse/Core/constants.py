@@ -250,6 +250,13 @@ SQLITE_JOURNAL_MODE: Final[str] = "PRAGMA journal_mode=WAL"
 # 修改影响: 设为 FULL 更安全（断电不丢数据），但写入更慢。
 SQLITE_SYNCHRONOUS_MODE: Final[str] = "PRAGMA synchronous=NORMAL"
 
+# SQLite 写锁等待上限（毫秒，PRAGMA busy_timeout）。
+# 使用位置: Core/storage/sqlite.py -> _apply_pragmas()（每个连接应用）。
+# 配置项: ErisPulse.storage.sqlite.busy_timeout。
+# 修改影响: 调大延长写锁排队耐心（长事务并发下减少 database is locked，
+# 单次写等待上限变长）；改动需重启生效（已打开连接的 PRAGMA 不随配置刷新）。
+SQLITE_BUSY_TIMEOUT_MS: Final[int] = 5000
+
 # KV 存储的默认表名。
 # 修改影响: 数据库中的表名。已有数据库不会自动重命名。
 DEFAULT_KV_TABLE_NAME: Final[str] = "config"
@@ -1103,6 +1110,21 @@ DEFAULT_HTTP_CLIENT_TIMEOUT_SECS: Final[float] = 30.0
 # 兜底双层保险（内层为 SQLite busy_timeout 5s），防止事务无限死等。
 STORAGE_TXN_BEGIN_TIMEOUT_SECS: Final[float] = 30.0
 
+# 长事务持锁观测阈值（秒）。
+# 使用位置: Core/Bases/storage.py -> _AsyncTransaction.finish()（提交/回滚后统计持锁时长）。
+# 修改影响: 调小更早暴露慢事务（日志噪声增多），调大减少噪声；仅观测不阻断。
+STORAGE_TXN_SLOW_WARN_SECS: Final[float] = 1.0
+
+# 存储同步 API 在异步上下文调用的按调用点限频警告冷却期（秒）。
+# 使用位置: Core/Bases/storage.py -> _warn_sync_in_async()。
+# 修改影响: 调小同一调用点警告更频繁（噪声增多），调大更安静。
+STORAGE_SYNC_IN_ASYNC_WARN_COOLDOWN_SECS: Final[float] = 60.0
+
+# sync-in-async 调用点登记表容量上限（防止动态拼接调用点导致的登记表无界增长）。
+# 使用位置: Core/Bases/storage.py -> _warn_sync_in_async()。
+# 修改影响: 仅影响同时跟踪的调用点数量，超出后最旧条目淘汰（其再次触发会重新警告一次）。
+STORAGE_SYNC_WARN_SITES_CAPACITY: Final[int] = 64
+
 # HTTP 客户端连接超时（秒）。
 # 修改影响: 建立 TCP 连接的最大等待时间。
 DEFAULT_HTTP_CLIENT_CONNECT_TIMEOUT_SECS: Final[float] = 10.0
@@ -1683,8 +1705,12 @@ __all__ = [
     "RETCODE_SDK_FAILURE",
     "SERVER_SHUTDOWN_TIMEOUT_SECS",
     "ROUTER_RELOAD_STARTUP_TIMEOUT_SECS",
+    "SQLITE_BUSY_TIMEOUT_MS",
     "SQLITE_JOURNAL_MODE",
     "SQLITE_SYNCHRONOUS_MODE",
+    "STORAGE_SYNC_IN_ASYNC_WARN_COOLDOWN_SECS",
+    "STORAGE_SYNC_WARN_SITES_CAPACITY",
+    "STORAGE_TXN_SLOW_WARN_SECS",
     "STATUS_FAILED",
     "STATUS_OK",
     "STORAGE_MAX_LIST_INDEX",

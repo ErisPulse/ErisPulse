@@ -195,7 +195,7 @@ class SDK:
     BaseAdapter: type[_BaseAdapter]
     SendDSL: type[_SendDSL]
     BaseStorage: type[_BaseStorage]
-    BaseQueryBuilder: type[_BaseQueryBuilder]
+    BaseQueryBuilder: type[_BaseQueryBuilder[Any]]
     master: MasterManager
     scope: ScopeManager
     transcript: TranscriptManager

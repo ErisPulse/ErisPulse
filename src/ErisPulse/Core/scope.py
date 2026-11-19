@@ -938,6 +938,28 @@ class ScopeManager:
             pass
         return ""
 
+    @staticmethod
+    def mention_ids_from_event(event: dict[str, Any]) -> list[str]:
+        """
+        从事件数据提取全部被 @ 的用户 ID（``message`` 段中 ``mention`` 段）
+
+        :param event: 事件数据（dict 或 Event 包装对象）
+        :return: 被 @ 的用户 ID 列表（原始类型保留；无 mention 段或非消息事件时为空列表）
+        """
+        try:
+            segments = event.get("message") or []
+        except Exception:
+            return []
+        mention_ids: list[str] = []
+        for segment in segments:
+            if not isinstance(segment, dict) or segment.get("type") != "mention":
+                continue
+            seg_data = segment.get("data")
+            user_id = seg_data.get("user_id") if isinstance(seg_data, dict) else None
+            if user_id:
+                mention_ids.append(user_id)
+        return mention_ids
+
     def _put_cache(self, cache: OrderedDict, key: tuple, value: bool) -> None:
         """{!--< internal-use >!--} 写入 LRU 缓存（超过容量时淘汰最旧）"""
         cache[key] = value

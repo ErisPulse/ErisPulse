@@ -13,7 +13,15 @@ from unittest.mock import AsyncMock, patch
 import pytest
 
 from ErisPulse.Core import StorageOperationError
+from ErisPulse.Core.i18n import i18n
 from ErisPulse.Core.storage import StorageManager, storage
+
+
+def _i18n_prefix(key: str, **placeholders: str) -> str:
+    """取 i18n 文案首个占位符前的稳定前缀（语言无关断言，跟随测试语言钉子）"""
+    sentinel = "\x00"
+    filled = i18n.t(key, **dict.fromkeys(placeholders, sentinel))
+    return filled.split(sentinel)[0]
 
 # importlib.import_module 返回真实子模块（Core.storage / Core.logger 包属性被单例遮蔽）
 storage_module = importlib.import_module("ErisPulse.Core.storage")
@@ -774,3 +782,141 @@ class TestStorageErrorLogging:
             result = storage_manager.HasTable("nope")
         assert result is False
         mock_logger.error.assert_called_once()
+
+
+# ==================== 长事务观测与 sync-in-async 调用点限频 ====================
+
+
+class TestStorageObservability:
+    """长事务持锁观测、sync-in-async 按调用点限频警告与 busy_timeout 配置"""
+
+    @pytest.fixture
+    def temp_db_file(self):
+        """创建临时数据库文件"""
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".db", delete=False) as f:
+            temp_path = f.name
+
+        yield temp_path
+
+        for ext in ["", "-wal", "-shm"]:
+            file_path = temp_path + ext
+            if os.path.exists(file_path):
+                try:
+                    os.remove(file_path)
+                except PermissionError:
+                    pass
+
+    @pytest.fixture
+    def storage_manager(self, temp_db_file):
+        """创建存储管理器实例（绕过 __init__ 的既有口径）"""
+        StorageManager._instance = None
+
+        manager = StorageManager.__new__(StorageManager)
+        manager.db_path = temp_db_file
+        manager._init_db()
+        manager._initialized = True
+
+        yield manager
+
+        StorageManager._instance = None
+
+    @pytest.mark.asyncio
+    async def test_slow_txn_warns_with_open_site(self, storage_manager, caplog, monkeypatch):
+        """持锁超过阈值的事务提交后告警，并附事务开启调用点"""
+        storage_bases = importlib.import_module("ErisPulse.Core.Bases.storage")
+        monkeypatch.setattr(storage_bases, "STORAGE_TXN_SLOW_WARN_SECS", 0.0)
+        prefix = _i18n_prefix("core.storage.txn_slow", duration="", threshold="", frames="")
+
+        with caplog.at_level("WARNING"):
+            async with storage_manager.atransaction():
+                await storage_manager.aset("slow_key", "v")
+
+        slow_warnings = [r for r in caplog.records if prefix in r.getMessage()]
+        assert len(slow_warnings) == 1
+        assert "test_unit_storage.py" in slow_warnings[0].getMessage()
+
+    @pytest.mark.asyncio
+    async def test_fast_txn_no_warning(self, storage_manager, caplog):
+        """默认阈值（1s）下快速事务不触发慢事务告警"""
+        prefix = _i18n_prefix("core.storage.txn_slow", duration="", threshold="", frames="")
+        with caplog.at_level("WARNING"):
+            async with storage_manager.atransaction():
+                await storage_manager.aset("fast_key", "v")
+
+        assert not [r for r in caplog.records if prefix in r.getMessage()]
+
+    @pytest.mark.asyncio
+    async def test_rollback_path_also_observed(self, storage_manager, caplog, monkeypatch):
+        """回滚路径同样持锁：超阈值回滚事务同样告警"""
+        storage_bases = importlib.import_module("ErisPulse.Core.Bases.storage")
+        monkeypatch.setattr(storage_bases, "STORAGE_TXN_SLOW_WARN_SECS", 0.0)
+        prefix = _i18n_prefix("core.storage.txn_slow", duration="", threshold="", frames="")
+
+        with caplog.at_level("WARNING"), pytest.raises(RuntimeError, match="boom"):
+            async with storage_manager.atransaction():
+                await storage_manager.aset("rollback_key", "v")
+                raise RuntimeError("boom")
+
+        assert [r for r in caplog.records if prefix in r.getMessage()]
+
+    @pytest.mark.asyncio
+    async def test_sync_in_async_warn_per_callsite(self, storage_manager, caplog, monkeypatch):
+        """异步上下文调用同步 API：首次告警附调用点，冷却期内同点静默"""
+        from collections import OrderedDict
+
+        storage_bases = importlib.import_module("ErisPulse.Core.Bases.storage")
+        monkeypatch.setattr(storage_bases, "_sync_in_async_warn_sites", OrderedDict())
+        monkeypatch.setattr(
+            storage_bases, "STORAGE_SYNC_IN_ASYNC_WARN_COOLDOWN_SECS", 60.0
+        )
+        prefix = _i18n_prefix("core.storage.sync_in_loop_warn_site", callsite="")
+
+        def do_sync_set():
+            storage_manager.set("sync_key", "v")
+
+        with caplog.at_level("WARNING"):
+            do_sync_set()
+            do_sync_set()
+
+        site_warnings = [r for r in caplog.records if prefix in r.getMessage()]
+        assert len(site_warnings) == 1
+        assert "test_unit_storage.py" in site_warnings[0].getMessage()
+
+    def test_resolve_busy_timeout_config_variants(self):
+        """busy_timeout 配置解析：合法值/非法值回落/缺省"""
+        from ErisPulse.Core.constants import SQLITE_BUSY_TIMEOUT_MS
+
+        resolve = StorageManager._resolve_busy_timeout
+        assert resolve({"sqlite": {"busy_timeout": 2500}}) == 2500
+        assert resolve({"sqlite": {"busy_timeout": "1234"}}) == 1234
+        assert resolve({"sqlite": {"busy_timeout": "abc"}}) == SQLITE_BUSY_TIMEOUT_MS
+        assert resolve({"sqlite": {}}) == SQLITE_BUSY_TIMEOUT_MS
+        assert resolve({}) == SQLITE_BUSY_TIMEOUT_MS
+
+    def test_busy_timeout_pragma_uses_config(self, storage_manager):
+        """PRAGMA busy_timeout 按实例配置值应用"""
+
+        async def _probe():
+            conn = await storage_manager._create_loop_resource()
+            try:
+                cursor = await conn.execute("PRAGMA busy_timeout")
+                row = await cursor.fetchone()
+                return row[0]
+            finally:
+                await conn.close()
+
+        storage_manager._busy_timeout_ms = 1234
+        assert storage_manager._bridge_run(_probe()) == 1234
+
+    def test_busy_timeout_change_triggers_restart_warning(self, storage_manager, monkeypatch):
+        """busy_timeout 配置变更触发重启提示，并更新实例值（新连接按新值应用）"""
+        runtime_module = importlib.import_module("ErisPulse.runtime")
+        monkeypatch.setattr(
+            runtime_module,
+            "get_storage_config",
+            lambda: {"backend": "sqlite", "sqlite": {"busy_timeout": 999}},
+        )
+
+        message = storage_manager._check_busy_timeout_changed()
+        assert message is not None
+        assert storage_manager._busy_timeout_ms == 999

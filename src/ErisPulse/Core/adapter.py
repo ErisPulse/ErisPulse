@@ -1911,23 +1911,117 @@ class AdapterManager(ManagerBase):
                 self._cross_receipt_policy = "off"
         return self._cross_receipt_policy
 
+    @staticmethod
+    def _mention_exempt(data: dict[str, Any]) -> bool:
+        """
+        {!--< internal-use >!--}
+        at 点名优待判定：mention 目标命中本账户身份（user_id / account_id 双口径）
+
+        被 @ 的账户不参与跨账户去重（内容级关联与会话绑定均豁免）——
+        点名驱动的模块必须收到自己被 @ 的事件。
+
+        :param data: 事件数据
+        :return: 是否命中本账户的 at 点名（True 时调用方应放行）
+        """
+        from .scope import scope as _scope
+
+        self_info = data.get("self")
+        if not isinstance(self_info, dict):
+            return False
+        self_id = str(self_info.get("user_id") or "")
+        account_id = str(self_info.get("account_id") or "")
+        self_identifiers = {self_id, account_id} - {""}
+        if not self_identifiers:
+            return False
+        mention_ids = _scope.mention_ids_from_event(data)
+        return any(str(target) in self_identifiers for target in mention_ids)
+
+    def _session_bound_account(self, platform: str, data: dict[str, Any]) -> str:
+        """
+        {!--< internal-use >!--}
+        读取会话账户绑定（``ErisPulse.framework.session_accounts``）
+
+        绑定结构 ``{"平台名": {"会话ID": "账户标识"}}``，账户标识为 bot_id
+        （account_id 优先 / user_id 口径，与事件侧 :func:`scope.bot_id_from_event`
+        同源）。实时读配置（热更新生效）；未配置或会话未绑定返回空串。
+
+        :param platform: 平台名
+        :param data: 事件数据
+        :return: 绑定的账户标识（无绑定为空串）
+        """
+        try:
+            bindings = config.getConfig("ErisPulse.framework.session_accounts", None)
+        except Exception:
+            return ""
+        if not isinstance(bindings, dict) or not bindings:
+            return ""
+        platform_bindings = bindings.get(platform)
+        if not isinstance(platform_bindings, dict):
+            return ""
+        from .scope import scope as _scope
+
+        session_id = _scope.session_id_from_event(data)
+        if not session_id:
+            return ""
+        return str(platform_bindings.get(session_id) or "")
+
     def _cross_receipt_check(self, data: dict, platform: str, trace_id: str) -> bool:
         """
         {!--< internal-use >!--}
-        跨账户重复受理关联判定（内容级，需策略 mark / drop）
+        跨账户去重判定（会话绑定优先，其次内容级关联）
 
-        同平台 + 同会话 + 同发送者 + 同 alt_message 在
-        ``DEFAULT_CROSS_RECEIPT_WINDOW_SECS`` 窗口内再次到达（无论经哪个 self_id）
-        视为同一物理消息的重复受理：mark 注入 ``multi_receipt`` 字段后放行，
-        drop 直接丢弃。alt_message 为空（无法安全比对内容）的事件不参与关联。
+        ① 会话账户绑定（``ErisPulse.framework.session_accounts``）：命中绑定
+        的会话仅归属账户照常分发，其他账户副本直接丢弃（独立于
+        ``cross_account_policy`` 生效，配置绑定即视为该会话开启去重）；
+        ② 内容级关联（需策略 mark / drop，默认 off 不关联）：同平台 +
+        同会话 + 同发送者 + 同 alt_message 在 ``DEFAULT_CROSS_RECEIPT_WINDOW_SECS``
+        窗口内再次到达（无论经哪个 self_id）视为同一物理消息的重复受理：
+        mark 注入 ``multi_receipt`` 字段后放行，drop 直接丢弃。
+
+        两条路径共同豁免：alt_message 为空（无法安全比对内容）的事件、
+        mention 目标命中本账户身份（user_id / account_id）的副本
+        （at 点名优待，避免误伤 @ 驱动的多账户模块）。
 
         :param data: 事件数据
         :param platform: 平台名
         :param trace_id: 事件 id
-        :return: 是否为重复受理且策略为 drop（True 时调用方应丢弃）
+        :return: 是否应丢弃（True 时调用方应丢弃）
         """
+        if data.get("type") != "message":
+            return False
+
+        from .scope import scope as _scope
+
+        # ① 会话账户绑定：精确声明会话归属，无内容启发式
+        bound_account = self._session_bound_account(platform, data)
+        if bound_account:
+            current_account = _scope.bot_id_from_event(data)
+            if current_account == bound_account:
+                return False
+            if self._mention_exempt(data):
+                logger.trace(
+                    i18n.t(
+                        "core.adapter.cross_receipt_mention_exempt",
+                        platform=platform,
+                        event_id=trace_id,
+                        self_id=current_account,
+                    )
+                )
+                return False
+            logger.trace(
+                i18n.t(
+                    "core.adapter.session_bound_dropped",
+                    platform=platform,
+                    event_id=trace_id,
+                    self_id=current_account,
+                    bound_account=bound_account,
+                )
+            )
+            return True
+
+        # ② 内容级关联（需策略 mark / drop；默认 off 不关联）
         policy = self._cross_receipt_active_policy()
-        if policy == "off" or data.get("type") != "message":
+        if policy == "off":
             return False
 
         self_info = data.get("self")
@@ -1936,7 +2030,18 @@ class AdapterManager(ManagerBase):
         if not self_id or not alt_message:
             return False
 
-        from .scope import scope as _scope
+        # at 点名优待：被点名的账户不参与"谁先到谁赢"，
+        # 避免 drop 策略误伤 @ 驱动的多账户模块
+        if self._mention_exempt(data):
+            logger.trace(
+                i18n.t(
+                    "core.adapter.cross_receipt_mention_exempt",
+                    platform=platform,
+                    event_id=trace_id,
+                    self_id=self_id,
+                )
+            )
+            return False
 
         session_id = _scope.session_id_from_event(data)
         sender_id = str(data.get("user_id") or "")
@@ -2435,6 +2540,8 @@ class AdapterManager(ManagerBase):
         变化时同样失效缓存待重读。
         """
         self._handler_queue_max_pending = None
+        # cross_account_policy 惰性缓存随配置变更失效，下一次事件按新值重读（热生效）
+        self._cross_receipt_policy = None
         try:
             from ..runtime import get_framework_config
 

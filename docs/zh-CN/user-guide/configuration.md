@@ -146,6 +146,7 @@ MYMODULE_API_KEY=sk-xxx docker compose up -d
 |------|------|
 | `router.cors.*` / `router.security.*` | 中间件在服务启动时写入 FastAPI，运行时无法安全热切换 |
 | `storage.use_global_db` | SQLite 文件句柄已在运行时打开，切换路径不安全 |
+| `storage.sqlite.busy_timeout` | busy_timeout 经 PRAGMA 应用于连接建立时，已打开的连接不随配置刷新 |
 
 > **中途编辑保存出错？** 若编辑 `config.toml` 时出现瞬时语法错误，框架会**保留上次有效配置**并输出诊断日志，不会把空配置广播给各组件（避免 `on_config_update` 收到空值误回退默认）。
 
@@ -478,7 +479,8 @@ adapters = []
 | watch_ignore_dirs | list | 内置清单 | 热重载文件监控忽略的目录名（`.venv`/`.git`/`__pycache__` 等）；非空列表**整体替换**内置清单，`[]` 表示不忽略任何目录 |
 | watch_include_plugin_dirs | boolean | true | `epsdk run --reload` 是否把插件目录交给插件热重载 watcher 精确处理（单模块重载），并从全量监控中排除 |
 | event_dedupe | boolean | true | 事件幂等去重：相同事件 id 的重复投递（连接层重推 / 网关重发）只分发一次 |
-| cross_account_policy | string | "off" | 跨账户重复受理策略：同一物理消息经多个账户先后到达时的处理——`off` 不关联（事件照常逐一分发）；`mark` 副本注入顶层 `multi_receipt` 字段（指向首个受理事件）后照常分发，模块读取该字段自行裁决；`drop` 副本在分发入口直接丢弃（框架层去重，模块无感） |
+| cross_account_policy | string | "off" | 跨账户重复受理策略：同一物理消息经多个账户先后到达时的处理——`off` 不关联（事件照常逐一分发，默认）；`mark` 副本注入顶层 `multi_receipt` 字段（指向首个受理事件）后照常分发，模块读取该字段自行裁决；`drop` 副本在分发入口直接丢弃（框架层去重，模块无感）。mention 目标命中接收账户自身（`user_id` / `account_id`）的副本不参与关联（at 点名优待）；策略支持热更新，变更即时生效 |
+| session_accounts | table | {} | 会话账户绑定：`{"平台名": {"会话ID": "账户bot_id"}}`，把会话精确绑定到唯一归属账户——绑定会话仅归属账户分发，其他账户副本丢弃（独立于 `cross_account_policy` 生效，配置即开启；at 点名优待保留）；实时读配置，热更新生效 |
 
 ### 主动 GC 配置
 
@@ -543,6 +545,9 @@ adapters = ["OldAdapter"]
 backend = "sqlite"        # "sqlite"（默认）/ "mysql" / "postgres"
 use_global_db = false     # 仅 SQLite：使用包内全局数据库 data/config.db
 
+[ErisPulse.storage.sqlite]     # 仅 backend = "sqlite" 时生效
+busy_timeout = 5000       # 写锁等待上限（毫秒，PRAGMA busy_timeout）
+
 [ErisPulse.storage.mysql]      # backend = "mysql" 时生效
 host = "127.0.0.1"
 port = 3306
@@ -567,6 +572,7 @@ database = "erispulse"
 |---------|------|---------|------|
 | backend | string | sqlite | 存储后端：`sqlite` / `mysql` / `postgres`，切换零代码改动 |
 | use_global_db | boolean | false | 仅 SQLite：是否使用包内全局数据库而非项目独立数据库 |
+| storage.sqlite.busy_timeout | int | 5000 | 仅 SQLite：写锁等待上限（毫秒，PRAGMA busy_timeout）；调大延长写锁排队耐心，改动需重启生效 |
 | storage.mysql.* | table | 见上 | MySQL 连接参数（host / port / user / password / database / charset / pool） |
 | storage.postgres.* | table | 见上 | PostgreSQL 连接参数（host / port / user / password / database / pool） |
 

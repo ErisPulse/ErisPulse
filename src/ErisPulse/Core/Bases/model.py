@@ -19,7 +19,7 @@ ErisPulse 数据模型层（ORM）—— 声明式模型与 Active Record CRUD
    （``save`` 主键缺失退化为插入时同样回填）
 3. ``list`` / ``dict`` 类型字段（含 ``list[int]`` 等参数化泛型）以 JSON
    文本列存储，读写自动序列化
-4. 环境无关：``Model.__storage__`` 可覆写为自定义 ``BaseStorage`` 实例
+4. 环境无关：``Model.__storage__`` 可覆写为自定义 SQL 存储后端实例
    （默认使用全局 ``ErisPulse.Core.storage`` 单例）
 5. 处于 ``storage.atransaction()`` 环境事务内时，读写自动复用事务连接，
    随事务统一提交/回滚
@@ -31,6 +31,13 @@ ErisPulse 数据模型层（ORM）—— 声明式模型与 Active Record CRUD
 8. 惯用快捷：``get_or_create`` / ``update_or_create``、
    ``save(update_fields=[...])`` 部分列更新、``Field(auto_now_add=True /
    auto_now=True)`` 时间戳列、``Field(on_delete="CASCADE")`` 外键删除动作
+9. 类型检查友好：条件入口（``where`` / ``count`` / ``delete_all`` /
+   ``update_all`` 等）同时接受 ``Condition`` 与 ``bool``——字段按值类型注解
+   （``age: int = Field(...)``）声明时，类访问比较（``User.age > 18``）在
+   类型检查器视角为 ``bool``（注解类型屏蔽描述符协议，SQLModel 同款的
+   "虚拟类型"现象），运行时实际产物是 :class:`Condition`；框架拒绝真
+   ``bool`` 入参（无法编译为 SQL 条件）。IN 条件用 :meth:`Model.where_in`
+   （``Field.in_`` 挂在运行时列表达式上，值注解风格下静态不可达）
 {!--< /tips >!--}
 
 :example:
@@ -53,16 +60,17 @@ import json
 import re
 import sys
 import time
-from typing import Any, ClassVar
+from collections.abc import Generator
+from typing import Any, ClassVar, Generic, TypeVar
 
 if sys.version_info >= (3, 11):
-    from typing import dataclass_transform
+    from typing import Self, dataclass_transform
 else:
-    from typing_extensions import dataclass_transform
+    from typing_extensions import Self, dataclass_transform
 
 
 from .config_schema import python_type_category, validate_field_constraints
-from .sql_base import BaseStorage, SQLDialect, SQLStorageBase
+from .sql_base import SQLDialect, SQLStorageBase
 from .storage import _current_txn
 
 _UNSET = object()
@@ -84,6 +92,9 @@ _JSON_CATEGORIES = frozenset({"list", "dict"})
 
 # Field(on_delete=...) 允许的外键删除动作（SQL 标准，三后端通用）
 _ON_DELETE_ACTIONS = frozenset({"CASCADE", "SET NULL", "RESTRICT", "NO ACTION", "SET DEFAULT"})
+
+# 查询集持有的模型类型
+ModelT = TypeVar("ModelT", bound="Model")
 
 
 class Field:
@@ -384,10 +395,25 @@ class Condition:
         )
 
     def __and__(self, other: Condition) -> Condition:
+        # bool 守卫：虚拟类型经组合链漏入的真布尔（与条件入口同一指引文案）
+        if isinstance(other, bool):
+            raise TypeError(_BOOL_CONDITION_ERROR)
         return Condition(combinator="AND", left=self, right=other)
 
     def __or__(self, other: Condition) -> Condition:
+        if isinstance(other, bool):
+            raise TypeError(_BOOL_CONDITION_ERROR)
         return Condition(combinator="OR", left=self, right=other)
+
+    def __rand__(self, other: Condition) -> Condition:
+        if isinstance(other, bool):
+            raise TypeError(_BOOL_CONDITION_ERROR)
+        return Condition(combinator="AND", left=other, right=self)
+
+    def __ror__(self, other: Condition) -> Condition:
+        if isinstance(other, bool):
+            raise TypeError(_BOOL_CONDITION_ERROR)
+        return Condition(combinator="OR", left=other, right=self)
 
     def compile(self, dialect: SQLDialect | None = None) -> tuple[str, list[Any]]:
         """
@@ -437,11 +463,14 @@ def _quote_ident(name: str, dialect: SQLDialect | None = None) -> str:
     return dialect.quote(name) if dialect is not None else f'"{name}"'
 
 
-class QuerySet:
+class QuerySet(Generic[ModelT]):
     """
     链式查询集（惰性构建，await 终结符执行）
 
     ``User.where(...).order_by("-age").limit(10).all()``
+
+    终结符返回值静态类型化：``all() -> list[User]`` / ``first() -> User | None``
+    （模型实例可类型安全地访问声明字段）。
 
     注意：链式方法（where / order_by / limit / offset）**就地修改**当前实例
     并返回自身——复用中间 QuerySet 对象会让条件互相串染；需要分支查询时，
@@ -452,23 +481,23 @@ class QuerySet:
     {!--< /internal-use >!--}
     """
 
-    def __init__(self, model: type[Model], condition: Condition | None = None):
+    def __init__(self, model: type[ModelT], condition: Condition | None = None):
         self._model = model
         self._condition = condition
         self._order: list[str] = []
         self._limit: int | None = None
         self._offset: int | None = None
 
-    def order_by(self, *fields: str) -> QuerySet:
+    def order_by(self, *fields: str) -> QuerySet[ModelT]:
         """排序（``"age"`` 升序 / ``"-age"`` 降序）"""
         self._order.extend(fields)
         return self
 
-    def limit(self, n: int) -> QuerySet:
+    def limit(self, n: int) -> QuerySet[ModelT]:
         self._limit = n
         return self
 
-    def offset(self, n: int) -> QuerySet:
+    def offset(self, n: int) -> QuerySet[ModelT]:
         self._offset = n
         return self
 
@@ -502,7 +531,7 @@ class QuerySet:
 
     # ---- 终结符 ----
 
-    async def all(self) -> list[Any]:
+    async def all(self) -> list[ModelT]:
         """执行查询，返回模型实例列表"""
         storage = self._model._get_storage()
         dialect = storage.dialect
@@ -515,7 +544,7 @@ class QuerySet:
         rows, cols = await storage._execute_query("select", sql, params)
         return [self._model._row_to_instance(dict(zip(cols or [], row, strict=False))) for row in rows]
 
-    async def first(self) -> Any | None:
+    async def first(self) -> ModelT | None:
         """执行查询，返回首个实例（无结果为 None）
 
         在查询集**副本**上附加 ``LIMIT 1``，不修改原查询集——同一实例先
@@ -575,30 +604,36 @@ class QuerySet:
         return int(await storage._execute_query("dml", sql, where_params))
 
 
-class _RelatedMany(QuerySet):
+class _RelatedMany(QuerySet[ModelT]):
     """
     {!--< internal-use >!--}
     has-many 关系查询集：在 :class:`QuerySet` 全部链式能力之上，
     附带 ``create`` 自动回填本表主键到对方外键列
     """
 
-    def __init__(self, model: type[Model], condition: Condition | None, instance: Model, fk: str):
+    def __init__(self, model: type[ModelT], condition: Condition | None, instance: Model, fk: str):
         super().__init__(model, condition)
         self._owner = instance
         self._fk = fk
 
-    def where(self, *conditions: Condition) -> _RelatedMany:
+    def where(self, *conditions: Condition | bool) -> _RelatedMany[ModelT]:
         """
         追加对方表字段的条件过滤（与关系外键条件 AND 组合）
+
+        条件同时接受 ``bool`` 注解形态（静态虚拟类型，见 :meth:`Model.where`）；
+        运行时真 ``bool`` 入参抛 :exc:`TypeError`。
 
         :example:
         >>> await user.posts.where(Post.title == "hi").all()
         """
         for cond in conditions:
-            self._condition = cond if self._condition is None else self._condition & cond
+            validated = _condition_arg(cond)
+            self._condition = (
+                validated if self._condition is None else self._condition & validated
+            )
         return self
 
-    async def create(self, **kwargs: Any) -> Any:
+    async def create(self, **kwargs: Any) -> ModelT:
         """
         创建对方表的一行并自动填入本实例主键
 
@@ -626,7 +661,7 @@ class _RelatedMany(QuerySet):
         return await self._model.create(**kwargs)
 
 
-class _RelatedOne:
+class _RelatedOne(Generic[ModelT]):
     """
     {!--< internal-use >!--}
     belongs-to 单条等待器：``author = await msg.author`` 即解析为对方实例或 None。
@@ -635,11 +670,11 @@ class _RelatedOne:
 
     __slots__ = ("_query", "_short_circuit")
 
-    def __init__(self, query: QuerySet, short_circuit: bool = False):
+    def __init__(self, query: QuerySet[ModelT], short_circuit: bool = False):
         self._query = query
         self._short_circuit = short_circuit
 
-    def __await__(self):
+    def __await__(self) -> Generator[Any, Any, ModelT | None]:
         if self._short_circuit:
             return _related_none().__await__()
         return self._query.first().__await__()
@@ -805,9 +840,10 @@ class Model:
     >>> await user.save()
     """
 
-    __tablename__: ClassVar[str | None] = None
-    # 存储后端覆写（None → 全局 ErisPulse.Core.storage 单例）
-    __storage__: ClassVar[BaseStorage | None] = None
+    __tablename__: ClassVar[str] = ""
+    # 存储后端覆写（None → 全局 ErisPulse.Core.storage 单例；ORM 需 SQL 后端——
+    # 方言与参数化查询漏斗均在 SQLStorageBase 上）
+    __storage__: ClassVar[SQLStorageBase | None] = None
 
     _fields: ClassVar[dict[str, Field]] = {}
     # 关系解析注册表：{模型类名: 模型类}（__init_subclass__ 自动登记，
@@ -896,8 +932,9 @@ class Model:
 
     @classmethod
     def table_name(cls) -> str:
-        """表名（snake_case 自动派生或 ``__tablename__`` 覆写）"""
-        return cls.__tablename__  # type: ignore[return-value]
+        """表名（snake_case 自动派生或 ``__tablename__`` 覆写；基类空串仅为占位，
+        子类在 ``__init_subclass__`` 固化为具体表名）"""
+        return cls.__tablename__
 
     @classmethod
     def columns(cls) -> dict[str, Field]:
@@ -908,10 +945,10 @@ class Model:
     def _get_storage(cls) -> SQLStorageBase:
         """解析存储后端（覆写优先，否则全局单例）"""
         if cls.__storage__ is not None:
-            return cls.__storage__  # type: ignore[return-value]
+            return cls.__storage__
         from ..storage import storage as global_storage
 
-        return global_storage  # type: ignore[return-value]
+        return global_storage
 
     # ---- 实例化 ----
 
@@ -926,7 +963,7 @@ class Model:
             raise TypeError(f"unknown fields for {type(self).__name__}: {unknown}")
 
     @classmethod
-    def _row_to_instance(cls, row: dict) -> Model:
+    def _row_to_instance(cls, row: dict) -> Self:
         """行 dict → 实例（JSON 列反序列化；bool 类别跨后端归一化为 bool）"""
         for name, value in row.items():
             field_obj = cls._fields.get(name)
@@ -1115,24 +1152,43 @@ class Model:
     # ---- CRUD：类操作 ----
 
     @classmethod
-    def where(cls, *conditions: Condition) -> QuerySet:
+    def where(cls, *conditions: Condition | bool) -> QuerySet[Self]:
         """
         条件查询入口（``User.where(User.age > 18)`` → :class:`QuerySet`）
 
         多条件以 AND 连接；OR 用 ``(cond1) | (cond2)`` 组合。
+
+        条件同时接受 ``bool`` 注解形态：字段按值类型注解（``age: int =
+        Field(...)``）声明时，类访问比较（``User.age > 18``）在类型检查器视角
+        为 ``bool``，运行时实际产物是 :class:`Condition`（SQLModel 同款"虚拟
+        类型"边界）；运行时收到真 ``bool``（携带不了列信息、无法编译为 SQL）
+        时抛出 :exc:`TypeError`。IN 条件请用 :meth:`where_in`。
         """
-        condition: Condition | None = None
-        for cond in conditions:
-            condition = cond if condition is None else condition & cond
-        return QuerySet(cls, condition)
+        return QuerySet(cls, _combine(conditions))
 
     @classmethod
-    def all(cls) -> QuerySet:
+    def where_in(cls, field: str, values: list[Any] | tuple[Any, ...]) -> QuerySet[Self]:
+        """
+        IN 条件查询（``User.where_in("id", [1, 2, 3])`` → :class:`QuerySet`）
+
+        值注解声明风格下 :meth:`Field.in_`（挂在运行时列表达式对象上）静态
+        不可达（``int`` / ``str`` 上无此方法），本入口为类型检查友好的等价物；
+        空集合编译为恒假片段（``1=0``）。
+
+        :param field: 字段名（未声明时抛 :exc:`ValueError`）
+        :param values: 取值集合
+        """
+        if field not in cls._fields:
+            raise ValueError(f"unknown fields for {cls.__name__}.where_in: {field}")
+        return QuerySet(cls, ColumnExpr(field)._cond("IN", list(values)))
+
+    @classmethod
+    def all(cls) -> QuerySet[Self]:
         """无条件查询集（等价 ``cls.where()``）"""
         return QuerySet(cls)
 
     @classmethod
-    async def get(cls, **eq_kwargs: Any) -> Any | None:
+    async def get(cls, **eq_kwargs: Any) -> Self | None:
         """
         等值查询首条（``User.get(id=1)``）；无结果返回 None
 
@@ -1148,7 +1204,7 @@ class Model:
         return await QuerySet(cls, condition).first()
 
     @classmethod
-    async def create(cls, **kwargs: Any) -> Any:
+    async def create(cls, **kwargs: Any) -> Self:
         """
         插入一行并返回实例（自增主键自动回填）
 
@@ -1257,24 +1313,24 @@ class Model:
             setattr(instance, pk.name, row[0])
 
     @classmethod
-    async def count(cls, *conditions: Condition) -> int:
-        """行数统计（``await User.count(User.age > 18)``）"""
+    async def count(cls, *conditions: Condition | bool) -> int:
+        """行数统计（``await User.count(User.age > 18)``；bool 注解形态见 :meth:`where`）"""
         return await QuerySet(cls, _combine(conditions)).count()
 
     @classmethod
-    async def delete_all(cls, *conditions: Condition) -> int:
+    async def delete_all(cls, *conditions: Condition | bool) -> int:
         """批量删除（``await User.delete_all(User.age > 18)``；无条件则全表删除）"""
         return await QuerySet(cls, _combine(conditions)).delete()
 
     @classmethod
-    async def update_all(cls, *conditions: Condition, **values: Any) -> int:
+    async def update_all(cls, *conditions: Condition | bool, **values: Any) -> int:
         """批量更新（``await User.update_all(User.age > 18, name="adult")``）"""
         return await QuerySet(cls, _combine(conditions)).update(**values)
 
     @classmethod
     async def get_or_create(
         cls, defaults: dict[str, Any] | None = None, **kwargs: Any
-    ) -> tuple[Any, bool]:
+    ) -> tuple[Self, bool]:
         """
         查得即返回（ ``(实例, False)`` ）；无则以 ``kwargs + defaults`` 创建（ ``(实例, True)`` ）
 
@@ -1295,7 +1351,7 @@ class Model:
     @classmethod
     async def update_or_create(
         cls, defaults: dict[str, Any] | None = None, **kwargs: Any
-    ) -> tuple[Any, bool]:
+    ) -> tuple[Self, bool]:
         """
         查得则更新 ``defaults`` 字段并保存；无则创建
 
@@ -1405,11 +1461,29 @@ class Model:
         return int(await storage._execute_query("dml", sql, [v for _, v in pk_values]))
 
 
-def _combine(conditions: tuple) -> Condition | None:
+# 条件入口的 bool 拒绝文案：字段按值类型注解声明时，比较表达式在类型检查器
+# 视角为 bool（虚拟类型），运行时产物必为 Condition——运行时收到真 bool 只
+# 可能来自误用的普通布尔值（携带不了列信息、无法编译为 SQL 条件）
+_BOOL_CONDITION_ERROR = (
+    "query condition must be an inline column comparison "
+    "(e.g. User.where(User.age > 18)), not a plain bool: "
+    "bool values carry no column info and cannot compile to SQL"
+)
+
+
+def _condition_arg(cond: Condition | bool) -> Condition:
+    """条件入参校验收窄（bool 为静态虚拟类型，运行时拒绝）"""
+    if isinstance(cond, bool):
+        raise TypeError(_BOOL_CONDITION_ERROR)
+    return cond
+
+
+def _combine(conditions: tuple[Condition | bool, ...]) -> Condition | None:
     """多条件 AND 组合（类级 CRUD 快捷入口用）"""
     condition: Condition | None = None
     for cond in conditions:
-        condition = cond if condition is None else condition & cond
+        validated = _condition_arg(cond)
+        condition = validated if condition is None else condition & validated
     return condition
 
 

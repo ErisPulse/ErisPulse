@@ -35,14 +35,14 @@ from .sqlite import SQLiteDialect, SQLiteStorage
 _BACKEND_ALIASES = {"postgresql": "postgres"}
 
 
-def create_storage() -> BaseStorage:
+def create_storage() -> SQLStorageBase:
     """
     根据配置创建存储后端实例
 
     读取 ``ErisPulse.storage.backend`` 配置项，实例化对应后端。
     驱动缺失时报错并提示安装命令。
 
-    :return: 存储后端实例
+    :return: SQL 存储后端实例（sqlite / mysql / postgres 均为 SQL 后端）
     :raises ValueError: 配置了未知的后端名称时
 
     :example:
@@ -66,7 +66,7 @@ def create_storage() -> BaseStorage:
     raise ValueError(i18n.t("core.storage.backend_unknown", backend=backend))
 
 
-storage: BaseStorage = create_storage()
+storage: SQLStorageBase = create_storage()
 
 # 向后兼容别名：多后端重构前 SQLite 实现的原类名
 StorageManager = SQLiteStorage

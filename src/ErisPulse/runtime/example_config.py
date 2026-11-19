@@ -20,7 +20,7 @@ from pathlib import Path
 FULL_EXAMPLE_FILENAME = "config.full.example"
 
 # 生成器版本：模板/静态段结构变化时递增，驱动带标记文件的一次性刷新
-_GEN = 6
+_GEN = 7
 
 # 首行标记前缀（语言无关，供自动刷新判定）
 _MARKER_PREFIX = "# ErisPulse full config reference (auto-maintained by framework, gen="
@@ -93,6 +93,9 @@ def render_full_example(adapter_list=None, st=None) -> str:
             "[ErisPulse.storage]",
             f'backend = "sqlite"           # {st.t("cfg.storage.backend")}',
             f"use_global_db = false         # {st.t('cfg.storage.use_global_db')}",
+            "",
+            f"[ErisPulse.storage.sqlite]   # {st.t('cfg.storage.sqlite')}",
+            f"busy_timeout = 5000           # {st.t('cfg.storage.sqlite_busy_timeout')}",
             "",
             f"[ErisPulse.storage.mysql]     # {st.t('cfg.storage.mysql')}",
             'host = "127.0.0.1"',

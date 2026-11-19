@@ -830,19 +830,9 @@ class Event(dict):
 
         :return: 被@的用户ID列表
         """
-        message_segments = self.get_message()
-        mentions = []
+        from ..scope import scope
 
-        for segment in message_segments:
-            if not isinstance(segment, dict):
-                continue
-            if segment.get("type") == "mention":
-                data = segment.get("data")
-                user_id = data.get("user_id") if isinstance(data, dict) else None
-                if user_id:
-                    mentions.append(user_id)
-
-        return mentions
+        return scope.mention_ids_from_event(self)
 
     def get_user_id(self) -> str:
         """

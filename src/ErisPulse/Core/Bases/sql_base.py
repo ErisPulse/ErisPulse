@@ -317,7 +317,7 @@ class SQLDialect:
         return False
 
 
-class SQLQueryBuilder(BaseQueryBuilder):
+class SQLQueryBuilder(BaseQueryBuilder["SQLStorageBase"]):
     """
     SQL 查询构建器（方言无关的共享实现）
 
@@ -366,7 +366,7 @@ class SQLQueryBuilder(BaseQueryBuilder):
             return await self._aexecute_insert_multi(conn=conn)
 
         sql, params = self._build_sql()
-        storage: SQLStorageBase = self._storage  # type: ignore[assignment]
+        storage: SQLStorageBase = self._storage
         target = conn if conn is not None else storage._routing_conn()
 
         if self._operation == "select":
@@ -393,7 +393,7 @@ class SQLQueryBuilder(BaseQueryBuilder):
         sql = f"INSERT INTO {self._table_sql()} ({cols}) VALUES ({placeholders})"
         rows_params = [tuple(row.get(col) for col in columns) for row in self._data]
 
-        storage: SQLStorageBase = self._storage  # type: ignore[assignment]
+        storage: SQLStorageBase = self._storage
         target = conn if conn is not None else storage._routing_conn()
         return await storage._execute_query(
             "dml_multi", sql, rows_params, conn=target
@@ -412,7 +412,7 @@ class SQLQueryBuilder(BaseQueryBuilder):
         >>> row = await storage.Table("users").Select("*").Where("id = ?", 1).aExecuteOne()
         """
         sql, params = self._build_sql()
-        storage: SQLStorageBase = self._storage  # type: ignore[assignment]
+        storage: SQLStorageBase = self._storage
         row, columns = await storage._execute_query(
             "one", sql, params, conn=conn if conn is not None else storage._routing_conn()
         )
@@ -432,7 +432,7 @@ class SQLQueryBuilder(BaseQueryBuilder):
         >>> total = await storage.Table("users").Where("age > ?", 18).aCount()
         """
         sql, params = self._build_count_sql()
-        storage: SQLStorageBase = self._storage  # type: ignore[assignment]
+        storage: SQLStorageBase = self._storage
         return await storage._execute_query(
             "count", sql, params, conn=conn if conn is not None else storage._routing_conn()
         )
@@ -602,7 +602,7 @@ class AlterTableBuilder:
         """
         if not self._operations:
             return True
-        storage: SQLStorageBase = self._storage  # type: ignore[assignment]
+        storage: SQLStorageBase = self._storage
         try:
             await storage._run_alter(
                 self._table_name, self._operations, conn=storage._routing_conn()
