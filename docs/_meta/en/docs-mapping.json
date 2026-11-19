@@ -202,7 +202,7 @@
               "icon": "fa-cubes-stacked"
             },
             {
-              "title": "Event Wrapper Class in Detail",
+              "title": "Event Wrapper Class In-Depth Guide",
               "path": "developer-guide/modules/event-wrapper.md",
               "level": 1,
               "icon": "fa-bolt-lightning"
@@ -256,7 +256,7 @@
     "Platform Guide": {
       "description": "Platform features and adapter documentation",
       "icon": "fa-plug",
-      "count": 22,
+      "count": 23,
       "documents": [
         {
           "title": "ErisPulse Platform Features Documentation",
@@ -381,6 +381,12 @@
         {
           "title": "Terminal Platform Features Documentation",
           "path": "platform-guide/terminal.md",
+          "level": 1,
+          "icon": "fa-plug"
+        },
+        {
+          "title": "WeChat ClawBot (WechatClaw) Adapter - Platform Features Documentation",
+          "path": "platform-guide/wechatclaw.md",
           "level": 1,
           "icon": "fa-plug"
         },

@@ -172,7 +172,7 @@
           "icon": "fa-code"
         },
         {
-          "title": "Уровень модели данных (ORM)",
+          "title": "Слой моделей данных (ORM)",
           "path": "developer-guide/orm.md",
           "level": 1,
           "icon": "fa-code"
@@ -202,7 +202,7 @@
               "icon": "fa-cubes-stacked"
             },
             {
-              "title": "Документация по классу Event",
+              "title": "Справочник по Event-обёртке",
               "path": "developer-guide/modules/event-wrapper.md",
               "level": 1,
               "icon": "fa-bolt-lightning"
@@ -521,7 +521,7 @@
           "icon": "fa-fire"
         },
         {
-          "title": "Бэкенды хранилища",
+          "title": "Хранилище",
           "path": "advanced/storage-backends.md",
           "level": 1,
           "icon": "fa-server"

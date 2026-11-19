@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1962,
+  "total_keywords": 1964,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -2485,7 +2485,7 @@
     "API 响应标准": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1055,
+        "line": 1070,
         "level": 2,
         "title": "API 响应标准"
       }
@@ -2539,7 +2539,7 @@
     "API 错误处理": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1193,
+        "line": 1208,
         "level": 3,
         "title": "API 错误处理"
       }
@@ -2725,7 +2725,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1266,
+        "line": 1281,
         "level": 3,
         "title": "Bot 状态查询"
       },
@@ -2745,7 +2745,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1221,
+        "line": 1236,
         "level": 2,
         "title": "Bot 状态管理"
       }
@@ -3417,7 +3417,7 @@
     "Meta 事件类型": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1243,
+        "line": 1258,
         "level": 3,
         "title": "Meta 事件类型"
       }
@@ -3649,7 +3649,7 @@
     "PollingAdapter（HTTP 轮询型）": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 921,
+        "line": 936,
         "level": 4,
         "title": "PollingAdapter（HTTP 轮询型）"
       }
@@ -3823,7 +3823,7 @@
     "SQLite \"database is locked\" 排查": [
       {
         "document": "advanced/storage-backends.md",
-        "line": 142,
+        "line": 145,
         "level": 2,
         "title": "SQLite \"database is locked\" 排查"
       }
@@ -4123,7 +4123,7 @@
     "WebHook 连接": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1027,
+        "line": 1042,
         "level": 3,
         "title": "WebHook 连接"
       }
@@ -4185,7 +4185,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 993,
+        "line": 1008,
         "level": 3,
         "title": "WebSocket 连接"
       },
@@ -4239,7 +4239,7 @@
     "WebhookAdapter（HTTP 回调型）": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 952,
+        "line": 967,
         "level": 4,
         "title": "WebhookAdapter（HTTP 回调型）"
       }
@@ -4644,6 +4644,14 @@
         "title": "[BUG-050] 容器内执行 epsdk restart 直接退出容器"
       }
     ],
+    "[BUG-051] 跨账户重复受理（drop）误伤 at 点名消息，多账户部署消息随机丢失": [
+      {
+        "document": "bug-tracker.md",
+        "line": 1157,
+        "level": 3,
+        "title": "[BUG-051] 跨账户重复受理（drop）误伤 at 点名消息，多账户部署消息随机丢失"
+      }
+    ],
     "__init__.py": [
       {
         "document": "developer-guide/modules/getting-started.md",
@@ -4671,7 +4679,7 @@
     "`hasattr` 和 `dir` 支持": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 521,
+        "line": 523,
         "level": 3,
         "title": "`hasattr` 和 `dir` 支持"
       }
@@ -4711,7 +4719,7 @@
     "`self` 字段扩展信息": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1255,
+        "line": 1270,
         "level": 3,
         "title": "`self` 字段扩展信息"
       }
@@ -4869,7 +4877,7 @@
     "delConfig：删除配置键": [
       {
         "document": "user-guide/configuration.md",
-        "line": 215,
+        "line": 216,
         "level": 3,
         "title": "delConfig：删除配置键"
       }
@@ -4957,7 +4965,7 @@
     "getAllConfig：全量配置快照": [
       {
         "document": "user-guide/configuration.md",
-        "line": 203,
+        "line": 204,
         "level": 3,
         "title": "getAllConfig：全量配置快照"
       }
@@ -5211,7 +5219,7 @@
     "start() 的两种正确写法": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 867,
+        "line": 882,
         "level": 3,
         "title": "start() 的两种正确写法"
       }
@@ -5499,7 +5507,7 @@
     "三层去重机制分工": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 805,
+        "line": 820,
         "level": 4,
         "title": "三层去重机制分工"
       }
@@ -5523,7 +5531,7 @@
     "三种模式怎么选": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 982,
+        "line": 997,
         "level": 4,
         "title": "三种模式怎么选"
       }
@@ -5579,7 +5587,7 @@
       },
       {
         "document": "developer-guide/orm.md",
-        "line": 229,
+        "line": 236,
         "level": 2,
         "title": "下一步"
       },
@@ -5711,7 +5719,7 @@
       },
       {
         "document": "user-guide/configuration.md",
-        "line": 767,
+        "line": 773,
         "level": 2,
         "title": "下一步"
       },
@@ -5791,7 +5799,7 @@
     "不需要表结构、只存几个键值": [
       {
         "document": "developer-guide/orm.md",
-        "line": 235,
+        "line": 242,
         "level": 3,
         "title": "不需要表结构、只存几个键值"
       }
@@ -5807,7 +5815,7 @@
     "与 CLI 的联动": [
       {
         "document": "user-guide/configuration.md",
-        "line": 527,
+        "line": 529,
         "level": 4,
         "title": "与 CLI 的联动"
       }
@@ -5855,7 +5863,7 @@
     "与声明式配置类的关系": [
       {
         "document": "developer-guide/orm.md",
-        "line": 113,
+        "line": 120,
         "level": 2,
         "title": "与声明式配置类的关系"
       }
@@ -5871,7 +5879,7 @@
     "两种声明何时用哪个": [
       {
         "document": "developer-guide/orm.md",
-        "line": 117,
+        "line": 124,
         "level": 3,
         "title": "两种声明何时用哪个"
       }
@@ -5887,7 +5895,7 @@
     "严格模式": [
       {
         "document": "user-guide/configuration.md",
-        "line": 498,
+        "line": 500,
         "level": 3,
         "title": "严格模式"
       }
@@ -5973,7 +5981,7 @@
     "主人系统配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 313,
+        "line": 314,
         "level": 2,
         "title": "主人系统配置"
       }
@@ -5981,7 +5989,7 @@
     "主动 GC 配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 483,
+        "line": 485,
         "level": 3,
         "title": "主动 GC 配置"
       }
@@ -6351,7 +6359,7 @@
     "事件的账户标识与 Using 的关系": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1144,
+        "line": 1159,
         "level": 3,
         "title": "事件的账户标识与 Using 的关系"
       }
@@ -6519,7 +6527,7 @@
     "事件配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 580,
+        "line": 586,
         "level": 2,
         "title": "事件配置"
       }
@@ -6551,7 +6559,7 @@
     "事务": [
       {
         "document": "developer-guide/orm.md",
-        "line": 103,
+        "line": 110,
         "level": 2,
         "title": "事务"
       }
@@ -6669,7 +6677,7 @@
     "交互方法": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 326,
+        "line": 328,
         "level": 4,
         "title": "交互方法"
       }
@@ -6677,7 +6685,7 @@
     "交互方法示例": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 365,
+        "line": 367,
         "level": 4,
         "title": "交互方法示例"
       }
@@ -6819,7 +6827,7 @@
     "会话收件箱配置（transcript）": [
       {
         "document": "user-guide/configuration.md",
-        "line": 611,
+        "line": 617,
         "level": 2,
         "title": "会话收件箱配置（transcript）"
       }
@@ -6854,6 +6862,14 @@
         "line": 23,
         "level": 2,
         "title": "会话模型"
+      }
+    ],
+    "会话账户绑定（精确归属声明）": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 804,
+        "level": 4,
+        "title": "会话账户绑定（精确归属声明）"
       }
     ],
     "传统注册方式": [
@@ -6907,7 +6923,7 @@
     "作用域配置（scope）": [
       {
         "document": "user-guide/configuration.md",
-        "line": 670,
+        "line": 676,
         "level": 2,
         "title": "作用域配置（scope）"
       }
@@ -7327,7 +7343,7 @@
     "关系映射（relationship）": [
       {
         "document": "developer-guide/orm.md",
-        "line": 175,
+        "line": 182,
         "level": 2,
         "title": "关系映射（relationship）"
       }
@@ -7747,7 +7763,7 @@
     "判定链与运行时增删": [
       {
         "document": "user-guide/configuration.md",
-        "line": 346,
+        "line": 347,
         "level": 3,
         "title": "判定链与运行时增删"
       }
@@ -7975,7 +7991,7 @@
     "原始数据": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 485,
+        "line": 487,
         "level": 3,
         "title": "原始数据"
       }
@@ -8627,7 +8643,7 @@
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 476,
+        "line": 478,
         "level": 3,
         "title": "命令信息"
       }
@@ -8667,7 +8683,7 @@
     "命令基础": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 478,
+        "line": 480,
         "level": 4,
         "title": "命令基础"
       }
@@ -8731,7 +8747,7 @@
     "命令配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 582,
+        "line": 588,
         "level": 3,
         "title": "命令配置"
       }
@@ -8841,7 +8857,7 @@
     "回看起步步骤": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1281,
+        "line": 1296,
         "level": 3,
         "title": "回看起步步骤"
       }
@@ -8905,7 +8921,7 @@
     "国际化配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 630,
+        "line": 636,
         "level": 2,
         "title": "国际化配置"
       }
@@ -9417,7 +9433,7 @@
     "声明式配置（推荐）": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1091,
+        "line": 1106,
         "level": 3,
         "title": "声明式配置（推荐）"
       },
@@ -9581,7 +9597,7 @@
     "外键（关系映射基础）": [
       {
         "document": "developer-guide/orm.md",
-        "line": 160,
+        "line": 167,
         "level": 2,
         "title": "外键（关系映射基础）"
       }
@@ -9695,7 +9711,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1089,
+        "line": 1104,
         "level": 2,
         "title": "多账户支持"
       }
@@ -10029,7 +10045,7 @@
     "存储配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 531,
+        "line": 533,
         "level": 2,
         "title": "存储配置"
       }
@@ -10227,7 +10243,7 @@
     "完整配置示例": [
       {
         "document": "user-guide/configuration.md",
-        "line": 229,
+        "line": 230,
         "level": 2,
         "title": "完整配置示例"
       }
@@ -10275,7 +10291,7 @@
     "实现层面深入": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1276,
+        "line": 1291,
         "level": 3,
         "title": "实现层面深入"
       }
@@ -10805,7 +10821,7 @@
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 490,
+        "line": 492,
         "level": 3,
         "title": "平台扩展方法"
       },
@@ -11487,7 +11503,7 @@
     "成功响应": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1059,
+        "line": 1074,
         "level": 3,
         "title": "成功响应"
       }
@@ -11543,7 +11559,7 @@
     "手动构造响应（旧版方式仍然兼容）": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1075,
+        "line": 1090,
         "level": 3,
         "title": "手动构造响应（旧版方式仍然兼容）"
       }
@@ -11799,7 +11815,7 @@
     "指定账户发送": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1131,
+        "line": 1146,
         "level": 3,
         "title": "指定账户发送"
       }
@@ -12583,7 +12599,7 @@
     "方言行为差异": [
       {
         "document": "advanced/storage-backends.md",
-        "line": 128,
+        "line": 131,
         "level": 2,
         "title": "方言行为差异"
       }
@@ -12651,7 +12667,7 @@
     "日志配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 394,
+        "line": 395,
         "level": 2,
         "title": "日志配置"
       }
@@ -12777,7 +12793,7 @@
     "服务器配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 283,
+        "line": 284,
         "level": 2,
         "title": "服务器配置"
       }
@@ -12975,7 +12991,7 @@
     "查询已注册方法": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 512,
+        "line": 514,
         "level": 3,
         "title": "查询已注册方法"
       }
@@ -13573,7 +13589,7 @@
     "框架配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 456,
+        "line": 457,
         "level": 2,
         "title": "框架配置"
       }
@@ -13859,7 +13875,7 @@
     "模块配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 641,
+        "line": 647,
         "level": 2,
         "title": "模块配置"
       }
@@ -14551,7 +14567,7 @@
     "消息配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 598,
+        "line": 604,
         "level": 3,
         "title": "消息配置"
       }
@@ -14567,7 +14583,7 @@
     "深入交互能力": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 554,
+        "line": 556,
         "level": 3,
         "title": "深入交互能力"
       }
@@ -14639,7 +14655,7 @@
     "热更新链路内部拆解": [
       {
         "document": "user-guide/configuration.md",
-        "line": 152,
+        "line": 153,
         "level": 3,
         "title": "热更新链路内部拆解"
       }
@@ -14927,7 +14943,7 @@
     "用户优先：主人生效范围由用户最终决定": [
       {
         "document": "user-guide/configuration.md",
-        "line": 388,
+        "line": 389,
         "level": 3,
         "title": "用户优先：主人生效范围由用户最终决定"
       }
@@ -14975,7 +14991,7 @@
     "监听 Bot 生命周期": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1270,
+        "line": 1285,
         "level": 3,
         "title": "监听 Bot 生命周期"
       }
@@ -15179,7 +15195,7 @@
       },
       {
         "document": "advanced/storage-backends.md",
-        "line": 183,
+        "line": 189,
         "level": 2,
         "title": "相关文档"
       },
@@ -15233,7 +15249,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1274,
+        "line": 1289,
         "level": 2,
         "title": "相关文档"
       },
@@ -15257,7 +15273,7 @@
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 547,
+        "line": 549,
         "level": 2,
         "title": "相关文档"
       },
@@ -15407,7 +15423,7 @@
     "等待回复功能": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 314,
+        "line": 316,
         "level": 3,
         "title": "等待回复功能"
       }
@@ -15601,7 +15617,7 @@
     "统一事件覆写配置（event.overrides）": [
       {
         "document": "user-guide/configuration.md",
-        "line": 720,
+        "line": 726,
         "level": 2,
         "title": "统一事件覆写配置（event.overrides）"
       }
@@ -15655,7 +15671,7 @@
     "继续模块开发路径": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 549,
+        "line": 551,
         "level": 3,
         "title": "继续模块开发路径"
       }
@@ -15835,7 +15851,7 @@
     "自动发现机制": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1225,
+        "line": 1240,
         "level": 3,
         "title": "自动发现机制"
       }
@@ -15875,7 +15891,7 @@
     "自动迁移（阶段二）": [
       {
         "document": "developer-guide/orm.md",
-        "line": 137,
+        "line": 144,
         "level": 2,
         "title": "自动迁移（阶段二）"
       }
@@ -15883,7 +15899,7 @@
     "自定义 SQL 后端": [
       {
         "document": "advanced/storage-backends.md",
-        "line": 157,
+        "line": 163,
         "level": 2,
         "title": "自定义 SQL 后端"
       }
@@ -15923,7 +15939,7 @@
     "自定义身份源（provider）": [
       {
         "document": "user-guide/configuration.md",
-        "line": 360,
+        "line": 361,
         "level": 3,
         "title": "自定义身份源（provider）"
       }
@@ -16449,7 +16465,7 @@
     "豁免清单": [
       {
         "document": "user-guide/configuration.md",
-        "line": 515,
+        "line": 517,
         "level": 4,
         "title": "豁免清单"
       }
@@ -16593,7 +16609,7 @@
     "账户配置文件": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1117,
+        "line": 1132,
         "level": 3,
         "title": "账户配置文件"
       }
@@ -16655,7 +16671,7 @@
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 528,
+        "line": 530,
         "level": 3,
         "title": "跨平台扩展（通配符）"
       }
@@ -16759,7 +16775,7 @@
     "转换器示例": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 824,
+        "line": 839,
         "level": 3,
         "title": "转换器示例"
       }
@@ -16799,7 +16815,7 @@
     "边界与注意事项": [
       {
         "document": "developer-guide/orm.md",
-        "line": 129,
+        "line": 136,
         "level": 2,
         "title": "边界与注意事项"
       }
@@ -16997,7 +17013,7 @@
     "连接模式半成品基类": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 915,
+        "line": 930,
         "level": 3,
         "title": "连接模式半成品基类"
       }
@@ -17047,7 +17063,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 865,
+        "line": 880,
         "level": 2,
         "title": "连接管理"
       }
@@ -17063,7 +17079,7 @@
     "连接重试": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1169,
+        "line": 1184,
         "level": 3,
         "title": "连接重试"
       }
@@ -17119,7 +17135,7 @@
     "适配器发送 Meta 事件": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1251,
+        "line": 1266,
         "level": 3,
         "title": "适配器发送 Meta 事件"
       }
@@ -17885,7 +17901,7 @@
     "配置读取与删除 API": [
       {
         "document": "user-guide/configuration.md",
-        "line": 201,
+        "line": 202,
         "level": 2,
         "title": "配置读取与删除 API"
       }
@@ -18205,7 +18221,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1167,
+        "line": 1182,
         "level": 2,
         "title": "错误处理"
       },
@@ -18407,7 +18423,7 @@
     "需要换数据库或部署到云数据库": [
       {
         "document": "developer-guide/orm.md",
-        "line": 231,
+        "line": 238,
         "level": 3,
         "title": "需要换数据库或部署到云数据库"
       }

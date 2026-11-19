@@ -20,6 +20,36 @@ ErisPulse 存储基类
 ## 函数列表
 
 
+### `_capture_user_frames(limit: int) -> list[str]`
+
+**内部方法**
+跳过框架与标准库内部帧，采集最近的用户层调用帧描述（``文件:行号 (函数名)``）
+
+供 sync-in-async 警告与慢事务观测定位调用来源；最多回溯 16 帧或采满
+limit 个即止，采集不足 limit 个时以实际数量返回。内部帧按模块名判定
+（``ErisPulse*`` / ``asyncio*`` / ``contextlib``），同步调用链上的用户帧
+必然可达；协程/异步生成器边界可能截断帧链（f_back 为 None），此时以
+实际采集结果为准（可能为空）。
+
+- **limit**: 最多采集的帧数
+
+**返回值**: 用户层调用帧描述列表（按调用链由近及远排序）
+
+---
+
+
+### `_warn_sync_in_async() -> None`
+
+**内部方法**
+同步存储 API 在异步上下文调用的按调用点限频警告
+
+同步接口从协程线程调用会阻塞该事件循环（桥接等待）；进程级一次性警告
+无法帮模块定位调用点，改为按「文件:行号 (函数名)」登记——首次警告，
+冷却期内静默，冷却期满再次触发时重新提醒。
+
+---
+
+
 ### `_has_running_loop() -> bool`
 
 **内部方法**
@@ -113,6 +143,13 @@ ErisPulse 存储基类
 ---
 
 
+##### `_warn_slow_txn(started_at: float | None) -> None`
+
+**内部方法** 持锁时长超过 STORAGE_TXN_SLOW_WARN_SECS 时告警并附开启位置
+
+---
+
+
 ### `class _EmptyTransaction`
 
 **内部方法** 空事务上下文（存储未就绪时使用）
@@ -132,7 +169,7 @@ ErisPulse 存储基类
 使事务块内的同步操作路由到事务连接。
 
 
-### `class BaseQueryBuilder(ABC)`
+### `class BaseQueryBuilder(ABC, Generic[_StorageT])`
 
 查询构建器抽象基类
 
@@ -151,7 +188,7 @@ ErisPulse 存储基类
 #### 方法列表
 
 
-##### `ToDict() -> 'BaseQueryBuilder'`
+##### `ToDict() -> 'BaseQueryBuilder[_StorageT]'`
 
 将 SELECT 结果以字典形式返回（链式修饰，返回 self）
 
@@ -171,7 +208,7 @@ rows = await storage.Table("users").Select("name", "age").ToDict().aExecute()
 ---
 
 
-##### `Select(*columns: str) -> 'BaseQueryBuilder'`
+##### `Select(*columns: str) -> 'BaseQueryBuilder[_StorageT]'`
 
 指定查询列
 
@@ -188,7 +225,7 @@ storage.Table("users").Select("name", "age").Execute()
 ---
 
 
-##### `Insert(data: dict[str, Any]) -> 'BaseQueryBuilder'`
+##### `Insert(data: dict[str, Any]) -> 'BaseQueryBuilder[_StorageT]'`
 
 插入一行数据
 
@@ -205,7 +242,7 @@ storage.Table("users").Insert({"name": "Alice", "age": 30}).Execute()
 ---
 
 
-##### `InsertMulti(data: list[dict[str, Any]]) -> 'BaseQueryBuilder'`
+##### `InsertMulti(data: list[dict[str, Any]]) -> 'BaseQueryBuilder[_StorageT]'`
 
 批量插入多行数据
 
@@ -225,7 +262,7 @@ storage.Table("users").InsertMulti([
 ---
 
 
-##### `Update(data: dict[str, Any]) -> 'BaseQueryBuilder'`
+##### `Update(data: dict[str, Any]) -> 'BaseQueryBuilder[_StorageT]'`
 
 更新数据
 
@@ -242,7 +279,7 @@ storage.Table("users").Update({"age": 31}).Where("name = ?", "Alice").Execute()
 ---
 
 
-##### `Delete() -> 'BaseQueryBuilder'`
+##### `Delete() -> 'BaseQueryBuilder[_StorageT]'`
 
 删除行
 
@@ -257,7 +294,7 @@ storage.Table("users").Delete().Where("name = ?", "Bob").Execute()
 ---
 
 
-##### `Where(condition: str, *params: Any) -> 'BaseQueryBuilder'`
+##### `Where(condition: str, *params: Any) -> 'BaseQueryBuilder[_StorageT]'`
 
 添加 WHERE 条件
 
@@ -277,7 +314,7 @@ storage.Table("users").Where("age > ?", 18).Where("name LIKE ?", "A%").Execute()
 ---
 
 
-##### `OrderBy(column: str, desc: bool = False) -> 'BaseQueryBuilder'`
+##### `OrderBy(column: str, desc: bool = False) -> 'BaseQueryBuilder[_StorageT]'`
 
 添加排序规则
 
@@ -297,7 +334,7 @@ storage.Table("users").OrderBy("age", desc=True).OrderBy("name").Execute()
 ---
 
 
-##### `Limit(count: int) -> 'BaseQueryBuilder'`
+##### `Limit(count: int) -> 'BaseQueryBuilder[_StorageT]'`
 
 限制返回条数
 
@@ -314,7 +351,7 @@ storage.Table("users").Limit(10).Execute()
 ---
 
 
-##### `Offset(count: int) -> 'BaseQueryBuilder'`
+##### `Offset(count: int) -> 'BaseQueryBuilder[_StorageT]'`
 
 设置偏移量
 
@@ -331,7 +368,7 @@ storage.Table("users").Limit(10).Offset(20).Execute()
 ---
 
 
-##### `copy() -> 'BaseQueryBuilder'`
+##### `copy() -> 'BaseQueryBuilder[_StorageT]'`
 
 深拷贝当前构建器状态
 
@@ -340,7 +377,7 @@ storage.Table("users").Limit(10).Offset(20).Execute()
 ---
 
 
-##### `clear() -> 'BaseQueryBuilder'`
+##### `clear() -> 'BaseQueryBuilder[_StorageT]'`
 
 重置构建器状态
 
@@ -664,7 +701,7 @@ await storage.aclear()
 ---
 
 
-##### `Table(table_name: str) -> BaseQueryBuilder`
+##### `Table(table_name: str) -> BaseQueryBuilder[Any]`
 
 获取指定表的查询构建器
 
@@ -715,7 +752,7 @@ rows = await storage.Table("users").Select("name").aExecute()
 ---
 
 
-##### `async atransaction() -> AsyncIterator[_AsyncTransaction | None]`
+##### `atransaction() -> 'AbstractAsyncContextManager[_AsyncTransaction | None]'`
 
 异步事务上下文管理器
 
@@ -732,6 +769,13 @@ async with storage.atransaction():
     await storage.aset("key1", "value1")
     await storage.aset("key2", "value2")
 ```
+
+---
+
+
+##### `async _atransaction_cm(txn: _AsyncTransaction) -> AsyncIterator[_AsyncTransaction | None]`
+
+**内部方法** :meth:`atransaction` 的上下文管道（事务生命周期）
 
 ---
 

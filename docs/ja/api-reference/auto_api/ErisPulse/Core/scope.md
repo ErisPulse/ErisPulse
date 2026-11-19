@@ -446,6 +446,17 @@ False
 ---
 
 
+##### `mention_ids_from_event(event: dict[str, Any]) -> list[str]`（staticmethod）
+
+从事件数据提取全部被 @ 的用户 ID（``message`` 段中 ``mention`` 段）
+
+- **event**: 事件数据（dict 或 Event 包装对象）
+
+**返回值**: 被 @ 的用户 ID 列表（原始类型保留；无 mention 段或非消息事件时为空列表）
+
+---
+
+
 ##### `_put_cache(cache: OrderedDict, key: tuple, value: bool) -> None`
 
 **内部方法** 写入 LRU 缓存（超过容量时淘汰最旧）

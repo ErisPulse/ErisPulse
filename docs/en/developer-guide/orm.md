@@ -66,38 +66,45 @@ m = await Membership.get(user_id=1, group_id=2)
 - `__unique_together__` is implemented as unique indexes (index names prefixed with `uq_`): generated together with newly created tables, and **for existing tables, running `create_table()` adds them automatically**—no rebuild needed
 - Composite primary key models do not yet support relationship mapping (has-many / belongs-to); accessing relationships on their instances raises a clear error
 
-## Table Creation and CRUD
+## Table Creation & CRUD
 
 ```python
-await User.create_table()                      # idempotent (IF NOT EXISTS)
+await User.create_table()                      # Idempotent (IF NOT EXISTS)
 
-user = await User.create(name="Alice", age=20) # insert (auto-increment primary key backfilled automatically)
-got = await User.get(id=user.id)               # first row of an equality query
+user = await User.create(name="Alice", age=20) # Insert (auto-fill auto-increment primary key)
+got = await User.get(id=user.id)               # Get first record by equality
 
 users = await User.where(User.age > 18).order_by("-age").limit(10).all()
 first = await User.where(User.name == "Alice").first()
 total = await User.count(User.age > 18)
 
 user.age = 21
-await user.save()                              # update by primary key (constraints validated first); falls back to insert when the primary key is missing (auto-increment keys are likewise backfilled onto the instance)
-await user.save(update_fields=["age"])         # partial column update (whitelist; other columns are not written)
-await user.delete()                            # delete by primary key
+await user.save()                              # Update by primary key (with constraint validation); falls back to insert if primary key is missing (auto-increment primary key is also auto-filled into the instance)
+await user.save(update_fields=["age"])         # Partial column update (whitelist, other columns are not written)
+await user.delete()                            # Delete by primary key
 
-user, created = await User.get_or_create({"age": 20}, name="Alice")      # returns it if found; creates it otherwise
-user, created = await User.update_or_create({"age": 21}, name="Alice")   # updates defaults and saves if found; creates otherwise
+user, created = await User.get_or_create({"age": 20}, name="Alice")      # Return if found; create if not found
+user, created = await User.update_or_create({"age": 21}, name="Alice")   # Update and save defaults if found; create if not found
 
-await User.update_all(User.age > 18, role="adult")  # bulk update
-await User.delete_all(User.age > 100)               # bulk delete
+await User.update_all(User.age > 18, role="adult")  # Batch update
+await User.delete_all(User.age > 100)               # Batch delete
 ```
 
 > [!NOTE]
-> Under concurrent contention, two coroutines in `get_or_create` / `update_or_create` may both reach the creation branch—unique constraints (primary key / `unique` / `__unique_together__`) will make the later one receive a `StorageOperationError`; when idempotent semantics are needed, catch it and re-query once.
+> In concurrent scenarios, two coroutines may both reach the creation branch in `get_or_create` / `update_or_create`—the unique constraints (primary key / `unique` / `__unique_together__`) will cause the later one to receive a `StorageOperationError`; when idempotent semantics are required, catch the error and query again.
 
-Query expressions support `> >= < <= == !=`, `in_([...])`, and combinations with `&` (AND) / `|` (OR):
+Query expressions support `> >= < <= == !=`, and can be combined using `&` (AND) / `|` (OR); for IN conditions, use `where_in`:
 
 ```python
-await User.where((User.age > 18) & User.name.in_(["Alice", "Bob"])).all()
+await User.where(User.age > 18).all()
+await User.where_in("name", ["Alice", "Bob"]).all()                       # IN condition (type-checking friendly)
+await User.where((User.age > 18) & User.name.in_(["Alice", "Bob"])).all() # IN condition combined with other conditions (in_ is a runtime capability)
 ```
+
+> [!TIP]
+> **Type-checking friendly**: When fields are declared with value type annotations (e.g., `age: int = Field(...)`), field access comparisons (e.g., `User.age > 18`) are seen as `bool` by mypy / pyright / ty, but at runtime they produce a condition object—condition entry points (`where` / `count` / `delete_all` / `update_all`) are already compatible with this form, so no `ignore` comments are needed at the call site; truly boolean values (which cannot be compiled into SQL) are explicitly rejected at runtime. The query return values are statically typed: the results of `first()` / `all()` / `get()` / `create()` are model instances, and field access has full type hints.
+>
+> Condition objects cannot be used as truth values (e.g., `if User.age > 18:` will raise an error); use `&` / `|` for multi-condition combinations instead of `and` / `or`. The return type of condition-building helper functions should be annotated as `Condition | bool`.
 
 ## Transactions
 
@@ -125,13 +132,13 @@ Model declarations and `ConfigClass` (`@dataclass + field(metadata=...)`) **shar
 
 Rule of thumb: **use config classes for "how a module behaves"; use models for "what data users produce"**.
 
-## Boundaries and Caveats
+## Boundaries and Precautions
 
-- The backend is determined by the global storage configuration; a model may override it with a custom `BaseStorage` instance via the `__storage__` class attribute (for test injection)
-- `list` / `dict` fields (including parameterized generics such as `list[int]`, `dict[str, int]`) are stored as JSON text columns by container category, automatically serialized on read/write
-- Constraint validation runs automatically before writes (`create` / `save`); failures raise `ValueError` (localized messages)
-- Automatic migration already covers the **add-column** scenario (see below); column type changes and column drops require manual handling
-- Behavior on storage connection failure is consistent with the storage layer: the framework does not crash and automatically reconnects after a cooldown
+- The backend is determined by the global storage configuration; models can override this with a custom SQL storage backend instance (`SQLStorageBase`) via the `__storage__` class attribute (for testing injection).
+- `list` / `dict` fields (including parameterized generics such as `list[int]` and `dict[str, int]`) are stored as JSON text columns by container type, with automatic serialization on read and write.
+- Constraint validation is automatically executed before writing (`create` / `save`); failure throws a `ValueError` with localized message.
+- Automatic migration is delivered for **new column** scenarios (see below); column type changes and column removal require manual handling.
+- Behavior on storage connection failure is consistent with the storage layer: the framework does not crash, and automatic reconnection occurs after a cooldown.
 
 ## Automatic Migration (Phase Two)
 

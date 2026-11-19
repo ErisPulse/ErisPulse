@@ -75,6 +75,25 @@ SQLite 存储管理器（aiosqlite 异步原生实现）
 ---
 
 
+##### `_resolve_busy_timeout(storage_config: dict[str, Any]) -> int`（staticmethod）
+
+**内部方法**
+解析 busy_timeout 配置（``ErisPulse.storage.sqlite.busy_timeout``，毫秒）
+
+- **storage_config**: ``ErisPulse.storage`` 配置节
+
+**返回值**: 校验后的毫秒数（非法值回落默认并告警）
+
+---
+
+
+##### `_check_busy_timeout_changed() -> str | None`
+
+**内部方法** busy_timeout 配置变更检查（新连接按新值应用，已打开连接需重启刷新）
+
+---
+
+
 ##### `_ensure_directories() -> None`
 
 **内部方法** 确保必要的目录存在
@@ -92,9 +111,9 @@ SQLite 存储管理器（aiosqlite 异步原生实现）
 ---
 
 
-##### `async _apply_pragmas(conn: aiosqlite.Connection) -> None`（staticmethod）
+##### `async _apply_pragmas(conn: aiosqlite.Connection) -> None`
 
-**内部方法** 应用标准 PRAGMA（WAL/synchronous/busy_timeout）
+**内部方法** 应用标准 PRAGMA（WAL/synchronous/busy_timeout，后者来自配置）
 
 ---
 

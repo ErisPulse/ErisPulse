@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 2083,
+  "total_keywords": 2093,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -486,14 +486,6 @@
         "line": 208,
         "level": 3,
         "title": "1つのパッケージで複数のモジュールを登録できるか？"
-      }
-    ],
-    "2 つの宣言の使い分け": [
-      {
-        "document": "developer-guide/orm.md",
-        "line": 116,
-        "level": 3,
-        "title": "2 つの宣言の使い分け"
       }
     ],
     "2. 3 層 DSL の並列構造": [
@@ -990,6 +982,14 @@
         "title": "2つのインジェクションモード"
       }
     ],
+    "3 層重複排除メカニズムの役割分担": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 809,
+        "level": 4,
+        "title": "3 層重複排除メカニズムの役割分担"
+      }
+    ],
     "3. Docker / docker-compose": [
       {
         "document": "advanced/startup.md",
@@ -1401,17 +1401,9 @@
     "3つのモードの使い分け": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 956,
+        "line": 971,
         "level": 4,
         "title": "3つのモードの使い分け"
-      }
-    ],
-    "3層の重複防止メカニズムの役割分担": [
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 794,
-        "level": 4,
-        "title": "3層の重複防止メカニズムの役割分担"
       }
     ],
     "3層リソースガバナンス": [
@@ -2543,7 +2535,7 @@
     "API エラー処理": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1164,
+        "line": 1179,
         "level": 3,
         "title": "API エラー処理"
       }
@@ -2579,7 +2571,7 @@
     "API レスポンス標準": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1026,
+        "line": 1041,
         "level": 2,
         "title": "API レスポンス標準"
       }
@@ -2855,7 +2847,7 @@
     "Bot ライフサイクルの監視": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1241,
+        "line": 1256,
         "level": 3,
         "title": "Bot ライフサイクルの監視"
       }
@@ -2863,7 +2855,7 @@
     "Bot 状態の照会": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1237,
+        "line": 1252,
         "level": 3,
         "title": "Bot 状態の照会"
       }
@@ -2879,7 +2871,7 @@
     "Bot 状態管理": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1192,
+        "line": 1207,
         "level": 2,
         "title": "Bot 状態管理"
       }
@@ -2916,12 +2908,12 @@
         "title": "CLI コマンドリファレンス"
       }
     ],
-    "CLIとの連携": [
+    "CLIとの連動": [
       {
         "document": "user-guide/configuration.md",
-        "line": 508,
+        "line": 506,
         "level": 4,
-        "title": "CLIとの連携"
+        "title": "CLIとの連動"
       }
     ],
     "CORS 設定": [
@@ -3679,7 +3671,7 @@
     "Meta イベントタイプ": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1214,
+        "line": 1229,
         "level": 3,
         "title": "Meta イベントタイプ"
       }
@@ -3719,7 +3711,7 @@
     "MySQL（`ErisPulse.storage.mysql`）": [
       {
         "document": "advanced/storage-backends.md",
-        "line": 43,
+        "line": 44,
         "level": 3,
         "title": "MySQL（`ErisPulse.storage.mysql`）"
       }
@@ -3923,7 +3915,7 @@
     "PollingAdapter（HTTPポーリング型）": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 903,
+        "line": 918,
         "level": 4,
         "title": "PollingAdapter（HTTPポーリング型）"
       }
@@ -3931,7 +3923,7 @@
     "PostgreSQL（`ErisPulse.storage.postgres`）": [
       {
         "document": "advanced/storage-backends.md",
-        "line": 57,
+        "line": 58,
         "level": 3,
         "title": "PostgreSQL（`ErisPulse.storage.postgres`）"
       }
@@ -3998,6 +3990,14 @@
         "line": 280,
         "level": 3,
         "title": "QQ空間拡張"
+      }
+    ],
+    "QRスキャンログインエンドポイント（サードパーティフロントエンドとの連携可能）": [
+      {
+        "document": "platform-guide/wechatclaw.md",
+        "line": 22,
+        "level": 3,
+        "title": "QRスキャンログインエンドポイント（サードパーティフロントエンドとの連携可能）"
       }
     ],
     "RPC: module.call": [
@@ -4118,12 +4118,12 @@
         "title": "SQL チェーンクエリ"
       }
     ],
-    "SQLite \"データベースはロックされています\" のトラブルシューティング": [
+    "SQLite \"database is locked\" のトラブルシューティング": [
       {
         "document": "advanced/storage-backends.md",
-        "line": 136,
+        "line": 137,
         "level": 2,
-        "title": "SQLite \"データベースはロックされています\" のトラブルシューティング"
+        "title": "SQLite \"database is locked\" のトラブルシューティング"
       }
     ],
     "SVG 出力の例": [
@@ -4241,7 +4241,7 @@
     "Send 連鎖呼び出し": [
       {
         "document": "platform-guide/README.md",
-        "line": 47,
+        "line": 48,
         "level": 3,
         "title": "Send 連鎖呼び出し"
       }
@@ -4454,10 +4454,18 @@
         "title": "WSMessage"
       }
     ],
+    "WeChat ClawBot（WechatClaw）アダプター - プラットフォーム機能ドキュメント": [
+      {
+        "document": "platform-guide/wechatclaw.md",
+        "line": 1,
+        "level": 1,
+        "title": "WeChat ClawBot（WechatClaw）アダプター - プラットフォーム機能ドキュメント"
+      }
+    ],
     "WebHook 接続": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1000,
+        "line": 1015,
         "level": 3,
         "title": "WebHook 接続"
       }
@@ -4503,7 +4511,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 966,
+        "line": 981,
         "level": 3,
         "title": "WebSocket 接続"
       },
@@ -4573,7 +4581,7 @@
     "WebhookAdapter（HTTPコールバック型）": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 930,
+        "line": 945,
         "level": 4,
         "title": "WebhookAdapter（HTTPコールバック型）"
       }
@@ -4842,140 +4850,148 @@
         "title": "[BUG-033] wait_reply の保留中の返信が高優先度ハンドラーによりスターベーション（飢餓）状態に陥る"
       }
     ],
-    "[BUG-034] スコープ persist=False での実行時バインディングが任意の後続の設定書き込みによって静かに上書きされる": [
+    "[BUG-034] スコープの persist=False ランタイムバインディングが、その後の任意の設定書き込みによってサイレントに消去される": [
       {
         "document": "bug-tracker.md",
         "line": 886,
         "level": 3,
-        "title": "[BUG-034] スコープ persist=False での実行時バインディングが任意の後続の設定書き込みによって静かに上書きされる"
+        "title": "[BUG-034] スコープの persist=False ランタイムバインディングが、その後の任意の設定書き込みによってサイレントに消去される"
       }
     ],
-    "[BUG-035] 設定パネルの select 項目と辞書型フィールドが [object Object] と表示される": [
+    "[BUG-035] 設定パネルの select 選択肢および辞書フィールドが [object Object] と表示される": [
       {
         "document": "bug-tracker.md",
-        "line": 910,
+        "line": 906,
         "level": 3,
-        "title": "[BUG-035] 設定パネルの select 項目と辞書型フィールドが [object Object] と表示される"
+        "title": "[BUG-035] 設定パネルの select 選択肢および辞書フィールドが [object Object] と表示される"
       }
     ],
-    "[BUG-036] 複数インスタンスが共有する設定ディレクトリで設定書き込みが偶発的に失敗する（ENOENT）": [
+    "[BUG-036] マルチインスタンスで設定ディレクトリを共有する際に設定書き込みが散発的に失敗する（ENOENT）": [
       {
         "document": "bug-tracker.md",
-        "line": 931,
+        "line": 924,
         "level": 3,
-        "title": "[BUG-036] 複数インスタンスが共有する設定ディレクトリで設定書き込みが偶発的に失敗する（ENOENT）"
+        "title": "[BUG-036] マルチインスタンスで設定ディレクトリを共有する際に設定書き込みが散発的に失敗する（ENOENT）"
       }
     ],
-    "[BUG-037] 空白文字を含むコマンド名で登録されたサブコマンドが決してトリガーされない": [
+    "[BUG-037] 空白を含むサブコマンド名が登録後、永久にトリガーされない": [
       {
         "document": "bug-tracker.md",
-        "line": 956,
+        "line": 950,
         "level": 3,
-        "title": "[BUG-037] 空白文字を含むコマンド名で登録されたサブコマンドが決してトリガーされない"
+        "title": "[BUG-037] 空白を含むサブコマンド名が登録後、永久にトリガーされない"
       }
     ],
-    "[BUG-038] persist=False で実行時バインディングが永続化書き込みによってディスクに落とされ、モジュールのアンロード後にディスクから「復活」する": [
+    "[BUG-038] persist=False ランタイムバインディングが永続化書き込みに巻き込まれてディスクに書き込まれ、モジュールのアンロード後にディスクから「復活」する": [
       {
         "document": "bug-tracker.md",
-        "line": 979,
+        "line": 974,
         "level": 3,
-        "title": "[BUG-038] persist=False で実行時バインディングが永続化書き込みによってディスクに落とされ、モジュールのアンロード後にディスクから「復活」する"
+        "title": "[BUG-038] persist=False ランタイムバインディングが永続化書き込みに巻き込まれてディスクに書き込まれ、モジュールのアンロード後にディスクから「復活」する"
       }
     ],
-    "[BUG-039] 整節書き込みと点分書き込みが共存する場合の読み書きの不整合（点分覆写が失われる）": [
+    "[BUG-039] セクション全体書き込みとドット区切り書き込みの併存時に読み書きが不一致になる（ドット区切りオーバーライドの消失）": [
       {
         "document": "bug-tracker.md",
-        "line": 1003,
+        "line": 998,
         "level": 3,
-        "title": "[BUG-039] 整節書き込みと点分書き込みが共存する場合の読み書きの不整合（点分覆写が失われる）"
+        "title": "[BUG-039] セクション全体書き込みとドット区切り書き込みの併存時に読み書きが不一致になる（ドット区切りオーバーライドの消失）"
       }
     ],
-    "[BUG-040] プラットフォームがメッセージをセグメントに分割した際、コマンドの末尾引数が静かに失われる": [
+    "[BUG-040] プラットフォームがセグメント分割したメッセージのコマンド末尾パラメータがサイレントに失われる": [
       {
         "document": "bug-tracker.md",
-        "line": 1026,
+        "line": 1020,
         "level": 3,
-        "title": "[BUG-040] プラットフォームがメッセージをセグメントに分割した際、コマンドの末尾引数が静かに失われる"
+        "title": "[BUG-040] プラットフォームがセグメント分割したメッセージのコマンド末尾パラメータがサイレントに失われる"
       }
     ],
-    "[BUG-041] 拒否されたコマンドが alt_message 整链で再実行される：重複返信と権限関数の副作用が両方発動する": [
+    "[BUG-041] 拒否されたコマンドが alt_message 経由でチェーン全体を再実行：重複応答と権限関数の副作用二重トリガー": [
       {
         "document": "bug-tracker.md",
-        "line": 1038,
+        "line": 1032,
         "level": 3,
-        "title": "[BUG-041] 拒否されたコマンドが alt_message 整链で再実行される：重複返信と権限関数の副作用が両方発動する"
+        "title": "[BUG-041] 拒否されたコマンドが alt_message 経由でチェーン全体を再実行：重複応答と権限関数の副作用二重トリガー"
       }
     ],
-    "[BUG-042] コマンドハンドラ内で登録された wait_reply が同一条のトリガーメッセージで即座に消費される": [
+    "[BUG-042] コマンドハンドラー内で登録された wait_reply が同一のトリガーメッセージによって即座に消費される": [
       {
         "document": "bug-tracker.md",
-        "line": 1050,
+        "line": 1044,
         "level": 3,
-        "title": "[BUG-042] コマンドハンドラ内で登録された wait_reply が同一条のトリガーメッセージで即座に消費される"
+        "title": "[BUG-042] コマンドハンドラー内で登録された wait_reply が同一のトリガーメッセージによって即座に消費される"
       }
     ],
-    "[BUG-043] select() 同キーの複数ルートが後者で前者を静かにキャンセルする": [
+    "[BUG-043] select() の同一キー複数経路待ちで後から登録した方が前者をサイレントにキャンセルする": [
       {
         "document": "bug-tracker.md",
-        "line": 1062,
+        "line": 1056,
         "level": 3,
-        "title": "[BUG-043] select() 同キーの複数ルートが後者で前者を静かにキャンセルする"
+        "title": "[BUG-043] select() の同一キー複数経路待ちで後から登録した方が前者をサイレントにキャンセルする"
       }
     ],
-    "[BUG-044] BaseConverter.at() が OB11 の「at」セグメントを生成し、全フレームワークのメンション判定が認識しない": [
+    "[BUG-044] BaseConverter.at() が OB11 のレガシー \"at\" セグメントを生成し、フレームワーク全体の mention 判定が認識しない": [
       {
         "document": "bug-tracker.md",
-        "line": 1074,
+        "line": 1068,
         "level": 3,
-        "title": "[BUG-044] BaseConverter.at() が OB11 の「at」セグメントを生成し、全フレームワークのメンション判定が認識しない"
+        "title": "[BUG-044] BaseConverter.at() が OB11 のレガシー \"at\" セグメントを生成し、フレームワーク全体の mention 判定が認識しない"
       }
     ],
-    "[BUG-045] alt_message が存在しない适配器ではインタラクション原語が永久にタイムアウトし、コマンドが貫通しない": [
+    "[BUG-045] alt_message を持たないアダプターでインタラクションプリミティブが永久にタイムアウトし、コマンドのパススルーが機能しない": [
       {
         "document": "bug-tracker.md",
-        "line": 1086,
+        "line": 1080,
         "level": 3,
-        "title": "[BUG-045] alt_message が存在しない适配器ではインタラクション原語が永久にタイムアウトし、コマンドが貫通しない"
+        "title": "[BUG-045] alt_message を持たないアダプターでインタラクションプリミティブが永久にタイムアウトし、コマンドのパススルーが機能しない"
       }
     ],
-    "[BUG-046] 宣言的設定テンプレートのネストされたサブテーブルヘッダーがトップレベルに漂移する": [
+    "[BUG-046] 宣言的設定テンプレートのネストされたサブテーブルヘッダーがトップレベルテーブルにずれる": [
       {
         "document": "bug-tracker.md",
-        "line": 1098,
+        "line": 1092,
         "level": 3,
-        "title": "[BUG-046] 宣言的設定テンプレートのネストされたサブテーブルヘッダーがトップレベルに漂移する"
+        "title": "[BUG-046] 宣言的設定テンプレートのネストされたサブテーブルヘッダーがトップレベルテーブルにずれる"
       }
     ],
-    "[BUG-047] サービスディレクトリの全量列挙が遅延ロードモジュールを漏らす": [
+    "[BUG-047] サービスディレクトリの全量列挙が遅延ロードモジュールを取りこぼす": [
       {
         "document": "bug-tracker.md",
-        "line": 1112,
+        "line": 1106,
         "level": 3,
-        "title": "[BUG-047] サービスディレクトリの全量列挙が遅延ロードモジュールを漏らす"
+        "title": "[BUG-047] サービスディレクトリの全量列挙が遅延ロードモジュールを取りこぼす"
       }
     ],
-    "[BUG-048] 会話受信箱のクエリ API はメッセージの帰属（sender とイベントメタデータ）を失う": [
+    "[BUG-048] セッション受信トレイのクエリ API がメッセージの帰属を欠落させる（sender とイベントメタデータ）": [
       {
         "document": "bug-tracker.md",
-        "line": 1124,
+        "line": 1118,
         "level": 3,
-        "title": "[BUG-048] 会話受信箱のクエリ API はメッセージの帰属（sender とイベントメタデータ）を失う"
+        "title": "[BUG-048] セッション受信トレイのクエリ API がメッセージの帰属を欠落させる（sender とイベントメタデータ）"
       }
     ],
-    "[BUG-049] 入力 bot 自発メッセージのエコーが user として記録され、受信箱の帰属を汚染する": [
+    "[BUG-049] 着信したボット自身の送信メッセージのエコーが user として記録され、受信トレイの帰属を汚染する": [
       {
         "document": "bug-tracker.md",
-        "line": 1137,
+        "line": 1131,
         "level": 3,
-        "title": "[BUG-049] 入力 bot 自発メッセージのエコーが user として記録され、受信箱の帰属を汚染する"
+        "title": "[BUG-049] 着信したボット自身の送信メッセージのエコーが user として記録され、受信トレイの帰属を汚染する"
       }
     ],
-    "[BUG-050] コンテナ内で `epsdk restart` を実行するとコンテナが直ちに終了する": [
+    "[BUG-050] コンテナ内で epsdk restart を実行するとコンテナが直接終了する": [
       {
         "document": "bug-tracker.md",
-        "line": 1150,
+        "line": 1144,
         "level": 3,
-        "title": "[BUG-050] コンテナ内で `epsdk restart` を実行するとコンテナが直ちに終了する"
+        "title": "[BUG-050] コンテナ内で epsdk restart を実行するとコンテナが直接終了する"
+      }
+    ],
+    "[BUG-051] クロスアカウント重複受理（drop）が at メンションメッセージを誤って排除し、マルチアカウントデプロイでメッセージがランダムに失われる": [
+      {
+        "document": "bug-tracker.md",
+        "line": 1156,
+        "level": 3,
+        "title": "[BUG-051] クロスアカウント重複受理（drop）が at メンションメッセージを誤って排除し、マルチアカウントデプロイでメッセージがランダムに失われる"
       }
     ],
     "__init__.py": [
@@ -5005,7 +5021,7 @@
     "`hasattr` と `dir` のサポート": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 521,
+        "line": 523,
         "level": 3,
         "title": "`hasattr` と `dir` のサポート"
       }
@@ -5045,7 +5061,7 @@
     "`self` フィールドの拡張情報": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1226,
+        "line": 1241,
         "level": 3,
         "title": "`self` フィールドの拡張情報"
       }
@@ -5213,7 +5229,7 @@
     "delConfig：設定キーの削除": [
       {
         "document": "user-guide/configuration.md",
-        "line": 200,
+        "line": 201,
         "level": 3,
         "title": "delConfig：設定キーの削除"
       }
@@ -5290,12 +5306,12 @@
         "title": "escalate：時刻到来時に確実に実行されるエスカレーション"
       }
     ],
-    "event パラメーターへの型アノテーション追加": [
+    "event パラメータへの型アノテーション追加": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
         "line": 9,
         "level": 2,
-        "title": "event パラメーターへの型アノテーション追加"
+        "title": "event パラメータへの型アノテーション追加"
       }
     ],
     "event.reply()を使用して返信（プラットフォームに応じて正しい送信方法を選択する）": [
@@ -5314,12 +5330,12 @@
         "title": "get() メソッド"
       }
     ],
-    "getAllConfig：全量設定のスナップショット": [
+    "getAllConfig：全量設定スナップショット": [
       {
         "document": "user-guide/configuration.md",
-        "line": 189,
+        "line": 190,
         "level": 3,
-        "title": "getAllConfig：全量設定のスナップショット"
+        "title": "getAllConfig：全量設定スナップショット"
       }
     ],
     "group": [
@@ -5597,7 +5613,7 @@
     "start() の2つの正しい書き方": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 856,
+        "line": 871,
         "level": 3,
         "title": "start() の2つの正しい書き方"
       }
@@ -5938,6 +5954,14 @@
         "title": "その他サブシステムの能力（最適化後）"
       }
     ],
+    "どちらの宣言を使うか": [
+      {
+        "document": "developer-guide/orm.md",
+        "line": 123,
+        "level": 3,
+        "title": "どちらの宣言を使うか"
+      }
+    ],
     "どちらを選ぶべきか": [
       {
         "document": "showcase/comparison-agent-platforms.md",
@@ -6121,7 +6145,7 @@
     "アカウント指定での送信": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1102,
+        "line": 1117,
         "level": 3,
         "title": "アカウント指定での送信"
       }
@@ -6161,7 +6185,7 @@
     "アカウント設定ファイル": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1088,
+        "line": 1103,
         "level": 3,
         "title": "アカウント設定ファイル"
       }
@@ -6194,6 +6218,14 @@
         "title": "アカウント設定（EmailAdapter.accounts）"
       }
     ],
+    "アカウント間重複受信（フレームワーク注入フィールド）": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 785,
+        "level": 3,
+        "title": "アカウント間重複受信（フレームワーク注入フィールド）"
+      }
+    ],
     "アクションとエラーコード規格": [
       {
         "document": "platform-guide/ideaura.md",
@@ -6205,7 +6237,7 @@
     "アクティブGC設定": [
       {
         "document": "user-guide/configuration.md",
-        "line": 464,
+        "line": 462,
         "level": 3,
         "title": "アクティブGC設定"
       }
@@ -6221,7 +6253,7 @@
     "アダプタが Meta イベントを送信": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1222,
+        "line": 1237,
         "level": 3,
         "title": "アダプタが Meta イベントを送信"
       }
@@ -6575,7 +6607,7 @@
     "イベントのアカウント識別子と Using の関係": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1115,
+        "line": 1130,
         "level": 3,
         "title": "イベントのアカウント識別子と Using の関係"
       }
@@ -6634,6 +6666,14 @@
         "line": 78,
         "level": 2,
         "title": "イベントの種類"
+      }
+    ],
+    "イベントコンバーター": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 750,
+        "level": 2,
+        "title": "イベントコンバーター"
       }
     ],
     "イベントコンバーター実装ガイド": [
@@ -6839,7 +6879,7 @@
     "イベントリスニング": [
       {
         "document": "platform-guide/README.md",
-        "line": 175,
+        "line": 176,
         "level": 3,
         "title": "イベントリスニング"
       }
@@ -7010,14 +7050,6 @@
         "title": "イベント変換"
       }
     ],
-    "イベント変換器": [
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 750,
-        "level": 2,
-        "title": "イベント変換器"
-      }
-    ],
     "イベント変更": [
       {
         "document": "platform-guide/discord.md",
@@ -7057,7 +7089,7 @@
     "イベント設定": [
       {
         "document": "user-guide/configuration.md",
-        "line": 561,
+        "line": 563,
         "level": 2,
         "title": "イベント設定"
       }
@@ -7172,30 +7204,6 @@
         "title": "インタラクションセッションシステム"
       }
     ],
-    "インタラクションメソッド": [
-      {
-        "document": "developer-guide/modules/event-wrapper.md",
-        "line": 326,
-        "level": 4,
-        "title": "インタラクションメソッド"
-      }
-    ],
-    "インタラクションメソッドの例": [
-      {
-        "document": "developer-guide/modules/event-wrapper.md",
-        "line": 365,
-        "level": 4,
-        "title": "インタラクションメソッドの例"
-      }
-    ],
-    "インタラクション機能の深掘り": [
-      {
-        "document": "developer-guide/modules/event-wrapper.md",
-        "line": 554,
-        "level": 3,
-        "title": "インタラクション機能の深掘り"
-      }
-    ],
     "インタラクティブなインストール": [
       {
         "document": "quick-start.md",
@@ -7210,14 +7218,6 @@
         "line": 115,
         "level": 3,
         "title": "インタラクティブな初期化（推奨）"
-      }
-    ],
-    "インタラクティブセッションの応用": [
-      {
-        "document": "developer-guide/modules/event-wrapper.md",
-        "line": 106,
-        "level": 2,
-        "title": "インタラクティブセッションの応用"
       }
     ],
     "インターフェース": [
@@ -7258,14 +7258,6 @@
         "line": 1,
         "level": 1,
         "title": "エコシステムモジュール"
-      }
-    ],
-    "エスカレーションモード": [
-      {
-        "document": "user-guide/configuration.md",
-        "line": 479,
-        "level": 3,
-        "title": "エスカレーションモード"
       }
     ],
     "エラーコードの標準化（0.3.1）": [
@@ -7431,7 +7423,7 @@
     "エラー処理": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1138,
+        "line": 1153,
         "level": 2,
         "title": "エラー処理"
       },
@@ -7452,6 +7444,14 @@
         "line": 476,
         "level": 2,
         "title": "エラー処理"
+      }
+    ],
+    "エンジニアモード": [
+      {
+        "document": "user-guide/configuration.md",
+        "line": 477,
+        "level": 3,
+        "title": "エンジニアモード"
       }
     ],
     "エントリーの登録": [
@@ -7484,6 +7484,14 @@
         "line": 233,
         "level": 3,
         "title": "カウントと存在確認"
+      }
+    ],
+    "カスタム SQL バックエンド": [
+      {
+        "document": "advanced/storage-backends.md",
+        "line": 155,
+        "level": 2,
+        "title": "カスタム SQL バックエンド"
       }
     ],
     "カスタムストレージバックエンド": [
@@ -7611,7 +7619,7 @@
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 528,
+        "line": 530,
         "level": 3,
         "title": "クロスプラットフォーム拡張（ワイルドカード）"
       }
@@ -8063,7 +8071,7 @@
     "コマンド基本": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 478,
+        "line": 480,
         "level": 4,
         "title": "コマンド基本"
       }
@@ -8077,17 +8085,17 @@
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 476,
+        "line": 478,
         "level": 3,
         "title": "コマンド情報"
       }
     ],
-    "コマンド情報の取得": [
+    "コマンド情報取得": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
         "line": 141,
         "level": 2,
-        "title": "コマンド情報の取得"
+        "title": "コマンド情報取得"
       }
     ],
     "コマンド管理（cooldown= / rate_limit= / usage_limit= / deprecated=）": [
@@ -8101,7 +8109,7 @@
     "コマンド設定": [
       {
         "document": "user-guide/configuration.md",
-        "line": 563,
+        "line": 565,
         "level": 3,
         "title": "コマンド設定"
       }
@@ -8128,6 +8136,14 @@
         "line": 255,
         "level": 2,
         "title": "コンテキストと永続化"
+      }
+    ],
+    "コンテキストトークンと返信": [
+      {
+        "document": "platform-guide/wechatclaw.md",
+        "line": 44,
+        "level": 3,
+        "title": "コンテキストトークンと返信"
       }
     ],
     "コンテキストマネージャー": [
@@ -8157,9 +8173,17 @@
     "コントリビューション": [
       {
         "document": "platform-guide/README.md",
-        "line": 297,
+        "line": 298,
         "level": 2,
         "title": "コントリビューション"
+      }
+    ],
+    "コンバーター例": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 828,
+        "level": 3,
+        "title": "コンバーター例"
       }
     ],
     "コンポーネントのアップグレード": [
@@ -8358,6 +8382,12 @@
         "line": 118,
         "level": 2,
         "title": "サポートされるメッセージ送信タイプ"
+      },
+      {
+        "document": "platform-guide/wechatclaw.md",
+        "line": 51,
+        "level": 2,
+        "title": "サポートされるメッセージ送信タイプ"
       }
     ],
     "サポートされる送信メソッドの一覧表示": [
@@ -8395,7 +8425,7 @@
     "サーバー設定": [
       {
         "document": "user-guide/configuration.md",
-        "line": 267,
+        "line": 268,
         "level": 2,
         "title": "サーバー設定"
       }
@@ -8563,7 +8593,7 @@
     "スコープ設定（scope）": [
       {
         "document": "user-guide/configuration.md",
-        "line": 651,
+        "line": 653,
         "level": 2,
         "title": "スコープ設定（scope）"
       }
@@ -8643,7 +8673,7 @@
     "ストレージ設定": [
       {
         "document": "user-guide/configuration.md",
-        "line": 512,
+        "line": 510,
         "level": 2,
         "title": "ストレージ設定"
       }
@@ -8718,6 +8748,22 @@
         "line": 146,
         "level": 2,
         "title": "セッションタイマー：remind / escalate"
+      }
+    ],
+    "セッショントランク設定（transcript）": [
+      {
+        "document": "user-guide/configuration.md",
+        "line": 594,
+        "level": 2,
+        "title": "セッショントランク設定（transcript）"
+      }
+    ],
+    "セッション・アカウントバインディング（正確な帰属宣言）": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 793,
+        "level": 4,
+        "title": "セッション・アカウントバインディング（正確な帰属宣言）"
       }
     ],
     "セッション別フィルタリングの recent": [
@@ -8822,6 +8868,14 @@
         "line": 112,
         "level": 4,
         "title": "タプルを辞書に変換"
+      }
+    ],
+    "ダイアレクトの動作差異": [
+      {
+        "document": "advanced/storage-backends.md",
+        "line": 124,
+        "level": 2,
+        "title": "ダイアレクトの動作差異"
       }
     ],
     "ダッシュボードの自動登録": [
@@ -9190,20 +9244,20 @@
         "title": "テーブル削除"
       }
     ],
-    "テーブル構造が不要で、少数のキーバリューを保存するだけの場合": [
-      {
-        "document": "developer-guide/orm.md",
-        "line": 233,
-        "level": 3,
-        "title": "テーブル構造が不要で、少数のキーバリューを保存するだけの場合"
-      }
-    ],
     "テーブル構造の変更": [
       {
         "document": "advanced/sql-builder.md",
         "line": 61,
         "level": 3,
         "title": "テーブル構造の変更"
+      }
+    ],
+    "テーブル構造は必要なく、いくつかのキー値だけを保存したい": [
+      {
+        "document": "developer-guide/orm.md",
+        "line": 235,
+        "level": 3,
+        "title": "テーブル構造は必要なく、いくつかのキー値だけを保存したい"
       }
     ],
     "テーブル管理": [
@@ -9322,12 +9376,12 @@
         "title": "データの永続化"
       }
     ],
-    "データベースの変更やクラウドデータベースへのデプロイが必要な場合": [
+    "データベースを変更する、またはクラウドデータベースにデプロイする必要がある": [
       {
         "document": "developer-guide/orm.md",
-        "line": 229,
+        "line": 231,
         "level": 3,
-        "title": "データベースの変更やクラウドデータベースへのデプロイが必要な場合"
+        "title": "データベースを変更する、またはクラウドデータベースにデプロイする必要がある"
       }
     ],
     "データモデル層（ORM）": [
@@ -9357,7 +9411,7 @@
     "トランザクション": [
       {
         "document": "developer-guide/orm.md",
-        "line": 102,
+        "line": 109,
         "level": 2,
         "title": "トランザクション"
       }
@@ -9646,6 +9700,14 @@
         "title": "バインドの継承（merge）"
       }
     ],
+    "バウンダリと注意事項": [
+      {
+        "document": "developer-guide/orm.md",
+        "line": 135,
+        "level": 2,
+        "title": "バウンダリと注意事項"
+      }
+    ],
     "バグトラッカー": [
       {
         "document": "bug-tracker.md",
@@ -9665,7 +9727,7 @@
     "バックエンドの選択": [
       {
         "document": "advanced/storage-backends.md",
-        "line": 20,
+        "line": 21,
         "level": 2,
         "title": "バックエンドの選択"
       }
@@ -9887,7 +9949,7 @@
     "フレームワーク設定": [
       {
         "document": "user-guide/configuration.md",
-        "line": 437,
+        "line": 434,
         "level": 2,
         "title": "フレームワーク設定"
       }
@@ -9976,6 +10038,22 @@
         "line": 142,
         "level": 4,
         "title": "プラットフォームの一覧表示"
+      }
+    ],
+    "プラットフォームの位置づけ": [
+      {
+        "document": "platform-guide/wechatclaw.md",
+        "line": 11,
+        "level": 2,
+        "title": "プラットフォームの位置づけ"
+      }
+    ],
+    "プラットフォームの制限": [
+      {
+        "document": "platform-guide/wechatclaw.md",
+        "line": 71,
+        "level": 2,
+        "title": "プラットフォームの制限"
       }
     ],
     "プラットフォームの機能検出": [
@@ -10125,7 +10203,7 @@
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 490,
+        "line": 492,
         "level": 3,
         "title": "プラットフォーム拡張メソッド"
       },
@@ -10310,6 +10388,14 @@
         "title": "ベンチマークの実行とリグレッション比較"
       }
     ],
+    "ホットアップデートの内部処理の分解": [
+      {
+        "document": "user-guide/configuration.md",
+        "line": 140,
+        "level": 3,
+        "title": "ホットアップデートの内部処理の分解"
+      }
+    ],
     "ホットリロードの境界": [
       {
         "document": "advanced/ownership.md",
@@ -10324,14 +10410,6 @@
         "line": 211,
         "level": 2,
         "title": "ホットリロード失敗時のロールバック"
-      }
-    ],
-    "ホット更新の内部プロセスの分解": [
-      {
-        "document": "user-guide/configuration.md",
-        "line": 139,
-        "level": 3,
-        "title": "ホット更新の内部プロセスの分解"
       }
     ],
     "ホームエントリ": [
@@ -10436,12 +10514,12 @@
         "title": "マイグレーション手順"
       }
     ],
-    "マスターシステム設定": [
+    "マスターシステムの設定": [
       {
         "document": "user-guide/configuration.md",
-        "line": 297,
+        "line": 298,
         "level": 2,
-        "title": "マスターシステム設定"
+        "title": "マスターシステムの設定"
       }
     ],
     "マッチングエントリの構文（全システムで統一）": [
@@ -10734,6 +10812,12 @@
       {
         "document": "api-reference/event-system.md",
         "line": 158,
+        "level": 3,
+        "title": "メッセージイベント"
+      },
+      {
+        "document": "platform-guide/wechatclaw.md",
+        "line": 38,
         "level": 3,
         "title": "メッセージイベント"
       }
@@ -11029,7 +11113,7 @@
     "メッセージ設定": [
       {
         "document": "user-guide/configuration.md",
-        "line": 579,
+        "line": 581,
         "level": 3,
         "title": "メッセージ設定"
       }
@@ -11087,7 +11171,7 @@
     "メッセージ送信失敗": [
       {
         "document": "platform-guide/README.md",
-        "line": 270,
+        "line": 271,
         "level": 4,
         "title": "メッセージ送信失敗"
       }
@@ -11095,7 +11179,7 @@
     "メッセージ送信成功": [
       {
         "document": "platform-guide/README.md",
-        "line": 254,
+        "line": 255,
         "level": 4,
         "title": "メッセージ送信成功"
       }
@@ -11447,7 +11531,7 @@
     "モジュール設定": [
       {
         "document": "user-guide/configuration.md",
-        "line": 622,
+        "line": 624,
         "level": 2,
         "title": "モジュール設定"
       }
@@ -11484,12 +11568,12 @@
         "title": "モジュール開発のベストプラクティス"
       }
     ],
-    "モジュール開発を続ける": [
+    "モジュール開発パスの続き": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 549,
+        "line": 551,
         "level": 3,
-        "title": "モジュール開発を続ける"
+        "title": "モジュール開発パスの続き"
       }
     ],
     "モジュール開発入門": [
@@ -11604,12 +11688,12 @@
         "title": "ユーザー使用ガイド"
       }
     ],
-    "ユーザー優先：マスターの有効範囲はユーザーが最終決定": [
+    "ユーザー優先：マスターチェーンの有効範囲はユーザーが最終決定": [
       {
         "document": "user-guide/configuration.md",
-        "line": 370,
+        "line": 367,
         "level": 3,
-        "title": "ユーザー優先：マスターの有効範囲はユーザーが最終決定"
+        "title": "ユーザー優先：マスターチェーンの有効範囲はユーザーが最終決定"
       }
     ],
     "ユーザー状態変更イベント": [
@@ -12054,14 +12138,6 @@
         "title": "リリース後にユーザーが使いやすいようにする"
       }
     ],
-    "リレーションマッピング（relationship）": [
-      {
-        "document": "developer-guide/orm.md",
-        "line": 173,
-        "level": 2,
-        "title": "リレーションマッピング（relationship）"
-      }
-    ],
     "リンクトレース：trace-id": [
       {
         "document": "advanced/interaction.md",
@@ -12261,7 +12337,7 @@
     "ログ設定": [
       {
         "document": "user-guide/configuration.md",
-        "line": 376,
+        "line": 373,
         "level": 2,
         "title": "ログ設定"
       }
@@ -12401,7 +12477,7 @@
       },
       {
         "document": "platform-guide/README.md",
-        "line": 142,
+        "line": 143,
         "level": 4,
         "title": "一括構築モード（Build）"
       }
@@ -12654,14 +12730,6 @@
         "title": "会話モデル"
       }
     ],
-    "会話受信箱設定（transcript）": [
-      {
-        "document": "user-guide/configuration.md",
-        "line": 592,
-        "level": 2,
-        "title": "会話受信箱設定（transcript）"
-      }
-    ],
     "伝統的な登録方法": [
       {
         "document": "advanced/router.md",
@@ -12791,7 +12859,7 @@
     "例外リスト": [
       {
         "document": "user-guide/configuration.md",
-        "line": 496,
+        "line": 494,
         "level": 4,
         "title": "例外リスト"
       }
@@ -12983,7 +13051,7 @@
     "共通インターフェース": [
       {
         "document": "platform-guide/README.md",
-        "line": 45,
+        "line": 46,
         "level": 2,
         "title": "共通インターフェース"
       }
@@ -13061,7 +13129,7 @@
     "再びステップを振り返る": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1252,
+        "line": 1267,
         "level": 3,
         "title": "再びステップを振り返る"
       }
@@ -13208,12 +13276,12 @@
         "title": "判定の意味"
       }
     ],
-    "判定チェーンと実行時追加削除": [
+    "判定チェーンと実行時追加": [
       {
         "document": "user-guide/configuration.md",
-        "line": 328,
+        "line": 329,
         "level": 3,
-        "title": "判定チェーンと実行時追加削除"
+        "title": "判定チェーンと実行時追加"
       }
     ],
     "判定（3つの質問）": [
@@ -13385,7 +13453,7 @@
     "参考リンク": [
       {
         "document": "platform-guide/README.md",
-        "line": 285,
+        "line": 286,
         "level": 2,
         "title": "参考リンク"
       }
@@ -13613,7 +13681,7 @@
     "国際化設定": [
       {
         "document": "user-guide/configuration.md",
-        "line": 611,
+        "line": 613,
         "level": 2,
         "title": "国際化設定"
       }
@@ -13800,6 +13868,12 @@
       {
         "document": "platform-guide/webhook.md",
         "line": 13,
+        "level": 2,
+        "title": "基本情報"
+      },
+      {
+        "document": "platform-guide/wechatclaw.md",
+        "line": 3,
         "level": 2,
         "title": "基本情報"
       },
@@ -14012,14 +14086,6 @@
         "title": "基礎的な送信メソッド"
       }
     ],
-    "境界と注意点": [
-      {
-        "document": "developer-guide/orm.md",
-        "line": 128,
-        "level": 2,
-        "title": "境界と注意点"
-      }
-    ],
     "変換フロー": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -14028,20 +14094,12 @@
         "title": "変換フロー"
       }
     ],
-    "変換器の例": [
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 813,
-        "level": 3,
-        "title": "変換器の例"
-      }
-    ],
-    "外部キー（リレーションマッピングの基礎）": [
+    "外部キー（関係マッピングの基礎）": [
       {
         "document": "developer-guide/orm.md",
-        "line": 159,
+        "line": 163,
         "level": 2,
-        "title": "外部キー（リレーションマッピングの基礎）"
+        "title": "外部キー（関係マッピングの基礎）"
       }
     ],
     "多Bot設定": [
@@ -14114,12 +14172,12 @@
         "title": "大小文字を区別しない呼び出し"
       }
     ],
-    "失敗の意味（2.12 以降）": [
+    "失敗セマンティクス（2.12 以降）": [
       {
         "document": "advanced/storage-backends.md",
-        "line": 85,
+        "line": 86,
         "level": 2,
-        "title": "失敗の意味（2.12 以降）"
+        "title": "失敗セマンティクス（2.12 以降）"
       }
     ],
     "失敗時のリトライ + タイムアウト": [
@@ -14259,7 +14317,7 @@
     "完全な設定例": [
       {
         "document": "user-guide/configuration.md",
-        "line": 213,
+        "line": 214,
         "level": 2,
         "title": "完全な設定例"
       }
@@ -14355,7 +14413,7 @@
     "実装面の詳細": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1247,
+        "line": 1262,
         "level": 3,
         "title": "実装面の詳細"
       }
@@ -14374,14 +14432,6 @@
         "line": 293,
         "level": 3,
         "title": "宣言型翻訳キー（v2.7.0+）"
-      }
-    ],
-    "宣言型設定クラスとの関係": [
-      {
-        "document": "developer-guide/orm.md",
-        "line": 112,
-        "level": 2,
-        "title": "宣言型設定クラスとの関係"
       }
     ],
     "宣言型設定（推奨）": [
@@ -14440,10 +14490,18 @@
         "title": "宣言的マルチターン：`.got()` チェーン（2.11+）"
       }
     ],
+    "宣言的設定クラスとの関係": [
+      {
+        "document": "developer-guide/orm.md",
+        "line": 119,
+        "level": 2,
+        "title": "宣言的設定クラスとの関係"
+      }
+    ],
     "宣言的設定（推奨）": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1062,
+        "line": 1077,
         "level": 3,
         "title": "宣言的設定（推奨）"
       }
@@ -14600,12 +14658,44 @@
         "title": "対話イベントの処理"
       }
     ],
+    "対話セッションの応用": [
+      {
+        "document": "developer-guide/modules/event-wrapper.md",
+        "line": 106,
+        "level": 2,
+        "title": "対話セッションの応用"
+      }
+    ],
+    "対話メソッド": [
+      {
+        "document": "developer-guide/modules/event-wrapper.md",
+        "line": 328,
+        "level": 4,
+        "title": "対話メソッド"
+      }
+    ],
+    "対話メソッドの例": [
+      {
+        "document": "developer-guide/modules/event-wrapper.md",
+        "line": 367,
+        "level": 4,
+        "title": "対話メソッドの例"
+      }
+    ],
     "対話式インストール": [
       {
         "document": "user-guide/cli-reference.md",
         "line": 651,
         "level": 2,
         "title": "対話式インストール"
+      }
+    ],
+    "対話機能の深掘り": [
+      {
+        "document": "developer-guide/modules/event-wrapper.md",
+        "line": 556,
+        "level": 3,
+        "title": "対話機能の深掘り"
       }
     ],
     "導入": [
@@ -14821,7 +14911,7 @@
     "成功レスポンス": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1030,
+        "line": 1045,
         "level": 3,
         "title": "成功レスポンス"
       }
@@ -14925,7 +15015,7 @@
     "手動でレスポンス構築（旧版方式は互換性あり）": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1046,
+        "line": 1061,
         "level": 3,
         "title": "手動でレスポンス構築（旧版方式は互換性あり）"
       }
@@ -14976,6 +15066,14 @@
         "line": 362,
         "level": 2,
         "title": "拓撲ツリーアプリケーションプログラミングインターフェース"
+      }
+    ],
+    "拡張 API（call_api）": [
+      {
+        "document": "platform-guide/wechatclaw.md",
+        "line": 64,
+        "level": 2,
+        "title": "拡張 API（call_api）"
       }
     ],
     "拡張アクション": [
@@ -15118,6 +15216,14 @@
         "title": "捕捉の推奨事項"
       }
     ],
+    "接続とバインディング": [
+      {
+        "document": "platform-guide/wechatclaw.md",
+        "line": 15,
+        "level": 2,
+        "title": "接続とバインディング"
+      }
+    ],
     "接続の自動登録（接続プール、2.10+）": [
       {
         "document": "advanced/router.md",
@@ -15145,7 +15251,7 @@
     "接続パラメータ": [
       {
         "document": "advanced/storage-backends.md",
-        "line": 41,
+        "line": 42,
         "level": 2,
         "title": "接続パラメータ"
       }
@@ -15189,7 +15295,7 @@
     "接続モードの半完成基底クラス": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 899,
+        "line": 914,
         "level": 3,
         "title": "接続モードの半完成基底クラス"
       }
@@ -15205,7 +15311,7 @@
     "接続再試行": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1140,
+        "line": 1155,
         "level": 3,
         "title": "接続再試行"
       }
@@ -15213,7 +15319,7 @@
     "接続失敗時の動作": [
       {
         "document": "advanced/storage-backends.md",
-        "line": 74,
+        "line": 75,
         "level": 2,
         "title": "接続失敗時の動作"
       }
@@ -15235,7 +15341,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 854,
+        "line": 869,
         "level": 2,
         "title": "接続管理"
       }
@@ -15454,14 +15560,6 @@
         "line": 90,
         "level": 3,
         "title": "方法4：ErisPulse-Appクライアントを使用する（ターミナル不要）"
-      }
-    ],
-    "方言の動作の違い": [
-      {
-        "document": "advanced/storage-backends.md",
-        "line": 123,
-        "level": 2,
-        "title": "方言の動作の違い"
       }
     ],
     "既にリリースしたモジュールの更新": [
@@ -15983,7 +16081,7 @@
     "標準イベント形式": [
       {
         "document": "platform-guide/README.md",
-        "line": 232,
+        "line": 233,
         "level": 3,
         "title": "標準イベント形式"
       }
@@ -16035,7 +16133,7 @@
     "標準レスポンス形式": [
       {
         "document": "platform-guide/README.md",
-        "line": 253,
+        "line": 254,
         "level": 3,
         "title": "標準レスポンス形式"
       }
@@ -16078,6 +16176,14 @@
         "line": 31,
         "level": 2,
         "title": "標準化の整列（0.1.0）"
+      }
+    ],
+    "標準化の整合": [
+      {
+        "document": "platform-guide/wechatclaw.md",
+        "line": 30,
+        "level": 2,
+        "title": "標準化の整合"
       }
     ],
     "標準化への準拠": [
@@ -16203,7 +16309,7 @@
     "標準形式": [
       {
         "document": "platform-guide/README.md",
-        "line": 227,
+        "line": 228,
         "level": 2,
         "title": "標準形式"
       }
@@ -16284,9 +16390,21 @@
         "line": 1101,
         "level": 2,
         "title": "次に"
+      },
+      {
+        "document": "user-guide/configuration.md",
+        "line": 741,
+        "level": 2,
+        "title": "次に"
       }
     ],
     "次に進む": [
+      {
+        "document": "developer-guide/orm.md",
+        "line": 229,
+        "level": 2,
+        "title": "次に進む"
+      },
       {
         "document": "developer-guide/publishing.md",
         "line": 418,
@@ -16316,12 +16434,6 @@
         "line": 65,
         "level": 2,
         "title": "次に進む"
-      },
-      {
-        "document": "user-guide/configuration.md",
-        "line": 740,
-        "level": 2,
-        "title": "次に進む"
       }
     ],
     "次に進むべきこと": [
@@ -16348,12 +16460,6 @@
       {
         "document": "developer-guide/modules/getting-started.md",
         "line": 205,
-        "level": 2,
-        "title": "次のステップ"
-      },
-      {
-        "document": "developer-guide/orm.md",
-        "line": 227,
         "level": 2,
         "title": "次のステップ"
       },
@@ -16729,7 +16835,7 @@
     "生データ": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 485,
+        "line": 487,
         "level": 3,
         "title": "生データ"
       }
@@ -16782,14 +16888,6 @@
         "title": "異なるターゲットへの送信"
       }
     ],
-    "異スレッド API": [
-      {
-        "document": "advanced/storage-backends.md",
-        "line": 95,
-        "level": 2,
-        "title": "異スレッド API"
-      }
-    ],
     "登録API": [
       {
         "document": "ecosystem/dashboard.md",
@@ -16825,7 +16923,7 @@
     "登録済みメソッドの照会": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 512,
+        "line": 514,
         "level": 3,
         "title": "登録済みメソッドの照会"
       }
@@ -17003,7 +17101,7 @@
     "統一イベントオーバーライド設定（event.overrides）": [
       {
         "document": "user-guide/configuration.md",
-        "line": 698,
+        "line": 699,
         "level": 2,
         "title": "統一イベントオーバーライド設定（event.overrides）"
       }
@@ -17080,6 +17178,14 @@
         "title": "能力の境界"
       }
     ],
+    "自作アイデンティティソース（provider）": [
+      {
+        "document": "user-guide/configuration.md",
+        "line": 343,
+        "level": 3,
+        "title": "自作アイデンティティソース（provider）"
+      }
+    ],
     "自分に合ったパスを選ぶ": [
       {
         "document": "README.md",
@@ -17128,14 +17234,6 @@
         "title": "自動ドキュメント"
       }
     ],
-    "自動マイグレーション（フェーズ 2）": [
-      {
-        "document": "developer-guide/orm.md",
-        "line": 136,
-        "level": 2,
-        "title": "自動マイグレーション（フェーズ 2）"
-      }
-    ],
     "自動注入": [
       {
         "document": "ecosystem/takumi.md",
@@ -17147,17 +17245,17 @@
     "自動発見メカニズム": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1196,
+        "line": 1211,
         "level": 3,
         "title": "自動発見メカニズム"
       }
     ],
-    "自定义 SQL バックエンド": [
+    "自動移行（段階2）": [
       {
-        "document": "advanced/storage-backends.md",
-        "line": 151,
+        "document": "developer-guide/orm.md",
+        "line": 143,
         "level": 2,
-        "title": "自定义 SQL バックエンド"
+        "title": "自動移行（段階2）"
       }
     ],
     "自定义メッセージセグメント": [
@@ -17166,14 +17264,6 @@
         "line": 138,
         "level": 2,
         "title": "自定义メッセージセグメント"
-      }
-    ],
-    "自定義アイデンティティソース（provider）": [
-      {
-        "document": "user-guide/configuration.md",
-        "line": 342,
-        "level": 3,
-        "title": "自定義アイデンティティソース（provider）"
       }
     ],
     "自定義フォント": [
@@ -17252,18 +17342,10 @@
         "title": "複数アカウントの設定"
       }
     ],
-    "複数アカウントの重複受信（フレームワークが注入するフィールド）": [
-      {
-        "document": "developer-guide/adapters/core-concepts.md",
-        "line": 785,
-        "level": 3,
-        "title": "複数アカウントの重複受信（フレームワークが注入するフィールド）"
-      }
-    ],
     "複数アカウントサポート": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1060,
+        "line": 1075,
         "level": 2,
         "title": "複数アカウントサポート"
       }
@@ -17390,6 +17472,12 @@
         "line": 640,
         "level": 4,
         "title": "設定のホットアップデート"
+      },
+      {
+        "document": "user-guide/configuration.md",
+        "line": 117,
+        "level": 2,
+        "title": "設定のホットアップデート"
       }
     ],
     "設定のホットアップデート（on_config_update）": [
@@ -17398,14 +17486,6 @@
         "line": 266,
         "level": 3,
         "title": "設定のホットアップデート（on_config_update）"
-      }
-    ],
-    "設定のホット更新": [
-      {
-        "document": "user-guide/configuration.md",
-        "line": 117,
-        "level": 2,
-        "title": "設定のホット更新"
       }
     ],
     "設定の上書き": [
@@ -17453,9 +17533,17 @@
     "設定の読み取りと削除API": [
       {
         "document": "user-guide/configuration.md",
-        "line": 187,
+        "line": 188,
         "level": 2,
         "title": "設定の読み取りと削除API"
+      }
+    ],
+    "設定の読み込みエラー処理": [
+      {
+        "document": "user-guide/configuration.md",
+        "line": 29,
+        "level": 2,
+        "title": "設定の読み込みエラー処理"
       }
     ],
     "設定エラー": [
@@ -17560,6 +17648,14 @@
         "line": 321,
         "level": 2,
         "title": "設定フォーマットの検証"
+      }
+    ],
+    "設定リファレンス": [
+      {
+        "document": "platform-guide/wechatclaw.md",
+        "line": 77,
+        "level": 2,
+        "title": "設定リファレンス"
       }
     ],
     "設定例": [
@@ -17670,14 +17766,6 @@
         "line": 51,
         "level": 2,
         "title": "設定説明"
-      }
-    ],
-    "設定読み込みエラー処理": [
-      {
-        "document": "user-guide/configuration.md",
-        "line": 29,
-        "level": 2,
-        "title": "設定読み込みエラー処理"
       }
     ],
     "設定項目の説明": [
@@ -17851,7 +17939,7 @@
     "返信待機機能": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 314,
+        "line": 316,
         "level": 3,
         "title": "返信待機機能"
       }
@@ -18021,7 +18109,7 @@
     "送信ルールデコレーター": [
       {
         "document": "platform-guide/README.md",
-        "line": 107,
+        "line": 108,
         "level": 4,
         "title": "送信ルールデコレーター"
       }
@@ -18144,20 +18232,20 @@
         "title": "通知イベント処理"
       }
     ],
+    "通知オペレーター": [
+      {
+        "document": "developer-guide/modules/event-wrapper.md",
+        "line": 217,
+        "level": 4,
+        "title": "通知オペレーター"
+      }
+    ],
     "通知タイプ判定": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
         "line": 221,
         "level": 4,
         "title": "通知タイプ判定"
-      }
-    ],
-    "通知操作者": [
-      {
-        "document": "developer-guide/modules/event-wrapper.md",
-        "line": 217,
-        "level": 4,
-        "title": "通知操作者"
       }
     ],
     "速攻リリース": [
@@ -18392,6 +18480,14 @@
         "title": "開発者ガイド"
       }
     ],
+    "関係マッピング（relationship）": [
+      {
+        "document": "developer-guide/orm.md",
+        "line": 177,
+        "level": 2,
+        "title": "関係マッピング（relationship）"
+      }
+    ],
     "関連ドキュメント": [
       {
         "document": "advanced/client.md",
@@ -18503,7 +18599,7 @@
       },
       {
         "document": "advanced/storage-backends.md",
-        "line": 177,
+        "line": 180,
         "level": 2,
         "title": "関連ドキュメント"
       },
@@ -18557,7 +18653,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1245,
+        "line": 1260,
         "level": 2,
         "title": "関連ドキュメント"
       },
@@ -18581,7 +18677,7 @@
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 547,
+        "line": 549,
         "level": 2,
         "title": "関連ドキュメント"
       },
@@ -18674,6 +18770,14 @@
         "title": "非同期インターフェース"
       }
     ],
+    "非同期ネイティブ API": [
+      {
+        "document": "advanced/storage-backends.md",
+        "line": 96,
+        "level": 2,
+        "title": "非同期ネイティブ API"
+      }
+    ],
     "非同期プログラミング": [
       {
         "document": "developer-guide/modules/best-practices.md",
@@ -18715,7 +18819,7 @@
     "非同期送信と結果処理": [
       {
         "document": "platform-guide/README.md",
-        "line": 92,
+        "line": 93,
         "level": 4,
         "title": "非同期送信と結果処理"
       }

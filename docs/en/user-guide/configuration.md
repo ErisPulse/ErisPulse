@@ -114,75 +114,76 @@ MYMODULE_API_KEY=sk-xxx docker compose up -d
 
 > **Configuration Class vs Model Field When to Use Which?** Configuration class manages "how the module runs" (behavior parameters, hot reload), ORM's `Field()` manages "what data the user generates" (database table, query). Both share the same constraint vocabulary and validator engine; see the comparison table at [Data Model Layer · When to Use Which Declaration](../developer-guide/orm.md#when-to-use-which-declaration).
 
-## Configuration Hot Reload
+## Hot Configuration Reload
 
-Starting from version 2.7.0, the framework provides **systematic support for configuration hot reload**. After external modification of `config.toml` (background watcher checks every 5 seconds), or code calls `setConfig()`, each component automatically responds:
+Starting from version 2.7.0, the framework provides **systematic support** for hot reloading of configurations. After external modifications to `config.toml` (detected every 5 seconds by a background watcher), or after code calls `setConfig()`, components automatically respond:
 
-| Component | Configuration Supporting Hot Reload | Behavior |
-|------|----------------|------|
-| **Logger** | `logger.level` / `log_files` / `log_dir` (including segmentation parameters) / `memory_limit` / `format` / `exclude_levels` | Automatically reapplies (with change detection) |
-| **Command System** | `event.command.prefix` / `case_sensitive` / `allow_space_prefix` / `must_at_bot` | Takes effect on the next message |
+| Component | Configurations Supporting Hot Reload | Behavior |
+|-----------|--------------------------------------|----------|
+| **Logger** | `logger.level` / `log_files` / `log_dir` (including segment parameters) / `memory_limit` / `format` / `exclude_levels` | Automatically reapplied (with change detection) |
+| **Command System** | `event.command.prefix` / `case_sensitive` / `allow_space_prefix` / `must_at_bot` |生效于下一条消息 |
 | **Adapter Concurrency** | `framework.handler_max_concurrency` | Invalidates cached semaphore, rebuilds with new value |
-| **Proactive GC** | `framework.proactive_gc_*` | Config change immediately restarts GC task, supports runtime adjustment/disable/re-enable |
-| **Master System** | `master.users` | Each `is_master()` check reads in real time, no restart needed |
-| **Module/Adapter Configuration** | Their own configuration items | Triggers `on_config_update(old, new)` callback |
+| **Proactive GC** | `framework.proactive_gc_*` | Configuration change immediately restarts GC task, supports runtime adjustment/disable/reenable |
+| **Master System** | `master.users` | `is_master()` checks read in real-time, no restart required |
+| **Modules/Adapters** | Their respective configuration items | Triggers `on_config_update(old, new)` callback |
 
-**Configuration that Requires Restart** (cannot be safely hot switched, warning is output when changed "requires restart of process to take effect"):
+**Configurations Requiring Restart** (cannot be safely hot-switched, warning "Process restart required for effect" is output on change):
 
 | Configuration | Reason |
-|------|------|
-| `router.cors.*` / `router.security.*` | Middleware is written into FastAPI at service startup, cannot be safely hot switched at runtime |
-| `storage.use_global_db` | SQLite file handle is already open at runtime, switching path is unsafe |
+|---------------|--------|
+| `router.cors.*` / `router.security.*` | Middleware is written into FastAPI at service startup, cannot be safely hot-switched at runtime |
+| `storage.use_global_db` | SQLite file handle is already opened at runtime, switching paths is unsafe |
+| `storage.sqlite.busy_timeout` | `busy_timeout` is applied via PRAGMA at connection establishment, already opened connections do not refresh with configuration changes |
 
-> **Error during mid-edit save?** If a transient syntax error occurs while editing `config.toml`, the framework will **retain the last valid configuration** and output diagnostic logs, and will not broadcast an empty configuration to each component (to avoid `on_config_update` receiving empty values and mistakenly reverting to defaults).
+> **Error during mid-edit save?** If a transient syntax error occurs while editing `config.toml`, the framework will **retain the last valid configuration** and output diagnostic logs, avoiding broadcasting an empty configuration to components (preventing `on_config_update` from receiving empty values and mistakenly reverting to defaults).
 
 ### Internal Breakdown of Hot Reload Chain
 
-"How do components know when the configuration is changed?" — Behind the scenes is a detection → reload → broadcast chain:
+"How do components know when the configuration changes?" — Behind the scenes is a chain of detection → reload → broadcast:
 
 ```mermaid
 flowchart TD
-    A["External edit config.toml"] --> B{"Who first detects it?"}
+    A["External edit to config.toml"] --> B{"Who detects it first?"}
     B -->|"Background watcher thread<br/>Polls mtime every 5 seconds"| C["_check_file_change determines change"]
     B -->|"When reading configuration<br/>Cache exceeds 60 seconds"| C
     C --> D["_load_config re-parses TOML"]
-    D --> E{"Parsing successful?"}
-    E -->|"No (syntax error)"| F["Retain last valid configuration<br/>Do not broadcast, output diagnostic log"]
+    D --> E{"Parse successful?"}
+    E -->|"No (syntax error)"| F["Retain last valid configuration<br/>No broadcast, diagnostic logs"]
     E -->|"Yes"| G["lifecycle.emit config.updated<br/>Carries old_config / new_config"]
-    G --> H["Each component listener responds<br/>(logger / scope / command / GC ... )"]
+    G --> H["Component listeners respond<br/>(logger / scope / command / GC ... )"]
 ```
 
-**Two Detection Paths** (either one is sufficient, both can serve as a fallback):
+**Two Detection Paths** (either suffices, both provide redundancy):
 
 | Path | Mechanism | Trigger Timing |
-|------|------|---------|
-| Background watcher | Daemon thread `config-watcher` polls file `mtime` every **5 seconds** in `wait` | At most 5 seconds after external file modification |
-| Lazy Detection | Any `getConfig()` read, if cache exceeds **60 seconds**, first checks file | Next time configuration is read |
+|------|-----------|----------------|
+| Background watcher | Daemon thread `config-watcher` polls file `mtime` every **5 seconds** | Up to 5 seconds after external file edit |
+| Lazy detection | Any `getConfig()` read, if cache exceeds **60 seconds** then checks file first | Next time configuration is read |
 
-> **Framework will not hurt itself**: When `setConfig()` writes to disk, it records the "mtime written by itself," and the watcher excludes it when comparing, recognizing only **external edits** as changes.
+> **Framework does not self-damage**: When `setConfig()` writes to disk, it records the "mtime written by itself", and the watcher excludes it, considering only **external edits** as changes.
 
-**Two Types of Configuration Change Events**:
+**Two Types of Configuration Change Events:**
 
-| Event | Trigger | Data | Typical Scenario |
-|------|--------|------|---------|
+| Event | Triggerer | Data | Typical Scenario |
+|-------|-----------|------|------------------|
 | `config.set` | Code / Dashboard calls `setConfig()` | `{key, old_value, new_value}` | Single key write (template generation, status recording, runtime config change) |
-| `config.updated` | External edit after watcher/lazy detection captures | `{old_config, new_config, config_file}` | Manually editing `config.toml` |
+| `config.updated` | External edit detected by watcher/lazy detection | `{old_config, new_config, config_file}` | Manual edit to `config.toml` |
 
-> `setConfig()` defaults to **delayed write to disk** (merges multiple writes), `immediate=True` writes immediately. After the watcher detects an external modification, it only updates the in-memory cache and **does not** write the external change back to the file.
+> `setConfig()` defaults to **delayed disk write for 5 seconds** (merges multiple writes), `immediate=True` writes immediately. After watcher detects external modification, only the in-memory cache is updated, and **external changes are not written back to the file**.
 
-**List of Automatic Response Parties** (both event types usually subscribe, response content is consistent):
+**List of Automatic Responders** (both events are typically subscribed, response content is consistent):
 
-| Component | Listener | Response |
-|------|------|------|
-| Logger | `config.set` + `config.updated` | Level/file/directory segmentation/memory limit/format/exclude level reapply (with change detection, no change does not move) |
-| Scope | `config.updated` | Scope binding cache rebuild |
-| Command System | `config.updated` | Prefix/case sensitivity/space prefix/must_at_bot parse parameter refresh, takes effect on next message |
-| Adapter Concurrency | `config.set` + `config.updated` | `handler_max_concurrency` invalidates and rebuilds semaphore |
-| Proactive GC | `config.set` + `config.updated` | `proactive_gc_*` immediately restarts GC background task |
-| Adapter | Route to `on_config_update` | Each adapter's `on_config_update(old, new)` callback |
-| Module | Route to `on_config_update` | Each module's `on_config_update(old, new)` callback |
-| Storage | `config.updated` | `use_global_db` change **only warns** (requires restart) |
-| Router | `config.updated` | `cors.*` / `security.*` change **only warns** (requires restart) |
+| Component | Listens | Response |
+|-----------|---------|----------|
+| Logger | `config.set` + `config.updated` | Reapplies level/file/directory segments/memory limit/format/exclude levels (with change detection, no change means no action) |
+| Scope | `config.updated` | Rebuilds scope binding cache |
+| Command System | `config.updated` | Refreshes prefix/case sensitivity/space prefix/must_at_bot parsing parameters, next message takes effect |
+| Adapter Concurrency | `config.set` + `config.updated` | Invalidates and rebuilds semaphore with new `handler_max_concurrency` |
+| Proactive GC | `config.set` + `config.updated` | Immediately restarts GC background task with `proactive_gc_*` |
+| Adapter | Routes to `on_config_update` | Adapter `on_config_update(old, new)` callback |
+| Module | Routes to `on_config_update` | Module `on_config_update(old, new)` callback |
+| Storage | `config.updated` | Change to `use_global_db` only warns (restart required) |
+| Router | `config.updated` | Change to `cors.*` / `security.*` only warns (restart required) |
 
 ## Configuration Reading and Deletion API
 
@@ -444,53 +445,54 @@ adapters = []
 
 | Configuration Item | Type | Default Value | Description |
 |---------|------|---------|------|
-| enable_lazy_loading | boolean | true | Whether to enable module lazy loading |
-| uninit_timeout | integer | 30 | Graceful shutdown total timeout (seconds), force termination after exceeding. 0 means no timeout set |
-| strict_mode | integer | 0 | Strict mode level, see below "Strict Mode" explanation |
-| handler_max_concurrency | integer | 64 | Maximum concurrent Task count for event handler, set larger to increase throughput but increase memory usage |
-| handler_queue_max_pending | integer | 4096 | Event surge backpressure: maximum pending handler Task count per platform, new event Task is discarded and WARNING is recorded when exceeded (discard count can be checked in troubleshoot); `0` means unlimited |
-| offline_bot_expiry | integer | 3600 | Automatic expiration time (seconds) for offline Bot records, 0 means never expire |
-| plugins_dir | string / list | "plugins" | Local plugin folder (relative to project root); new/removed/modified plugin files are automatically discovered by hot reload watcher |
-| watch_ignore_dirs | list | built-in list | Directories ignored by hot reload file monitoring (`.venv`/`.git`/`__pycache__` etc.); non-empty list **replaces** built-in list, `[]` means ignore no directories |
-| watch_include_plugin_dirs | boolean | true | Whether `epsdk run --reload` hands plugin directories over to plugin hot reload watcher for precise handling (single module reload), and excludes from full monitoring |
-| event_dedupe | boolean | true | Event idempotent deduplication: duplicate event id only distributes once (repeated delivery from connection layer/retransmission from gateway) |
-| cross_account_policy | string | "off" | Cross-account duplicate handling policy: when the same physical message is received by multiple accounts in sequence, the processing — `off` does not associate (events are distributed as usual); `mark` injects the top-level `multi_receipt` field (pointing to the first accepted event) after distribution, modules read this field to decide themselves; `drop` drops the copy at the distribution entrance (framework-level deduplication, modules are unaware) |
+| enable_lazy_loading | boolean | true | Whether to enable lazy loading of modules |
+| uninit_timeout | integer | 30 | Graceful shutdown timeout (seconds), after which the process is forcibly terminated. 0 means no timeout is set |
+| strict_mode | integer | 0 | Strict mode level, see the "Strict Mode" section below |
+| handler_max_concurrency | integer | 64 | Maximum concurrent Task count for event handlers. Setting this higher increases throughput but increases memory usage |
+| handler_queue_max_pending | integer | 4096 | Event burst backpressure: maximum pending handler Task count per platform; new event handler Tasks are dropped and a WARNING is logged when exceeded (dropped count can be checked in troubleshoot); `0` means unlimited |
+| offline_bot_expiry | integer | 3600 | Automatic expiration time (seconds) for offline Bot records; 0 means no expiration |
+| plugins_dir | string / list | "plugins" | Local plugin folder (relative to project root); changes to plugin files (addition, deletion, modification) are automatically detected by the hot-reload watcher |
+| watch_ignore_dirs | list | built-in list | Directories to ignore in hot-reload file monitoring (e.g., `.venv`, `.git`, `__pycache__`); an empty list **replaces** the built-in list; `[]` means no directories are ignored |
+| watch_include_plugin_dirs | boolean | true | Whether `epsdk run --reload` should hand plugin directories over to the plugin hot-reload watcher for precise handling (single-module reload) and exclude them from full monitoring |
+| event_dedupe | boolean | true | Event idempotent deduplication: duplicate event delivery (retransmission from connection layer / gateway retransmission) is only distributed once |
+| cross_account_policy | string | "off" | Cross-account duplicate handling policy: how to handle the same physical message arriving via multiple accounts—`off` does not associate (events are distributed as usual, default); `mark` injects the top-level `multi_receipt` field (pointing to the first accepted event) into the copy and continues distributing, allowing modules to make decisions based on this field; `drop` drops the copy at the distribution entrance (framework-level deduplication, modules are unaware). Copies targeting the receiving account itself (e.g., `user_id` / `account_id`) are not associated (mentioning privilege); the policy supports hot updates, changes take effect immediately |
+| session_accounts | table | {} | Session account binding: `{"platform_name": {"session_id": "account_bot_id"}}`, binds sessions precisely to a unique owning account—only the bound account receives events for the session, other account copies are discarded (independent of `cross_account_policy`, enabled by configuration; mentioning privilege is retained); configuration is read in real time, hot updates take effect |
 
 ### Proactive GC Configuration
 
-After SDK initialization, a proactive GC background task is started, periodically executing Python GC and internal resource cleanup (offline Bot cleanup, etc.). All parameters support hot reload, and the task is restarted immediately when changed.
+After SDK initialization, a background task starts proactive GC, periodically performing Python GC and internal resource recycling (e.g., offline Bot cleanup). All parameters support hot updates, and changes restart the task immediately.
 
 | Configuration Item | Type | Default Value | Description |
 |---------|------|---------|------|
-| proactive_gc_interval | number | 300 | Recycling interval (seconds), supports decimal. 0 means disable proactive GC |
-| proactive_gc_generation | integer | 0 | Regular round recycling generation (0/1/2, clamped to 0..2). Note `gc.collect(2)` is equivalent to full recycling, default 0 keeps lightweight; deep recycling is triggered periodically by `proactive_gc_full_every` |
-| proactive_gc_full_every | integer | 20 | Full recycling every N rounds, 0 means disable periodic full recycling. Full recycling is constrained by the `proactive_gc_memory_growth_mb` threshold |
-| proactive_gc_memory_growth_mb | integer | 32 | Full recycling memory growth threshold (MB): compared with the last full recycling's memory baseline (prioritizing tracemalloc, then RSS), full recycling is only executed when the growth reaches this value. 0 means no threshold |
-| proactive_gc_idle_only | boolean | false | When enabled, Python GC is skipped in event surges (there are unfinished pending handlers), avoiding pauses and message processing competition; internal resource recycling is unaffected |
-| proactive_gc_gen0_min | integer | 500 | Lower bound of garbage quantity for regular round recycling: `gc.get_count()[0]` below this value directly skips (empty round is almost zero overhead). 0 means always recycle |
+| proactive_gc_interval | number | 300 | Recycling interval (seconds), supports decimals. 0 means disable proactive GC |
+| proactive_gc_generation | integer | 0 | Regular round recycling generation (0/1/2, clamped to 0..2). Note `gc.collect(2)` is equivalent to full recycling, default 0 keeps it lightweight; deep recycling is triggered periodically by `proactive_gc_full_every` |
+| proactive_gc_full_every | integer | 20 | Perform full recycling every N rounds, 0 means disable periodic full recycling. Full recycling is constrained by the `proactive_gc_memory_growth_mb` threshold |
+| proactive_gc_memory_growth_mb | integer | 32 | Full recycling memory growth threshold (MB): compared against the memory baseline since the last full recycling (preferring tracemalloc, then RSS), full recycling is only performed when growth reaches this value. 0 means no threshold |
+| proactive_gc_idle_only | boolean | false | When enabled, skip Python GC during event bursts (when there are pending handlers), avoiding pauses and message processing competition; internal resource recycling is unaffected |
+| proactive_gc_gen0_min | integer | 500 | Minimum gen0 garbage count to trigger regular round recycling: if `gc.get_count()[0]` is below this value, the round is skipped (near-zero overhead for empty rounds). 0 means always recycle |
 
-> **2.7.1 Change**: The default `proactive_gc_generation` is adjusted from `2` to `0`, and the default `proactive_gc_full_every` is adjusted from `0` to `20`. Previously, `generation=2` meant full recycling every round; the new default keeps recycling coverage while significantly reducing idle round overhead. Explicitly configured old values still take literal semantics.
+> **2.7.1 Change**: The default `proactive_gc_generation` was adjusted from `2` to `0`, and `proactive_gc_full_every` from `0` to `20`. Previously, `generation=2` meant full recycling every round; the new default maintains recycling coverage while significantly reducing idle round overhead. Explicitly configured old values still function as intended.
 
 ### Strict Mode
 
-The strict mode controls the handling strategy for modules/adapters when they are not compliant or fail during the loading phase. Modern modules/adapters should inherit corresponding base classes (`BaseModule`/`BaseAdapter`); components that do not inherit base classes affect the framework's context system and fallback cleanup, potentially causing resource leaks.
+Strict mode controls the framework's handling strategy for modules/adapters that are non-compliant or fail during the loading phase. Modern modules/adapters should inherit from corresponding base classes (`BaseModule`/`BaseAdapter`); components not inheriting from base classes affect the framework's context system and fallback cleanup, potentially causing resource leaks.
 
-> **2.5.2 Change**: The default level is adjusted from `1` (skip) to `0` (lenient), to reduce loading issues for new users. Components that do not inherit base classes are still attempted to load with a WARNING, rather than being directly rejected. To restore the previous behavior, explicitly set `strict_mode = 1`.
+> **2.5.2 Change**: The default level was adjusted from `1` (skip) to `0` (lenient), to reduce loading issues for new users. Components not inheriting base classes are warned and still loaded, rather than being directly rejected. To restore the previous behavior, explicitly set `strict_mode = 1`.
 
 | Level | Name | Behavior |
 |------|------|------|
-| 0 | Lenient (default) | Violations are only warned, components that do not inherit base classes are still attempted to load (compatibility with old components) |
-| 1 | Strict-Skip | Reject components that do not inherit base classes and skip them, other normal startup |
-| 2 | Strict-Fatal | Collect all violations and report them uniformly, then terminate the entire startup |
+| 0 | Lenient (default) | Violations only warn, components not inheriting base classes are still loaded (compatible with old components) |
+| 1 | Strict-Skip | Reject components not inheriting base classes and skip them, other components start normally |
+| 2 | Strict-Fatal | Collect all violations and report them together, then terminate the entire startup |
 
-Under all levels, component self-crashes during the loading/registration/initialization phase are always skipped; the difference is:
+In all levels, component crashes during "loading/registration/initialization phases" are always skipped; the difference lies in:
 
-- **0 → 1**: The only behavioral change is that "not inheriting base class" changes from "still loaded" to "skipped."
-- **1 → 2**: All violations (not inheriting base class, loading failure, registration failure, initialization failure, etc.) are upgraded to fatal, collected at the startup checkpoint and reported as a violation list before termination.
+- **0 → 1**: The only behavioral change is that "not inheriting base class" changes from "still loaded" to "skipped".
+- **1 → 2**: All violations (not inheriting base class, loading failure, registration failure, initialization failure, etc.) are upgraded to fatal, and a list of violations is output at the startup checkpoint before termination.
 
-#### Exception List
+#### Exemption List
 
-If certain components temporarily cannot migrate (for example, dependent on old modules), they can be added to the exception list. Components listed will be treated as lenient mode and continue loading even if they are non-compliant:
+If certain components cannot be migrated temporarily (e.g., old modules they depend on), they can be added to the exemption list. Components listed here are treated as lenient even if non-compliant, and continue to be loaded:
 
 ```toml
 [ErisPulse.framework.strict_mode_exceptions]
@@ -498,28 +500,31 @@ modules = ["SeTu", "SomeLegacyModule"]
 adapters = ["OldAdapter"]
 ```
 
-> When a component is rejected by strict mode, the log will clearly prompt how to resume loading (add to the exception list or lower the level).
+> When a component is rejected by strict mode, the log will clearly indicate how to restore loading (add to the exemption list or lower the level).
 
 #### Integration with CLI
 
-The `epsdk run` startup pre-check (config file parseability, component required configuration completeness) defaults to follow this configuration: if not 0, check failure will refuse startup, 0 will only warn and continue. You can also temporarily switch without changing the configuration: `epsdk run --strict` will enable self-check and strict level for this run (level only increases, propagated to the running process via `ERISPULSE_FRAMEWORK_STRICT_MODE` environment variable), `--no-strict` temporarily lowers to lenient and only warns.
+The startup pre-check of `epsdk run` (config file parseability, required component configuration completeness) follows this configuration by default: if not 0, a check failure rejects startup; if 0, only a warning is issued and startup continues. You can also temporarily switch without changing the configuration: `epsdk run --strict` enables both self-check and strict level for this run (level only increases, propagated to the running process via `ERISPULSE_FRAMEWORK_STRICT_MODE` environment variable), `--no-strict` temporarily lowers to lenient and only warns.
 
 ## Storage Configuration
 
-Since version 2.8.0, the storage engine supports three asynchronous backends, **with completely consistent APIs and one-click configuration switching**:
+Starting from version 2.8.0, the storage engine supports three asynchronous backends with **fully consistent APIs and seamless configuration switching**:
 
-| Backend | Driver | Installation | Characteristics |
-|------|------|------|------|
-| SQLite (default) | aiosqlite | Ready-to-use out of the box | Zero configuration, single file, WAL concurrency |
+| Backend | Driver | Installation | Features |
+|---------|--------|--------------|----------|
+| SQLite (default) | aiosqlite | Built-in | Zero configuration, single file, WAL concurrency |
 | MySQL / MariaDB | aiomysql | `pip install ErisPulse[mysql]` | Existing MySQL infrastructure, multi-instance sharing |
-| PostgreSQL | asyncpg | `pip install ErisPulse[postgres]` | Strong transaction capability, high concurrency |
+| PostgreSQL | asyncpg | `pip install ErisPulse[postgres]` | Strong transaction support, high concurrency |
 
 ```toml
 [ErisPulse.storage]
 backend = "sqlite"        # "sqlite" (default) / "mysql" / "postgres"
-use_global_db = false     # Only for SQLite: use the global database data/config.db inside the package
+use_global_db = false     # Only for SQLite: use the built-in global database data/config.db
 
-[ErisPulse.storage.mysql]      #生效 when backend = "mysql"
+[ErisPulse.storage.sqlite]     # Only effective when backend = "sqlite"
+busy_timeout = 5000       # Write lock wait limit (ms, PRAGMA busy_timeout)
+
+[ErisPulse.storage.mysql]      # Effective when backend = "mysql"
 host = "127.0.0.1"
 port = 3306
 user = "erispulse"
@@ -529,7 +534,7 @@ database = "erispulse"
 # pool_min = 1
 # pool_max = 10
 
-[ErisPulse.storage.postgres]   #生效 when backend = "postgres"
+[ErisPulse.storage.postgres]   # Effective when backend = "postgres"
 host = "127.0.0.1"
 port = 5432
 user = "erispulse"
@@ -540,18 +545,19 @@ database = "erispulse"
 ```
 
 | Configuration Item | Type | Default Value | Description |
-|---------|------|---------|------|
-| backend | string | sqlite | Storage backend: `sqlite` / `mysql` / `postgres`, switch with zero code changes |
-| use_global_db | boolean | false | Only for SQLite: whether to use the global database inside the package rather than the project-specific database |
-| storage.mysql.* | table | see above | MySQL connection parameters (host / port / user / password / database / charset / pool) |
-| storage.postgres.* | table | see above | PostgreSQL connection parameters (host / port / user / password / database / pool) |
+|--------------------|------|---------------|-------------|
+| backend | string | sqlite | Storage backend: `sqlite` / `mysql` / `postgres`; switching requires no code changes |
+| use_global_db | boolean | false | Only for SQLite: whether to use the built-in global database instead of a project-specific database |
+| storage.sqlite.busy_timeout | int | 5000 | Only for SQLite: write lock wait limit (ms, PRAGMA busy_timeout); increasing this value extends the patience for write lock queuing; changes require a restart to take effect |
+| storage.mysql.* | table | See above | MySQL connection parameters (host / port / user / password / database / charset / pool) |
+| storage.postgres.* | table | See above | PostgreSQL connection parameters (host / port / user / password / database / pool) |
 
-Environment variables are also supported for overriding (Docker / 12-factor): `ErisPulse.storage.postgres.host` → `ERISPULSE_STORAGE_POSTGRES_HOST`.
+Environment variables are also supported for overriding configurations (Docker / 12-factor): `ErisPulse.storage.postgres.host` → `ERISPULSE_STORAGE_POSTGRES_HOST`.
 
 > [!TIP]
-> - Connection parameter changes require a framework restart to take effect; transient connection pool creation failures will automatically retry with exponential backoff
-> - Before switching backends, use a verification script to self-check: `python tests/devs/test_storage_backend_verify.py --backend mysql`
-> - Transactions / dialect differences / custom backends, etc., complete explanations are available at [Storage Backends](../advanced/storage-backends.md)
+> - After changing connection parameters, the framework must be restarted for the changes to take effect; transient connection pool creation failures will automatically retry with exponential backoff
+> - Before switching backends, you can use a verification script to self-check: `python tests/devs/test_storage_backend_verify.py --backend mysql`
+> - For complete documentation on transactions, dialect differences, and custom backends, see [Storage Backends](../advanced/storage-backends.md)
 
 ## Event Configuration
 

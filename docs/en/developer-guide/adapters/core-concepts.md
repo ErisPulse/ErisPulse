@@ -749,73 +749,88 @@ class Send(BaseAdapter.Send):
 
 ## Event Converter
 
-### Conversion Process
+### Conversion Flow
 
 ```
-Platform Native Event
+Platform raw event
     ↓
 Converter.convert()
     ↓
-OneBot12 Standard Event
+OneBot12 standard event
 ```
 
 ### Required Fields
 
-All converted events must include:
+All converted events must contain:
 
 ```python
 {
-    "id": "Unique Event Identifier",          # Same event must have the same id for the same account (framework uses this for deduplication)
+    "id": "unique event identifier",          # must be identical when the same account re-pushes the same event (the framework deduplicates based on this)
     "time": 1234567890,           # 10-digit Unix timestamp
     "type": "message/notice/request/meta",
-    "detail_type": "Detailed Event Type",
-    "platform": "Platform Name",
-    "message_id": "Message ID",        # Required for message-type events
+    "detail_type": "event detail type",
+    "platform": "platform name",
+    "message_id": "message ID",        # required for message events
     "self": {
-        "platform": "Platform Name",
-        "user_id": "Bot ID"     # Must match bot_id
+        "platform": "platform name",
+        "user_id": "bot ID"     # must be consistent with bot_id
     },
-    "{platform}_raw": {...},       # Raw data (must)
-    "{platform}_raw_type": "..."    # Raw type (must)
+    "{platform}_raw": {...},       # raw data (required)
+    "{platform}_raw_type": "..."    # raw type (required)
 }
 ```
 
-> Event `id` must include account dimension: the same event must have the same `id` for the same account, and for different accounts receiving the same group message, the `id` must be different (e.g., `f"{self.user_id}:{post_type}:{message_id}"`).
+> The event `id` needs an account dimension: the same account re-pushing the same event keeps the same `id`, while different accounts receiving the same group message must have different `id`s (e.g., `f"{self.user_id}:{post_type}:{message_id}"`).
 
-### Cross-Account Duplicate Handling (Framework Injected Fields)
+### Cross-Account Duplicate Receipt (Framework-Injected Fields)
 
-For multi-account adapters, the same physical message arrives through multiple accounts in the same group/session. The framework automatically performs content-level association (same platform + same session + same sender + same `alt_message` within a short window) when `ErisPulse.framework.cross_account_policy != "off"`, and adapters do not need to participate:
+When multiple accounts of a multi-account adapter are in the same group/conversation, the same physical message arrives through each account in turn. When `ErisPulse.framework.cross_account_policy != "off"`, the framework automatically performs content-level correlation (same platform + same conversation + same sender + same `alt_message` within a short window), and the adapter does not need to participate:
 
-- `mark`: Subsequent copies inject the top-level field `"multi_receipt": {"event_id": first accepted event id, "self_id": first accepted account}` and proceed with distribution as usual, allowing modules to decide based on this field
-- `drop`: Subsequent copies are dropped directly at the distribution entry
+- `mark`: subsequent duplicates get the top-level field `"multi_receipt": {"event_id": id of the first-received event, "self_id": first-receiving account}` injected and are dispatched as usual; modules read this field and decide on their own
+- `drop`: subsequent duplicates are discarded directly at the dispatch entry
+- **At-mention priority**: duplicates whose `message` segment's mention target hits the receiving account's own identity (`self.user_id` / `self.account_id`) do not participate in correlation (exempt from both `mark` and `drop`) — the mentioned account is guaranteed to receive its own event, and `drop` will not accidentally affect @-driven multi-account modules; @ messages may be dispatched once per account, and @-driven modules using the `on_at_message` condition naturally respond only once
 
-`multi_receipt` is an optional field injected by the framework; adapters do not produce or consume it; the policy defaults to `off`, and the event structure is consistent with the existing contract.
+#### Session-Account Binding (Exact Ownership Declaration)
 
-#### Three-tier Deduplication Mechanism Division of Labor
+Content-level correlation relies on heuristics to determine "first come, first served"; when an **exact declaration of session ownership** is needed, use the `ErisPulse.framework.session_accounts` configuration to bind a session to a unique account:
 
-| Mechanism | Configuration | What to Intercept | Determination Basis |
+```toml
+[ErisPulse.framework.session_accounts.snowluma]
+"643319481" = "1325859446"   # session ID → owning account bot_id
+```
+
+- Binding **takes effect independently of `cross_account_policy`** (configuring a binding effectively enables deduplication for that session): events of the owning account are dispatched as usual, while copies from other accounts are discarded at the dispatch entry
+- **At-mention priority applies as well**: copies of non-owning accounts that are @-mentioned still pass through
+- Bindings are read from the configuration in real time and take effect via hot reload; sessions without configured bindings are completely unaffected
+- Suitable for deployments where "only one account should respond in a single session with multiple accounts": more precise than content-level correlation, with no heuristic errors from the 3-second window and content comparison
+
+`multi_receipt` is an optional field injected by the framework; the adapter's Converter neither produces nor consumes it. When the policy is the default `off`, the event structure is fully consistent with the existing contract.
+
+#### Division of Labor Among the Three Deduplication Mechanisms
+
+| Mechanism | Configuration | What It Intercepts | Decision Basis |
 |------|------|----------|----------|
-| Event Idempotency Deduplication | `ErisPulse.framework.event_dedupe` (default on) | Repeated events from the same connection (same event id) | Event `id` |
-| Self-echo Filtering | `ErisPulse.event.message.ignore_self` (default on) | Messages received from the account itself (sender == receiving account) | `self.user_id` vs `user_id` |
-| Cross-Account Duplicate Handling | `ErisPulse.framework.cross_account_policy` (default `off`, `drop` enabled) | **Physical message received by other accounts**—when multiple accounts are in the same group, bot A speaks, bot B also receives a copy, resulting in duplicate messages | Content-level association (same platform + same session + same sender + same content, short window), key does not include self_id |
+| Event idempotent deduplication | `ErisPulse.framework.event_dedupe` (enabled by default) | Re-push on reconnect of the same event id (same connection) | Event `id` |
+| Self-echo filtering | `ErisPulse.event.message.ignore_self` (enabled by default) | The receiving account's own messages (sender == receiving account) | `self.user_id` vs `user_id` |
+| Cross-account duplicate receipt | `ErisPulse.framework.cross_account_policy` (default `off`, enabled with `drop`) | **Copies of the same physical message via other accounts** — when multiple accounts are in the same group and bot A speaks, bot B also receives a copy (copies whose mention hits the account itself are exempt) | Content-level correlation (same platform + same conversation + same sender + same content, short window), key excludes self_id |
 
-**Typical Scenario - Multi-Account Group Repetition**: bot A speaks, and other accounts (bot B) in the same group also receive a copy, causing repetition modules to see the same content twice. Enabling `cross_account_policy = "drop"` causes subsequent account copies to be dropped at the distribution entry, ensuring that any module sees it at most once.
+**Typical scenario — multi-account echo in the same group**: when bot A speaks, other accounts in the same group (bot B) also receive a copy, and echo-type modules see the same content appear twice. After enabling `cross_account_policy = "drop"`, copies from subsequent accounts are discarded at the dispatch entry, and any module sees it at most once. **Exception: at-mention messages** — copies of accounts that are @-mentioned always pass through (@-driven modules rely on them to respond), while copies from other accounts are deduplicated as usual.
 
-The semantics of `ignore_self` are orthogonal, and the combination of both determines the number of visible times:
+This is orthogonal to the semantics of `ignore_self`; the combination of the two determines the visible count:
 
-| Combination | Repetition module sees bot A's message |
+| Combination | Echo module seeing bot A's message |
 |------|--------------------------|
-| `drop` + `ignore_self = true` (default) | 0 or 1 times (the first copy, if received from A's own connection, is blocked by `ignore_self`) — **never 2 times** |
-| `drop` + `ignore_self = false` | Exactly 1 time |
+| `drop` + `ignore_self = true` (default) | 0 or 1 time (if the first-arriving copy comes through A's own connection, it is intercepted by ignore_self) — **never 2 times** |
+| `drop` + `ignore_self = false` | Always exactly 1 time |
 
-> It is not recommended to extend the semantics of `ignore_self` to "exclude all local accounts": this determination depends on the `self.user_id` of the event being received (the binding is invalid during the window before establishment), and cross-account association is content-level determination, independent of self information; and "receiving by account" is an existing dependency of cross-account logging/synchronization modules, narrowing the semantics is an implicit destruction. Cross-account deduplication is left to `cross_account_policy`.
+> It is not recommended to extend the semantics of `ignore_self` to "exclude all local accounts": this check depends on the `self.user_id` of the received event (it fails during the window period before binding is established, see the runtime boundary above), whereas cross-account correlation is a content-level check that does not depend on self information; moreover, "per-account reception" is an existing dependency of cross-account logging/synchronization modules, and narrowing the semantics constitutes implicit breakage. Leave cross-account deduplication to `cross_account_policy`.
 
 ### Converter Example
 
 ```python
 class MyPlatformConverter:
     def convert(self, raw_event):
-        """Convert platform native event to OneBot12 standard format"""
+        """Convert platform native events to the OneBot12 standard format"""
         if not isinstance(raw_event, dict):
             return None
         
@@ -833,7 +848,7 @@ class MyPlatformConverter:
         event_type = self._convert_type(raw_event.get("type"))
         detail_type = self._convert_detail_type(raw_event)
         
-        # Construct standard event
+        # Build the standard event
         onebot_event = {
             "id": str(event_id),
             "time": timestamp,

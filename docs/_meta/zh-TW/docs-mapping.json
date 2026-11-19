@@ -172,7 +172,7 @@
           "icon": "fa-code"
         },
         {
-          "title": "數據模型層（ORM）",
+          "title": "資料模型層（ORM）",
           "path": "developer-guide/orm.md",
           "level": 1,
           "icon": "fa-code"
@@ -202,7 +202,7 @@
               "icon": "fa-cubes-stacked"
             },
             {
-              "title": "Event 包裝類別詳解",
+              "title": "Event 包裝類詳解",
               "path": "developer-guide/modules/event-wrapper.md",
               "level": 1,
               "icon": "fa-bolt-lightning"

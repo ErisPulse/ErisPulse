@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 2043,
+  "total_keywords": 2046,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -2423,7 +2423,7 @@
     "@消息相關": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 203,
+        "line": 202,
         "level": 4,
         "title": "@消息相關"
       }
@@ -2507,7 +2507,7 @@
     "API 回應標準": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1054,
+        "line": 1069,
         "level": 2,
         "title": "API 回應標準"
       }
@@ -2563,7 +2563,7 @@
     "API 錯誤處理": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1192,
+        "line": 1207,
         "level": 3,
         "title": "API 錯誤處理"
       }
@@ -2733,7 +2733,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1265,
+        "line": 1280,
         "level": 3,
         "title": "Bot 狀態查詢"
       },
@@ -2753,7 +2753,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1220,
+        "line": 1235,
         "level": 2,
         "title": "Bot 狀態管理"
       }
@@ -3140,12 +3140,12 @@
         "title": "Event 包裝類"
       }
     ],
-    "Event 包裝類別詳解": [
+    "Event 包裝類詳解": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
         "line": 1,
         "level": 1,
-        "title": "Event 包裝類別詳解"
+        "title": "Event 包裝類詳解"
       }
     ],
     "Event 回覆方法": [
@@ -3421,7 +3421,7 @@
     "Meta 事件類型": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1242,
+        "line": 1257,
         "level": 3,
         "title": "Meta 事件類型"
       }
@@ -3653,7 +3653,7 @@
     "PollingAdapter（HTTP 輪詢型）": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 920,
+        "line": 935,
         "level": 4,
         "title": "PollingAdapter（HTTP 輪詢型）"
       }
@@ -3827,7 +3827,7 @@
     "SQLite \"database is locked\" 排查": [
       {
         "document": "advanced/storage-backends.md",
-        "line": 141,
+        "line": 144,
         "level": 2,
         "title": "SQLite \"database is locked\" 排查"
       }
@@ -4127,7 +4127,7 @@
     "WebHook 連線": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1026,
+        "line": 1041,
         "level": 3,
         "title": "WebHook 連線"
       }
@@ -4199,7 +4199,7 @@
     "WebSocket 連線": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 992,
+        "line": 1007,
         "level": 3,
         "title": "WebSocket 連線"
       },
@@ -4245,7 +4245,7 @@
     "WebhookAdapter（HTTP 回調型）": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 951,
+        "line": 966,
         "level": 4,
         "title": "WebhookAdapter（HTTP 回調型）"
       }
@@ -4522,132 +4522,140 @@
         "title": "[BUG-034] 作用域 persist=False 运行时绑定被任意后续配置写入静默冲掉"
       }
     ],
-    "[BUG-035] 配置面板 select 選項與字典字段渲染為 [object Object]": [
+    "[BUG-035] 配置面板 select 选项与字典字段渲染为 [object Object]": [
       {
         "document": "bug-tracker.md",
         "line": 903,
         "level": 3,
-        "title": "[BUG-035] 配置面板 select 選項與字典字段渲染為 [object Object]"
+        "title": "[BUG-035] 配置面板 select 选项与字典字段渲染为 [object Object]"
       }
     ],
-    "[BUG-036] 多實例共享配置目錄時配置寫入偶發失敗（ENOENT）": [
+    "[BUG-036] 多实例共享配置目录时配置写入偶发失败（ENOENT）": [
       {
         "document": "bug-tracker.md",
         "line": 921,
         "level": 3,
-        "title": "[BUG-036] 多實例共享配置目錄時配置寫入偶發失敗（ENOENT）"
+        "title": "[BUG-036] 多实例共享配置目录时配置写入偶发失败（ENOENT）"
       }
     ],
-    "[BUG-037] 空格子命令名註冊後永遠無法被觸發": [
+    "[BUG-037] 空格子命令名注册后永远无法被触发": [
       {
         "document": "bug-tracker.md",
         "line": 947,
         "level": 3,
-        "title": "[BUG-037] 空格子命令名註冊後永遠無法被觸發"
+        "title": "[BUG-037] 空格子命令名注册后永远无法被触发"
       }
     ],
-    "[BUG-038] persist=False 運行時綁定被持久化寫入順帶落盤，模組卸載後從磁盤\"復活\"": [
+    "[BUG-038] persist=False 运行时绑定被持久化写入顺带落盘，模块卸载后从磁盘\"复活\"": [
       {
         "document": "bug-tracker.md",
         "line": 971,
         "level": 3,
-        "title": "[BUG-038] persist=False 運行時綁定被持久化寫入順帶落盤，模組卸載後從磁盤\"復活\""
+        "title": "[BUG-038] persist=False 运行时绑定被持久化写入顺带落盘，模块卸载后从磁盘\"复活\""
       }
     ],
-    "[BUG-039] 整節寫與點分寫並存時讀寫不一致（點分覆寫丟失）": [
+    "[BUG-039] 整节写与点分写并存时读写不一致（点分覆写丢失）": [
       {
         "document": "bug-tracker.md",
         "line": 995,
         "level": 3,
-        "title": "[BUG-039] 整節寫與點分寫並存時讀寫不一致（點分覆寫丟失）"
+        "title": "[BUG-039] 整节写与点分写并存时读写不一致（点分覆写丢失）"
       }
     ],
-    "[BUG-040] 平台切段消息的命令尾部參數靜默丟失": [
+    "[BUG-040] 平台切段消息的命令尾部参数静默丢失": [
       {
         "document": "bug-tracker.md",
         "line": 1017,
         "level": 3,
-        "title": "[BUG-040] 平台切段消息的命令尾部參數靜默丟失"
+        "title": "[BUG-040] 平台切段消息的命令尾部参数静默丢失"
       }
     ],
-    "[BUG-041] 被拒絕命令經 alt_message 整鏈重跑：重複回覆與權限函數副作用雙觸發": [
+    "[BUG-041] 被拒绝命令经 alt_message 整链重跑：重复回复与权限函数副作用双触发": [
       {
         "document": "bug-tracker.md",
         "line": 1029,
         "level": 3,
-        "title": "[BUG-041] 被拒絕命令經 alt_message 整鏈重跑：重複回覆與權限函數副作用雙觸發"
+        "title": "[BUG-041] 被拒绝命令经 alt_message 整链重跑：重复回复与权限函数副作用双触发"
       }
     ],
-    "[BUG-042] 命令處理器內註冊的 wait_reply 被同一條觸發消息立即消費": [
+    "[BUG-042] 命令处理器内注册的 wait_reply 被同一条触发消息立即消费": [
       {
         "document": "bug-tracker.md",
         "line": 1041,
         "level": 3,
-        "title": "[BUG-042] 命令處理器內註冊的 wait_reply 被同一條觸發消息立即消費"
+        "title": "[BUG-042] 命令处理器内注册的 wait_reply 被同一条触发消息立即消费"
       }
     ],
-    "[BUG-043] select() 同鍵多路等待後者靜默取消前者": [
+    "[BUG-043] select() 同键多路等待后者静默取消前者": [
       {
         "document": "bug-tracker.md",
         "line": 1053,
         "level": 3,
-        "title": "[BUG-043] select() 同鍵多路等待後者靜默取消前者"
+        "title": "[BUG-043] select() 同键多路等待后者静默取消前者"
       }
     ],
-    "[BUG-044] BaseConverter.at() 產出 OB11 遺留 \"at\" 段，全框架 mention 判定不識別": [
+    "[BUG-044] BaseConverter.at() 产出 OB11 遗留 \"at\" 段，全框架 mention 判定不识别": [
       {
         "document": "bug-tracker.md",
         "line": 1065,
         "level": 3,
-        "title": "[BUG-044] BaseConverter.at() 產出 OB11 遺留 \"at\" 段，全框架 mention 判定不識別"
+        "title": "[BUG-044] BaseConverter.at() 产出 OB11 遗留 \"at\" 段，全框架 mention 判定不识别"
       }
     ],
-    "[BUG-045] 無 alt_message 的適配器上交互原語永久超時、命令穿透失效": [
+    "[BUG-045] 无 alt_message 的适配器上交互原语永久超时、命令穿透失效": [
       {
         "document": "bug-tracker.md",
         "line": 1077,
         "level": 3,
-        "title": "[BUG-045] 無 alt_message 的適配器上交互原語永久超時、命令穿透失效"
+        "title": "[BUG-045] 无 alt_message 的适配器上交互原语永久超时、命令穿透失效"
       }
     ],
-    "[BUG-046] 聲明式配置模板的嵌套子表頭漂移為頂層表": [
+    "[BUG-046] 声明式配置模板的嵌套子表头漂移为顶层表": [
       {
         "document": "bug-tracker.md",
         "line": 1089,
         "level": 3,
-        "title": "[BUG-046] 聲明式配置模板的嵌套子表頭漂移為頂層表"
+        "title": "[BUG-046] 声明式配置模板的嵌套子表头漂移为顶层表"
       }
     ],
-    "[BUG-047] 服務目錄全量枚舉漏掉懶加載模組": [
+    "[BUG-047] 服务目录全量枚举漏掉懒加载模块": [
       {
         "document": "bug-tracker.md",
         "line": 1103,
         "level": 3,
-        "title": "[BUG-047] 服務目錄全量枚舉漏掉懶加載模組"
+        "title": "[BUG-047] 服务目录全量枚举漏掉懒加载模块"
       }
     ],
-    "[BUG-048] 會話收件箱查詢 API 丟失消息歸因（sender 與事件元數據）": [
+    "[BUG-048] 会话收件箱查询 API 丢失消息归因（sender 与事件元数据）": [
       {
         "document": "bug-tracker.md",
         "line": 1115,
         "level": 3,
-        "title": "[BUG-048] 會話收件箱查詢 API 丟失消息歸因（sender 與事件元數據）"
+        "title": "[BUG-048] 会话收件箱查询 API 丢失消息归因（sender 与事件元数据）"
       }
     ],
-    "[BUG-049] 入站 bot 自發消息回聲被記為 user，污染收件箱歸因": [
+    "[BUG-049] 入站 bot 自发消息回声被记为 user，污染收件箱归因": [
       {
         "document": "bug-tracker.md",
         "line": 1128,
         "level": 3,
-        "title": "[BUG-049] 入站 bot 自發消息回聲被記為 user，污染收件箱歸因"
+        "title": "[BUG-049] 入站 bot 自发消息回声被记为 user，污染收件箱归因"
       }
     ],
-    "[BUG-050] 容器內執行 epsdk restart 直接退出容器": [
+    "[BUG-050] 容器内执行 epsdk restart 直接退出容器": [
       {
         "document": "bug-tracker.md",
         "line": 1141,
         "level": 3,
-        "title": "[BUG-050] 容器內執行 epsdk restart 直接退出容器"
+        "title": "[BUG-050] 容器内执行 epsdk restart 直接退出容器"
+      }
+    ],
+    "[BUG-051] 跨账户重复受理（drop）误伤 at 点名消息，多账户部署消息随机丢失": [
+      {
+        "document": "bug-tracker.md",
+        "line": 1153,
+        "level": 3,
+        "title": "[BUG-051] 跨账户重复受理（drop）误伤 at 点名消息，多账户部署消息随机丢失"
       }
     ],
     "__init__.py": [
@@ -4677,7 +4685,7 @@
     "`hasattr` 和 `dir` 支援": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 521,
+        "line": 522,
         "level": 3,
         "title": "`hasattr` 和 `dir` 支援"
       }
@@ -4717,7 +4725,7 @@
     "`self` 欄位擴展資訊": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1254,
+        "line": 1269,
         "level": 3,
         "title": "`self` 欄位擴展資訊"
       }
@@ -4875,7 +4883,7 @@
     "delConfig：刪除配置鍵": [
       {
         "document": "user-guide/configuration.md",
-        "line": 214,
+        "line": 215,
         "level": 3,
         "title": "delConfig：刪除配置鍵"
       }
@@ -4963,7 +4971,7 @@
     "getAllConfig：全量配置快照": [
       {
         "document": "user-guide/configuration.md",
-        "line": 202,
+        "line": 203,
         "level": 3,
         "title": "getAllConfig：全量配置快照"
       }
@@ -5139,7 +5147,7 @@
     "reply 之外：send_chain": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 94,
+        "line": 93,
         "level": 4,
         "title": "reply 之外：send_chain"
       }
@@ -5219,7 +5227,7 @@
     "start() 的兩種正確寫法": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 866,
+        "line": 881,
         "level": 3,
         "title": "start() 的兩種正確寫法"
       }
@@ -5517,7 +5525,7 @@
     "三層去重機制分工": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 804,
+        "line": 819,
         "level": 4,
         "title": "三層去重機制分工"
       }
@@ -5533,7 +5541,7 @@
     "三種模式怎麼選": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 981,
+        "line": 996,
         "level": 4,
         "title": "三種模式怎麼選"
       }
@@ -5589,7 +5597,7 @@
       },
       {
         "document": "developer-guide/orm.md",
-        "line": 227,
+        "line": 236,
         "level": 2,
         "title": "下一步"
       },
@@ -5721,7 +5729,7 @@
       },
       {
         "document": "user-guide/configuration.md",
-        "line": 766,
+        "line": 772,
         "level": 2,
         "title": "下一步"
       },
@@ -5798,12 +5806,12 @@
         "title": "不落盤的 example 字段（v2.8.0+）"
       }
     ],
-    "不需要表結構、只存幾個鍵值": [
+    "不需要資料表結構、只儲存幾個鍵值": [
       {
         "document": "developer-guide/orm.md",
-        "line": 233,
+        "line": 242,
         "level": 3,
-        "title": "不需要表結構、只存幾個鍵值"
+        "title": "不需要資料表結構、只儲存幾個鍵值"
       }
     ],
     "严重性分级": [
@@ -5879,7 +5887,7 @@
     "主人系統設定": [
       {
         "document": "user-guide/configuration.md",
-        "line": 312,
+        "line": 313,
         "level": 2,
         "title": "主人系統設定"
       }
@@ -5887,7 +5895,7 @@
     "主動 GC 設定": [
       {
         "document": "user-guide/configuration.md",
-        "line": 482,
+        "line": 484,
         "level": 3,
         "title": "主動 GC 設定"
       }
@@ -5965,7 +5973,7 @@
     "事件基礎資訊": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 167,
+        "line": 166,
         "level": 4,
         "title": "事件基礎資訊"
       }
@@ -6109,7 +6117,7 @@
     "事件的帳戶標識與 Using 的關係": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1143,
+        "line": 1158,
         "level": 3,
         "title": "事件的帳戶標識與 Using 的關係"
       }
@@ -6387,7 +6395,7 @@
     "事件配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 579,
+        "line": 585,
         "level": 2,
         "title": "事件配置"
       }
@@ -6466,14 +6474,6 @@
         "title": "事件驅動架構"
       }
     ],
-    "事務": [
-      {
-        "document": "developer-guide/orm.md",
-        "line": 102,
-        "level": 2,
-        "title": "事務"
-      }
-    ],
     "事務中使用": [
       {
         "document": "advanced/sql-builder.md",
@@ -6514,6 +6514,22 @@
         "title": "互動式處理"
       }
     ],
+    "互動方法": [
+      {
+        "document": "developer-guide/modules/event-wrapper.md",
+        "line": 327,
+        "level": 4,
+        "title": "互動方法"
+      }
+    ],
+    "互動方法示例": [
+      {
+        "document": "developer-guide/modules/event-wrapper.md",
+        "line": 366,
+        "level": 4,
+        "title": "互動方法示例"
+      }
+    ],
     "互動會話系統": [
       {
         "document": "advanced/interaction.md",
@@ -6525,7 +6541,7 @@
     "互動會話進階": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 106,
+        "line": 105,
         "level": 2,
         "title": "互動會話進階"
       }
@@ -6562,20 +6578,12 @@
         "title": "交互式安裝"
       }
     ],
-    "交互方法": [
+    "交易": [
       {
-        "document": "developer-guide/modules/event-wrapper.md",
-        "line": 326,
-        "level": 4,
-        "title": "交互方法"
-      }
-    ],
-    "交互方法示例": [
-      {
-        "document": "developer-guide/modules/event-wrapper.md",
-        "line": 365,
-        "level": 4,
-        "title": "交互方法示例"
+        "document": "developer-guide/orm.md",
+        "line": 110,
+        "level": 2,
+        "title": "交易"
       }
     ],
     "交易操作": [
@@ -6659,7 +6667,7 @@
     "伺服器配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 282,
+        "line": 283,
         "level": 2,
         "title": "伺服器配置"
       }
@@ -6707,7 +6715,7 @@
     "作用域配置（scope）": [
       {
         "document": "user-guide/configuration.md",
-        "line": 669,
+        "line": 675,
         "level": 2,
         "title": "作用域配置（scope）"
       }
@@ -6877,7 +6885,7 @@
     "使用者優先：主人生效範圍由使用者最終決定": [
       {
         "document": "user-guide/configuration.md",
-        "line": 387,
+        "line": 388,
         "level": 3,
         "title": "使用者優先：主人生效範圍由使用者最終決定"
       }
@@ -7140,6 +7148,14 @@
         "title": "儲存系統"
       }
     ],
+    "儲存配置": [
+      {
+        "document": "user-guide/configuration.md",
+        "line": 532,
+        "level": 2,
+        "title": "儲存配置"
+      }
+    ],
     "元事件": [
       {
         "document": "api-reference/event-system.md",
@@ -7331,7 +7347,7 @@
     "兩種宣告何時用哪個": [
       {
         "document": "developer-guide/orm.md",
-        "line": 116,
+        "line": 124,
         "level": 3,
         "title": "兩種宣告何時用哪個"
       }
@@ -7581,7 +7597,7 @@
     "判定鏈與執行時增刪": [
       {
         "document": "user-guide/configuration.md",
-        "line": 345,
+        "line": 346,
         "level": 3,
         "title": "判定鏈與執行時增刪"
       }
@@ -7784,14 +7800,6 @@
         "title": "卸載與清理語義"
       }
     ],
-    "原始數據": [
-      {
-        "document": "developer-guide/modules/event-wrapper.md",
-        "line": 485,
-        "level": 3,
-        "title": "原始數據"
-      }
-    ],
     "原始訊息傳送": [
       {
         "document": "platform-guide/telegram.md",
@@ -7820,6 +7828,14 @@
         "line": 737,
         "level": 3,
         "title": "原始訊息與訊息建構"
+      }
+    ],
+    "原始資料": [
+      {
+        "document": "developer-guide/modules/event-wrapper.md",
+        "line": 486,
+        "level": 3,
+        "title": "原始資料"
       }
     ],
     "原生 Renderer": [
@@ -8093,7 +8109,7 @@
     "命令基礎": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 478,
+        "line": 479,
         "level": 4,
         "title": "命令基礎"
       }
@@ -8163,7 +8179,7 @@
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 476,
+        "line": 477,
         "level": 3,
         "title": "命令資訊"
       }
@@ -8171,7 +8187,7 @@
     "命令資訊獲取": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 141,
+        "line": 140,
         "level": 2,
         "title": "命令資訊獲取"
       }
@@ -8187,7 +8203,7 @@
     "命令配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 581,
+        "line": 587,
         "level": 3,
         "title": "命令配置"
       }
@@ -8267,7 +8283,7 @@
     "嚴格模式": [
       {
         "document": "user-guide/configuration.md",
-        "line": 497,
+        "line": 499,
         "level": 3,
         "title": "嚴格模式"
       }
@@ -8355,7 +8371,7 @@
     "回看起步步驟": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1280,
+        "line": 1295,
         "level": 3,
         "title": "回看起步步驟"
       }
@@ -8363,13 +8379,13 @@
     "回覆功能": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 72,
+        "line": 71,
         "level": 2,
         "title": "回覆功能"
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 274,
+        "line": 273,
         "level": 3,
         "title": "回覆功能"
       }
@@ -8457,7 +8473,7 @@
     "國際化配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 629,
+        "line": 635,
         "level": 2,
         "title": "國際化配置"
       }
@@ -8855,7 +8871,7 @@
     "基礎判斷": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 209,
+        "line": 208,
         "level": 4,
         "title": "基礎判斷"
       }
@@ -8863,7 +8879,7 @@
     "基礎回覆": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 276,
+        "line": 275,
         "level": 4,
         "title": "基礎回覆"
       }
@@ -8958,12 +8974,12 @@
         "title": "外掛重寫對照"
       }
     ],
-    "外鍵（關係映射基礎）": [
+    "外鍵（關聯映射基礎）": [
       {
         "document": "developer-guide/orm.md",
-        "line": 159,
+        "line": 167,
         "level": 2,
-        "title": "外鍵（關係映射基礎）"
+        "title": "外鍵（關聯映射基礎）"
       }
     ],
     "多Bot配置": [
@@ -9031,7 +9047,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1088,
+        "line": 1103,
         "level": 2,
         "title": "多帳戶支援"
       }
@@ -9366,14 +9382,6 @@
         "title": "字型"
       }
     ],
-    "字段參數": [
-      {
-        "document": "developer-guide/orm.md",
-        "line": 28,
-        "level": 2,
-        "title": "字段參數"
-      }
-    ],
     "字段說明": [
       {
         "document": "bug-tracker.md",
@@ -9396,14 +9404,6 @@
         "line": 309,
         "level": 3,
         "title": "存儲連接狀態"
-      }
-    ],
-    "存儲配置": [
-      {
-        "document": "user-guide/configuration.md",
-        "line": 530,
-        "level": 2,
-        "title": "存儲配置"
       }
     ],
     "存取核心模組": [
@@ -9611,7 +9611,7 @@
     "完整配置範例": [
       {
         "document": "user-guide/configuration.md",
-        "line": 228,
+        "line": 229,
         "level": 2,
         "title": "完整配置範例"
       }
@@ -9656,6 +9656,14 @@
         "title": "宣告式翻譯鍵（v2.7.0+）"
       }
     ],
+    "宣告模型": [
+      {
+        "document": "developer-guide/orm.md",
+        "line": 12,
+        "level": 2,
+        "title": "宣告模型"
+      }
+    ],
     "容器內重啟（PID 1 實例）": [
       {
         "document": "user-guide/deployment.md",
@@ -9691,7 +9699,7 @@
     "實作層面深入": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1275,
+        "line": 1290,
         "level": 3,
         "title": "實作層面深入"
       }
@@ -9782,6 +9790,14 @@
         "line": 13,
         "level": 2,
         "title": "對照"
+      }
+    ],
+    "對話帳戶綁定（精確歸屬聲明）": [
+      {
+        "document": "developer-guide/adapters/core-concepts.md",
+        "line": 803,
+        "level": 4,
+        "title": "對話帳戶綁定（精確歸屬聲明）"
       }
     ],
     "對適配器開發者": [
@@ -10105,7 +10121,7 @@
     "帳戶配置檔案": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1116,
+        "line": 1131,
         "level": 3,
         "title": "帳戶配置檔案"
       }
@@ -10361,7 +10377,7 @@
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 490,
+        "line": 491,
         "level": 3,
         "title": "平台擴展方法"
       },
@@ -10453,7 +10469,7 @@
     "平台能力查詢": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 290,
+        "line": 289,
         "level": 4,
         "title": "平台能力查詢"
       }
@@ -10525,7 +10541,7 @@
     "建表與 CRUD": [
       {
         "document": "developer-guide/orm.md",
-        "line": 69,
+        "line": 70,
         "level": 2,
         "title": "建表與 CRUD"
       }
@@ -10680,12 +10696,12 @@
         "title": "必填字段映射"
       }
     ],
-    "必需欄位": [
+    "必需字段": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
         "line": 772,
         "level": 3,
-        "title": "必需欄位"
+        "title": "必需字段"
       }
     ],
     "快速上手": [
@@ -10871,7 +10887,7 @@
     "成功回應": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1058,
+        "line": 1073,
         "level": 3,
         "title": "成功回應"
       }
@@ -10925,7 +10941,7 @@
     "手動建構回應（舊版方式仍然相容）": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1074,
+        "line": 1089,
         "level": 3,
         "title": "手動建構回應（舊版方式仍然相容）"
       }
@@ -11075,7 +11091,7 @@
     "指定帳戶發送": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1130,
+        "line": 1145,
         "level": 3,
         "title": "指定帳戶發送"
       }
@@ -11614,14 +11630,6 @@
         "title": "數據持久化"
       }
     ],
-    "數據模型層（ORM）": [
-      {
-        "document": "developer-guide/orm.md",
-        "line": 1,
-        "level": 1,
-        "title": "數據模型層（ORM）"
-      }
-    ],
     "文件": [
       {
         "document": "developer-guide/publishing.md",
@@ -11965,7 +11973,7 @@
     "方法速查表": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 163,
+        "line": 162,
         "level": 2,
         "title": "方法速查表"
       }
@@ -11981,7 +11989,7 @@
     "方言行為差異": [
       {
         "document": "advanced/storage-backends.md",
-        "line": 127,
+        "line": 130,
         "level": 2,
         "title": "方言行為差異"
       }
@@ -12035,7 +12043,7 @@
     "日誌設定": [
       {
         "document": "user-guide/configuration.md",
-        "line": 393,
+        "line": 394,
         "level": 2,
         "title": "日誌設定"
       }
@@ -12159,7 +12167,7 @@
     "會話收件匣配置（transcript）": [
       {
         "document": "user-guide/configuration.md",
-        "line": 610,
+        "line": 616,
         "level": 2,
         "title": "會話收件匣配置（transcript）"
       }
@@ -12183,7 +12191,7 @@
     "會話標識": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 180,
+        "line": 179,
         "level": 4,
         "title": "會話標識"
       }
@@ -12268,14 +12276,6 @@
         "title": "本地開發（免打包）"
       }
     ],
-    "机器人資訊": [
-      {
-        "document": "developer-guide/modules/event-wrapper.md",
-        "line": 174,
-        "level": 4,
-        "title": "机器人資訊"
-      }
-    ],
     "条目模板": [
       {
         "document": "bug-tracker.md",
@@ -12333,7 +12333,7 @@
     "查詢已註冊方法": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 512,
+        "line": 513,
         "level": 3,
         "title": "查詢已註冊方法"
       }
@@ -12432,14 +12432,6 @@
         "title": "核心原則"
       }
     ],
-    "核心字段方法": [
-      {
-        "document": "developer-guide/modules/event-wrapper.md",
-        "line": 33,
-        "level": 2,
-        "title": "核心字段方法"
-      }
-    ],
     "核心差異點": [
       {
         "document": "platform-guide/discord.md",
@@ -12493,7 +12485,7 @@
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 165,
+        "line": 164,
         "level": 3,
         "title": "核心方法"
       }
@@ -12536,10 +12528,18 @@
         "title": "核心模組說明"
       }
     ],
+    "核心欄位方法": [
+      {
+        "document": "developer-guide/modules/event-wrapper.md",
+        "line": 32,
+        "level": 2,
+        "title": "核心欄位方法"
+      }
+    ],
     "核心特性": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 26,
+        "line": 25,
         "level": 2,
         "title": "核心特性"
       }
@@ -12579,7 +12579,7 @@
     "框架設定": [
       {
         "document": "user-guide/configuration.md",
-        "line": 455,
+        "line": 456,
         "level": 2,
         "title": "框架設定"
       }
@@ -13203,7 +13203,7 @@
     "模組配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 640,
+        "line": 646,
         "level": 2,
         "title": "模組配置"
       }
@@ -13288,6 +13288,14 @@
         "title": "機器人公告看板事件範例"
       }
     ],
+    "機器人資訊": [
+      {
+        "document": "developer-guide/modules/event-wrapper.md",
+        "line": 173,
+        "level": 4,
+        "title": "機器人資訊"
+      }
+    ],
     "檔案處理特性": [
       {
         "document": "platform-guide/ideaura.md",
@@ -13334,6 +13342,14 @@
         "line": 305,
         "level": 3,
         "title": "檢查點 TTL"
+      }
+    ],
+    "欄位參數": [
+      {
+        "document": "developer-guide/orm.md",
+        "line": 29,
+        "level": 2,
+        "title": "欄位參數"
       }
     ],
     "權限 / 公告 / 表態": [
@@ -13509,13 +13525,13 @@
     "消息事件方法": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 46,
+        "line": 45,
         "level": 2,
         "title": "消息事件方法"
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 184,
+        "line": 183,
         "level": 3,
         "title": "消息事件方法"
       }
@@ -13555,7 +13571,7 @@
     "消息內容": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 186,
+        "line": 185,
         "level": 4,
         "title": "消息內容"
       }
@@ -13687,13 +13703,13 @@
     "消息類型判斷": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 59,
+        "line": 58,
         "level": 2,
         "title": "消息類型判斷"
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 207,
+        "line": 206,
         "level": 3,
         "title": "消息類型判斷"
       }
@@ -13701,7 +13717,7 @@
     "深入互動能力": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 554,
+        "line": 555,
         "level": 3,
         "title": "深入互動能力"
       }
@@ -13835,7 +13851,7 @@
     "為 event 參數添加類型註解": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 9,
+        "line": 8,
         "level": 2,
         "title": "為 event 參數添加類型註解"
       }
@@ -13883,7 +13899,7 @@
     "熱更新鏈路內部拆解": [
       {
         "document": "user-guide/configuration.md",
-        "line": 152,
+        "line": 153,
         "level": 3,
         "title": "熱更新鏈路內部拆解"
       }
@@ -14501,7 +14517,7 @@
     "發送者資訊": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 192,
+        "line": 191,
         "level": 4,
         "title": "發送者資訊"
       }
@@ -14549,7 +14565,7 @@
     "監聽 Bot 生命週期": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1269,
+        "line": 1284,
         "level": 3,
         "title": "監聽 Bot 生命週期"
       }
@@ -14755,7 +14771,7 @@
       },
       {
         "document": "advanced/storage-backends.md",
-        "line": 182,
+        "line": 188,
         "level": 2,
         "title": "相關文件"
       },
@@ -14809,7 +14825,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1273,
+        "line": 1288,
         "level": 2,
         "title": "相關文件"
       },
@@ -14833,7 +14849,7 @@
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 547,
+        "line": 548,
         "level": 2,
         "title": "相關文件"
       },
@@ -14985,7 +15001,7 @@
     "等待回覆功能": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 314,
+        "line": 315,
         "level": 3,
         "title": "等待回覆功能"
       }
@@ -15177,7 +15193,7 @@
     "統一事件覆寫配置（event.overrides）": [
       {
         "document": "user-guide/configuration.md",
-        "line": 719,
+        "line": 725,
         "level": 2,
         "title": "統一事件覆寫配置（event.overrides）"
       }
@@ -15279,7 +15295,7 @@
     "繼續模組開發路徑": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 549,
+        "line": 550,
         "level": 3,
         "title": "繼續模組開發路徑"
       }
@@ -15359,7 +15375,7 @@
     "群組/頻道資訊": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 197,
+        "line": 196,
         "level": 4,
         "title": "群組/頻道資訊"
       }
@@ -15455,7 +15471,7 @@
     "聲明式配置（推薦）": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1090,
+        "line": 1105,
         "level": 3,
         "title": "聲明式配置（推薦）"
       },
@@ -15472,14 +15488,6 @@
         "line": 121,
         "level": 3,
         "title": "聲明方式"
-      }
-    ],
-    "聲明模型": [
-      {
-        "document": "developer-guide/orm.md",
-        "line": 11,
-        "level": 2,
-        "title": "聲明模型"
       }
     ],
     "聲明結構": [
@@ -15549,7 +15557,7 @@
     "自動發現機制": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1224,
+        "line": 1239,
         "level": 3,
         "title": "自動發現機制"
       }
@@ -15557,7 +15565,7 @@
     "自動遷移（階段二）": [
       {
         "document": "developer-guide/orm.md",
-        "line": 136,
+        "line": 144,
         "level": 2,
         "title": "自動遷移（階段二）"
       }
@@ -15565,7 +15573,7 @@
     "自訂 SQL 後端": [
       {
         "document": "advanced/storage-backends.md",
-        "line": 156,
+        "line": 162,
         "level": 2,
         "title": "自訂 SQL 後端"
       }
@@ -15597,7 +15605,7 @@
     "自訂身分來源（provider）": [
       {
         "document": "user-guide/configuration.md",
-        "line": 359,
+        "line": 360,
         "level": 3,
         "title": "自訂身分來源（provider）"
       }
@@ -15634,12 +15642,12 @@
         "title": "與 CLI i18n 的關係"
       }
     ],
-    "與 CLI 的聯動": [
+    "與 CLI 的連動": [
       {
         "document": "user-guide/configuration.md",
-        "line": 526,
+        "line": 528,
         "level": 4,
-        "title": "與 CLI 的聯動"
+        "title": "與 CLI 的連動"
       }
     ],
     "與 OneBot11 適配器的關係": [
@@ -15682,12 +15690,12 @@
         "title": "與其它機制的邊界"
       }
     ],
-    "與宣告式配置類的關係": [
+    "與宣告式設定類別的關係": [
       {
         "document": "developer-guide/orm.md",
-        "line": 112,
+        "line": 120,
         "level": 2,
-        "title": "與宣告式配置類的關係"
+        "title": "與宣告式設定類別的關係"
       }
     ],
     "與物料文件的區別": [
@@ -15899,7 +15907,7 @@
     "複合主鍵與聯合唯一": [
       {
         "document": "developer-guide/orm.md",
-        "line": 48,
+        "line": 49,
         "level": 2,
         "title": "複合主鍵與聯合唯一"
       }
@@ -16175,7 +16183,7 @@
     "訊息配置": [
       {
         "document": "user-guide/configuration.md",
-        "line": 597,
+        "line": 603,
         "level": 3,
         "title": "訊息配置"
       }
@@ -16208,6 +16216,14 @@
         "line": 160,
         "level": 3,
         "title": "設定欄位說明"
+      }
+    ],
+    "設定熱更新": [
+      {
+        "document": "user-guide/configuration.md",
+        "line": 130,
+        "level": 2,
+        "title": "設定熱更新"
       }
     ],
     "設定說明": [
@@ -16441,7 +16457,7 @@
     "請求事件方法": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 228,
+        "line": 227,
         "level": 3,
         "title": "請求事件方法"
       }
@@ -16489,7 +16505,7 @@
     "請求審批（approve / reject）": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 238,
+        "line": 237,
         "level": 4,
         "title": "請求審批（approve / reject）"
       }
@@ -16571,7 +16587,7 @@
     "請求資訊": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 230,
+        "line": 229,
         "level": 4,
         "title": "請求資訊"
       }
@@ -16595,7 +16611,7 @@
     "請求類型判斷": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 233,
+        "line": 232,
         "level": 4,
         "title": "請求類型判斷"
       }
@@ -16619,7 +16635,7 @@
     "豁免清單": [
       {
         "document": "user-guide/configuration.md",
-        "line": 514,
+        "line": 516,
         "level": 4,
         "title": "豁免清單"
       }
@@ -16646,6 +16662,14 @@
         "line": 87,
         "level": 3,
         "title": "資料持久化"
+      }
+    ],
+    "資料模型層（ORM）": [
+      {
+        "document": "developer-guide/orm.md",
+        "line": 1,
+        "level": 1,
+        "title": "資料模型層（ORM）"
       }
     ],
     "質量檢查清單": [
@@ -16704,20 +16728,20 @@
         "title": "跨執行緒投遞"
       }
     ],
-    "跨帳戶重複受理": [
-      {
-        "document": "developer-guide/modules/event-wrapper.md",
-        "line": 307,
-        "level": 4,
-        "title": "跨帳戶重複受理"
-      }
-    ],
-    "跨帳戶重複受理（框架注入欄位）": [
+    "跨帳戶重複受理（框架注入字段）": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
         "line": 795,
         "level": 3,
-        "title": "跨帳戶重複受理（框架注入欄位）"
+        "title": "跨帳戶重複受理（框架注入字段）"
+      }
+    ],
+    "跨帳號重複受理": [
+      {
+        "document": "developer-guide/modules/event-wrapper.md",
+        "line": 306,
+        "level": 4,
+        "title": "跨帳號重複受理"
       }
     ],
     "跨平台擴展（通配符）": [
@@ -16729,7 +16753,7 @@
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 528,
+        "line": 529,
         "level": 3,
         "title": "跨平台擴展（通配符）"
       }
@@ -16828,12 +16852,12 @@
         "title": "輸出格式"
       }
     ],
-    "轉換器範例": [
+    "轉換器示例": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 823,
+        "line": 838,
         "level": 3,
-        "title": "轉換器範例"
+        "title": "轉換器示例"
       }
     ],
     "轉換流程": [
@@ -16855,7 +16879,7 @@
     "轉發功能": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 294,
+        "line": 293,
         "level": 4,
         "title": "轉發功能"
       }
@@ -17061,13 +17085,13 @@
     "通知事件方法": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 153,
+        "line": 152,
         "level": 2,
         "title": "通知事件方法"
       },
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 215,
+        "line": 214,
         "level": 3,
         "title": "通知事件方法"
       }
@@ -17091,7 +17115,7 @@
     "通知操作者": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 217,
+        "line": 216,
         "level": 4,
         "title": "通知操作者"
       }
@@ -17099,7 +17123,7 @@
     "通知類型判斷": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 221,
+        "line": 220,
         "level": 4,
         "title": "通知類型判斷"
       }
@@ -17187,7 +17211,7 @@
     "連線模式半成品基類": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 914,
+        "line": 929,
         "level": 3,
         "title": "連線模式半成品基類"
       }
@@ -17215,7 +17239,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 864,
+        "line": 879,
         "level": 2,
         "title": "連線管理"
       }
@@ -17223,7 +17247,7 @@
     "連線重試": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1168,
+        "line": 1183,
         "level": 3,
         "title": "連線重試"
       }
@@ -17413,7 +17437,7 @@
     "適配器發送 Meta 事件": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1250,
+        "line": 1265,
         "level": 3,
         "title": "適配器發送 Meta 事件"
       }
@@ -17539,7 +17563,7 @@
     "邊界與注意事項": [
       {
         "document": "developer-guide/orm.md",
-        "line": 128,
+        "line": 136,
         "level": 2,
         "title": "邊界與注意事項"
       }
@@ -17710,12 +17734,6 @@
         "line": 650,
         "level": 4,
         "title": "配置熱更新"
-      },
-      {
-        "document": "user-guide/configuration.md",
-        "line": 130,
-        "level": 2,
-        "title": "配置熱更新"
       }
     ],
     "配置熱更新（on_config_update）": [
@@ -17869,7 +17887,7 @@
     "配置讀取與刪除 API": [
       {
         "document": "user-guide/configuration.md",
-        "line": 200,
+        "line": 201,
         "level": 2,
         "title": "配置讀取與刪除 API"
       }
@@ -18121,7 +18139,7 @@
       },
       {
         "document": "developer-guide/adapters/core-concepts.md",
-        "line": 1166,
+        "line": 1181,
         "level": 2,
         "title": "錯誤處理"
       },
@@ -18359,7 +18377,7 @@
     "鏈路控制（done / is_processed / is_stopped）": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
-        "line": 265,
+        "line": 264,
         "level": 4,
         "title": "鏈路控制（done / is_processed / is_stopped）"
       }
@@ -18460,20 +18478,20 @@
         "title": "閱讀紀律"
       }
     ],
-    "關係映射（relationship）": [
-      {
-        "document": "developer-guide/orm.md",
-        "line": 173,
-        "level": 2,
-        "title": "關係映射（relationship）"
-      }
-    ],
     "關於 width 與 height": [
       {
         "document": "ecosystem/takumi.md",
         "line": 234,
         "level": 3,
         "title": "關於 width 與 height"
+      }
+    ],
+    "關聯映射（relationship）": [
+      {
+        "document": "developer-guide/orm.md",
+        "line": 182,
+        "level": 2,
+        "title": "關聯映射（relationship）"
       }
     ],
     "關鍵字過濾": [
@@ -18556,12 +18574,12 @@
         "title": "需求描述範本"
       }
     ],
-    "需要換資料庫或部署到雲端資料庫": [
+    "需要更換資料庫或部署到雲端資料庫": [
       {
         "document": "developer-guide/orm.md",
-        "line": 229,
+        "line": 238,
         "level": 3,
-        "title": "需要換資料庫或部署到雲端資料庫"
+        "title": "需要更換資料庫或部署到雲端資料庫"
       }
     ],
     "靜態工廠 + 鏈式混合": [
