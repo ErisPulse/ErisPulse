@@ -1,0 +1,381 @@
+# `ErisPulse.Core.i18n.__init__` 模块
+
+---
+
+## 模块概述
+
+
+ErisPulse 国际化模块
+
+提供多语言支持，支持自动检测用户语言环境并按就近原则映射到支持的语言。
+
+> **提示**
+> 1. 框架内部和外部的模块都通过 i18n.t() 获取翻译文本
+> 2. 支持的语言: zh-CN (简体中文), zh-TW (繁体中文), en (英文), ja (日文), ru (俄文)
+> 3. 自动检测语言环境，也可手动设置: i18n.set_language("en")
+> 4. 外部模块可通过 i18n.register() 注册自己的翻译
+
+---
+
+## 类列表
+
+
+### `class I18nManager`
+
+国际化管理器
+
+负责语言检测、翻译查找和翻译注册。
+
+语言检测优先级:
+1. 手动通过 set_language() 设置的语言
+2. 环境变量 ERISPULSE_LANG（临时覆盖）
+3. 全局持久化设置（epsdk i18n 写入 ~/.erispulse/cli_state.json）
+4. 配置项 ErisPulse.i18n.language（"auto" 表示自动检测）
+5. 系统默认 locale (locale.getdefaultlocale)
+6. 默认语言 (zh-CN)
+
+就近映射规则:
+- zh-TW, zh-HK, zh-MO, zh-Hant -> zh-TW (繁体中文)
+- zh-CN, zh-SG, zh-MY, zh-Hans, zh 及其他 zh* -> zh-CN (简体中文)
+- en, en-US, en-GB 及其他 en* -> en
+- ja, ja-JP 及其他 ja* -> ja
+- ru, ru-RU 及其他 ru* -> ru
+- 其他未识别的语言 -> 默认语言
+
+
+#### 方法列表
+
+
+##### `_load_builtin_translations() -> None`
+
+加载框架内置翻译数据（懒加载模式）
+
+启动仅加载当前生效语言与回退语言（en）；其余支持语言首次被消费时
+由 :meth:`_ensure_builtin_loaded` 按需导入并缓存。外部注册的翻译域
+不受影响（与内置表合并在同一语言字典中）。
+
+**内部方法**
+
+---
+
+
+##### `_ensure_builtin_loaded(lang: str) -> None`
+
+确保指定语言的内置翻译已加载（首次用时导入并缓存）
+
+已加载（含已确认为空）的语言直接返回；加载与登记在锁内完成，
+并发触发时双重检查避免重复导入。
+
+**内部方法**
+
+- **lang**: 语言代码（未知语言按空表缓存负结果）
+
+---
+
+
+##### `_resolve_nearest(locale_str: str) -> str`
+
+将任意 locale 字符串映射到最近的支持语言
+
+- **locale_str** (`locale`): 字符串，如 "zh_TW.UTF-8", "en_US", "ja"
+
+**返回值**: 支持的语言代码
+
+**内部方法**
+
+---
+
+
+##### `_detect_language() -> str`
+
+自动检测用户语言环境（跨平台）
+
+检测顺序:
+Windows:
+1. Windows API: GetUserDefaultLocaleName
+2. 环境变量 LANGUAGE / LC_ALL / LC_MESSAGES / LANG
+3. locale.getlocale() / locale.getdefaultlocale()
+
+Unix/macOS:
+1. 环境变量 LANGUAGE / LC_ALL / LC_MESSAGES / LANG
+2. locale.getlocale() / locale.getdefaultlocale()
+
+**返回值**: 检测到的支持语言代码
+
+**内部方法**
+
+---
+
+
+##### `_resolve_windows_locale_name(locale_name: str) -> str | None`（staticmethod）
+
+将 Windows locale 名称（如 'Chinese (Simplified)_China'）映射到支持语言
+
+locale.getlocale() 在 Windows 上可能返回语言全称而非代码
+
+- **locale_name**: Windows locale 名称
+
+**返回值**: 支持的语言代码或 None
+
+**内部方法**
+
+---
+
+
+##### `_detect_windows_locale() -> str | None`（staticmethod）
+
+通过 Windows API 检测用户默认 locale
+
+使用 GetUserDefaultLocaleName / GetSystemDefaultLocaleName 获取
+BCP 47 格式的 locale 名称（如 "zh-CN", "en-US"）
+
+**返回值** (`locale`): 字符串或 None
+
+**内部方法**
+
+---
+
+
+##### `_get_effective_language() -> str`
+
+获取当前生效的语言
+
+优先级: 手动设置 > ERISPULSE_LANG 环境变量 > 全局持久化设置 > 配置项 > 检测到的语言
+
+配置值为 "auto" 时使用自动检测的语言。
+
+除手动设置与环境变量外走解析缓存：以全局状态文件的 mtime 为失效信号，
+避免每次调用都打开并解析 ``~/.erispulse/cli_state.json``（热路径成本）；
+外部修改（如另一进程执行 ``epsdk i18n``）通过 mtime 变化即时感知，
+进程内 ``ErisPulse.i18n.*`` 配置写入通过 lifecycle 事件失效缓存。
+
+**内部方法**
+
+---
+
+
+##### `_ensure_config_invalidation_hook() -> None`
+
+注册配置写入对语言缓存的失效监听
+
+惰性注册一次（避免 Core 单例构造顺序上的导入环），
+监听 ``config.set`` / ``config.updated`` 两类事件。
+
+**内部方法**
+注册失败静默跳过，不影响语言解析本身。
+
+---
+
+
+##### `_on_language_config_changed(data: Any) -> None`
+
+配置事件回调：ErisPulse.i18n.* 写入或外部配置重载时清除语言缓存
+
+- **data**: 事件数据（含 ``key`` 的 dict，或任意载荷）
+
+**内部方法**
+
+---
+
+
+##### `_global_state_path() -> Path`（staticmethod）
+
+全局状态文件路径
+
+**返回值** (`Path`): 全局状态文件路径 (~/.erispulse/cli_state.json)
+
+**内部方法**
+与 CLI 的 i18n 共享同一文件，作为跨项目的语言持久化位置
+
+---
+
+
+##### `_load_global_language() -> str | None`
+
+从全局状态文件读取持久化的语言选择
+
+**返回值**: 语言代码或 None
+
+**内部方法**
+读取失败或未设置时返回 None，不影响后续优先级
+
+---
+
+
+##### `set_language(lang: str, *, persist: bool = True) -> None`
+
+手动设置当前语言，可选中写入全局持久化
+
+- **lang**: 语言代码，如 "zh-CN", "en", "ja", "ru"
+
+会自动按就近原则映射到支持的语言。
+- **persist**: 是否写入 `~/.erispulse/cli_state.json` 全局生效
+
+    （默认 True，等效于 `epsdk i18n`）；False 时仅当前进程
+    临时生效，不改变持久化语言设置（例如 CLI 配置向导同步
+    只读上下文时使用）。如需临时覆盖，也可使用环境变量
+    `ERISPULSE_LANG`
+
+**示例**:
+
+```python
+i18n.set_language("en")
+i18n.set_language("zh-TW")  # 繁体中文
+i18n.set_language("en", persist=False)  # 仅本次进程
+```
+
+---
+
+
+##### `_emit_language_changed(language: str, previous: str | None) -> None`
+
+发出语言切换事件（``i18n.language.changed``）
+
+- **language**: 切换后的语言代码
+- **previous**: 切换前的语言代码（进程首个语言设置时为 None）
+
+**内部方法**
+事件失败静默跳过，不影响语言切换本身。
+
+---
+
+
+##### `_persist_global_language(lang: str) -> None`
+
+将语言选择写入全局状态文件
+
+- **lang**: 已解析的语言代码
+
+**内部方法**
+与 CLI i18n 的 _persist_language 写入同一文件，覆盖 language 键
+
+---
+
+
+##### `get_language() -> str`
+
+获取当前生效的语言代码
+
+**返回值** (`str`): 语言代码，如 "zh-CN", "en"
+
+---
+
+
+##### `get_supported_languages() -> list[str]`
+
+获取所有支持的语言列表
+
+**返回值** (`list[str]`): 支持的语言代码列表
+
+---
+
+
+##### `reset_language() -> None`
+
+重置为自动检测的语言（清除手动设置），并重新检测环境
+
+---
+
+
+##### `t(key: str, /, default: str | None = None, **kwargs: Any) -> str`
+
+获取翻译文本
+
+- **key** (`str`): 翻译键，如 "core.sdk.init.starting"
+- **default** (`str`): 默认值，当翻译不存在时返回。默认为 None（返回 key 本身）
+- **kwargs**: 格式化参数，如 t("key", name="world") 会填充 {name}
+
+**返回值** (`str`): 翻译后的文本
+
+**示例**:
+
+```python
+i18n.t("core.sdk.init.starting")
+i18n.t("core.adapter.load_failed", platform="OneBot")
+i18n.t("my_module.welcome", default="Welcome!")
+```
+
+---
+
+
+##### `gettext(key: str, /, default: str | None = None, **kwargs: Any) -> str`
+
+t() 的别名，兼容 gettext 风格
+
+- **key** (`str`): 翻译键
+- **default** (`str`): 默认值
+- **kwargs**: 格式化参数
+
+**返回值** (`str`): 翻译后的文本
+
+---
+
+
+##### `_lookup(key: str, lang: str) -> str | None`
+
+在指定语言中查找翻译键（未加载的内置语言按需导入）
+
+**内部方法**
+
+---
+
+
+##### `register(lang: str, translations: dict[str, str], domain: 'str | None' = None) -> None`
+
+注册翻译文本（供外部模块使用）
+
+- **lang** (`str`): 语言代码，如 "en", "zh-CN"（会按就近原则映射）
+- **translations** (`dict[str, str]`): 翻译键值对，如 {"my_module.welcome": "Welcome!"}
+- **domain** (`str | None`): 域名，用于区分不同模块的翻译并支持卸载清理；
+
+              缺省时自动取当前归属 owner（模块名/平台名），无归属上下文
+              才落入 "app"。模块显式传 domain 时请与模块名一致，
+              否则卸载时词条无法按 owner 清理。
+
+**示例**:
+
+```python
+# 模块内注册：domain 自动归属本模块，卸载时自动清理
+i18n.register("zh-CN", {"mybot.welcome": "欢迎使用机器人"})
+i18n.register("en", {
+    "mybot.welcome": "Welcome to the bot",
+    "mybot.goodbye": "Goodbye",
+}, domain="mybot")
+```
+
+---
+
+
+##### `unregister_domain(domain: str) -> None`
+
+卸载指定域的所有翻译
+
+- **domain** (`str`): 域名
+
+**示例**:
+
+```python
+i18n.unregister_domain("mybot")
+```
+
+---
+
+
+##### `has_translation(key: str, lang: str | None = None) -> bool`
+
+检查翻译键是否存在
+
+- **key** (`str`): 翻译键
+- **lang** (`str`): 指定语言，默认为当前语言
+
+**返回值** (`bool`): 是否存在翻译
+
+---
+
+
+##### `reload() -> None`
+
+重新加载内置翻译并重新检测语言
+
+---
+

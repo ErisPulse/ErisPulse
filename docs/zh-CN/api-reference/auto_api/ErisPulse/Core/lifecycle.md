@@ -1,0 +1,434 @@
+# `ErisPulse.Core.lifecycle` 模块
+
+---
+
+## 模块概述
+
+
+ErisPulse 生命周期管理模块
+
+提供统一的钩子/事件管理和触发机制，支持点式结构事件监听与定向传播
+
+> **提示**
+> 1. 使用 @lifecycle.on("event.name") 注册事件处理器
+> 2. 使用 await lifecycle.emit("event.name", data) 触发事件
+> 3. 使用 lifecycle.emit("event.name", data, to="Owner") 定向投递给指定 owner 注册的钩子
+> 4. 使用 lifecycle.start_timer() / stop_timer() 进行计时
+> 5. 旧版 submit_event() API 保持兼容
+
+---
+
+## 类列表
+
+
+### `class LifecycleManager`
+
+生命周期管理器
+
+统一的钩子/事件系统，支持：
+- 点式结构事件监听（如 module.init 可被 module 监听到）
+- 通配符监听（* 匹配所有事件）
+- 定向传播（emit(..., to="Owner") 仅分发给该 owner 注册的处理器）
+- 优先级排序
+- 同步/异步处理器
+- 计时器
+
+> **提示**
+> 两种注册方式等价：
+> ```python
+> @lifecycle.on("module.load")
+> async def on_load(data):
+>     print(data)
+> ```
+>
+> ```python
+> lifecycle.register("module.load", on_load)
+> ```
+>
+> 两种触发方式等价：
+> ```python
+> await lifecycle.emit("module.load", {"module_name": "Test"})
+> await lifecycle.submit_event("module.load", data={"module_name": "Test"})
+> ```
+>
+
+
+#### 嵌套类
+
+
+##### `class _NullLogger`
+
+静默日志器，在 logger 模块尚未初始化时作为替代
+
+
+#### 方法列表
+
+
+##### `_get_logger()`（staticmethod）
+
+延迟导入 logger，避免循环依赖（lifecycle → logger → config → lifecycle）
+
+---
+
+
+##### `on(event: str, *, priority: int = 0) -> Callable`
+
+注册事件处理器（装饰器模式）
+
+- **event** (`str`): 事件名称，支持点式结构和通配符
+- **priority** (`int`): 优先级，数值越大越先执行 (默认: 0)
+
+**返回值** (`Callable`): 装饰器
+
+**异常**: `ValueError` - 当事件名无效时抛出
+
+**示例**:
+
+```python
+@lifecycle.on("module.load")
+async def on_module_load(data):
+    print(f"模块加载: {data}")
+
+@lifecycle.on("adapter.*")
+def on_adapter_event(data):
+    pass
+```
+
+---
+
+
+##### `register(event: str, handler: Callable, *, priority: int = 0) -> None`
+
+注册事件处理器（函数调用模式）
+
+- **event** (`str`): 事件名称
+- **handler** (`Callable`): 处理函数
+- **priority** (`int`): 优先级，数值越大越先执行 (默认: 0)
+
+**示例**:
+
+```python
+lifecycle.register("config.set", my_handler, priority=10)
+```
+
+---
+
+
+##### `once(event: str, *, priority: int = 0) -> Callable`
+
+注册一次性事件处理器（触发一次后自动注销）
+
+- **event** (`str`): 事件名称
+- **priority** (`int`): 优先级 (默认: 0)
+
+**返回值** (`Callable`): 装饰器
+
+**示例**:
+
+```python
+@lifecycle.once("core.init.complete")
+async def on_first_ready(data):
+    print("首次就绪")
+```
+
+---
+
+
+##### `has_handlers(event: str) -> bool`
+
+检查指定事件是否已有注册的处理器（含通配符 ``*`` 与父级事件）
+
+可用于热路径短路：发射事件前先判断有无监听者，避免无谓的字典遍历与任务调度。
+
+- **event** (`str`): 事件名称
+
+**返回值** (`bool`): 存在任意匹配处理器时返回 True
+
+**示例**:
+
+```python
+if lifecycle.has_handlers("message.sending"):
+    await lifecycle.emit("message.sending", data)
+```
+
+---
+
+
+##### `unregister(event: str, handler: Callable | None = None) -> None`
+
+取消注册事件处理器
+
+- **event** (`str`): 事件名称
+- **handler** (`Callable`): 指定取消的处理器，为 None 时取消该事件所有处理器
+
+**示例**:
+
+```python
+lifecycle.unregister("config.set", my_handler)  # 取消指定处理器
+lifecycle.unregister("config.set")               # 取消所有处理器
+```
+
+---
+
+
+##### `unregister_by_owner(owner: str) -> int`
+
+取消指定 owner 注册的所有事件处理器
+
+用于模块/适配器卸载时自动清理其注册的钩子，避免闭包引用导致内存泄漏。
+
+- **owner**: 模块或适配器名称
+
+**返回值** (`int`): 被移除的处理器数量
+
+**示例**:
+
+```python
+lifecycle.unregister_by_owner("MyModule")
+```
+
+---
+
+
+##### `get_owner_counts() -> dict[str, int]`
+
+统计各 owner 注册的生命周期钩子数量（便于拓扑树展示）
+
+**返回值**: {owner: 钩子数量} 字典
+
+**示例**:
+
+```python
+lifecycle.get_owner_counts()
+{"MyModule": 3, "onebot11": 2}
+```
+
+---
+
+
+##### `_is_shadow_owner(owner: 'str | None') -> bool`
+
+**内部方法**
+判断 owner 是否为影子模块 owner（方向十一；惰性导入避免加载链耦合）
+
+---
+
+
+##### `_is_shadow_module_event(data: Any) -> bool`
+
+**内部方法**
+判断事件数据是否携带影子模块的 module_name（module.* 生命周期静默用；
+兼容 submit_event 包装形态 {"data": {"module_name": ...}} 与扁平形态）
+
+---
+
+
+##### `async emit(event: str, data: Any = None, *, to: str | None = None) -> Any`
+
+触发事件（异步）
+
+匹配的处理器**并行执行**（各自包装为协程经 ``gather`` 并发，互不阻塞，
+本调用等待全部完成）：慢处理器不拖累其余处理器与触发方，但 emit 返回时
+所有处理器已执行完毕（顺序敏感的消费者可安全在 emit 之后读状态）。
+处理器返回非 None 值时按注册（优先级）顺序回放链式替换 data——
+所有处理器收到的是同一份输入数据。
+
+指定 ``to`` 时进入定向传播：事件只分发给以该拥有者（owner）身份注册的
+处理器（模块在 on_load 内注册 / `owner_scope` 上下文注册的钩子），
+其它模块与通配符 `*` 处理器不感知；目标 owner 无已注册钩子时静默丢弃。
+
+- **event** (`str`): 事件名称
+- **data** (`Any`): 事件数据（dict 时自动附加 `_trace_id`）
+- **to** (`str`): 定向投递目标拥有者（模块名 / 适配器平台名），None 广播
+
+**返回值** (`Any`): 经过所有处理器处理后的数据
+
+**异常**: `ValueError` - ``to`` 为空字符串时
+
+**示例**:
+
+```python
+result = await lifecycle.emit("config.set", {"key": "test", "value": 42})
+# 定向投递给 Chat 模块注册的钩子
+await lifecycle.emit("maintenance", {"action": "reload"}, to="Chat")
+```
+
+---
+
+
+##### `emit_sync(event: str, data: Any = None, *, to: str | None = None) -> Any`
+
+触发事件（同步，精简版）
+
+同步执行所有处理器。异步处理器会在当前事件循环中以 create_task 调度。
+注意：同步模式下异步处理器的返回值无法回传。
+
+指定 ``to`` 时进入定向传播（语义同 :meth:`emit` 的定向模式）。
+
+- **event** (`str`): 事件名称
+- **data** (`Any`): 事件数据
+- **to** (`str`): 定向投递目标拥有者，None 广播
+
+**返回值** (`Any`): 处理后的数据
+
+**异常**: `ValueError` - ``to`` 为空字符串时
+
+**示例**:
+
+```python
+result = lifecycle.emit_sync("config.set", {"key": "test"})
+```
+
+---
+
+
+##### `fire(event: str, data: Any = None, *, to: str | None = None) -> None`
+
+触发事件（后台，扔桶即走）——观测类事件的零成本发射
+
+与 :meth:`emit` 的差异：处理器在后台任务中并行执行，**不等待完成、
+无返回值**，本调用在无监听者时零开销（``has_handlers`` 短路），
+有监听者时仅付出一次任务调度成本。适用于高频热路径与纯观测事件
+（如 ``server.request`` / ``storage.ready``）。
+
+.. warning:
+```
+后台事件**不保证执行时机**：emit 返回 ≠ 处理器已执行；
+框架关停期间后台任务会被取消——关停序列（uninit）中的
+事件请改用 :meth:`emit`。顺序敏感的消费（如 ``config.set``
+驱动的作用域重建）同样必须用 :meth:`emit`。
+```
+
+- **event** (`str`): 事件名称
+- **data** (`Any`): 事件数据（dict 时自动附加 `_trace_id`）
+- **to** (`str`): 定向投递目标拥有者，None 广播
+
+**示例**:
+
+```python
+lifecycle.fire("server.request", {"method": "GET", "path": "/"})
+```
+
+---
+
+
+##### `async submit_event(event_type: str, *, source: str = DEFAULT_EVENT_SOURCE, msg: str = '', data: dict | None = None, timestamp: float | None = None, to: str | None = None, background: bool = False) -> None`
+
+提交生命周期事件（兼容旧版 API）
+
+构建标准事件格式后通过 emit 触发，处理器接收标准事件字典；
+``background=True`` 时改走 :meth:`fire` 后台发射（不等待处理器，
+适用于进度展示类观测事件，如 ``core.init.stage``）。
+
+- **event_type** (`str`): 事件名称
+- **source** (`str`): 事件来源(默认"ErisPulse")
+- **msg** (`str`): 事件描述
+- **data** (`dict`): 事件相关数据
+- **timestamp** (`float`): 时间戳(默认当前时间)
+- **to** (`str`): 定向投递目标拥有者（语义同 :meth:`emit`），None 广播
+- **background** (`bool`): 后台发射不等待处理器（默认 False）
+
+**异常**: `ValueError` - ``to`` 为空字符串时
+
+**示例**:
+
+```python
+await lifecycle.submit_event("module.load", data={"module_name": "Test"})
+await lifecycle.submit_event("maintenance", data={"action": "reload"}, to="Chat")
+```
+
+---
+
+
+##### `start_timer(timer_id: str) -> None`
+
+开始计时
+
+- **timer_id** (`str`): 计时器ID
+
+---
+
+
+##### `get_duration(timer_id: str) -> float`
+
+获取指定计时器的持续时间
+
+- **timer_id** (`str`): 计时器ID
+
+**返回值** (`float`): 持续时间(秒)
+
+---
+
+
+##### `stop_timer(timer_id: str) -> float`
+
+停止计时并返回持续时间
+
+- **timer_id** (`str`): 计时器ID
+
+**返回值** (`float`): 持续时间(秒)
+
+---
+
+
+##### `async _execute_handlers(hook_name: str, event: str, data: Any, owner_filter: str | None = None) -> Any`
+
+执行匹配事件的处理（异步，处理器并行）
+
+每个处理器包装为独立协程经 ``asyncio.gather`` 并行执行——慢处理器
+不再阻塞其余处理器与触发方，总耗时从"各处理器之和"降为"最慢一个"。
+处理器返回非 None 值时按注册（优先级）顺序回放链式替换 data：
+所有处理器收到的是**同一份输入**，回放顺序确定性可预期。
+
+- **hook_name** (`str`): 注册的钩子名
+- **event** (`str`): 实际事件名
+- **data** (`Any`): 事件数据
+- **owner_filter** (`str`): 仅执行该拥有者注册的处理器（定向传播，None 不限）
+
+**返回值** (`Any`): 处理器链处理结果
+
+---
+
+
+##### `_execute_handlers_sync(hook_name: str, event: str, data: Any, owner_filter: str | None = None) -> Any`
+
+执行匹配的事件处理器（同步）
+
+- **hook_name** (`str`): 注册的钩子名
+- **event** (`str`): 实际事件名
+- **data** (`Any`): 事件数据
+- **owner_filter** (`str`): 仅执行该拥有者注册的处理器（定向传播，None 不限）
+
+**返回值** (`Any`): 处理后的数据
+
+---
+
+
+##### `clear() -> None`
+
+清除所有已注册的处理器和计时器
+
+**示例**:
+
+```python
+lifecycle.clear()
+```
+
+---
+
+
+##### `list_hooks() -> dict[str, int]`
+
+列出所有已注册的钩子及其处理器数量
+
+**返回值** (`dict`): 钩子名称到处理器数量的映射
+
+**示例**:
+
+```python
+info = lifecycle.list_hooks()
+# {"module.load": 2, "adapter.start": 1}
+```
+
+---
+

@@ -1,0 +1,63 @@
+# runtimeツールベルト
+
+> [!TIP]
+> **このドキュメントを読むべきタイミング**: `ErisPulse.runtime` パッケージが提供する、直接 import できるランタイムツールを一括で把握したいとき。各機能の詳細な使い方は対応するトピックドキュメントに記載されており、本ページはクイックリファレンス索引 + トピックに属さない一部の機能の使い方説明です。
+
+`ErisPulse.runtime` はフレームワークの集約エクスポート層です。各モジュールに散らばっているランタイムツールを単一のエントリーポイントに集約し、スクリプト、モジュール、アダプターのコードからは統一して `from ErisPulse.runtime import X` の形で利用できるため、深い階層のパスを覚える必要がありません。
+
+## 機能クイックリファレンス
+
+| カテゴリ | 名前 | 用途 | 詳細 |
+|------|------|------|------|
+| 所有権 | `bind_owner` | owner コンテキストをコールバック / スレッドエントリに紐付ける | [所有権システム](ownership.md) |
+| 所有権 | `owner_scope` / `get_current_owner` | コードブロックレベルの所有権コンテキスト | [所有権システム](ownership.md) |
+| 所有権 | `get_owner_tasks` / `cancel_owner_tasks` | 特定 owner のバックグラウンドタスクの照会 / キャンセル | [所有権システム](ownership.md) |
+| バックグラウンドタスク | `spawn_background` / `spawn_later` / `spawn_thread` | バックグラウンドコルーチン / 遅延タスク / スレッドタスク | [ライフサイクル管理](lifecycle.md) |
+| バックグラウンドタスク | `cancel_all_background_tasks` / `run_main_loop` | バックグラウンドタスクの集約とメインループ登録 | [ライフサイクル管理](lifecycle.md) |
+| イベントコンテキスト | `get_current_trace_id` | 現在のトレース ID の取得 | [リンクトレーシング](interaction.md#リンクトレーシングtrace-id) |
+| イベントコンテキスト | `get_send_receipts` | メッセージトランザクションの送信レシート台帳の取得 | [メッセージトランザクション](interaction.md#メッセージトランザクションmessage_tx) |
+| イベントコンテキスト | `get_current_event_account` / `get_current_caller` / `get_handler_waits` | イベントアカウント / 呼び出し元 / 待機テーブルの読み取り | [インタラクションセッションシステム](interaction.md) |
+| メモリ | `snapshot` / `log_snapshot` | label 付き RSS + tracemalloc スナップショット（増分を自動計算） | [メモリ診断](performance.md#メモリ診断) |
+| メモリ | `get_rss_mb` / `get_traced_mb` | 現在のプロセスのメモリ使用量 | [メモリ診断](performance.md#メモリ診断) |
+| 設定パース | `dict_to_dataclass` | dict → 型安全な dataclass インスタンス | 次のセクションを参照 |
+| 設定パース | `dataclass_to_defaults_dict` / `dataclass_to_toml_with_comments` | dataclass → デフォルト値 dict / コメント付き TOML シリアライズ | [宣言的設定](../developer-guide/configuration.md) |
+| トラブルシューティング | `explain_module` / `explain_event` / `explain_trace` | モジュール / イベント / メッセージチェーンの診断 | [起動時のトラブルシューティング](startup.md) と [イベント処理](../getting-started/event-handling.md) |
+| トラブルシューティング | `format_diagnostic_block` / `log_diagnostic` / `extract_user_frame` | 例外診断ブロックの描画とユーザーフレームの抽出 | [起動フロー](startup.md) |
+| 例外フォールバック | `setup_exception_handling` / `global_exception_handler` | グローバル例外ハンドラの登録 | [起動フロー](startup.md) |
+| セキュリティ | `redact_secret` | ログ / レポート内の機密値のマスキング | [起動フロー](startup.md) |
+| メトリクス | `metrics` / `MetricsRegistry` | ランタイムメトリクスレジストリ（`/metrics` エンドポイントのデータソース） | [デプロイガイド](../user-guide/deployment.md) |
+
+## dict_to_dataclass：dict → 型安全オブジェクト
+
+宣言的 dataclass 設定の「逆方向」——任意の dict（API レスポンス、webhook
+payload、ユーザー入力）を宣言に従って型安全なインスタンスにパースし、手書きの
+`data.get("x", default)` チェーンを置き換えます：
+
+```python
+from dataclasses import dataclass, field
+from ErisPulse.runtime import dict_to_dataclass
+
+@dataclass
+class WebhookPayload:
+    order_id: str
+    amount: float = 0.0
+    tags: list = field(default_factory=list)
+    remark: str = ""
+
+payload = dict_to_dataclass(WebhookPayload, {
+    "order_id": "A-1024",
+    "amount": "99.5",          # str → float 自動変換
+    "unknown_key": "無視",      # 未宣言フィールドは自動的に無視
+})
+payload.amount                   # 99.5（float）
+```
+
+- 型変換（str → int/float など）、デフォルト値の補完、ネストされた dataclass の再帰的補完
+- 環境変数によるオーバーライド：フィールドに `metadata={"env": "NAME"}` が指定されている場合、優先順位は 環境変数 > データ > デフォルト値
+- 宣言的設定クラス（`ConfigClass` / `BaseConfig`）のホットリロードコールバック内部では、まさにこれによって dict → 設定オブジェクトの変換が行われています
+
+## 関連ドキュメント
+
+- [宣言的設定](../developer-guide/configuration.md) - ConfigClass / BaseConfig による宣言的設定
+- [所有権（owner）システム](ownership.md) - リソースの帰属と自動回収
+- [ライフサイクル管理](lifecycle.md) - バックグラウンドタスクとメインループ

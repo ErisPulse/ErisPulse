@@ -1,0 +1,777 @@
+# `ErisPulse.Core.config` 模块
+
+---
+
+## 模块概述
+
+
+ErisPulse 配置中心
+
+集中管理所有配置项，避免循环导入问题
+提供自动补全缺失配置项的功能
+添加内存缓存和延迟写入机制以提高性能
+基于 tomlclass（无损 TOML 编辑引擎）实现注释保留写入：配置文件中的注释与键顺序在任何框架写入后均不丢失
+配置写入采用"唯一临时文件 + fsync + 原子替换"（``os.replace``）：
+进程被杀（OOM / SIGKILL）或断电时磁盘上的配置文件要么是完整旧内容、要么是完整新内容，
+不会出现空文件或半写状态；临时文件名按进程唯一，多实例共享配置目录时不再互相争抢踩踏
+
+> **提示**
+> 1. 使用 getConfig(key) / setConfig(key, value) 读写配置
+> 2. 配置变更可通过生命周期钩子监听: @lifecycle.on("config.set")
+
+---
+
+## 函数列表
+
+
+### `parse_bool_config(value: Any) -> bool`
+
+解析配置中的布尔值
+
+- **value** (`Any`): 配置值（可以是 bool, int, str 等）
+
+**返回值** (`bool`): 解析后的布尔值
+
+> **提示**
+> 支持的值:
+> - True: True, 1, "true", "True", "1", "yes", "Yes", "on", "On"
+> - False: False, 0, "false", "False", "0", "no", "No", "off", "Off"
+
+---
+
+
+### `json_safe(value: Any, _depth: int = 0) -> Any`
+
+递归将任意结构转换为可直接 JSON 序列化的等价结构
+
+供 ``get_topology`` 等面向 WebUI 的聚合方法保证输出可序列化：
+dict / list / tuple / set 递归处理；类对象（``type``）取
+``__name__``；其余不可序列化对象退化为 ``str()`` 表示。
+
+- **value**: 任意值
+- **_depth** (`internal-use`): 递归深度保护
+
+**返回值**: 可被 ``json.dumps`` 序列化的等价结构
+
+---
+
+
+## 类列表
+
+
+### `class _DeletedValue`
+
+``delete()`` 在脏队列中的"待移除"标记
+
+与 ``setConfig(key, None)`` 的置空不同，此标记表示键将从文件中删除。
+脏队列的读路径会对值做深拷贝，标记必须在此过程中保持单例身份，
+供 ``is`` 判别。
+
+**内部方法**
+
+
+### `class _FlushHandle`
+
+**内部方法**
+``_write_timer`` 兼容句柄
+
+延迟刷盘已由常驻 ``config-watcher`` 线程按 ``_flush_deadline`` 调度；
+本句柄仅为既有测试与退出路径保留 ``_write_timer`` 属性语义
+（"存在即有未落盘写入"），``cancel()`` 为幂等空操作。
+
+
+### `class ConfigManager`
+
+ConfigManager 类提供相关功能。
+
+
+#### 方法列表
+
+
+##### `__init__(config_file: str = DEFAULT_CONFIG_FILE_PATH)`
+
+初始化配置管理器
+
+- **config_file** (`str`): 配置文件路径 (默认: "config/config.toml")
+
+---
+
+
+##### `_start_config_watcher() -> None`
+
+启动后台线程定期检查配置文件变化
+
+当用户手动编辑 ``config.toml`` 时，后台线程检测到 mtime 变化后
+自动重载缓存并发射 ``config.updated`` 生命周期事件。
+
+**内部方法**
+
+---
+
+
+##### `stop_all_watchers() -> int`（classmethod）
+
+停止全部配置监视线程（向所有实例发出停止信号并提前唤醒）
+
+框架 uninit 链与测试会话收尾的**确定性关停入口**：显式调用后 watcher
+至多等一个轮询周期自然退出，不再依赖解释器退出阶段的兜底钩子
+（自由线程构建下收尾期参与锁竞争曾导致进程退出挂死）。
+
+**返回值**: 发出停止信号的实例数（幂等，重复调用返回 0）
+
+> **提示**
+> `threading._register_atexit` 的解释器退出兜底仍保留，本方法是它的
+> 提前显式形态
+
+---
+
+
+##### `_register_watcher_shutdown(manager: 'ConfigManager') -> None`（classmethod）
+
+**内部方法** 注册解释器关停时的 watcher 统一停止钩子（幂等）
+
+---
+
+
+##### `_watch_config_file() -> None`
+
+记录配置文件的当前 mtime，用于后续检测外部修改
+
+**内部方法**
+
+---
+
+
+##### `_migrate_config() -> None`
+
+迁移旧配置文件到新位置
+
+从项目根目录的 config.toml 迁移到 config/config.toml
+
+**内部方法**
+
+---
+
+
+##### `_load_config() -> bool`
+
+从文件加载配置到缓存
+
+对加载失败按三种状态分别给出可操作的诊断信息：
+
+- 文件缺失：正常首次启动，静默使用空配置
+- TOML 语法错误：输出出错行号/列号与原因，保留上次有效缓存（不擦除）
+- 权限/其他错误：输出明确原因，保留上次有效缓存（不擦除）
+
+**返回值** (`bool`): 加载成功（含文件缺失）返回 True；解析/权限等错误返回 False
+
+**内部方法**
+
+---
+
+
+##### `_drop_redundant_dirty_keys() -> None`
+
+丢弃与新配置文件内容一致的待写键
+
+配置重载（外部修改）后，部分待写键的值可能已与文件一致，
+继续保留会在下次 flush 时用陈旧快照覆盖用户热更新。
+仅当待写值已反映在缓存（即文件）中时才丢弃；真正未落盘的写入仍保留。
+
+**内部方法**
+
+---
+
+
+##### `_log_config_error(message: str, level: str = 'error') -> None`（staticmethod）
+
+将配置加载诊断信息写入日志
+
+**内部方法**
+统一处理 logger 尚未就绪的早期场景，失败时静默忽略。
+
+- **message** (`str`): 日志消息
+- **level** (`str`): 日志级别（``error``/``warning``/``debug``）
+
+---
+
+
+##### `_malformed_sentinel_path -> Path`（property）
+
+跨进程告警冷却哨兵文件路径
+
+位于配置文件同级目录下的隐藏文件，通过其 mtime 实现跨进程去重：
+无论 ``epsdk run`` 子进程、``python main.py`` 直跑、还是多实例场景，
+所有进程共享同一文件系统，自然协调告警频率。
+
+**内部方法**
+
+---
+
+
+##### `_acquire_instance_lock() -> None`
+
+尝试以独占方式锁定运行状态目录的实例锁文件，检测多实例共享配置目录
+
+锁文件位于项目根的运行状态目录（``.erispulse/config.lock``，
+:data:`~.constants.RUNTIME_STATE_DIR_NAME` +
+:data:`~.constants.CONFIG_LOCK_FILE_NAME`），进程持锁后全生命周期
+不释放，由 OS 在进程退出时自动归还——无需清理逻辑，进程被强杀也不会
+留下"幽灵锁"。锁被占用说明另一个 ErisPulse 实例正在使用同一配置目录，
+此时仅记录告警（并发写入可能互相覆盖），不阻塞框架启动。
+持锁成功后顺带清除 2.10 及以前位于 ``config/`` 目录的旧版锁文件残留。
+
+**内部方法**
+
+---
+
+
+##### `_ensure_config_gitignore() -> None`
+
+确保配置目录自带 ``.gitignore``（幂等：已存在则不覆盖）
+
+配置文件含令牌等敏感信息——目录内全部文件不入版本库。规则只有一行
+``*``：忽略文件自身也在排除范围内（目录整体对 git 不可见）。
+
+**内部方法**
+
+---
+
+
+##### `_ensure_runtime_state_gitignore() -> None`
+
+确保运行状态目录（``.erispulse/``）自带 ``.gitignore``（幂等：已存在则不覆盖）
+
+目录内是实例锁、CLI 运行状态文件等机器本地运行时数据，不含任何需
+入库内容——目录整体对 git 不可见。与配置目录的 ``.gitignore`` 同款
+实现（规则只有一行 ``*``）。
+
+**内部方法**
+
+---
+
+
+##### `_atomic_write_text(text: str) -> None`
+
+原子写入配置文件（唯一临时文件 + fsync + ``os.replace``）
+
+旧实现使用固定名 ``<config>.tmp`` 并在 rename 前不落盘，存在两类丢文件场景：
+多实例共享配置目录时同名临时文件被对端 truncate / rename（ENOENT 争抢）；
+进程被杀或断电时 rename 元数据先于数据块落盘（ext4 延迟分配），留下空文件。
+现改为：同目录 ``mkstemp`` 生成进程唯一临时文件 → 写毕 ``flush + fsync``
+强制数据落盘 → ``os.replace`` 原子替换目标（POSIX / Windows 均原子）；
+POSIX 下额外 fsync 配置目录，尽力保证断电后替换结果不回退。
+
+- **text** (`str`): 待写入的完整文件内容
+
+**异常**: `OSError` - 临时文件创建、写入或替换失败时抛出，由调用方按写失败处理
+
+**内部方法**
+
+---
+
+
+##### `_delete_doc_path(doc: Any, keys: list[str]) -> None`（staticmethod）
+
+在无损文档树中按点分路径删除键
+
+中间层缺失或非表时视为已删除（幂等）；仅触碰目标键所在行，
+文件其余内容与注释保持不变。删除子表的最后一个键后，空表头
+原样保留（与后续重设同名键的行为兼容）。
+
+- **doc** (`tomlclass`): 文档/表对象
+- **keys**: 点分路径拆分后的键列表
+
+**内部方法**
+
+---
+
+
+##### `_toml_safe_value(value: Any) -> Any`（staticmethod）
+
+将待写入值转换为 TOML 可序列化形态
+
+TOML 没有 null：``setConfig`` 置空语义的 ``None`` 在落盘时等价于
+"键不存在"——标量 ``None`` 返回 ``None``（由调用方跳过该键），
+字典内的 ``None`` 叶子递归剔除（其余键值原样保留，不改变顺序之外
+的内容）。列表内的 ``None`` 属于数组元素，剔除会改变元素位置，
+显式拒绝（交由单键隔离丢弃并告警），不静默改写用户数据。
+
+- **value**: 待写入的值
+
+**返回值**: 可直接交给 tomlclass 的值；标量 ``None`` 原样返回
+
+**异常**: `ValueError` - 嵌套数组中含 ``None`` 元素时抛出
+
+**内部方法**
+
+---
+
+
+##### `_remove_cache_path(keys: list[str]) -> None`
+
+从内存缓存中按点分路径移除键（delete 时的即时视图更新）
+
+仅移除目标键本身，不裁剪因此变空的祖先表——与落盘后
+``_doc_to_plain_dict`` 的重建结果保持一致。
+
+- **keys**: 点分路径拆分后的键列表
+
+**内部方法**
+
+---
+
+
+##### `_doc_to_plain_dict(doc: Any) -> dict[str, Any]`（staticmethod）
+
+将无损文档树转为 plain dict 缓存
+
+- **doc** (`tomlclass`): 文档对象
+
+**返回值** (`dict`): 纯字典形式的配置内容
+
+**内部方法**
+
+---
+
+
+##### `_flush_config() -> None`
+
+将待写入的配置刷新到文件
+
+使用文件锁确保多线程环境下的原子性操作。
+基于无损文档树做增量修改后整体回写，
+文件中已有的注释与键顺序不因框架写入而丢失或重排。
+
+**内部方法**
+
+---
+
+
+##### `_register_atexit() -> None`
+
+注册 atexit 钩子，确保进程退出时未持久化的配置被 flush
+
+**内部方法**
+
+---
+
+
+##### `_flush_on_exit() -> None`
+
+atexit 回调：进程退出时强制刷新所有脏配置，并清理哨兵文件
+
+**内部方法**
+哨兵文件（``.flush_malformed_cooldown``）是运行时跨进程去重的临时标记，
+
+---
+
+
+##### `_schedule_write() -> None`
+
+安排延迟写入
+
+真实调度由常驻 ``config-watcher`` 线程承担（按 ``_flush_deadline``
+睡到到期后刷盘），避免每次写入创建/取消 ``threading.Timer``
+带来的线程创建开销（高频 setConfig 的热点）。
+``_write_timer`` 保留为兼容句柄：既有测试与退出路径依赖其
+存在性与 ``cancel()`` 方法，语义为"存在即有未落盘写入"。
+
+**内部方法**
+
+---
+
+
+##### `_check_cache_validity() -> None`
+
+检查缓存有效性，必要时重新加载
+
+同时检测配置文件是否被外部修改（手动编辑磁盘文件），
+若文件 mtime 变化则自动重载。更新内容会在下一次
+``getConfig`` 调用时生效，无需重启程序。
+
+**内部方法**
+
+---
+
+
+##### `_check_file_change() -> bool`
+
+检测配置文件是否被外部程序或用户手动编辑
+
+对比记录的 mtime 与当前文件 mtime，若不一致说明文件已被外部修改。
+若变化后的 mtime 与框架自身最后一次刷盘的 mtime（``_last_self_write_mtime``）
+一致，则判定为框架自身的写入而非外部修改，返回 False。
+
+**返回值** (`bool`): 文件是否被外部修改
+
+**内部方法**
+
+---
+
+
+##### `_emit_config_updated(old_config: dict[str, Any]) -> None`
+
+发射 ``config.updated`` 生命周期事件，通知适配器/模块配置已变更
+
+用户手动编辑 ``config.toml`` 后，下一次 ``getConfig`` 调用会自动检测
+到文件变更并触发此事件。适配器通过 ``on_config_update(old, new)`` 响应。
+
+- **old_config**: 变更前的配置快照
+
+**内部方法**
+
+---
+
+
+##### `getConfig(key: str, default: Any = None) -> Any`
+
+获取配置项
+
+支持点分隔符路径（如 ``"module.sub.key"``）。当存在待写入队列
+（延迟刷盘未落盘的 ``setConfig``）时，读取结果会**叠加待写值**，
+保证"写后立读"一致性（同节点分写优先于整节待写值可见，
+与 ``_flush_config`` 的特异性排序同口径）：
+
+- 查询键精确命中待写队列 → 叠加其后代待写值后返回
+- 待写键是查询键的祖先 → 在待写值子树内继续解析剩余路径
+- 待写键是查询键的后代 → 以待写值深合并覆盖缓存子树
+
+涉及待写值的返回值为隔离深拷贝：调用方原地修改返回的 dict
+不会改动待落盘状态。
+
+- **key** (`str`): 配置键, 支持点分隔符如 "module.sub.key"
+- **default** (`Any`): 默认值 (默认: None)
+
+**返回值** (`Any`): 配置值
+
+**示例**:
+
+```python
+value = sdk.config.getConfig("ErisPulse.server.port", 8000)
+```
+
+---
+
+
+##### `_walk_cache(key: str, default: Any) -> Any`
+
+**内部方法**
+在缓存树中按点分路径取值；路径缺失或中间节点非字典时返回 default
+
+- **key**: 点分配置键
+- **default**: 路径缺失时的默认值
+
+**返回值**: 缓存中的值或 default
+
+---
+
+
+##### `_dirty_overlay(keys: list[str]) -> dict[str, Any]`
+
+**内部方法**
+收集以待查键为前缀的待写键，构建叠加子树
+
+- **keys**: 查询键的路径段列表
+
+**返回值**: 叠加子树（无匹配时为空字典）
+
+---
+
+
+##### `_deep_merge(base: dict[str, Any], override: dict[str, Any]) -> dict[str, Any]`（staticmethod）
+
+**内部方法**
+深合并字典（override 优先，仅 dict 值递归合并）
+
+- **base**: 基础字典（不修改原对象）
+- **override**: 覆盖字典
+
+**返回值**: 合并后的新字典
+
+---
+
+
+##### `setConfig(key: str, value: Any, immediate: bool = False) -> bool`
+
+设置配置项
+
+- **key** (`str`): 配置键, 支持点分隔符如 "module.sub.key"
+- **value** (`Any`): 配置值
+- **immediate** (`bool`): 是否立即写入磁盘 (默认: False, 延迟写入)
+
+**返回值** (`bool`): 操作是否成功
+
+**示例**:
+
+```python
+sdk.config.setConfig("ErisPulse.server.port", 9000)
+sdk.config.setConfig("ErisPulse.server.port", 9000, immediate=True)
+```
+
+---
+
+
+##### `getAllConfig() -> dict[str, Any]`
+
+返回全量配置快照（深拷贝）
+
+替代直接读取私有 ``_cache``：返回值为隔离副本，调用方原地修改
+不影响框架配置状态。视图口径与 :meth:`getConfig` 一致——缓存 +
+待写队列按特异性排序重放（与 ``_flush_config`` 落盘结果严格一致，
+延迟的 ``setConfig`` / ``delConfig`` 均已反映，删除的键不出现）。
+
+**返回值** (`dict`): 全量配置快照
+
+**示例**:
+
+```python
+config = sdk.config.getAllConfig()
+config["ErisPulse"]["server"]["port"]
+```
+
+---
+
+
+##### `delConfig(key: str, *, immediate: bool = False) -> bool`
+
+删除配置键（支持点分隔符路径），按 setConfig 同样的脏队列语义落盘
+
+与 ``setConfig(key, None)`` 的"置空但键仍在"不同：delete 会把键
+从配置文件中移除。存在性按当前读取视图判定（缓存 + 待写叠加，
+与 :meth:`getConfig` 同口径——待写整节内的键、已删除的键均如实
+判定）。落盘走无损引擎增量修改路径，文件其余内容与注释不受
+影响；删除复用 ``config.set`` 事件广播（``new_value=None``），
+现有监听方（如适配器的 ``on_config_update``）零改动即可感知。
+
+- **key** (`str`): 配置键, 支持点分隔符如 "module.sub.key"
+- **immediate** (`bool`): 是否立即写入磁盘 (默认: False, 延迟写入)
+
+**返回值** (`bool`): 键是否存在（存在则已调度删除；不存在返回 False）
+
+**示例**:
+
+```python
+sdk.config.delConfig("ErisPulse.modules.status.OldModule")
+sdk.config.delConfig("OneBot.deprecated_key", immediate=True)
+```
+
+---
+
+
+##### `force_save() -> None`
+
+强制立即保存所有待写入的配置到磁盘
+
+> **提示**
+> 注意！除非您知道您在干什么，否则请勿直接强制保存！
+
+---
+
+
+##### `reload() -> None`
+
+重新从磁盘加载配置，丢弃所有未保存的更改
+
+> **提示**
+> reload 时，未持久化的配置项会被丢弃，并重新从配置文件中加载
+
+---
+
+
+##### `async agetConfig(key: str, default: Any = None) -> Any`
+
+异步获取配置项
+
+- **key** (`str`): 配置键, 支持点分隔符
+- **default** (`Any`): 默认值
+
+**返回值** (`Any`): 配置值
+
+---
+
+
+##### `async asetConfig(key: str, value: Any, immediate: bool = False) -> bool`
+
+异步设置配置项
+
+- **key** (`str`): 配置键
+- **value** (`Any`): 配置值
+- **immediate** (`bool`): 是否立即写入磁盘
+
+**返回值** (`bool`): 操作是否成功
+
+---
+
+
+##### `async agetAllConfig() -> dict[str, Any]`
+
+异步返回全量配置快照
+
+**返回值** (`dict`): 全量配置快照（深拷贝）
+
+---
+
+
+##### `async adelConfig(key: str, *, immediate: bool = False) -> bool`
+
+异步删除配置键
+
+- **key** (`str`): 配置键, 支持点分隔符
+- **immediate** (`bool`): 是否立即写入磁盘
+
+**返回值** (`bool`): 键是否存在（存在则已调度删除）
+
+---
+
+
+##### `setConfigTemplate(key: str, toml_text: str, immediate: bool = True) -> bool`
+
+以带注释的 TOML 模板文本写入指定配置节
+
+用于适配器/模块首次生成配置模板：模板中的字段注释原样落盘。
+目标节已存在时不覆盖（由调用方保证仅在配置缺失时调用）；
+文件其余内容与注释不受影响。
+模板中相对命名的子表头（如嵌套 dataclass 生成的 ``[Nested]``）
+会自动重锚为 ``[<key>.Nested]``，与所在节保持父子关系。
+
+- **key** (`str`): 配置节键（支持点分路径，如 ``"MyAdapter"``）
+- **toml_text** (`str`): 模板 TOML 文本（仅键值与注释，不含节头）
+- **immediate** (`bool`): 是否立即写入磁盘 (默认: True)
+
+**返回值** (`bool`): 是否写入成功
+
+**示例**:
+
+```python
+sdk.config.setConfigTemplate("MyAdapter", '# API 令牌\ntoken = ""')
+```
+
+---
+
+
+##### `get_field_comment(section_key: str, field_path: str) -> 'str | None'`
+
+读取配置文件中指定字段的说明注释（声明式配置"文件即文档"回读）
+
+声明式配置（ConfigClass）的 description 以注释形式落盘后，配置文件
+本身就是自带文档的数据源。覆盖两种注释布局：字段行尾注释（无损
+引擎注释 API 直读）与字段上方的独立注释行（模板生成器的 description
+布局，文本级扫描）。注释只存在于文件中（内存缓存是纯字典），故按需
+解析文件；文件缺失或损坏时返回 None（容错，不阻塞调用方主流程）。
+
+- **section_key** (`str`): 配置节键（点分路径，如 ``"MyAdapter"``）
+- **field_path** (`str`): 节内字段路径（点分，如 ``"token"`` 或
+
+    ``"Nested.inner"``）
+**返回值** (`str`): 注释文本（不含 ``#``）；无注释/键不存在/文件不可解析
+
+    时返回 None
+
+**示例**:
+
+```python
+sdk.config.get_field_comment("MyAdapter", "token")
+```
+
+---
+
+
+##### `_standalone_comment_above(text: str, section_key: str, field_path: str) -> 'str | None'`（staticmethod）
+
+文本级回读字段上方紧邻的独立注释行（模板生成器的 description 布局）
+
+定位目标节头后向下扫描：命中字段行（含被注释化的 required 字段，
+如 ``# token = ""``）时返回其上方积累的连续注释行（空格拼接）；
+遇到空行、其他字段行或其他被注释化的字段行则重置积累。
+
+- **text** (`str`): 配置文件全文
+- **section_key** (`str`): 配置节键（点分路径）
+- **field_path** (`str`): 节内字段路径（点分；嵌套字段按子表头定位）
+
+**返回值** (`str`): 注释文本；未命中返回 None
+
+**内部方法**
+
+---
+
+
+##### `_splice_config_section(text: str, key: str, template: str, parsed_template: Any) -> str`（staticmethod）
+
+将模板文本作为一节拼接到配置文本末尾（文本级拼接，注释零损耗）
+
+新节始终追加在文件末尾（TOML 中任意位置的节头都合法开启新表），
+现有内容不做任何重排。模板内相对命名的子表头按已知路径集合精确
+重锚到 ``<key>.`` 前缀下，仅重写行首精确匹配已知子表路径的行。
+
+- **text** (`str`): 现有配置文件文本（可为空/纯注释）
+- **key** (`str`): 目标节键（点分路径）
+- **template** (`str`): 模板 TOML 文本（不含节头）
+- **parsed_template** (`tomlclass`): 文档对象（模板解析结果，用于枚举子表路径）
+
+**返回值** (`str`): 拼接后的完整配置文本
+
+**内部方法**
+
+---
+
+
+##### `_anchor_template_headers(key: str, template: str, parsed_template: Any) -> str`（staticmethod）
+
+将模板中相对命名的子表头重锚到 ``<key>.`` 前缀下
+
+仅重写与已知子表路径精确相等的行首表头（``[Nested]`` →
+``[MyAdapter.Nested]``，含 ``[[...]]`` 形式）；带行尾注释等
+非精确匹配的表头保持原样。无子表的模板原样返回。
+
+- **key** (`str`): 目标节键
+- **template** (`str`): 模板 TOML 文本
+- **parsed_template** (`tomlclass`): 文档对象
+
+**返回值** (`str`): 重锚后的模板文本
+
+**内部方法**
+
+---
+
+
+##### `_collect_table_paths(node: Any, prefix: str = '') -> set[str]`（staticmethod）
+
+收集文档子树中所有实表（非 inline table）的点分路径
+
+- **node** (`tomlclass`): 表/文档对象
+- **prefix**: 递归用路径前缀
+
+**返回值** (`set`): 子表点分路径集合
+
+**内部方法**
+
+---
+
+
+##### `_quote_key_segment(segment: str) -> str`（staticmethod）
+
+将单个键段格式化为 TOML 表头键（非法裸键字符加引号转义）
+
+- **segment** (`str`): 键段原文
+
+**返回值** (`str`): 可直接用于 ``[表头]`` 的键形式
+
+**内部方法**
+
+---
+
+
+##### `async aforce_save() -> None`
+
+异步强制保存所有待写入的配置到磁盘
+
+---
+
+
+##### `async areload() -> None`
+
+异步重新从磁盘加载配置
+
+---
+
