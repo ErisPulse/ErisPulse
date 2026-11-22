@@ -15,6 +15,7 @@ from ErisPulse.Core.config import config as config_manager
 from ErisPulse.Core.Event import _clear_all_handlers, command, message, notice
 from ErisPulse.Core.lifecycle import lifecycle
 from ErisPulse.Core.module import ModuleManager
+from tests.integration.conftest import restore_global_lifecycle, snapshot_global_lifecycle
 
 
 class _CollabModule(BaseModule):
@@ -60,6 +61,7 @@ def _make_msg(text="test", **kwargs):
 
 @pytest.fixture
 def clean_state():
+    lifecycle_snap = snapshot_global_lifecycle()
     _clear_all_handlers()
     lifecycle._hooks.clear()
     lifecycle._timers.clear()
@@ -69,12 +71,11 @@ def clean_state():
     adapter._bots.clear()
     yield
     _clear_all_handlers()
-    lifecycle._hooks.clear()
-    lifecycle._timers.clear()
     adapter._onebot_handlers.clear()
     adapter._raw_handlers.clear()
     adapter._onebot_middlewares.clear()
     adapter._bots.clear()
+    restore_global_lifecycle(lifecycle_snap)
 
 
 @pytest.fixture

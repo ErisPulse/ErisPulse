@@ -18,7 +18,7 @@ from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
 from typing import Any, Optional, TypedDict
 
-from .. import adapter, logger
+from ..adapter import adapter
 from ..constants import (
     CONFIRM_NO_WORDS,
     CONFIRM_YES_WORDS,
@@ -38,6 +38,7 @@ from ..constants import (
     TEXT_METHOD_INDICATORS,
 )
 from ..i18n import i18n
+from ..logger import logger
 
 # Conversation 对话原语 / 消息事务 / 检查点 GC 已拆分至独立模块，
 # 此处 re-export 保持既有导入路径不变

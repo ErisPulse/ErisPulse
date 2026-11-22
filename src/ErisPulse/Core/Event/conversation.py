@@ -19,7 +19,7 @@ from collections.abc import Callable
 from typing import TYPE_CHECKING, Any, Optional
 
 from ...runtime.tasks import spawn_background
-from .. import adapter, logger
+from ..adapter import adapter
 from ..constants import (
     CONVERSATION_CHECKPOINT_GC_INTERVAL_SECS,
     CONVERSATION_CHECKPOINT_GC_OWNER,
@@ -29,6 +29,7 @@ from ..constants import (
     DEFAULT_WAIT_TIMEOUT_SECS,
 )
 from ..i18n import i18n
+from ..logger import logger
 
 if TYPE_CHECKING:
     from .wrapper import Event

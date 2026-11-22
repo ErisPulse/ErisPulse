@@ -30,7 +30,7 @@ if TYPE_CHECKING:
 
 from ...runtime import get_event_config
 from ...runtime.context import current_owner, handler_waits
-from .. import adapter, logger
+from ..adapter import adapter
 from ..constants import (
     DEFAULT_COMMAND_ALLOW_SPACE_PREFIX,
     DEFAULT_COMMAND_BLOCK,
@@ -47,6 +47,7 @@ from ..constants import (
 )
 from ..di import extract_depends, resolve_depends
 from ..i18n import i18n
+from ..logger import logger
 from . import overrides
 from .base import BaseEventHandler
 from .command_args import (

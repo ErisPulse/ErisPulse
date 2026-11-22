@@ -31,7 +31,7 @@ from .constants import (
     MODULE_SOURCE_RUNTIME,
     UNLOAD_LOCK_WAIT_TIMEOUT_SECS,
 )
-from .di import call_with_depends, call_with_depends_sync
+from .di import call_with_depends, call_with_depends_sync, set_module_caller
 from .i18n import i18n
 from .lifecycle import lifecycle
 from .logger import logger
@@ -2973,5 +2973,11 @@ class ModuleManager(ManagerBase):
 
 
 module: ModuleManager = ModuleManager()
+
+# 反向注入模块调用器：Depends.module 语法糖经此执行跨模块调用
+# （di 不回看 module，断开 di ⇄ module 互引环）
+set_module_caller(lambda module_name, method, call_args, call_kwargs: module.call(
+    module_name, method, *call_args, **call_kwargs
+))
 
 __all__ = ["module"]

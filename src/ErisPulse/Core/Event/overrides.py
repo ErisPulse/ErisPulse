@@ -73,8 +73,9 @@ from typing import Any
 
 from ...runtime.context import current_owner
 from ...runtime.frame_config import set_erispulse_section
-from .. import logger, text_match
 from ..i18n import i18n
+from ..logger import logger
+from ..text_match import REGEX_PREFIX, compile_entry_list, compile_entry_matcher, compile_text_matcher, extract_text
 
 # 类型规格注册表：每事件类型的可覆写参数白名单（新参数/新类型在此注册）
 _TYPE_SPECS: dict[str, frozenset] = {
@@ -349,10 +350,10 @@ def condition_for(event_type: str, owner: str) -> "Callable[[Any], bool] | None"
         pattern = params.get("pattern")
         regex = params.get("regex")
 
-        dt_matcher = text_match.compile_entry_list(detail_types) if detail_types else None
-        if isinstance(regex, str) and regex.startswith(text_match.REGEX_PREFIX):
-            regex = regex[len(text_match.REGEX_PREFIX) :]
-        text_matcher = text_match.compile_text_matcher(pattern, regex) if (pattern or regex) else None
+        dt_matcher = compile_entry_list(detail_types) if detail_types else None
+        if isinstance(regex, str) and regex.startswith(REGEX_PREFIX):
+            regex = regex[len(REGEX_PREFIX) :]
+        text_matcher = compile_text_matcher(pattern, regex) if (pattern or regex) else None
 
         if dt_matcher is not None or text_matcher is not None:
 
@@ -364,7 +365,7 @@ def condition_for(event_type: str, owner: str) -> "Callable[[Any], bool] | None"
                         return False
                 if text_matcher is not None:
                     try:
-                        _has_text = bool(text_match.extract_text(event))
+                        _has_text = bool(extract_text(event))
                     except Exception as e:
                         # 提取失败按"有文本"处理交由 matcher 自行提取，留痕供排查
                         logger.trace(
@@ -443,8 +444,8 @@ class _TypeNamespace:
         for k, v in params.items():
             if v is None:
                 continue
-            if k == "regex" and isinstance(v, str) and not v.startswith(text_match.REGEX_PREFIX):
-                v = text_match.REGEX_PREFIX + v  # regex 源码自动补 re: 前缀
+            if k == "regex" and isinstance(v, str) and not v.startswith(REGEX_PREFIX):
+                v = REGEX_PREFIX + v  # regex 源码自动补 re: 前缀
             if k == "detail_types" and isinstance(v, str):
                 v = [v]  # 单条目简写
             cleaned[k] = v
@@ -712,7 +713,7 @@ class _AclNamespace:
         if isinstance(exact, dict):
             return exact
         for key, cfg in _acl.items():
-            if text_match.compile_entry_matcher(str(key))(command_name):
+            if compile_entry_matcher(str(key))(command_name):
                 if isinstance(cfg, dict):
                     return cfg
         return None
@@ -740,7 +741,7 @@ class _AclNamespace:
         """
         removed = False
         for key in list(_acl.keys()):
-            if text_match.compile_entry_matcher(str(key))(command_name):
+            if compile_entry_matcher(str(key))(command_name):
                 _acl.pop(key, None)
                 removed = True
                 if persist:

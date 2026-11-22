@@ -46,11 +46,16 @@ class _TestModule(BaseModule):
 
 @pytest.fixture
 def clean_lifecycle():
+    """清空生命周期表（快照/恢复：装配级订阅与测试前注册的钩子不被抹除）"""
+    original_hooks = lifecycle._hooks.copy()
+    original_timers = lifecycle._timers.copy()
     lifecycle._hooks.clear()
     lifecycle._timers.clear()
     yield
     lifecycle._hooks.clear()
     lifecycle._timers.clear()
+    lifecycle._hooks.update(original_hooks)
+    lifecycle._timers.update(original_timers)
 
 
 class TestSDKLifecycleIntegration:

@@ -28,6 +28,30 @@ from typing import Any
 
 from .i18n import i18n
 
+# 模块调用器槽：由 module 侧注册（Depends.module 语法糖的执行通道）
+# ——di 不回看 module，避免 di ⇄ module 互引环
+_module_caller: Callable[..., Any] | None = None
+
+
+def set_module_caller(caller: Callable[[str, str, tuple, dict], Any] | None) -> None:
+    """
+    注册模块调用器回调（由 module 侧反向注入）
+
+    ``Depends.module(name, method)`` 声明的依赖在解析时经该回调执行跨模块
+    调用；di 不直接 import module（避免 di ⇄ module 互引环）。
+
+    :param caller: ``caller(module_name, method, args, kwargs)`` 形式回调（None 卸载）
+
+    {!--< internal-use >!--}
+    由 module 模块初始化后调用；生态代码无需使用。
+    {!--< /internal-use >!--}
+
+    :example:
+    >>> set_module_caller(lambda mn, m, a, kw: module.call(mn, m, *a, **kw))
+    """
+    global _module_caller
+    _module_caller = caller
+
 #: 请求级依赖缓存（一次事件分发内所有注入点共享；由分发入口置空 dict、
 #: 结束复位为 None）。None 表示当前不在缓存作用域内（如 lifecycle / 路由
 #: 的独立调用链）——此时依赖解析不读写缓存。
@@ -90,10 +114,13 @@ class Depends:
         ... async def admin(event, db=Depends.module("DB", "get_session")):
         ...     ...
         """
-        from .module import module
-
         async def _call_module(_ctx: Any) -> Any:
-            result = module.call(module_name, method, *args, **kwargs)
+            if _module_caller is None:
+                raise RuntimeError(
+                    "Depends.module requires the module caller to be registered "
+                    "(module module must be initialized first)"
+                )
+            result = _module_caller(module_name, method, args, kwargs)
             if inspect.isawaitable(result):
                 return await result
             return result
@@ -223,4 +250,5 @@ __all__ = [
     "call_with_depends_sync",
     "extract_depends",
     "resolve_depends",
+    "set_module_caller",
 ]

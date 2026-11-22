@@ -19,7 +19,7 @@ from typing import Any
 
 from ...runtime import get_event_config
 from ...runtime.context import current_owner, handler_waits, owner_scope
-from .. import adapter, logger
+from ..adapter import adapter
 from ..constants import (
     DEFAULT_HANDLER_PRIORITY,
     EVENT_TYPE_MESSAGE,
@@ -29,7 +29,7 @@ from ..constants import (
 from ..di import extract_depends, resolve_depends
 from ..i18n import i18n
 from ..lifecycle import lifecycle
-from ..logger import TRACE
+from ..logger import TRACE, logger
 from .wrapper import Event
 
 _sentinel = object()

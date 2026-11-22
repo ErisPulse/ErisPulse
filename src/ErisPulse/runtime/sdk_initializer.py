@@ -702,9 +702,9 @@ class Uninitializer:
             # 等待一小段时间，确保事件处理完成
             await asyncio.sleep(UNINIT_SETTLE_DELAY_SECS)
 
-            # 9. 清理生命周期事件处理器（在所有事件完成之后）
-            self.lifecycle._hooks.clear()
-
+            # 组件级钩子已随卸载经 ownership.reclaim 按 owner 回收；
+            # 装配级钩子（配置快照失效 / i18n 失效 / 收件箱挂接）随进程存活，
+            # 此处不做全表清理
             self.logger.info(
                 i18n.t("core.sdk.uninit.success", duration=duration_str)
             )
@@ -730,7 +730,6 @@ class Uninitializer:
                     "error": f"Uninit timeout after {uninit_timeout}s",
                 },
             )
-            self.lifecycle._hooks.clear()
             return False
         except Exception as e:
             uninit_duration = self.lifecycle.stop_timer(LIFECYCLE_TIMER_CORE_UNINIT)
@@ -747,12 +746,9 @@ class Uninitializer:
             # 等待一小段时间，确保事件处理完成
             await asyncio.sleep(UNINIT_SETTLE_DELAY_SECS)
 
-            # 清理生命周期事件处理器（即使在失败时也要清理）
-            self.lifecycle._hooks.clear()
-
             # 跨循环清理失败（RuntimeError，典型为 "Future attached to a
             # different loop"）：SDK 初始化于另一循环时资源本就无法在当前
-            # 循环释放，生命周期钩子已清理，视为可接受完成；其余异常如实
+            # 循环释放，组件级钩子已随卸载按 owner 回收，视为可接受完成；其余异常如实
             # 判定失败。不再按异常消息子串匹配（消息被本地化 / 库改写即误
             # 判，且吞掉真实错误不留日志）
             if isinstance(e, RuntimeError):

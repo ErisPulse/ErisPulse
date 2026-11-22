@@ -17,6 +17,8 @@ import os
 import sys
 import threading
 from pathlib import Path
+import weakref
+from collections.abc import Callable
 from typing import Any
 
 from .constants import (
@@ -25,6 +27,25 @@ from .constants import (
     SUPPORTED_LANGUAGES,
 )
 from ..constants import EVENT_I18N_LANGUAGE_CHANGED
+
+
+_active_managers: "weakref.WeakSet[I18nManager]" = weakref.WeakSet()
+
+
+def on_language_config_changed(data: Any) -> None:
+    """
+    配置写入事件的语言缓存失效广播（模块级，由 config 侧订阅转发）
+
+    遍历全部活跃实例执行失效——覆盖非单例实例（测试/工具构造）。
+
+    :param data: 事件数据（含 ``key`` 的 dict，或任意载荷）
+
+    {!--< internal-use >!--}
+    由 Core/__init__ 装配点订阅 config.set / config.updated 后转发。
+    {!--< /internal-use >!--}
+    """
+    for manager in list(_active_managers):
+        manager.on_language_config_changed(data)
 
 
 class I18nManager:
@@ -104,6 +125,10 @@ class I18nManager:
         # ErisPulse.i18n.* 配置写入（lifecycle config.set）与外部配置重载（config.updated）。
         # ERISPULSE_LANG 环境变量不缓存，保持运行中修改即时生效。
         self._eff_lang_cache: str | None = None
+        _active_managers.add(self)
+        # 语言来源槽：由 config 侧注入（读取 ErisPulse.i18n.language 的回调）
+        # ——i18n 不回看 config，避免顶层互引环；None = 未注入（仅自动检测）
+        self._language_source: Callable[[], Any] | None = None
         self._eff_lang_state_mtime: float | None = None
         self._config_hook_registered = False
         self._translations: dict[str, dict[str, str]] = {}
@@ -414,16 +439,17 @@ class I18nManager:
         else:
             # 项目配置项
             lang = None
+            # 项目配置的语言经 source 槽注入（config 侧注册）——i18n 不回看
+            # config，避免 config ⇄ i18n 顶层互引环
             try:
-                from ..config import config
-
-                cfg_lang = config.getConfig("ErisPulse.i18n.language", None)
-                if cfg_lang and isinstance(cfg_lang, str):
-                    # "auto" 表示使用自动检测的语言
-                    if cfg_lang.lower() == "auto":
-                        lang = self._detected_lang
-                    else:
-                        lang = self._resolve_nearest(cfg_lang)
+                if self._language_source is not None:
+                    cfg_lang = self._language_source()
+                    if cfg_lang and isinstance(cfg_lang, str):
+                        # "auto" 表示使用自动检测的语言
+                        if cfg_lang.lower() == "auto":
+                            lang = self._detected_lang
+                        else:
+                            lang = self._resolve_nearest(cfg_lang)
             except Exception:
                 pass
             if lang is None:
@@ -434,29 +460,53 @@ class I18nManager:
             self._eff_lang_state_mtime = state_mtime
         return lang
 
+    def set_language_source(self, provider: Callable[[], Any] | None) -> None:
+        """
+        注册语言来源回调（由 config 侧反向注入）
+
+        注册后 ``_get_effective_language`` 读取项目配置语言时经该回调获取，
+        i18n 不再直接 import config（避免 config ⇄ i18n 顶层互引环）。
+
+        :param provider: 返回 ``ErisPulse.i18n.language`` 值的回调（None 卸载）
+
+        {!--< internal-use >!--}
+        由 config 模块在初始化后调用；生态代码无需使用。
+        {!--< /internal-use >!--}
+
+        :example:
+        >>> i18n.set_language_source(lambda: config.getConfig("ErisPulse.i18n.language"))
+        """
+        self._language_source = provider
+
+    def set_event_emitter(self, emitter: Callable[[str, dict[str, Any]], None] | None) -> None:
+        """
+        注册事件发射回调（由 config 侧反向注入）
+
+        语言切换事件（``i18n.language.changed``）经该回调转发到生命周期总线，
+        i18n 不直接 import lifecycle（避免 i18n ⇄ lifecycle 互引环）。
+
+        :param emitter: ``emitter(event, payload)`` 形式的转发回调（None 卸载）
+
+        {!--< internal-use >!--}
+        由 config 模块在初始化后调用；生态代码无需使用。
+        {!--< /internal-use >!--}
+        """
+        self._event_emitter = emitter
+
     def _ensure_config_invalidation_hook(self) -> None:
         """
         注册配置写入对语言缓存的失效监听
 
-        惰性注册一次（避免 Core 单例构造顺序上的导入环），
-        监听 ``config.set`` / ``config.updated`` 两类事件。
+        惰性注册一次；监听 ``config.set`` / ``config.updated`` 两类事件。
+        订阅动作由 config 侧代为完成（config 订阅后转发调用本方法）——
+        i18n 不直接 import lifecycle，避免 i18n ⇄ lifecycle 互引环。
 
         {!--< internal-use >!--}
-        注册失败静默跳过，不影响语言解析本身。
         {!--< /internal-use >!--}
         """
-        if self._config_hook_registered:
-            return
         self._config_hook_registered = True
-        try:
-            from ..lifecycle import lifecycle
 
-            lifecycle.on("config.set")(self._on_language_config_changed)
-            lifecycle.on("config.updated")(self._on_language_config_changed)
-        except Exception:
-            pass
-
-    def _on_language_config_changed(self, data: Any) -> None:
+    def on_language_config_changed(self, data: Any) -> None:
         """
         配置事件回调：ErisPulse.i18n.* 写入或外部配置重载时清除语言缓存
 
@@ -550,12 +600,11 @@ class I18nManager:
         {!--< /internal-use >!--}
         """
         try:
-            from ..lifecycle import lifecycle
-
-            lifecycle.emit_sync(
-                EVENT_I18N_LANGUAGE_CHANGED,
-                {"language": language, "previous": previous},
-            )
+            if self._event_emitter is not None:
+                self._event_emitter(
+                    EVENT_I18N_LANGUAGE_CHANGED,
+                    {"language": language, "previous": previous},
+                )
         except Exception:
             pass
 
@@ -757,4 +806,30 @@ class I18nManager:
 i18n: I18nManager = I18nManager()
 
 
-__all__ = ["I18nManager", "i18n"]
+def set_language_source(provider: Callable[[], Any] | None) -> None:
+    """
+    注册语言来源回调（模块级便捷入口，转发到 :class:`I18nManager`）
+
+    由 config 模块初始化后调用，注入读取 ``ErisPulse.i18n.language`` 的回调；
+    i18n 不直接 import config，断开 config ⇄ i18n 顶层互引环。
+
+    :param provider: 返回语言配置值的回调（None 卸载）
+    """
+    i18n.set_language_source(provider)
+
+
+def set_event_emitter(emitter: Callable[[str, dict[str, Any]], None] | None) -> None:
+    """
+    注册语言变更事件发射回调（模块级便捷入口，转发到 :class:`I18nManager`）
+
+    由 Core 装配点注入（``lifecycle.emit_sync``），i18n 不直接 import
+    lifecycle，断开 i18n ⇄ lifecycle 顶层互引环。
+
+    :param emitter: ``emitter(event, payload)`` 形式的发射回调（None 卸载）
+    """
+    i18n.set_event_emitter(emitter)
+
+
+# 活跃 I18nManager 实例表（弱引用）：配置事件失效广播覆盖所有实例
+# （含测试/工具构造的非单例实例）
+__all__ = ["I18nManager", "i18n", "on_language_config_changed", "set_event_emitter", "set_language_source"]
