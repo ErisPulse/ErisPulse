@@ -4,10 +4,11 @@
 值为 ``(帮助文案, main 函数)``——main 接收 ``argv`` 列表（不含组名/子命令名）。
 """
 
-from . import bare_params, docs_links, i18n_locales, import_layers, release_check, silent_except, translation
+from . import bare_params, docs_links, i18n_locales, import_cycles, import_layers, release_check, silent_except, translation
 
 CHECKS = {
     "import-layers": ("导入分层棘轮检查（loaders/runtime/Core 禁向内依赖）", import_layers.main),
+    "import-cycles": ("导入循环依赖检查（顶层环边归零棘轮）", import_cycles.main),
     "bare-params": ("裸参数棘轮检查（行为参数必须进 Core/constants.py）", bare_params.main),
     "silent-except": ("静默吞异常棘轮检查（except pass 必须留痕或入基线）", silent_except.main),
     "i18n-locales": ("i18n 五语言键集合一致性检查", i18n_locales.main),
