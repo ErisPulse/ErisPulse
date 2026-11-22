@@ -871,13 +871,17 @@ class TestStorageObservability:
     @pytest.mark.asyncio
     async def test_slow_txn_warns_with_open_site(self, storage_manager, caplog, monkeypatch):
         """持锁超过阈值的事务提交后告警，并附事务开启调用点"""
-        storage_bases = importlib.import_module("ErisPulse.Core.Bases.storage")
-        monkeypatch.setattr(storage_bases, "STORAGE_TXN_SLOW_WARN_SECS", 0.0)
-        prefix = _i18n_prefix("core.storage.txn_slow", duration="", threshold="", frames="")
+        from ErisPulse.Core.config import config as global_config
 
-        with caplog.at_level("WARNING"):
-            async with storage_manager.atransaction():
-                await storage_manager.aset("slow_key", "v")
+        # 阈值已配置化（framework.txn_slow_warn）：以配置写入替代 patch 模块常量
+        global_config.setConfig("ErisPulse.framework.txn_slow_warn", 0.0)
+        prefix = _i18n_prefix("core.storage.txn_slow", duration="", threshold="", frames="")
+        try:
+            with caplog.at_level("WARNING"):
+                async with storage_manager.atransaction():
+                    await storage_manager.aset("slow_key", "v")
+        finally:
+            global_config.setConfig("ErisPulse.framework.txn_slow_warn", 1.0)
 
         slow_warnings = [r for r in caplog.records if prefix in r.getMessage()]
         assert len(slow_warnings) == 1
@@ -896,14 +900,17 @@ class TestStorageObservability:
     @pytest.mark.asyncio
     async def test_rollback_path_also_observed(self, storage_manager, caplog, monkeypatch):
         """回滚路径同样持锁：超阈值回滚事务同样告警"""
-        storage_bases = importlib.import_module("ErisPulse.Core.Bases.storage")
-        monkeypatch.setattr(storage_bases, "STORAGE_TXN_SLOW_WARN_SECS", 0.0)
-        prefix = _i18n_prefix("core.storage.txn_slow", duration="", threshold="", frames="")
+        from ErisPulse.Core.config import config as global_config
 
-        with caplog.at_level("WARNING"), pytest.raises(RuntimeError, match="boom"):
-            async with storage_manager.atransaction():
-                await storage_manager.aset("rollback_key", "v")
-                raise RuntimeError("boom")
+        global_config.setConfig("ErisPulse.framework.txn_slow_warn", 0.0)
+        prefix = _i18n_prefix("core.storage.txn_slow", duration="", threshold="", frames="")
+        try:
+            with caplog.at_level("WARNING"), pytest.raises(RuntimeError, match="boom"):
+                async with storage_manager.atransaction():
+                    await storage_manager.aset("rollback_key", "v")
+                    raise RuntimeError("boom")
+        finally:
+            global_config.setConfig("ErisPulse.framework.txn_slow_warn", 1.0)
 
         assert [r for r in caplog.records if prefix in r.getMessage()]
 

@@ -16,12 +16,8 @@ from ..Core.constants import (
     DEFAULT_COMMAND_CASE_SENSITIVE,
     DEFAULT_COMMAND_MUST_AT_BOT,
     DEFAULT_COMMAND_PREFIX,
-    DEFAULT_CROSS_RECEIPT_POLICY,
-    DEFAULT_EVENT_DEDUPE_ENABLED,
-    DEFAULT_HANDLER_MAX_CONCURRENCY,
     DEFAULT_I18N_LANGUAGE,
     DEFAULT_INTERACTION_CHECKPOINT_TTL_SECS,
-    DEFAULT_LAZY_LOADING_ENABLED,
     DEFAULT_LOG_BACKUP_COUNT,
     DEFAULT_LOG_DIR,
     DEFAULT_LOG_LEVEL,
@@ -30,16 +26,7 @@ from ..Core.constants import (
     DEFAULT_LOG_ROTATION,
     DEFAULT_LOG_ROTATION_WHEN,
     DEFAULT_LOG_TOTAL_MEMORY_LIMIT,
-    DEFAULT_MEMORY_TRACING,
     DEFAULT_MESSAGE_IGNORE_SELF,
-    DEFAULT_OFFLINE_BOT_EXPIRY_SECS,
-    DEFAULT_PLUGINS_DIR_NAME,
-    DEFAULT_PROACTIVE_GC_FULL_EVERY,
-    DEFAULT_PROACTIVE_GC_GEN0_MIN,
-    DEFAULT_PROACTIVE_GC_GENERATION,
-    DEFAULT_PROACTIVE_GC_IDLE_ONLY,
-    DEFAULT_PROACTIVE_GC_INTERVAL_SECS,
-    DEFAULT_PROACTIVE_GC_MEMORY_GROWTH_MB,
     DEFAULT_SERVER_AUTO_START,
     DEFAULT_SERVER_HOST,
     DEFAULT_SERVER_PORT,
@@ -59,20 +46,19 @@ from ..Core.constants import (
     DEFAULT_STORAGE_PG_POOL_MIN,
     DEFAULT_STORAGE_PG_PORT,
     DEFAULT_STORAGE_PG_USER,
-    DEFAULT_STRICT_MODE,
     DEFAULT_TRANSCRIPT_ENABLED,
     DEFAULT_TRANSCRIPT_MAX_PER_SESSION,
     DEFAULT_TRANSCRIPT_SELF_ECHO,
     DEFAULT_TRANSCRIPT_TTL_HOURS,
-    DEFAULT_UNINIT_TIMEOUT_SECS,
     DEFAULT_USE_GLOBAL_DB,
     DEFAULT_WAIT_REPLY_BLOCK,
     DEFAULT_WAIT_REPLY_CMDPASS,
-    HANDLER_QUEUE_MAX_PENDING,
     SQLITE_BUSY_TIMEOUT_MS,
 )
 
-# 默认配置
+# 默认配置（framework 节唯一真相源：FrameworkConfig 声明折叠——
+# 经 _framework_defaults 惰性折叠补填，避免 frame_config 顶层导入
+# 触发 Bases 包全量装配；其余节为手写字面量，随 B1-3 逐节迁移）
 DEFAULT_ERISPULSE_CONFIG = {
     "server": {
         "host": DEFAULT_SERVER_HOST,
@@ -187,54 +173,7 @@ DEFAULT_ERISPULSE_CONFIG = {
     "master": {
         "users": {},
     },
-    "framework": {
-        "enable_lazy_loading": DEFAULT_LAZY_LOADING_ENABLED,
-        # 本地插件文件夹：相对项目根目录，支持字符串或列表
-        "plugins_dir": DEFAULT_PLUGINS_DIR_NAME,
-        "uninit_timeout": DEFAULT_UNINIT_TIMEOUT_SECS,
-        "strict_mode": DEFAULT_STRICT_MODE,
-        "strict_mode_exceptions": {
-            "modules": [],
-            "adapters": [],
-        },
-        # 性能优化与主动 GC 配置
-        "handler_max_concurrency": DEFAULT_HANDLER_MAX_CONCURRENCY,
-        # 事件洪峰入队背压：单平台待处理 handler Task 数上限（0 = 不限）
-        "handler_queue_max_pending": HANDLER_QUEUE_MAX_PENDING,
-        "proactive_gc_interval": DEFAULT_PROACTIVE_GC_INTERVAL_SECS,
-        "proactive_gc_generation": DEFAULT_PROACTIVE_GC_GENERATION,
-        "proactive_gc_full_every": DEFAULT_PROACTIVE_GC_FULL_EVERY,
-        "proactive_gc_memory_growth_mb": DEFAULT_PROACTIVE_GC_MEMORY_GROWTH_MB,
-        "proactive_gc_idle_only": DEFAULT_PROACTIVE_GC_IDLE_ONLY,
-        "proactive_gc_gen0_min": DEFAULT_PROACTIVE_GC_GEN0_MIN,
-        "offline_bot_expiry": DEFAULT_OFFLINE_BOT_EXPIRY_SECS,
-        # 文件监控忽略目录（热重载轮询/watchdog 共用）：
-        # None = 使用内置默认清单（Core/constants.FILE_WATCHER_IGNORED_DIRS）；
-        # 非空列表 = 整体替换默认清单；[] = 不忽略任何目录
-        "watch_ignore_dirs": None,
-        # 事件幂等去重（ErisPulse.framework.event_dedupe）：相同事件 id 的重复
-        # 投递（连接层重推 / 网关重发）只分发一次；开关支持热更新
-        "event_dedupe": DEFAULT_EVENT_DEDUPE_ENABLED,
-        # 内存追踪（tracemalloc）：开启后 traced_mb 有值、增长门限不再误用
-        # RSS，内存快照可输出 top 分配点；约 2 倍分配路径 CPU 开销——
-        # 排障时开启，常态关闭；开关支持热更新（下次 GC 轮生效）
-        "memory_tracing": DEFAULT_MEMORY_TRACING,
-        # 跨账户重复受理策略：同一物理消息经多个账户（或多连接）先后到达时——
-        # "off"=不关联（默认，事件照常逐一分发）；
-        # "mark"=后续副本注入顶层 multi_receipt 字段（指向首个受理事件）后
-        #        照常分发，模块读取该字段自行裁决是否响应；
-        # "drop"=后续副本在分发入口直接丢弃（框架层去重，模块无感）
-        "cross_account_policy": DEFAULT_CROSS_RECEIPT_POLICY,
-        # 会话账户绑定：会话归属精确声明（独立于 cross_account_policy 生效，
-        # 配置绑定即等于为该会话开启去重）。结构 {"平台名": {"会话ID": "账户标识"}}，
-        # 账户标识为 bot_id（account_id 优先 / user_id 口径，与事件侧同源）；
-        # 绑定会话仅归属账户的事件照常分发，其他账户副本在分发入口丢弃，
-        # mention 命中被点名账户时仍放行（at 点名优待）；实时读配置，热更新生效
-        "session_accounts": {},
-        # CLI `epsdk run --reload` 是否把插件目录交给插件热重载 watcher 处理
-        # 并从自身监控中排除（True 时插件文件变更走单模块重载而非全量 restart）
-        "watch_include_plugin_dirs": True,
-    },
+    "framework": {},
     "i18n": {
         "language": DEFAULT_I18N_LANGUAGE,
     },
@@ -289,6 +228,24 @@ def _get_config_service():
     from ..Core.config import config as global_config
 
     return global_config
+
+
+_FRAMEWORK_DEFAULTS_CACHE: dict[str, Any] | None = None
+
+
+def _framework_defaults() -> dict[str, Any]:
+    """
+    framework 节默认值（FrameworkConfig 声明折叠，结果缓存）
+
+    惰性调用：声明模块自带折叠、零 Core 依赖，可安全用于 Core 装配窗口
+    内的快照构建（Logger 构造期即读 logger 配置触发本路径）。
+    """
+    global _FRAMEWORK_DEFAULTS_CACHE
+    if _FRAMEWORK_DEFAULTS_CACHE is None:
+        from .frame_config_schema import framework_defaults
+
+        _FRAMEWORK_DEFAULTS_CACHE = framework_defaults()
+    return _FRAMEWORK_DEFAULTS_CACHE
 
 
 def _deep_merge(base: dict[str, Any], override: dict[str, Any]) -> dict[str, Any]:
@@ -349,8 +306,11 @@ def _ensure_erispulse_config_structure(config_dict: dict[str, Any]) -> dict[str,
     :return: 补全后的完整配置
     """
 
-    # 深度合并配置
-    for section, default_values in DEFAULT_ERISPULSE_CONFIG.items():
+    # 深度合并配置（framework 节以声明折叠为基线：导入期 DEFAULT 占位空表，
+    # 折叠延迟到本函数——本函数运行时 Core 已完成装配）
+    defaults_effective = dict(DEFAULT_ERISPULSE_CONFIG)
+    defaults_effective["framework"] = _framework_defaults()
+    for section, default_values in defaults_effective.items():
         if section not in config_dict:
             config_dict[section] = copy.deepcopy(default_values)
             continue
@@ -436,13 +396,16 @@ def _build_merged_snapshot() -> dict[str, Any]:
 
     # 获取现有配置（deepcopy 避免合并默认值时污染缓存）
     current_config = config_service.getConfig(CONFIG_ROOT_KEY)
+    # framework 节声明折叠补填（导入期占位空表；B1-3 前仅本节走声明源）
+    defaults_snapshot = copy.deepcopy(DEFAULT_ERISPULSE_CONFIG)
+    defaults_snapshot["framework"] = copy.deepcopy(_framework_defaults())
 
     if current_config is None:
-        result = copy.deepcopy(DEFAULT_ERISPULSE_CONFIG)
+        result = defaults_snapshot
     elif isinstance(current_config, dict):
         result = _ensure_erispulse_config_structure(copy.deepcopy(current_config))
     else:
-        result = copy.deepcopy(DEFAULT_ERISPULSE_CONFIG)
+        result = defaults_snapshot
 
     return result
 
@@ -489,6 +452,25 @@ def get_event_config_value(section: str, key: str, default: Any) -> Any:
     if isinstance(section_default, dict) and key in section_default:
         return section_default[key]
     return default
+
+
+def get_framework_value(key: str, default: Any) -> Any:
+    """
+    读取 ``ErisPulse.framework.<key>`` 单值（高频热点路径专用，无快照开销）
+
+    :func:`get_erispulse_config` 每次调用合并整棵配置树——事务/慢处理器
+    告警等逐调用读取点走本入口直取。声明默认值经 :func:`_framework_defaults`
+    兜底，Core/constants 同名常量保留为直接引用方的兼容默认。
+
+    :param key: framework 节键名（如 ``"txn_begin_timeout"``）
+    :param default: 键缺失时的兜底值
+    :return: 配置值
+    """
+    config_service = _get_config_service()
+    section_config = config_service.getConfig(f"{CONFIG_ROOT_KEY}.framework")
+    if isinstance(section_config, dict) and key in section_config:
+        return section_config[key]
+    return _framework_defaults().get(key, default)
 
 
 def _apply_env_overrides(config: dict[str, Any], root: str = CONFIG_ROOT_KEY) -> None:
@@ -667,6 +649,7 @@ __all__ = [
     "get_event_config",
     "get_event_config_value",
     "get_framework_config",
+    "get_framework_value",
     "get_i18n_config",
     "get_logger_config",
     "get_master_config",

@@ -99,7 +99,10 @@ def _warn_sync_in_async() -> None:
     should_warn = False
     with _sync_in_async_warn_lock:
         last = _sync_in_async_warn_sites.get(callsite)
-        if last is not None and now - last < STORAGE_SYNC_IN_ASYNC_WARN_COOLDOWN_SECS:
+        from ...runtime.frame_config import (
+            get_framework_value,  # 惰性：Core 装配窗口内快照读取回环（见 frame_config._framework_defaults）
+        )
+        if last is not None and now - last < get_framework_value("sync_warn_cooldown", STORAGE_SYNC_IN_ASYNC_WARN_COOLDOWN_SECS):
             _sync_in_async_warn_sites.move_to_end(callsite)
         else:
             _sync_in_async_warn_sites[callsite] = now
@@ -274,19 +277,23 @@ class _AsyncTransaction:
         is locked）时就地释放已获取的连接——否则连接永久泄漏（SQLite 泄漏
         连接线程与 fd，池后端泄漏池容量，锁竞争越重泄漏越多）。
         """
+        from ...runtime.frame_config import get_framework_value  # 惰性：Core 装配窗口内快照读取回环
         from ..constants import STORAGE_TXN_BEGIN_TIMEOUT_SECS
 
+        begin_timeout = get_framework_value(
+            "txn_begin_timeout", STORAGE_TXN_BEGIN_TIMEOUT_SECS
+        )
         try:
             self.conn = await asyncio.wait_for(
-                self.storage._acquire_txn_conn(), STORAGE_TXN_BEGIN_TIMEOUT_SECS
+                self.storage._acquire_txn_conn(), begin_timeout
             )
             self.handle = await asyncio.wait_for(
-                self.storage._begin_txn(self.conn), STORAGE_TXN_BEGIN_TIMEOUT_SECS
+                self.storage._begin_txn(self.conn), begin_timeout
             )
         except asyncio.TimeoutError as e:
             await self._release_failed_conn()
             raise StorageOperationError(
-                f"事务开启超时（>{STORAGE_TXN_BEGIN_TIMEOUT_SECS}s）:"
+                f"事务开启超时（>{begin_timeout}s）:"
                 "存在长时间持锁的事务或连接池不可用",
                 operation="transaction_begin",
             ) from e
@@ -319,16 +326,20 @@ class _AsyncTransaction:
         started_at, self._started_at = self._started_at, None
         if conn is None:
             return
+        from ...runtime.frame_config import get_framework_value  # 惰性：Core 装配窗口内快照读取回环
+        commit_timeout = get_framework_value(
+            "txn_commit_timeout", STORAGE_TXN_COMMIT_TIMEOUT_SECS
+        )
         try:
             if exc is None:
                 await asyncio.wait_for(
                     self.storage._commit_txn(conn, handle),
-                    STORAGE_TXN_COMMIT_TIMEOUT_SECS,
+                    commit_timeout,
                 )
             else:
                 await asyncio.wait_for(
                     self.storage._rollback_txn(conn, handle),
-                    STORAGE_TXN_COMMIT_TIMEOUT_SECS,
+                    commit_timeout,
                 )
         except asyncio.TimeoutError as e:
             raise StorageOperationError(
@@ -347,7 +358,9 @@ class _AsyncTransaction:
         if started_at is None:
             return
         duration = time.monotonic() - started_at
-        if duration <= STORAGE_TXN_SLOW_WARN_SECS:
+        from ...runtime.frame_config import get_framework_value  # 惰性：Core 装配窗口内快照读取回环
+        slow_warn = get_framework_value("txn_slow_warn", STORAGE_TXN_SLOW_WARN_SECS)
+        if duration <= slow_warn:
             return
         try:
             from ..logger import logger
