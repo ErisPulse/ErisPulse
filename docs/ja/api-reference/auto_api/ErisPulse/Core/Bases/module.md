@@ -287,7 +287,7 @@ class MyModule(BaseModule):
 ---
 
 
-##### `spawn(coro: Any) -> Any`
+##### `spawn(coro: Any) -> asyncio.Task[Any] | concurrent.futures.Future[Any] | None`
 
 调度一个归属于本模块的后台任务（推荐的任务创建方式）
 

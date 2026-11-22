@@ -86,11 +86,11 @@ pool_max = 10
 
 | 場景 | 行為 |
 |------|------|
-| 操作執行失敗（寫鎖逾時 / SQL 錯誤 / 約束衝突） | **拋出 `StorageOperationError`**（寫入路徑：aset / adelete / aclear / set_multi 及同步橋同路徑）——不再靜默 `False`，重要寫入失敗必須可見 |
-| 連線層級不可達（冷卻期快速失敗） | 回傳 `False` / `None`（規則 26 框架韌性語義，另有 `storage.unreachable` / `storage.recovered` 事件） |
-| 交易開啟逾時（>30s） | 拋出 `StorageOperationError`（`STORAGE_TXN_BEGIN_TIMEOUT_SECS`） |
+| 操作執行失敗（寫鎖超時 / SQL 錯誤 / 約束衝突） | **拋 `StorageOperationError`**（寫路徑：aset / adelete / aclear / set_multi 及同步橋同路徑）——不再靜默 `False`，重要寫入失敗必須可見 |
+| 連接級不可達（冷卻期快速失敗） | 返回 `False` / `None`（連接級不可達時快速失敗，伴隨 `storage.unreachable` / `storage.recovered` 事件） |
+| 事務開啟超時（>30s） | 抛 `StorageOperationError`（`STORAGE_TXN_BEGIN_TIMEOUT_SECS`） |
 
-重要寫入請用 try/except 包裹並做補償；交易區塊內只放純 DB 操作。
+重要寫入請用 try/except 包裹並做補償；事務塊內只放純 DB 操作。
 
 ## 異步原生 API
 

@@ -113,7 +113,7 @@
     "User Guide": {
       "description": "ErisPulse configuration and command reference",
       "icon": "fa-book-open",
-      "count": 5,
+      "count": 7,
       "documents": [
         {
           "title": "User Guide",
@@ -128,7 +128,7 @@
           "icon": "fa-download"
         },
         {
-          "title": "Configuration File Documentation",
+          "title": "Configuration File Reference",
           "path": "user-guide/configuration.md",
           "level": 1,
           "icon": "fa-sliders"
@@ -144,6 +144,18 @@
           "path": "user-guide/deployment.md",
           "level": 1,
           "icon": "fa-cloud-arrow-up"
+        },
+        {
+          "title": "Upgrade Migration Guide",
+          "path": "user-guide/migration.md",
+          "level": 1,
+          "icon": "fa-right-left"
+        },
+        {
+          "title": "Frequently Asked Questions (FAQ)",
+          "path": "user-guide/faq.md",
+          "level": 1,
+          "icon": "fa-circle-question"
         }
       ],
       "subgroups": {}
@@ -202,7 +214,7 @@
               "icon": "fa-cubes-stacked"
             },
             {
-              "title": "Event Wrapper Class In-Depth Guide",
+              "title": "Event Wrapper Class in Detail",
               "path": "developer-guide/modules/event-wrapper.md",
               "level": 1,
               "icon": "fa-bolt-lightning"

@@ -197,7 +197,7 @@ async def friend_add_handler(event: Event):
 - `get_group_id()` - 獲取群組ID（群聊消息）
 - `get_channel_id()` - 獲取頻道ID（頻道消息）
 - `get_guild_id()` - 獲取伺服器ID（伺服器消息）
-- `get_thread_id()` - 獲取話題/子頻道ID（話題消息）
+- `get_thread_id()` - 獵取話題/子頻道ID（話題消息）
 
 #### @消息相關
 - `has_mention()` - 是否包含@機器人
@@ -257,7 +257,7 @@ async def handle_group(event):
     await event.approve()
 ```
 
-> 審批動作經適配器 `Request` DSL 執行；回傳值、錯誤碼與適配器實現要求見
+> 審批動作經適配器 `Request` DSL 執行；回應值、錯誤碼與適配器實現要求見
 > [請求操作規範](../../standards/request-action-spec.md)。通用註冊器
 > `request.on_request()`（不區分類型）同樣可用。
 
@@ -305,12 +305,14 @@ await adapter.Send.To("group", target_id).Text(event.get_text())
 
 #### 跨帳號重複受理
 
-多帳號同群時，同一物理消息可能經多個帳號各收到一遍。框架按 `ErisPulse.framework.cross_account_policy` 處理（預設 `off` 不關聯）：
+多帳號同群時，同一物理訊息可能經多個帳號各收到一遍。框架按 `ErisPulse.framework.cross_account_policy` 處理（預設 `off` 不關聯）：
 
 - `mark`：後續副本照常分發，但事件頂層注入 `multi_receipt` 字段（`{"event_id": 首個受理事件id, "self_id": 首個受理帳號}`）——模組讀取該字段自行裁決是否跳過回應
 - `drop`：副本在分發入口直接丟棄，模組無感
 - **at 點名優待**：mention 目標命中本帳號身份（`self.user_id` / `self.account_id`）的副本不參與關聯（不注入 `multi_receipt`、不被 `drop`）——被 @ 的帳號模組（`on_at_message` 驅動）始終能收到自己的事件
 - **會話帳號綁定**：`ErisPulse.framework.session_accounts` 可把會話精確綁定到唯一歸屬帳號（綁定會話僅歸屬帳號分發，其他帳號副本丟棄；獨立於策略生效，at 點名優待同樣保留）
+
+> 配置格式、前綴鍵寫法與三層去重分工詳見[適配器核心概念](../adapters/core-concepts.md)與[配置文件說明](../../user-guide/configuration.md)。
 
 ### 等待回覆功能
 
@@ -332,7 +334,7 @@ await adapter.Send.To("group", target_id).Text(event.get_text())
   - `method`: 發送方法，預設 "Text"；支援 "Image"/"Markdown" 等非文字方式發送提示
   - `hint`: 是否在提示末尾自動追加確認詞提示（如 "（是/否）"），預設 False
 
-- `choose(prompt, options, timeout=60.0, method="Text", options_format="auto", merge_prompt=False, placeholder="{options}")` - 選擇菜單
+- `choose(prompt, options, timeout=60.0, method="Text", options_format="auto", merge_prompt=False, placeholder="{options}")` - 選擇選單
   - `options`: 選項文本列表
   - 回傳選項索引（0-based），超時回傳 `None`
   - `method`: 發送方法，預設 "Text"；文字類方法 (Text/Markdown/md/Html/h5) 預設合併選項到末尾
@@ -346,14 +348,14 @@ await adapter.Send.To("group", target_id).Text(event.get_text())
   - `merge_prompt`: 是否強制合併為一條訊息發送，預設 False
     - `False`（預設）：文字類方法自動合併；非文字方法先發 prompt 再發 Text 選項
     - `True`：無論什麼 method 都合併為一條訊息，用用戶指定的 method 發送
-  - `placeholder`: 選項插入占位符，預設 `{options}`；prompt 中出現該標記的位置替換為選項文本，設為空字串則始終追加到末尾
+  - `placeholder`: 選項插入佔位符，預設 `{options}`；prompt 中出現該標記的位置替換為選項文本，設為空字串則始終追加到末尾
 
 - `collect(fields, timeout_per_field=60.0)` - 表單收集
-  - `fields`: 欄位列表，每項包含 `key`、`prompt`、可選 `validator`、可選 `method`
-  - 回傳 `{key: value}` 字典，任一欄位超時回傳 `None`
+  - `fields`: 字段列表，每項包含 `key`、`prompt`、可選 `validator`、可選 `method`
+  - 回傳 `{key: value}` 字典，任一字段超時回傳 `None`
   - 每個 field 支援 `method` 鍵指定發送方法，例如收集圖片時用 `{"key": "avatar", "prompt": "請發送頭像", "method": "Image"}`
-  - 每個 field 可選 `options` 鍵（列表），提供時該欄位變為選擇題（自動調用 choose 逻辑）
-  - 每個 field 可選 `options_format`、`merge_prompt`、`placeholder` 鍵，控制選項格式、訊息合併行為和占位符
+  - 每個 field 可選 `options` 鍵（列表），提供時該字段變為選擇題（自動調用 choose 逻辑）
+  - 每個 field 可選 `options_format`、`merge_prompt`、`placeholder` 鍵，控制選項格式、訊息合併行為和佔位符
 
 - `wait_for(event_type="message", condition=None, timeout=60.0)` - 等待任意事件
   - `condition`: 過濾函數，回傳 `True` 時匹配
@@ -369,11 +371,11 @@ await adapter.Send.To("group", target_id).Text(event.get_text())
 
 ```python
 from ErisPulse.Core.Event import Event
-@command("delete", help="刪除資料")
+@command("delete", help="刪除數據")
 async def delete_handler(event: Event):
-    if await event.confirm("確定要刪除所有資料嗎？"):
+    if await event.confirm("確定要刪除所有數據嗎？"):
         sdk.storage.delete("all_data")
-        await event.reply("資料已刪除")
+        await event.reply("數據已刪除")
     else:
         await event.reply("已取消")
 ```
@@ -387,7 +389,7 @@ if await event.confirm("確定繼續？", hint=True):
 # 用戶看到：確定繼續？（是/否）
 ```
 
-**choose() - 選擇菜單：**
+**choose() - 選擇選單：**
 
 ```python
 from ErisPulse.Core.Event import Event
@@ -431,14 +433,14 @@ choice = await event.choose(
 # <h2>請選擇</h2>
 # <ol><li>1. 貓</li><li>2. 狗</li></ol>
 
-# 合併模式 + 占位符
+# 合併模式 + 佔位符
 choice = await event.choose(
     "## 請選擇\n{options}\n請回覆編號",
     ["貓", "狗"],
     method="Markdown", merge_prompt=True,
 )
 
-# 自訂占位符
+# 自訂佔位符
 choice = await event.choose(
     "請選擇: [choices]",
     ["貓", "狗"],
@@ -479,7 +481,7 @@ await event.reply_ob12(segments)
 #### 命令基礎
 - `get_command_name()` - 獲取命令名稱
 - `get_command_args()` - 獲取命令參數列表
-- `get_command_raw()` - 獲取命令原始文字
+- `get_command_raw()` - 獲取命令原始文本
 - `get_command_info()` - 獲取完整命令資訊字典
 - `is_command()` - 是否為命令
 
@@ -492,7 +494,7 @@ await event.reply_ob12(segments)
 
 適配器可以為 Event 包裝類註冊平台專有方法。方法僅在對應平台的 Event 實例上可用，其他平台存取時拋出 `AttributeError`。
 
-平台方法透過 `Event.__getattribute__` 优先於內建方法生效，因此可以覆寫 `confirm`、`choose`、`collect`、`wait_reply` 等內建互動方法，提供平台特色實現（如按鈕、卡片等）。內建實現作為 `_builtin_*` 函數導出供覆寫方調用。
+平台方法透過 `Event.__getattribute__` 優先於內建方法生效，因此可以覆寫 `confirm`、`choose`、`collect`、`wait_reply` 等內建互動方法，提供平台特色實作（如按鈕、卡片等）。內建實作為 `_builtin_*` 函數導出供覆寫方調用。
 
 ```python
 # 郵件事件 - 只有郵件方法

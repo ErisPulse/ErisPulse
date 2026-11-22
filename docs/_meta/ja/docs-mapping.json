@@ -113,7 +113,7 @@
     "ユーザーガイド": {
       "description": "ErisPulse の設定とコマンドリファレンス",
       "icon": "fa-book-open",
-      "count": 5,
+      "count": 7,
       "documents": [
         {
           "title": "ユーザー使用ガイド",
@@ -144,6 +144,18 @@
           "path": "user-guide/deployment.md",
           "level": 1,
           "icon": "fa-cloud-arrow-up"
+        },
+        {
+          "title": "バージョンアップと移行ガイド",
+          "path": "user-guide/migration.md",
+          "level": 1,
+          "icon": "fa-right-left"
+        },
+        {
+          "title": "常見問題（FAQ）",
+          "path": "user-guide/faq.md",
+          "level": 1,
+          "icon": "fa-circle-question"
         }
       ],
       "subgroups": {}
@@ -226,7 +238,7 @@
               "icon": "fa-network-wired"
             },
             {
-              "title": "アダプタのコア概念",
+              "title": "アダプタのコアコンセプト",
               "path": "developer-guide/adapters/core-concepts.md",
               "level": 1,
               "icon": "fa-microchip"

@@ -65,7 +65,61 @@ ErisPulse 框架配置管理模块
 用户显式设置（手动编辑 / update_erispulse_config / set_erispulse_section）
 的键不受影响，优先级始终高于内置默认值。
 
-**返回值**: 完整的 ErisPulse 配置字典
+**返回值**: 完整的 ErisPulse 配置字典（快照副本，修改不影响后续调用）
+
+---
+
+
+### `_config_fingerprint(current: Any) -> tuple`
+
+**内部方法** 配置树浅指纹（对象身份 + 顶层/二级键规模）
+
+---
+
+
+### `_get_merged_snapshot() -> dict[str, Any]`
+
+**内部方法** 取合并快照模板（指纹变化 / 无缓存时重建并登记失效订阅）
+
+---
+
+
+### `_build_merged_snapshot() -> dict[str, Any]`
+
+**内部方法** 构建合并快照模板（默认值合并；env 覆盖在返回副本时应用）
+
+---
+
+
+### `_invalidate_merged_snapshot() -> None`
+
+**内部方法** 配置变更时失效合并快照模板（下次调用重建）
+
+---
+
+
+### `_subscribe_merged_snapshot_invalidation() -> None`
+
+**内部方法**
+订阅配置变更事件失效快照模板（外部经 config.setConfig 写入框架节时，
+update/set_erispulse 系列函数之外的写路径由此兜底失效）
+
+---
+
+
+### `get_event_config_value(section: str, key: str, default: Any) -> Any`
+
+读取 ``ErisPulse.event.<section>.<key>`` 单值（高频热点路径专用，无快照开销）
+
+:func:`get_event_config` 每次调用 deepcopy 整棵配置树——每条回复命中
+事件调用两次即制造 MB 级暂态垃圾；仅读单值的调用点用本入口直取。
+环境变量覆盖不适用于本入口（低频行为参数不提供 env 覆盖）。
+
+- **section**: 事件配置子节名（如 ``"wait_reply"``）
+- **key**: 键名（如 ``"cmdpass"``）
+- **default**: 键缺失时的默认值
+
+**返回值**: 配置值
 
 ---
 

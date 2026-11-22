@@ -309,14 +309,20 @@ conv.start("menu")
 ---
 
 
-##### `_checkpoint_key(event: 'Event') -> str`（staticmethod）
+##### `_checkpoint_key(event: 'Event', *, legacy: bool = False) -> str`（staticmethod）
 
 **内部方法**
-生成对话检查点存储键（含 target 维度，避免同一用户多会话互覆）
+生成对话检查点存储键
+
+含 bot 维度（account_id 优先 / user_id 口径）——多账户部署下同平台
+多个 bot 与同一用户的检查点互相独立，不再互覆或错恢复；target 维度
+隔离同一 bot 的多会话。``legacy=True`` 生成不含 bot 维度的旧格式键
+（升级前写入的数据，恢复时回退读取一次，由检查点 TTL GC 收走）。
 
 - **event**: 事件对象
+- **legacy**: 是否生成旧格式键（升级兼容回退）
 
-**返回值**: 存储键（conversation:{platform}:{user_id}:{target_id}）
+**返回值**: 存储键（conversation:{platform}:{bot}:{user_id}:{target_id}）
 
 ---
 

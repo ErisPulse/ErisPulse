@@ -769,73 +769,76 @@ Converter.convert()
 OneBot12 標準事件
 ```
 
-### 必需字段
+### 必需欄位
 
 所有轉換後的事件必須包含：
 
 ```python
 {
     "id": "事件唯一標識",          # 同一帳戶重推同一事件必須相同（框架據此去重）
-    "time": 1234567890,           # 10位 Unix 時間戳
+    "time": 1234567890,           # 10位 Unix 時間戳記
     "type": "message/notice/request/meta",
     "detail_type": "事件詳細類型",
     "platform": "平台名稱",
-    "message_id": "消息ID",        # 消息類事件必須
+    "message_id": "訊息ID",        # 訊息類事件必須
     "self": {
         "platform": "平台名稱",
         "user_id": "機器人ID"     # 必須與 bot_id 一致
     },
-    "{platform}_raw": {...},       # 原始數據（必須）
+    "{platform}_raw": {...},       # 原始資料（必須）
     "{platform}_raw_type": "..."    # 原始類型（必須）
 }
 ```
 
-> 事件 `id` 需帶帳戶維度：同一帳戶重推同一事件保持相同 `id`，不同帳戶收到同一條群消息時 `id` 必須不同（例如 `f"{self.user_id}:{post_type}:{message_id}"`）。
+> 事件 `id` 需帶帳戶維度：同一帳戶重推同一事件保持相同 `id`，不同帳戶收到同一條群組訊息時 `id` 必須不同（例如 `f"{self.user_id}:{post_type}:{message_id}"`）。
 
-### 跨帳戶重複受理（框架注入字段）
+### 跨帳戶重複受理（框架注入欄位）
 
-多帳戶適配器的多個帳戶在同一群/對話時，同一物理消息會經各帳戶先後到達。框架在 `ErisPulse.framework.cross_account_policy != "off"` 時自動做內容級關聯（同平台 + 同對話 + 同發送者 + 同 `alt_message` 在短視窗內），適配器無需參與：
+多帳戶轉接器的多個帳戶在同一群組/會話時，同一物理訊息會經各帳戶先後到達。框架在 `ErisPulse.framework.cross_account_policy != "off"` 時自動做內容級關聯（同平台 + 同會話 + 同發送者 + 同 `alt_message` 在短時間窗口內），轉接器無需參與：
 
-- `mark`：後續副本注入頂層字段 `"multi_receipt": {"event_id": 首受理事件id, "self_id": 首受理帳戶}` 後照常分發，模組讀取該字段自行裁決
+- `mark`：後續副本注入頂層欄位 `"multi_receipt": {"event_id": 首受理事件id, "self_id": 首受理帳戶}` 後照常分發，模組讀取該欄位自行裁決
 - `drop`：後續副本在分發入口直接丟棄
-- **@ 點名優待**：`message` 段的 mention 目標命中接收帳戶自身身份（`self.user_id` / `self.account_id`）的副本不參與關聯（`mark` / `drop` 均豁免）——被點名的帳戶必定收到自己的事件，`drop` 不會誤傷 @ 驅動的多帳戶模組；@ 消息可能在多個帳戶各分發一次，@ 驅動模組用 `on_at_message` 條件天然只響應一次
+- **at 點名優待**：`message` 段的 mention 目標命中接收帳戶自身身份（`self.user_id` / `self.account_id`）的副本不參與關聯（`mark` / `drop` 均豁免）——被點名的帳戶必定收到自己的事件，`drop` 不會誤傷 @ 驅動的多帳戶模組；@ 訊息可能在多個帳戶各分發一次，@ 驅動模組用 `on_at_message` 條件天然只回應一次
 
-#### 對話帳戶綁定（精確歸屬聲明）
+#### 會話帳戶綁定（精確歸屬聲明）
 
-內容級關聯靠啟發式判定"誰先到誰贏"；需要**精確聲明對話歸屬**時，用 `ErisPulse.framework.session_accounts` 配置把對話綁定到唯一帳戶：
+內容級關聯靠啟發式判定「誰先到誰贏」；需要**精確聲明會話歸屬**時，用 `ErisPulse.framework.session_accounts` 設定把會話綁定到唯一帳戶：
 
 ```toml
 [ErisPulse.framework.session_accounts.snowluma]
-"643319481" = "1325859446"   # 對話ID → 歸屬帳戶 bot_id
+"group:643319481" = "1325859446"   # 推薦前綴鍵：會話類型:會話ID → 歸屬帳戶 bot_id
+"643319481" = "1325859446"         # 裸鍵相容寫法：符合該會話 ID 的全部會話類型
 ```
 
-- 綁定**獨立於 `cross_account_policy` 生效**（配置綁定即等於為該對話開啟去重）：歸屬帳戶的事件照常分發，其他帳戶副本在分發入口丟棄
-- **@ 點名優待同樣生效**：被 @ 的非歸屬帳戶副本仍放行
-- 綁定實時讀配置，熱更新生效；未配置綁定的對話完全不受影響
-- 適用於「單對話多帳戶只想讓一個帳戶響應」的部署：比內容級關聯更精確，無 3 秒視窗與內容比對的啟發式誤差
+> 前綴鍵隔離同數值的異類型會話（群組 `group:123` 與私聊 `user:123` 互不影響）；裸鍵是相容寫法，綁定後該會話 ID 的群聊與私聊一併歸屬。
 
-`multi_receipt` 為框架注入的可選字段，適配器 Converter 不產出也不消費；策略預設 `off` 時事件結構與既有契約完全一致。
+- 綁定**獨立於 `cross_account_policy` 生效**（設定綁定即等於為該會話開啟去重）：歸屬帳戶的事件照常分發，其他帳戶副本在分發入口丟棄
+- **at 點名優待同樣生效**：被 @ 的非歸屬帳戶副本仍放行
+- 綁定即時讀取設定，熱更新生效；未設定綁定的會話完全不受影響
+- 適用於「單會話多帳戶只想讓一個帳戶回應」的部署：比內容級關聯更精確，無 3 秒窗口與內容比對的啟發式誤差
+
+`multi_receipt` 為框架注入的可選欄位，轉接器 Converter 不產出也不消費；策略預設 `off` 時事件結構與既有契約完全一致。
 
 #### 三層去重機制分工
 
-| 機制 | 配置 | 拦截什麼 | 判定依據 |
+| 機制 | 設定 | 攔截什麼 | 判定依據 |
 |------|------|----------|----------|
-| 事件冪等去重 | `ErisPulse.framework.event_dedupe`（預設開） | 同一事件 id 的重連重推（同連接） | 事件 `id` |
-| 本號回聲過濾 | `ErisPulse.event.message.ignore_self`（預設開） | 接收帳戶自己的消息（發送者 == 接收帳戶） | `self.user_id` vs `user_id` |
-| 跨帳戶重複受理 | `ErisPulse.framework.cross_account_policy`（預設 `off`，`drop` 啟用） | **同一物理消息經其它帳戶的副本**——多帳戶同群時 bot A 發言、bot B 也收到一份（mention 命中本帳戶的副本豁免） | 內容級關聯（同平台 + 同對話 + 同發送者 + 同內容，短視窗），鍵不含 self_id |
+| 事件冪等去重 | `ErisPulse.framework.event_dedupe`（預設開） | 同一事件 id 的重連重推（同連線） | 事件 `id` |
+| 本號回聲過濾 | `ErisPulse.event.message.ignore_self`（預設開） | 接收帳戶自己的訊息（發送者 == 接收帳戶） | `self.user_id` vs `user_id` |
+| 跨帳戶重複受理 | `ErisPulse.framework.cross_account_policy`（預設 `off`，`drop` 啟用） | **同一物理訊息經其它帳戶的副本**——多帳戶同群組時 bot A 發言、bot B 也收到一份（mention 命中本帳戶的副本豁免） | 內容級關聯（同平台 + 同會話 + 同發送者 + 同內容，短時間窗口），鍵不含 self_id |
 
-**典型場景——多帳戶同群複讀**：bot A 發言，同群的其他帳戶（bot B）也會收到一份，複讀類模組看到同一內容出現兩次。啟用 `cross_account_policy = "drop"` 後，後續帳戶的副本在分發入口丟棄，任何模組至多看到一次。**例外：@ 點名消息**——被 @ 的帳戶副本始終放行（@ 驅動模組依賴它響應），其餘帳戶副本照常去重。
+**典型場景——多帳戶同群組複讀**：bot A 發言，同群組的其他帳戶（bot B）也會收到一份，複讀類模組看到同一內容出現兩次。啟用 `cross_account_policy = "drop"` 後，後續帳戶的副本在分發入口丟棄，任何模組至多看到一次。**例外：at 點名訊息**——被 @ 的帳戶副本始終放行（@ 驅動模組依賴它回應），其餘帳戶副本照常去重。
 
 與 `ignore_self` 的語義正交，兩者組合決定可見次數：
 
-| 組合 | 複讀模組看到 bot A 的消息 |
+| 組合 | 複讀模組看到 bot A 的訊息 |
 |------|--------------------------|
-| `drop` + `ignore_self = true`（預設） | 0 或 1 次（先到副本若經 A 自身連接則被 ignore_self 拦截）——**永不 2 次** |
+| `drop` + `ignore_self = true`（預設） | 0 或 1 次（先到副本若經 A 自身連線則被 ignore_self 攔截）——**永不 2 次** |
 | `drop` + `ignore_self = false` | 恆定恰好 1 次 |
 
-> 不建議把 `ignore_self` 的語義擴展為「排除本機全部帳戶」：該判定依賴接收事件的 `self.user_id`（綁定未建立的窗口期會失效，見上文執行期邊界），而跨帳戶關聯是內容級判定，不依賴 self 信息；且「逐帳戶接收」是跨帳戶日誌 / 同步類模組的既有依賴，收窄語義屬於隱式破壞。跨帳戶去重交給 `cross_account_policy`。
+> 不建議把 `ignore_self` 的語義擴展為「排除本機全部帳戶」：該判定依賴接收事件的 `self.user_id`（綁定未建立的窗口期會失效，見上文「執行期識別與持久化」），而跨帳戶關聯是內容級判定，不依賴 self 資訊；且「逐帳戶接收」是跨帳戶日誌 / 同步類模組的既有依賴，收窄語義屬於隱式破壞。跨帳戶去重交給 `cross_account_policy`。
 
-### 轉換器示例
+### 轉換器範例
 
 ```python
 class MyPlatformConverter:
@@ -844,10 +847,10 @@ class MyPlatformConverter:
         if not isinstance(raw_event, dict):
             return None
         
-        # 生成事件 ID
+        # 產生事件 ID
         event_id = raw_event.get("event_id") or str(uuid.uuid4())
         
-        # 轉換時間戳
+        # 轉換時間戳記
         timestamp = raw_event.get("timestamp")
         if timestamp and timestamp > 10**12:
             timestamp = int(timestamp / 1000)
@@ -858,7 +861,7 @@ class MyPlatformConverter:
         event_type = self._convert_type(raw_event.get("type"))
         detail_type = self._convert_detail_type(raw_event)
         
-        # 構建標準事件
+        # 建構標準事件
         onebot_event = {
             "id": str(event_id),
             "time": timestamp,

@@ -157,7 +157,7 @@ PostgreSQL 存储管理器（asyncpg 异步原生实现）
 
 ##### `async _close_txn_conn(conn: Any) -> None`
 
-**内部方法** 归还事务专用连接
+**内部方法** 归还事务专用连接到其所属池（不重解析当前池）
 
 ---
 

@@ -255,7 +255,13 @@ user_id: int = Field(foreign_key="users.id", on_delete="CASCADE")
 
 ### `class ColumnExpr`
 
-ColumnExpr 类提供相关功能。
+列查询表达式（模型类属性访问的返回值）
+
+支持比较运算符生成条件节点与 ``&`` / ``|`` 组合：
+``(User.age > 18) & (User.name == "Alice")``
+
+**内部方法**
+由 Field.__get__ 在类访问时创建，模块作者无需直接实例化
 
 
 #### 方法列表
@@ -312,7 +318,7 @@ IN 条件（``User.id.in_([1, 2, 3])``）
 #### 方法列表
 
 
-##### `order_by(*fields: str) -> QuerySet[ModelT]`
+##### `order_by(*fields: str) -> Self`
 
 排序（``"age"`` 升序 / ``"-age"`` 降序）
 

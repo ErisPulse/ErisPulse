@@ -19,6 +19,19 @@
 ## 函数列表
 
 
+### `ensure_tracing() -> None`
+
+按配置惰性启用 tracemalloc（幂等，进程内只启动一次）
+
+读取 ``ErisPulse.framework.memory_tracing``（默认关闭）：开启后
+``traced_mb`` 有值、proactive_gc 的增长门限不再误用 RSS，且
+``snapshot(detail=True)`` 可输出 top 分配点。追踪带来约 2 倍分配
+路径 CPU 开销——排障时开启，常态关闭。开关支持热更新：重启追踪
+需重启进程（tracemalloc 不支持安全重置帧数）。
+
+---
+
+
 ### `get_rss_mb() -> float | None`
 
 获取当前进程的驻留集大小（RSS），单位 MB
@@ -40,15 +53,32 @@
 ---
 
 
-### `snapshot(label: str = '') -> dict[str, Any]`
+### `snapshot(label: str = '', *, detail: bool = False) -> dict[str, Any]`
 
 采集一次内存快照
 
 - **label**: 快照标签，用于跨次快照计算同名标签的 RSS 增量
+- **detail**: 是否附归因明细——框架内部各累积容器的长度（近零成本）
 
+    与 tracemalloc top 分配点（需已开启 ``memory_tracing``）
 **返回值**: 包含 ``label`` / ``rss_mb`` / ``traced_mb`` / ``delta_mb`` 的字典；
 
-         无法采集的项为 ``None``
+         无法采集的项为 ``None``。``detail=True`` 时附 ``containers`` 与
+         ``top_allocations``
+
+---
+
+
+### `_container_counts() -> dict[str, int]`
+
+**内部方法** 框架内部累积容器的长度归因（近零成本的 len 读取）
+
+---
+
+
+### `_top_allocations(limit: int | None = None) -> list[dict[str, Any]]`
+
+**内部方法** tracemalloc top 分配点（未开启追踪时返回空列表）
 
 ---
 

@@ -654,15 +654,17 @@ await sdk.adapter.emit({
 ---
 
 
-##### `_is_duplicate_event(event_id: str) -> bool`
+##### `_is_duplicate_event(event_id: str, platform: str) -> bool`
 
 **内部方法**
-事件幂等去重判定（LRU 记录已分发的事件 id）
+事件幂等去重判定（LRU 记录已分发的 (platform, event_id)）
 
 平台 websocket 重连后重推同一事件（相同 ``event["id"]``）时只分发一次；
+键带平台维度——适配器可透传平台原生数值 id，不同平台间碰撞时不互吞。
 容量上限 ``DEFAULT_EVENT_DEDUPE_CAPACITY``，超出后淘汰最早记录。
 
 - **event_id**: 事件 id
+- **platform**: 平台名
 
 **返回值**: 是否为重复事件（True 时调用方应丢弃）
 
@@ -902,7 +904,9 @@ self字段标准扩展：
 **内部方法**
 清除过期的离线 Bot 记录
 
-遍历 _bots，将状态为 offline 且 last_active 距今超过 expiry_secs 的条目移除。
+遍历 _bots，将 last_active 距今超过 expiry_secs 的条目移除（offline
+状态或连接异常中断未发 offline meta 的消失 Bot 一并按活跃时间兜底
+淘汰——在线 Bot 的心跳/消息会持续刷新 last_active，不受影响）。
 
 - **expiry_secs**: 过期时间（秒），None 时从框架配置读取
 

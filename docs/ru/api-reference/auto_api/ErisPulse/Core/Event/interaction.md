@@ -485,6 +485,25 @@ reminder = sdk.interaction.add_reminder(event, 300, send_nudge)
 ---
 
 
+##### `sweep_expired() -> int`
+
+清扫纯残留的过期条目（proactive_gc 内部资源回收调用）
+
+仅移除已过 expires_at 且 future 已完结（完成/取消/无 future）的条目
+——不触碰仍在等待中的 future（其生命周期归调用方的 wait_for）。
+
+**返回值**: 清除的条目数
+
+**示例**:
+
+```python
+interaction.sweep_expired()
+2
+```
+
+---
+
+
 ##### `counts() -> dict[str, Any]`
 
 获取挂起会话统计（诊断用）

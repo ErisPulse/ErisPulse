@@ -250,9 +250,11 @@ ALTER 失败上抛（同步版语义见 ``_migrate_add_sender``）。
 ---
 
 
-##### `_retention(session_key: str, max_per_session: int, ttl_hours: float) -> None`
+##### `async _retention(session_key: str, max_per_session: int, ttl_hours: float) -> None`
 
 **内部方法** 保留策略：每会话条数上限 + 全局 TTL（惰性触发，覆盖库与内存缓冲）
+
+异步执行（刷盘协程内调用）——同步桥接路径会阻塞主事件循环。
 
 ---
 

@@ -87,11 +87,11 @@ pool_max = 10
 
 | シナリオ | 動作 |
 |------|------|
-| 操作実行の失敗（書き込みロックのタイムアウト / SQL エラー / 制約違反） | **`StorageOperationError` をスロー**（書き込みパス：aset / adelete / aclear / set_multi および同期ブリッジの同一パス）——サイレントに `False` を返すことはなく、重要な書き込みの失敗は必ず可視化されます |
-| 接続レベルの到達不能（クールダウン期間のフェイルファスト） | `False` / `None` を返す（ルール 26 のフレームワークレジリエンスセマンティクス。`storage.unreachable` / `storage.recovered` イベントも発行） |
-| トランザクション開始のタイムアウト（30 秒超） | `StorageOperationError` をスロー（`STORAGE_TXN_BEGIN_TIMEOUT_SECS`） |
+| 操作実行失敗（書き込みロックのタイムアウト / SQL エラー / 制約違反） | **`StorageOperationError` をスロー**（書き込みパス：aset / adelete / aclear / set_multi および同期ブリッジの同一パス）——サイレントに `False` を返すことはなくなり、重要な書き込みの失敗は必ず可視化される |
+| 接続レベルの到達不可（クールダウン期間中のファストフェイル） | `False` / `None` を返す（接続レベルで到達不可の場合にファストフェイルし、`storage.unreachable` / `storage.recovered` イベントを伴う） |
+| トランザクション開始タイムアウト（>30 秒） | `StorageOperationError` をスロー（`STORAGE_TXN_BEGIN_TIMEOUT_SECS`） |
 
-重要な書き込みは try/except でラップして補償処理を行ってください。トランザクションブロック内には純粋な DB 操作のみを記述します。
+重要な書き込みは try/except でラップして補償処理を行ってください。トランザクションブロック内には純粋な DB 操作のみを記述してください。
 
 ## 非同期ネイティブ API
 

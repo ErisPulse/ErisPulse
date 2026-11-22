@@ -113,7 +113,7 @@
     "Руководство пользователя": {
       "description": "Настройка и справочник команд ErisPulse",
       "icon": "fa-book-open",
-      "count": 5,
+      "count": 7,
       "documents": [
         {
           "title": "Руководство пользователя",
@@ -144,6 +144,18 @@
           "path": "user-guide/deployment.md",
           "level": 1,
           "icon": "fa-cloud-arrow-up"
+        },
+        {
+          "title": "Руководство по обновлению и миграции",
+          "path": "user-guide/migration.md",
+          "level": 1,
+          "icon": "fa-right-left"
+        },
+        {
+          "title": "Часто задаваемые вопросы (FAQ)",
+          "path": "user-guide/faq.md",
+          "level": 1,
+          "icon": "fa-circle-question"
         }
       ],
       "subgroups": {}
@@ -202,7 +214,7 @@
               "icon": "fa-cubes-stacked"
             },
             {
-              "title": "Справочник по Event-обёртке",
+              "title": "Документация по классу Event",
               "path": "developer-guide/modules/event-wrapper.md",
               "level": 1,
               "icon": "fa-bolt-lightning"
