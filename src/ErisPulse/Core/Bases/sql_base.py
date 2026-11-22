@@ -675,14 +675,40 @@ class SQLStorageBase(BaseStorage):
         return getattr(self, "_initialized", False)
 
     def _finish_init(self) -> None:
-        """{!--< internal-use >!--} 子类完成后调用：标记就绪并订阅配置热更新告警"""
+        """{!--< internal-use >!--} 子类完成后调用：标记就绪并订阅配置热更新告警
+
+        幂等（并发首次构造可能双重执行 ``__init__`` 主体——就绪标志与
+        配置订阅的重复注册由此处与 :meth:`_watch_storage_config` 兜底）。
+        """
+        if getattr(self, "_initialized", False):
+            return
         self._initialized = True
+        # storage.backend 切换不可热切换：统一在此订阅重启告警（各后端自身的
+        # 连接参数检查由其 __init__ 叠加订阅）
+        self._watch_storage_config(self._check_backend_changed)
+
+    def _check_backend_changed(self) -> str | None:
+        """{!--< internal-use >!--} storage.backend 配置变更检查（SQL 后端不支持的运行时切换）"""
+        from ...runtime import get_storage_config
+
+        backend = str(get_storage_config().get("backend", "sqlite")).strip().lower()
+        backend = {"postgresql": "postgres"}.get(backend, backend)
+        if backend != self.dialect.name:
+            return i18n.t("core.config.restart_required", key="storage.backend")
+        return None
 
     def _watch_storage_config(self, check: Callable[[], str | None]) -> None:
         """
         {!--< internal-use >!--}
         订阅存储配置热更新；check() 返回告警文案（None 表示无需告警）
+
+        幂等注册（按 check 的函数名去重，bound method 的 id 不可靠）——
+        并发首次构造双重执行 ``__init__`` 主体时防止 lifecycle 钩子重复登记。
         """
+        marker = f"_watch_registered_{getattr(check, '__name__', id(check))}"
+        if getattr(self, marker, False):
+            return
+        object.__setattr__(self, marker, True)
         def _on_storage_config_changed(_data: dict) -> None:
             try:
                 message = check()
@@ -1343,6 +1369,14 @@ class SQLStorageBase(BaseStorage):
 
     async def adelete(self, key: str, *, conn: Any = None) -> bool:
         """
+        if sql not in ("BEGIN", "COMMIT", "ROLLBACK"):  # 事务控制语句不计业务操作量
+            try:
+                from ...runtime.metrics import metrics
+
+                metrics.inc("storage.ops.total")
+                metrics.inc(f"storage.ops.{kind}")
+            except Exception:
+                pass
         异步删除存储项
 
         支持嵌套键删除，如 "user.settings.theme" 会删除嵌套对象中的对应字段

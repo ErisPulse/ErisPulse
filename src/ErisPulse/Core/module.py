@@ -1514,6 +1514,16 @@ class ModuleManager(ManagerBase):
         """
         import gc
 
+        # freeze 三连：启动期 gc.freeze() 把全部已跟踪对象移入永久代后，
+        # gc.collect 对冻结代无效——卸载残留的环状引用（实例 ↔ bound method
+        # ↔ 注册表）能被泄漏普查告警却无法回收。三连把幸存的运行期对象重新
+        # 冻结，仅本次卸载真正死亡的对象进入待回收集
+        try:
+            gc.unfreeze()
+            gc.collect()
+            gc.freeze()
+        except Exception:
+            pass
         gc.collect()
         for name, class_ref, instance_ref in refs:
             leaked_class = class_ref is not None and class_ref() is not None
@@ -2844,6 +2854,15 @@ class ModuleManager(ManagerBase):
             from .constants import DEFAULT_MODULE_CALL_TIMEOUT_SECS
 
             timeout = DEFAULT_MODULE_CALL_TIMEOUT_SECS
+
+        # 调用量观测（跨模块 RPC 频次与目标分布）
+        try:
+            from ..runtime.metrics import metrics
+
+            metrics.inc("modules.call.total")
+            metrics.inc(f"modules.call.{module_name}")
+        except Exception:
+            pass
 
         # scope 出站审计（调用方维度：actions.<caller>.call，name=<module>.<method>）
         caller = current_owner.get()

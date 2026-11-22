@@ -821,6 +821,54 @@ class TestStorageObservability:
         StorageManager._instance = None
 
     @pytest.mark.asyncio
+    async def test_txn_start_failure_releases_conn(self, storage_manager):
+        """开启失败（BEGIN 抛 locked）时就地释放已获取的连接，不泄漏"""
+        async def failing_begin(conn):
+            raise RuntimeError("database is locked")
+
+        released: list = []
+
+        async def tracking_release(conn):
+            released.append(conn)
+
+        with (
+            patch.object(storage_manager, "_begin_txn", failing_begin),
+            patch.object(storage_manager, "_release_txn_conn", tracking_release),
+        ):
+            with pytest.raises(RuntimeError, match="database is locked"):
+                async with storage_manager.atransaction():
+                    pass
+
+        assert len(released) == 1
+
+    @pytest.mark.asyncio
+    async def test_txn_begin_timeout_releases_conn(self, storage_manager, monkeypatch):
+        """BEGIN 挂起超过兜底阈值时释放连接并抛 StorageOperationError"""
+        import asyncio
+
+        async def hanging_begin(conn):
+            await asyncio.sleep(999)
+
+        released: list = []
+
+        async def tracking_release(conn):
+            released.append(conn)
+
+        storage_bases = importlib.import_module("ErisPulse.Core.Bases.storage")
+        constants_module = importlib.import_module("ErisPulse.Core.constants")
+        monkeypatch.setattr(constants_module, "STORAGE_TXN_BEGIN_TIMEOUT_SECS", 0.05)
+        monkeypatch.setattr(storage_manager, "_begin_txn", hanging_begin)
+        monkeypatch.setattr(storage_manager, "_release_txn_conn", tracking_release)
+
+        from ErisPulse.Core import StorageOperationError as _SOE
+
+        with pytest.raises(_SOE, match="事务开启超时"):
+            async with storage_manager.atransaction():
+                pass
+
+        assert len(released) == 1
+
+    @pytest.mark.asyncio
     async def test_slow_txn_warns_with_open_site(self, storage_manager, caplog, monkeypatch):
         """持锁超过阈值的事务提交后告警，并附事务开启调用点"""
         storage_bases = importlib.import_module("ErisPulse.Core.Bases.storage")

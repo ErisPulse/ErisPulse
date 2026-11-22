@@ -17,8 +17,13 @@ ErisPulse 路由抽象基类
 
 from __future__ import annotations
 
-from collections.abc import Iterable, Iterator
-from typing import Any
+from collections.abc import AsyncIterator, Iterable, Iterator
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from starlette.applications import Starlette
+    from starlette.datastructures import URL, Address, FormData, Headers, QueryParams, State
+    from starlette.requests import Request
 
 from .websocket import WebSocketConnectionBase, _ConnectionIdentity
 
@@ -61,7 +66,7 @@ class HttpRequest:
         return self._request.method
 
     @property
-    def url(self) -> Any:
+    def url(self) -> URL:
         """
         完整请求 URL
 
@@ -70,7 +75,7 @@ class HttpRequest:
         return self._request.url
 
     @property
-    def base_url(self) -> Any:
+    def base_url(self) -> URL:
         """
         基础 URL
 
@@ -79,7 +84,7 @@ class HttpRequest:
         return self._request.base_url
 
     @property
-    def headers(self) -> Any:
+    def headers(self) -> Headers:
         """
         请求头 (大小写不敏感)
 
@@ -88,7 +93,7 @@ class HttpRequest:
         return self._request.headers
 
     @property
-    def query_params(self) -> Any:
+    def query_params(self) -> QueryParams:
         """
         查询参数
 
@@ -115,7 +120,7 @@ class HttpRequest:
         return self._request.cookies
 
     @property
-    def client(self) -> Any:
+    def client(self) -> Address:
         """
         客户端地址
 
@@ -124,7 +129,7 @@ class HttpRequest:
         return self._request.client
 
     @property
-    def state(self) -> Any:
+    def state(self) -> State:
         """
         请求级状态存储
 
@@ -133,7 +138,7 @@ class HttpRequest:
         return self._request.state
 
     @property
-    def app(self) -> Any:
+    def app(self) -> Starlette:
         """
         ASGI 应用实例
 
@@ -178,7 +183,7 @@ class HttpRequest:
         return self._request.user
 
     @property
-    def raw(self) -> Any:
+    def raw(self) -> Request:
         """
         底层框架原生 Request 对象
 
@@ -204,7 +209,7 @@ class HttpRequest:
         """
         return await self._request.json()
 
-    async def form(self, **kwargs) -> Any:
+    async def form(self, **kwargs) -> FormData:
         """
         解析表单数据
 
@@ -214,7 +219,7 @@ class HttpRequest:
         """
         return await self._request.form(**kwargs)
 
-    async def stream(self) -> Any:
+    async def stream(self) -> AsyncIterator[bytes]:
         """
         流式读取请求体
 
@@ -236,7 +241,7 @@ class HttpRequest:
         """
         return await self._request.is_disconnected()
 
-    def url_for(self, name: str, /, **path_params: Any) -> Any:
+    def url_for(self, name: str, /, **path_params: Any) -> str:
         """
         根据路由名反向生成 URL
 
@@ -313,7 +318,7 @@ class WebSocketConnection(WebSocketConnectionBase):
     # ---- Server-specific properties ----
 
     @property
-    def base_url(self) -> Any:
+    def base_url(self) -> URL:
         """
         基础 URL
 
@@ -322,7 +327,7 @@ class WebSocketConnection(WebSocketConnectionBase):
         return self._ws.base_url
 
     @property
-    def query_params(self) -> Any:
+    def query_params(self) -> QueryParams:
         """
         查询参数
 
@@ -349,7 +354,7 @@ class WebSocketConnection(WebSocketConnectionBase):
         return self._ws.cookies
 
     @property
-    def client(self) -> Any:
+    def client(self) -> Address:
         """
         客户端地址
 
@@ -358,7 +363,7 @@ class WebSocketConnection(WebSocketConnectionBase):
         return self._ws.client
 
     @property
-    def state(self) -> Any:
+    def state(self) -> State:
         """
         连接级状态存储
 
@@ -367,7 +372,7 @@ class WebSocketConnection(WebSocketConnectionBase):
         return self._ws.state
 
     @property
-    def app(self) -> Any:
+    def app(self) -> Starlette:
         """
         ASGI 应用实例
 

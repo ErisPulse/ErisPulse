@@ -36,7 +36,7 @@ ErisPulse 是事件驱动的模块化异步机器人框架——业务代码只�
 | ② 深入 | [创建第一个机器人](getting-started/first-bot.md) | 编写第一个命令处理器 |
 | ③ 概念 | [基础概念](getting-started/basic-concepts.md) | 理解适配器/模块/事件的设计 |
 | ④ 实战 | [常见任务示例](getting-started/common-tasks.md) | 存储、定时任务、权限控制 |
-| 参考 | [配置文件说明](user-guide/configuration.md) · [CLI 命令](user-guide/cli-reference.md) · [部署指南](user-guide/deployment.md) | 按需查阅 |
+| 参考 | [配置文件说明](user-guide/configuration.md) · [CLI 命令](user-guide/cli-reference.md) · [部署指南](user-guide/deployment.md) · [升级迁移指南](user-guide/migration.md) · [常见问题](user-guide/faq.md) | 升级前核对迁移动作；排障先查 FAQ |
 | 参考 | [平台特性指南](platform-guide/README.md) | 各平台（云湖/QQ/Telegram…）的差异 |
 | 选型 | [选型指南](showcase/README.md) | 和 NoneBot2 / AstrBot / LangBot 的对比与迁移 |
 

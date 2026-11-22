@@ -29,7 +29,7 @@ import sys
 import threading
 import time
 import zipfile
-from collections import deque
+from collections import OrderedDict, deque
 from pathlib import Path
 from typing import Any
 
@@ -37,6 +37,8 @@ from .Bases.errors import ShadowPromoteError, ShadowSourceError, ShadowStateErro
 from .constants import (
     SHADOW_EXTRACT_MAX_BYTES,
     SHADOW_EXTRACT_MAX_ENTRIES,
+    SHADOW_LEDGER_MAX_PER_OWNER,
+    SHADOW_OVERLAY_MAX_ENTRIES,
     SHADOW_PERSIST_TASKS_MAX,
     SHADOW_PIP_TIMEOUT_SECS,
     SHADOW_WHL_MAX_BYTES,
@@ -52,9 +54,6 @@ __all__ = [
     "shadow_manager",
 ]
 
-# 影子账本每个 owner 的最大保留条数（内存环形，超出丢弃最旧）
-# 使用位置: ShadowLedger.record；修改影响: diff 对比的数据窗口大小
-SHADOW_LEDGER_MAX_PER_OWNER = 500
 
 
 def _source_in_plugin_dirs(plugin_loader: Any, source: Path) -> bool:
@@ -123,18 +122,27 @@ class ShadowOverlay:
     """
 
     def __init__(self) -> None:
-        self._data: dict[str, Any] = {}
-        self._tombstones: set[str] = set()
+        # 覆盖层与墓碑均为有界 LRU（审计：影子试运行高频写时防无界增长；
+        # 淘汰最旧的覆盖值/墓碑回退真库语义）
+        self._data: OrderedDict[str, Any] = OrderedDict()
+        self._tombstones: OrderedDict[str, None] = OrderedDict()
 
     def write(self, key: str, value: Any) -> None:
         """写入覆盖层"""
         self._data[key] = value
-        self._tombstones.discard(key)
+        self._data.move_to_end(key)
+        while len(self._data) > SHADOW_OVERLAY_MAX_ENTRIES:
+            stale_key, _ = self._data.popitem(last=False)
+            self._tombstones.pop(stale_key, None)
+        self._tombstones.pop(key, None)
 
     def delete(self, key: str) -> None:
         """写入墓碑（影子视角的删除）"""
         self._data.pop(key, None)
-        self._tombstones.add(key)
+        self._tombstones[key] = None
+        self._tombstones.move_to_end(key)
+        while len(self._tombstones) > SHADOW_OVERLAY_MAX_ENTRIES:
+            self._tombstones.popitem(last=False)
 
     def read(self, key: str) -> "tuple[str, Any]":
         """

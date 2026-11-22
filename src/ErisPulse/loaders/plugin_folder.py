@@ -37,13 +37,14 @@ from typing import Any
 
 from ..Core.constants import (
     ADAPTER_SOURCE_PLUGIN_FOLDER,
+    DEFAULT_PLUGINS_DIR_NAME,
     MODULE_SOURCE_PLUGIN_FOLDER,
 )
 from ..Core.i18n import i18n
 from ..Core.logger import logger
 
 # 默认插件目录名
-DEFAULT_PLUGINS_DIR = "plugins"
+DEFAULT_PLUGINS_DIR = DEFAULT_PLUGINS_DIR_NAME
 
 
 class PluginFolderLoader:

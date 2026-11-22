@@ -752,6 +752,11 @@ DEFAULT_MODULE_CALL_TIMEOUT_SECS: Final[float] = 30.0
 # 修改影响: 平台重连重推同 id 事件的去重窗口——容量越大可回溯越久，内存占用略增。
 DEFAULT_EVENT_DEDUPE_CAPACITY: Final[int] = 4096
 
+# 事件幂等去重开关默认值（ErisPulse.framework.event_dedupe）。
+# 使用位置: Core/adapter.py -> _dedupe_enabled()；runtime/frame_config.py 声明默认。
+# 修改影响: 关闭后连接重推的重复事件会重复分发（模块需自行处理重放）。
+DEFAULT_EVENT_DEDUPE_ENABLED: Final[bool] = True
+
 # 跨账户重复受理关联（cross-account receipt）的判定窗口（秒）：
 # 同平台 + 同会话 + 同发送者 + 同 alt_message 内容在窗口内再次到达（无论经哪个
 # self_id）视为同一物理消息的重复受理。
@@ -1109,6 +1114,72 @@ DEFAULT_HTTP_CLIENT_TIMEOUT_SECS: Final[float] = 30.0
 # 修改影响: 超过此时长仍拿不到事务连接/写锁则抛 StorageOperationError——
 # 兜底双层保险（内层为 SQLite busy_timeout 5s），防止事务无限死等。
 STORAGE_TXN_BEGIN_TIMEOUT_SECS: Final[float] = 30.0
+
+# 事务提交/回滚兜底超时（秒）。
+# 使用位置: Core/Bases/storage.py -> _AsyncTransaction.finish()。
+# 修改影响: 连接半死（TCP 未断无读超时）时 commit 挂起的上限；超时转
+# StorageOperationError 并释放连接，不再无限占用池连接。
+STORAGE_TXN_COMMIT_TIMEOUT_SECS: Final[float] = 30.0
+
+# 模块异步初始化后台线程的等待兜底（秒）。
+# 使用位置: loaders/module.py -> LazyModule._init_in_background_thread()。
+# 修改影响: 模块 _initialize() 卡死时调用方线程（可能是主事件循环线程）
+# 阻塞的上限；超时后调用方继续（初始化仍在后台进行，完成前模块不可用），
+# 防止无界等待死锁整个事件循环。
+# 配置文件监听轮询间隔（秒）。
+# 使用位置: Core/config.py -> watcher 循环。
+# 日志文件目录默认值（ErisPulse.logger.log_dir）。
+# 使用位置: runtime/frame_config.py 默认声明；Core/logger.py -> _setup_config。
+# 修改影响: "logs" = 默认开启文件日志（ep logs 可用、排障有据可查）；
+# 设为 "" 关闭文件输出（仅控制台）。
+DEFAULT_LOG_DIR: Final[str] = "logs"
+
+CONFIG_WATCH_INTERVAL_SECS: Final[float] = 5.0
+
+# 配置 flush 语法错误告警冷却期（秒）。
+# 使用位置: Core/config.py -> malformed sentinel 判定。
+CONFIG_MALFORMED_WARN_COOLDOWN_SECS: Final[float] = 30.0
+
+# 插件目录默认名（ErisPulse.framework.plugins_dir）。
+# 使用位置: loaders/plugin_folder.py / runtime/{frame_config,plugin_reload,dev_watch}.py。
+DEFAULT_PLUGINS_DIR_NAME: Final[str] = "plugins"
+
+# collect 多字段收集的每字段默认等待超时（秒）。
+# 使用位置: Core/Event/wrapper.py -> _builtin_collect。
+DEFAULT_COLLECT_TIMEOUT_PER_FIELD_SECS: Final[float] = 60.0
+
+# 影子覆盖层单实例的最大条目数（_data + 墓碑合计，LRU 淘汰最旧）。
+# 使用位置: Core/shadow.py -> ShadowOverlay。修改影响: 影子试运行高频写时
+# 覆盖层内存上限；超出后最旧的覆盖值/墓碑回退真库语义。
+SHADOW_OVERLAY_MAX_ENTRIES: Final[int] = 1024
+
+# 影子账本每个 owner 的最大保留条数（内存环形，超出丢弃最旧）。
+# 使用位置: Core/shadow.py -> ShadowLedger.record。
+SHADOW_LEDGER_MAX_PER_OWNER: Final[int] = 500
+
+# 会话收件箱单条文本的最大保留字符数（超出截断）。
+# 使用位置: Core/transcript.py -> append。
+TRANSCRIPT_TEXT_MAX_CHARS: Final[int] = 2000
+
+# 会话收件箱保留策略的触发间隔（每 N 行追加执行一次裁剪）。
+# 使用位置: Core/transcript.py -> _flush_async。
+TRANSCRIPT_RETENTION_INTERVAL: Final[int] = 32
+
+# 内存快照标签缓存上限（防动态 label 无界增长）。
+# 使用位置: runtime/memory.py -> snapshot。
+MEMORY_SNAPSHOT_LABELS_MAX: Final[int] = 128
+
+MODULE_ASYNC_INIT_WAIT_TIMEOUT_SECS: Final[float] = 60.0
+
+# 内存追踪（tracemalloc）默认开关（ErisPulse.framework.memory_tracing）。
+# 使用位置: runtime/memory.py -> ensure_tracing()（proactive_gc 每轮惰性启用）。
+# 修改影响: 开启后 tracemalloc 追踪 Python 分配（traced_mb 有值、增长门限不再
+# 误用 RSS），带来约 2 倍分配路径 CPU 开销——排障时开启，常态关闭。
+DEFAULT_MEMORY_TRACING: Final[bool] = False
+
+# 内存快照 top 分配点数量（tracemalloc statistics('lineno') 的归因条数）。
+# 使用位置: runtime/memory.py -> snapshot(detail=True)。
+MEMORY_SNAPSHOT_TOP_SITES: Final[int] = 10
 
 # 长事务持锁观测阈值（秒）。
 # 使用位置: Core/Bases/storage.py -> _AsyncTransaction.finish()（提交/回滚后统计持锁时长）。
@@ -1651,6 +1722,7 @@ __all__ = [
     "UNLOAD_LOCK_WAIT_TIMEOUT_SECS",
     "DEFAULT_MODULE_CALL_TIMEOUT_SECS",
     "DEFAULT_EVENT_DEDUPE_CAPACITY",
+    "DEFAULT_EVENT_DEDUPE_ENABLED",
     "DEFAULT_CROSS_RECEIPT_WINDOW_SECS",
     "DEFAULT_CROSS_RECEIPT_CAPACITY",
     "DEFAULT_CROSS_RECEIPT_POLICY",
@@ -1711,6 +1783,20 @@ __all__ = [
     "STORAGE_SYNC_IN_ASYNC_WARN_COOLDOWN_SECS",
     "STORAGE_SYNC_WARN_SITES_CAPACITY",
     "STORAGE_TXN_SLOW_WARN_SECS",
+    "STORAGE_TXN_COMMIT_TIMEOUT_SECS",
+    "MODULE_ASYNC_INIT_WAIT_TIMEOUT_SECS",
+    "CONFIG_WATCH_INTERVAL_SECS",
+    "DEFAULT_LOG_DIR",
+    "CONFIG_MALFORMED_WARN_COOLDOWN_SECS",
+    "DEFAULT_PLUGINS_DIR_NAME",
+    "DEFAULT_COLLECT_TIMEOUT_PER_FIELD_SECS",
+    "DEFAULT_MEMORY_TRACING",
+    "SHADOW_OVERLAY_MAX_ENTRIES",
+    "SHADOW_LEDGER_MAX_PER_OWNER",
+    "TRANSCRIPT_TEXT_MAX_CHARS",
+    "TRANSCRIPT_RETENTION_INTERVAL",
+    "MEMORY_SNAPSHOT_LABELS_MAX",
+    "MEMORY_SNAPSHOT_TOP_SITES",
     "STATUS_FAILED",
     "STATUS_OK",
     "STORAGE_MAX_LIST_INDEX",

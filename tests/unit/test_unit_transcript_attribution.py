@@ -50,7 +50,17 @@ def temp_sm(monkeypatch):
         transcript._flusher_started = False
         yield manager
     finally:
+        # 取消可能仍存活的 flusher 后台任务：其落库失败路径会把行 requeue
+        # 回共享缓冲（_buffer 为单例），跨测试污染后续 fixture 清空后的缓冲
+        try:
+            from ..Core.Bases.storage import AsyncBridge
+            from ..runtime.tasks import cancel_owner_tasks
+
+            AsyncBridge().run(cancel_owner_tasks("transcript", timeout=2))
+        except Exception:
+            pass
         StorageManager._instance = None
+        transcript._buffer.clear()
         for ext in ["", "-wal", "-shm"]:
             fp = temp_path + ext
             if os.path.exists(fp):

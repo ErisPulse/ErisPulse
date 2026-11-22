@@ -140,6 +140,8 @@ class PostgresStorage(_SingletonMixin, SQLStorageBase):
             "pool_min": int(section.get("pool_min", DEFAULT_STORAGE_PG_POOL_MIN)),
             "pool_max": int(section.get("pool_max", DEFAULT_STORAGE_PG_POOL_MAX)),
         }
+        # 事务连接 → 所属池映射：释放时归还原池（防池失效重建后 release 进新池）
+        self._txn_conn_resource: dict[Any, Any] = {}
 
         logger.info(i18n.t("core.storage.backend_init", backend="postgres"))
         try:
@@ -233,12 +235,27 @@ class PostgresStorage(_SingletonMixin, SQLStorageBase):
     async def _open_txn_conn(self) -> Any:
         """{!--< internal-use >!--} 事务使用池内专用连接（获取与释放在同一事件循环上）"""
         resource = await self._get_loop_resource()
-        return await resource.acquire()
+        conn = await resource.acquire()
+        self._txn_conn_resource[conn] = resource
+        return conn
 
     async def _close_txn_conn(self, conn: Any) -> None:
-        """{!--< internal-use >!--} 归还事务专用连接"""
-        resource = await self._get_loop_resource()
-        await resource.release(conn)
+        """{!--< internal-use >!--} 归还事务专用连接到其所属池（不重解析当前池）"""
+        resource = self._txn_conn_resource.pop(conn, None)
+        if resource is not None:
+            try:
+                await resource.release(conn)
+            except Exception:
+                # 归还失败（连接状态未知）：直接丢弃，池侧按断连淘汰
+                try:
+                    await conn.close()
+                except Exception:
+                    pass
+            return
+        try:
+            await conn.close()
+        except Exception:
+            pass
 
     # 事务控制（asyncpg 推荐使用 transaction() 句柄）
 

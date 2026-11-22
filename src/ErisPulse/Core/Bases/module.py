@@ -11,6 +11,9 @@ from dataclasses import asdict, dataclass, field
 from typing import TYPE_CHECKING, Any, TypedDict
 
 if TYPE_CHECKING:
+    import asyncio
+    import concurrent.futures
+
     # NotRequired 仅在 3.11+ 的 typing 提供，3.10 需 typing_extensions 兜底；
     # 本模块启用 PEP 563（字符串注解），运行时不解析该名字
     from typing_extensions import NotRequired
@@ -262,7 +265,7 @@ class BaseModule(ABC):
 
     # ==================== 后台任务 ====================
 
-    def spawn(self, coro: Any) -> Any:
+    def spawn(self, coro: Any) -> asyncio.Task[Any] | concurrent.futures.Future[Any] | None:
         """
         调度一个归属于本模块的后台任务（推荐的任务创建方式）
 

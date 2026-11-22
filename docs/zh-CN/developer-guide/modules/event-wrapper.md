@@ -313,6 +313,8 @@ await adapter.Send.To("group", target_id).Text(event.get_text())
 - **at 点名优待**：mention 目标命中本账户身份（`self.user_id` / `self.account_id`）的副本不参与关联（不注入 `multi_receipt`、不被 `drop`）——被 @ 的账户模块（`on_at_message` 驱动）始终能收到自己的事件
 - **会话账户绑定**：`ErisPulse.framework.session_accounts` 可把会话精确绑定到唯一归属账户（绑定会话仅归属账户分发，其他账户副本丢弃；独立于策略生效，at 点名优待同样保留）
 
+> 配置格式、前缀键写法与三层去重分工详见[适配器核心概念](../adapters/core-concepts.md)与[配置文件说明](../../user-guide/configuration.md)。
+
 ### 等待回复功能
 
 - `wait_reply(prompt=None, timeout=60.0, callback=None, validator=None, method="Text", pattern=None, regex=None)` - 等待用户回复

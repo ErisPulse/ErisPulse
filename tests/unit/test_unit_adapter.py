@@ -677,9 +677,28 @@ class TestEventDedupe:
 
         # 填满容量后最早的记录被淘汰（不再判重）
         for i in range(DEFAULT_EVENT_DEDUPE_CAPACITY + 10):
-            dedupe_on._is_duplicate_event(f"evt-{i}")
-        assert dedupe_on._is_duplicate_event("evt-0") is False  # 已淘汰
-        assert dedupe_on._is_duplicate_event(f"evt-{DEFAULT_EVENT_DEDUPE_CAPACITY + 9}") is True
+            dedupe_on._is_duplicate_event(f"evt-{i}", "test")
+        assert dedupe_on._is_duplicate_event("evt-0", "test") is False  # 已淘汰
+        assert dedupe_on._is_duplicate_event(f"evt-{DEFAULT_EVENT_DEDUPE_CAPACITY + 9}", "test") is True
+
+    @pytest.mark.asyncio
+    async def test_cross_platform_same_id_not_deduped(self, dedupe_on):
+        """键带平台维度：不同平台的原生数值 id 碰撞时不互吞"""
+        import asyncio
+
+        received = []
+
+        @dedupe_on.on("message")
+        async def h(e):
+            received.append((e.get("platform"), e.get("id")))
+
+        base = {"id": "9001", "type": "message", "detail_type": "private",
+                "user_id": "u1", "self": {"user_id": "b1"}, "message": [],
+                "alt_message": "m"}
+        await dedupe_on.emit({**base, "platform": "onebot11"})
+        await dedupe_on.emit({**base, "platform": "yunhu"})
+        await asyncio.sleep(0.05)
+        assert sorted(received) == [("onebot11", "9001"), ("yunhu", "9001")]
 
     @pytest.mark.asyncio
     async def test_disabled_allows_duplicates(self):
@@ -4041,6 +4060,64 @@ class TestCrossAccountReceipt:
             config.setConfig("ErisPulse.framework.session_accounts", {}, immediate=True)
 
         assert len(handler_called) == 2
+
+    @pytest.mark.asyncio
+    async def test_session_binding_typed_key_isolates_detail_type(self, manager):
+        """前缀键（group:123）与私聊会话（user:123）数值碰撞时互不命中"""
+        handler_called = []
+
+        @manager.on("message")
+        async def handler(data):
+            handler_called.append(data)
+
+        config.setConfig(
+            "ErisPulse.framework.session_accounts",
+            {"test": {"group:12345": "bot_a"}},
+            immediate=True,
+        )
+        try:
+            # 群 12345：绑定命中，非归属账户副本丢弃
+            await manager.emit(self._message_event("ev_1", "bot_a", group_id="12345"))
+            await manager.emit(self._message_event("ev_2", "bot_b", group_id="12345"))
+            # 私聊 user 12345：detail_type 不同，绑定不命中，副本照常分发
+            private_a = self._message_event("ev_3", "bot_a", group_id="12345")
+            private_a.update({"detail_type": "private", "group_id": None})
+            private_b = self._message_event("ev_4", "bot_b", group_id="12345")
+            private_b.update({"detail_type": "private", "group_id": None})
+            await manager.emit(private_a)
+            await manager.emit(private_b)
+            await asyncio.sleep(0)
+        finally:
+            config.setConfig("ErisPulse.framework.session_accounts", {}, immediate=True)
+
+        assert {event["id"] for event in handler_called} == {"ev_1", "ev_3", "ev_4"}
+
+    @pytest.mark.asyncio
+    async def test_session_binding_account_id_alias_matches_owner(self, manager):
+        """归属判定双口径：绑定值写 user_id 而事件侧为 account_id 时仍命中归属"""
+        handler_called = []
+
+        @manager.on("message")
+        async def handler(data):
+            handler_called.append(data)
+
+        config.setConfig(
+            "ErisPulse.framework.session_accounts",
+            {"test": {"group_1": "acct_a"}},
+            immediate=True,
+        )
+        try:
+            # 归属账户事件以 account_id 口径（user_id 为数字 id）
+            event = self._message_event("ev_1", "9999")
+            event["self"]["account_id"] = "acct_a"
+            await manager.emit(event)
+            # 非归属账户副本丢弃
+            await manager.emit(self._message_event("ev_2", "bot_b"))
+            await asyncio.sleep(0)
+        finally:
+            config.setConfig("ErisPulse.framework.session_accounts", {}, immediate=True)
+
+        assert {event["id"] for event in handler_called} == {"ev_1"}
 
     @pytest.mark.asyncio
     async def test_session_binding_hot_reconfig(self, manager):

@@ -161,7 +161,7 @@ class Initializer:
             )
 
             # 检查是否有异常，使用空结果继续而非终止
-            if isinstance(adapter_result, Exception):
+            if isinstance(adapter_result, BaseException):
                 self.logger.error(
                     i18n.t(
                         "core.sdk.init.adapter_load_failed", error=adapter_result
@@ -169,15 +169,15 @@ class Initializer:
                 )
                 adapter_result = ({}, [], [])
 
-            if isinstance(module_result, Exception):
+            if isinstance(module_result, BaseException):
                 self.logger.error(
                     i18n.t("core.sdk.init.module_load_failed", error=module_result)
                 )
                 module_result = ({}, [], [])
 
             # 解包结果
-            adapter_objs, enabled_adapters, disabled_adapters = adapter_result  # type: ignore
-            module_objs, enabled_modules, disabled_modules = module_result  # type: ignore
+            adapter_objs, enabled_adapters, disabled_adapters = adapter_result
+            module_objs, enabled_modules, disabled_modules = module_result
 
             # 严格模式检查点 1：加载阶段违规统一报告与中止（在任何副作用前）
             self._strict_manager.raise_if_fatal()

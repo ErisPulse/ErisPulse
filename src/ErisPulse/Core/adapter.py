@@ -41,6 +41,7 @@ from .constants import (
     DEFAULT_CROSS_RECEIPT_POLICY,
     DEFAULT_CROSS_RECEIPT_WINDOW_SECS,
     DEFAULT_EVENT_DEDUPE_CAPACITY,
+    DEFAULT_EVENT_DEDUPE_ENABLED,
     DEFAULT_HANDLER_DRAIN_TIMEOUT_SECS,
     DEFAULT_HANDLER_MAX_CONCURRENCY,
     DEFAULT_OFFLINE_BOT_EXPIRY_SECS,
@@ -146,8 +147,9 @@ class AdapterManager(ManagerBase):
         # Bot状态存储 - {platform: {bot_id: {"status": str, "last_active": float, "info": dict}}}
         self._bots: dict[str, dict[str, dict]] = {}
 
-        # 事件幂等去重：已分发事件 id 的 LRU 记录（平台重连重推同 id 事件只分发一次）
-        self._seen_event_ids: OrderedDict[str, None] = OrderedDict()
+        # 事件幂等去重：已分发 (platform, event_id) 的 LRU 记录（平台重连重推
+        # 同 id 事件只分发一次；键带平台维度——不同平台的原生数值 id 可能碰撞）
+        self._seen_event_ids: OrderedDict[tuple, None] = OrderedDict()
         self._event_dedupe_enabled: bool | None = None  # None = 惰性读配置
 
         # 跨账户重复受理关联：内容键 → (首个受理 self_id, 事件 id, 单调时间戳) 的
@@ -1815,7 +1817,7 @@ class AdapterManager(ManagerBase):
         data.setdefault("id", trace_id)
 
         # 事件幂等去重：平台 websocket 重连重推（同 event id）只分发一次
-        if self._is_duplicate_event(trace_id):
+        if self._is_duplicate_event(trace_id, platform):
             logger.trace(
                 i18n.t("core.adapter.event_duplicated", event_id=trace_id, platform=platform)
             )
@@ -1861,30 +1863,35 @@ class AdapterManager(ManagerBase):
                 from .config import parse_bool_config
 
                 self._event_dedupe_enabled = parse_bool_config(
-                    config.getConfig("ErisPulse.framework.event_dedupe", True)
+                    config.getConfig(
+                        "ErisPulse.framework.event_dedupe", DEFAULT_EVENT_DEDUPE_ENABLED
+                    )
                 )
             except Exception:
                 self._event_dedupe_enabled = True
         return self._event_dedupe_enabled
 
-    def _is_duplicate_event(self, event_id: str) -> bool:
+    def _is_duplicate_event(self, event_id: str, platform: str) -> bool:
         """
         {!--< internal-use >!--}
-        事件幂等去重判定（LRU 记录已分发的事件 id）
+        事件幂等去重判定（LRU 记录已分发的 (platform, event_id)）
 
         平台 websocket 重连后重推同一事件（相同 ``event["id"]``）时只分发一次；
+        键带平台维度——适配器可透传平台原生数值 id，不同平台间碰撞时不互吞。
         容量上限 ``DEFAULT_EVENT_DEDUPE_CAPACITY``，超出后淘汰最早记录。
 
         :param event_id: 事件 id
+        :param platform: 平台名
         :return: 是否为重复事件（True 时调用方应丢弃）
         """
         if not self._dedupe_enabled():
             return False
         seen = self._seen_event_ids
-        if event_id in seen:
-            seen.move_to_end(event_id)
+        key = (platform, event_id)
+        if key in seen:
+            seen.move_to_end(key)
             return True
-        seen[event_id] = None
+        seen[key] = None
         if len(seen) > DEFAULT_EVENT_DEDUPE_CAPACITY:
             seen.popitem(last=False)
         return False
@@ -1963,7 +1970,14 @@ class AdapterManager(ManagerBase):
         session_id = _scope.session_id_from_event(data)
         if not session_id:
             return ""
-        return str(platform_bindings.get(session_id) or "")
+        # 精确键优先（"group:123"）：并入 detail_type 防同数值异类型会话碰撞
+        # （如 user 123 与 group 123）；裸键（"123"）回退兼容既有配置，
+        # 语义为匹配该会话 ID 的全部会话类型
+        detail_type = str(data.get("detail_type") or "")
+        typed = platform_bindings.get(f"{detail_type}:{session_id}")
+        if typed is None:
+            typed = platform_bindings.get(session_id)
+        return str(typed or "")
 
     def _cross_receipt_check(self, data: dict, platform: str, trace_id: str) -> bool:
         """
@@ -1992,12 +2006,24 @@ class AdapterManager(ManagerBase):
 
         from .scope import scope as _scope
 
-        # ① 会话账户绑定：精确声明会话归属，无内容启发式
+        # ① 会话账户绑定：精确声明会话归属，无内容启发式。
+        # 归属判定与 _mention_exempt 同款双口径（user_id / account_id 任一
+        # 命中即归属）——动态账户适配器同时填两者，绑定值写哪个口径都命中
         bound_account = self._session_bound_account(platform, data)
         if bound_account:
-            current_account = _scope.bot_id_from_event(data)
-            if current_account == bound_account:
+            self_info = data.get("self")
+            current_identifiers = (
+                {
+                    str(self_info.get("user_id") or ""),
+                    str(self_info.get("account_id") or ""),
+                }
+                - {""}
+                if isinstance(self_info, dict)
+                else set()
+            )
+            if bound_account in current_identifiers:
                 return False
+            current_account = "/".join(sorted(current_identifiers))
             if self._mention_exempt(data):
                 logger.trace(
                     i18n.t(
@@ -2427,12 +2453,19 @@ class AdapterManager(ManagerBase):
         :return: 是否命中
         """
         wanted_type = handler_wrapper.get("detail_type")
-        if wanted_type and detail_type:
-            detail_matcher = handler_wrapper.get("_detail_matcher")
-            if detail_matcher is None:
-                detail_matcher = compile_entry_matcher(str(wanted_type))
-            if not detail_matcher(str(detail_type)):
-                return False
+        if wanted_type:
+            if not detail_type:
+                # fail-closed：声明了 detail_type 条件的处理器，事件侧缺失该
+                # 维度时按不匹配处理（畸形事件不再穿透全部条件过滤）；
+                # 原生事件不保证标准 detail_type 段，维持放行
+                if not raw:
+                    return False
+            else:
+                detail_matcher = handler_wrapper.get("_detail_matcher")
+                if detail_matcher is None:
+                    detail_matcher = compile_entry_matcher(str(wanted_type))
+                if not detail_matcher(str(detail_type)):
+                    return False
 
         pattern = handler_wrapper.get("pattern")
         regex = handler_wrapper.get("regex")
@@ -2542,6 +2575,8 @@ class AdapterManager(ManagerBase):
         self._handler_queue_max_pending = None
         # cross_account_policy 惰性缓存随配置变更失效，下一次事件按新值重读（热生效）
         self._cross_receipt_policy = None
+        # event_dedupe 惰性缓存同样随配置变更失效（热更新开关去重）
+        self._event_dedupe_enabled = None
         try:
             from ..runtime import get_framework_config
 
@@ -2891,7 +2926,9 @@ class AdapterManager(ManagerBase):
         {!--< internal-use >!--}
         清除过期的离线 Bot 记录
 
-        遍历 _bots，将状态为 offline 且 last_active 距今超过 expiry_secs 的条目移除。
+        遍历 _bots，将 last_active 距今超过 expiry_secs 的条目移除（offline
+        状态或连接异常中断未发 offline meta 的消失 Bot 一并按活跃时间兜底
+        淘汰——在线 Bot 的心跳/消息会持续刷新 last_active，不受影响）。
 
         :param expiry_secs: 过期时间（秒），None 时从框架配置读取
         :return: int 被清除的 Bot 记录数
@@ -2914,10 +2951,7 @@ class AdapterManager(ManagerBase):
         for platform in list(self._bots.keys()):
             for bot_id in list(self._bots[platform].keys()):
                 bot_info = self._bots[platform][bot_id]
-                if (
-                    bot_info.get("status") == BOT_STATUS_OFFLINE
-                    and (now - bot_info.get("last_active", 0)) > expiry_secs
-                ):
+                if (now - bot_info.get("last_active", 0)) > expiry_secs:
                     del self._bots[platform][bot_id]
                     evicted += 1
             if not self._bots[platform]:

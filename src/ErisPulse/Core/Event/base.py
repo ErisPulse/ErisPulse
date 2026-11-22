@@ -54,16 +54,26 @@ async def _invoke_handler(handler_info: dict, event: Event) -> None:
     )
     _owner = handler_info.get("owner") or current_owner.get()
 
-    # 影子模块隔离（方向十一）：影子 handler 收到的是事件的深拷贝副本（带
+    # 影子模块隔离（方向十一）：影子 handler 收到的是事件的定向拷贝副本（带
     # _shadow 标记）——影子对副本的改写（含嵌套 message 段等内层结构）/
     # mark_processed / stop 不会传播回原事件（多处理器路径的外层副本与合并
-    # 循环因此对本 handler 变为 no-op）。仅影子路径付出深拷贝成本
+    # 循环因此对本 handler 变为 no-op）。仅影子路径付出拷贝成本：顶层浅拷贝
+    # + message 段与平台原生负载逐段深拷贝（整事件通用 deepcopy 会把
+    # 含 base64 的事件放大到 MB 级，定向拷贝隔离语义不变）
     try:
         from ..ownership import ownership as _ownership
     except Exception:
         _ownership = None
     if _ownership is not None and _ownership.is_shadow(_owner):
-        event = Event(copy.deepcopy(dict(event)))
+        shadow_data = dict(event)
+        shadow_data["message"] = [
+            copy.deepcopy(seg) if isinstance(seg, dict) else seg
+            for seg in shadow_data.get("message", [])
+        ]
+        for raw_key in [k for k in shadow_data if k.endswith("_raw")]:
+            if isinstance(shadow_data[raw_key], dict):
+                shadow_data[raw_key] = copy.deepcopy(shadow_data[raw_key])
+        event = Event(shadow_data)
         event["_shadow"] = True
 
     # 切换到本 handler 的局部 wait 记录器。
@@ -457,7 +467,7 @@ class BaseEventHandler:
         # 忽略自己发送的消息（self 标识取 account_id or user_id，与全框架口径一致：
         # 仅填 self.account_id 的适配器此前会漏判导致机器人消息自激分发）
         if self.event_type == EVENT_TYPE_MESSAGE:
-            _self_info = event.get("self", {})
+            _self_info = event.get("self") or {}
             _self_id = _self_info.get("account_id") or _self_info.get("user_id")
             if _self_id is not None and str(_self_id) == str(event.get("user_id")):
                 event_config = get_event_config()
@@ -542,8 +552,20 @@ class BaseEventHandler:
                         break
                     continue
 
-                # 多个同优先级处理器：各自独立副本并行执行
-                copies = [Event(dict(event)) for _ in active]
+                # 多个同优先级处理器：各自独立副本并行执行（顶层浅拷贝 +
+                # message 段与平台原生负载逐段深拷贝——嵌套结构共享会让
+                # 任一处理器的就地改写泄露进其他副本）
+                copies: list[Event] = []
+                for _ in active:
+                    copy_data = dict(event)
+                    copy_data["message"] = [
+                        copy.deepcopy(seg) if isinstance(seg, dict) else seg
+                        for seg in copy_data.get("message", [])
+                    ]
+                    for raw_key in [k for k in copy_data if k.endswith("_raw")]:
+                        if isinstance(copy_data[raw_key], dict):
+                            copy_data[raw_key] = copy.deepcopy(copy_data[raw_key])
+                    copies.append(Event(copy_data))
                 _multi_t = _time.monotonic()
                 await asyncio.gather(*(_invoke_handler(h, c) for h, c in zip(active, copies, strict=False)))
                 _multi_elapsed = _time.monotonic() - _multi_t
@@ -563,14 +585,14 @@ class BaseEventHandler:
 
                 # 合并修改（后者覆盖前者），并检测同优先级冲突
                 _modified_tracker: dict[str, list[dict]] = {}  # field -> [{handler_info}]
-                for h_info, copy in zip(active, copies, strict=False):
+                for h_info, copy_evt in zip(active, copies, strict=False):
                     _h_name = getattr(
                         h_info["func"],
                         "__qualname__",
                         getattr(h_info["func"], "__name__", str(h_info["func"])),
                     )
                     _h_owner = h_info.get("owner", "<unknown>")
-                    for key, value in copy.items():
+                    for key, value in copy_evt.items():
                         if value != event.get(key, _sentinel):
                             event[key] = value
                             _modified_tracker.setdefault(key, []).append(

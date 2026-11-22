@@ -21,6 +21,7 @@
 from __future__ import annotations
 
 import asyncio
+import concurrent.futures
 import inspect
 import threading
 import weakref
@@ -53,6 +54,11 @@ _owner_timers: dict[str | None, set[asyncio.TimerHandle]] = {}
 # 按资源归属者索引的存活线程表（线程无法强杀，登记仅作观测与审计；
 # 线程自然退出后经包装 target 自动移除）。
 _owner_threads: dict[str | None, set[threading.Thread]] = {}
+
+# 三张归属表的登记/弹出锁：登记点可从任意线程（config-watcher、桥接线程、
+# 用户线程）调用，get→建→赋值的 check-then-act 交错会覆盖对方登记的
+# set（任务归属登记丢失 = 卸载兜底取消失效 = 热重载任务残留）
+_OWNER_TABLES_LOCK = threading.Lock()
 
 # 主事件循环注册表：由 ``sdk.run()`` / ``sdk.init()`` 在启动时注册。
 # 后台线程（如 config watcher）在无事件循环时，可通过它把协程调度回主循环，
@@ -218,15 +224,16 @@ def _track_owner_task(owner: str | None, task: Any) -> None:
     :param owner: 资源归属者（模块名/适配器平台名），None 表示无归属
     :param task: 已调度的 Task 或 Future
     """
-    tasks = _owner_tasks.get(owner)
-    if tasks is None:
-        tasks = _owner_tasks[owner] = set()
-    tasks.add(task)
-    try:
-        task.add_done_callback(tasks.discard)
-    except Exception:
-        # concurrent.futures.Future 支持 add_done_callback；防御异常实现
-        tasks.discard(task)
+    with _OWNER_TABLES_LOCK:
+        tasks = _owner_tasks.get(owner)
+        if tasks is None:
+            tasks = _owner_tasks[owner] = set()
+        tasks.add(task)
+        try:
+            task.add_done_callback(tasks.discard)
+        except Exception:
+            # concurrent.futures.Future 支持 add_done_callback；防御异常实现
+            tasks.discard(task)
 
 
 def get_owner_tasks(owner: str | None) -> set[Any]:
@@ -239,7 +246,8 @@ def get_owner_tasks(owner: str | None) -> set[Any]:
     :param owner: 资源归属者（模块名/适配器平台名），None 表示无归属任务
     :return: 未完成任务集合的浅拷贝
     """
-    return set(_owner_tasks.get(owner, ()))
+    with _OWNER_TABLES_LOCK:
+        return set(_owner_tasks.get(owner, ()))
 
 
 async def cancel_owner_tasks(owner: str | None, *, timeout: float = DEFAULT_OWNER_CANCEL_TIMEOUT_SECS) -> int:
@@ -265,7 +273,9 @@ async def cancel_owner_tasks(owner: str | None, *, timeout: float = DEFAULT_OWNE
     for awaitable in pending_removed:
         _close_awaitable(awaitable)
 
-    timers = _owner_timers.pop(owner, None)
+    with _OWNER_TABLES_LOCK:
+        timers = _owner_timers.pop(owner, None)
+        tasks = _owner_tasks.pop(owner, None)
     if timers:
         for handle in timers:
             try:
@@ -274,7 +284,6 @@ async def cancel_owner_tasks(owner: str | None, *, timeout: float = DEFAULT_OWNE
                 pass
         timers.clear()
 
-    tasks = _owner_tasks.pop(owner, None)
     if not tasks:
         return len(pending_removed)
 
@@ -355,7 +364,9 @@ async def cancel_all_background_tasks(*, timeout: float = DEFAULT_OWNER_CANCEL_T
     """
     total = 0
     # 无归属上下文（None 键）的任务同样会被遍历清理
-    for owner in list(_owner_tasks.keys()) + list(_owner_timers.keys()):
+    with _OWNER_TABLES_LOCK:
+        owners = list(_owner_tasks.keys()) + list(_owner_timers.keys())
+    for owner in owners:
         total += await cancel_owner_tasks(owner, timeout=timeout)
 
     with _PENDING_LOCK:
@@ -377,7 +388,7 @@ async def cancel_all_background_tasks(*, timeout: float = DEFAULT_OWNER_CANCEL_T
     return total
 
 
-def spawn_background(coro: Awaitable[_T] | Coroutine[_T, Any, Any], *, owner: str | None = None) -> Any:
+def spawn_background(coro: Awaitable[_T] | Coroutine[Any, Any, _T], *, owner: str | None = None) -> asyncio.Task[_T] | concurrent.futures.Future[_T] | None:
     """
     调度一个 fire-and-forget 后台任务
 
@@ -594,15 +605,17 @@ def spawn_later(
 
         timer = threading.Timer(delay, _fire_threaded)
         timer.daemon = True
-        timers = _owner_timers.setdefault(task_owner, set())
-        # 线程型兜底定时器鸭子类型兼容（有 .cancel()），登记进同一归属表
-        timers.add(cast(asyncio.TimerHandle, timer))
+        with _OWNER_TABLES_LOCK:
+            timers = _owner_timers.setdefault(task_owner, set())
+            # 线程型兜底定时器鸭子类型兼容（有 .cancel()），登记进同一归属表
+            timers.add(cast(asyncio.TimerHandle, timer))
         timer.start()
         return cast(asyncio.TimerHandle, timer)
 
     handle = loop.call_later(delay, _fire)
-    timers = _owner_timers.setdefault(task_owner, set())
-    timers.add(handle)
+    with _OWNER_TABLES_LOCK:
+        timers = _owner_timers.setdefault(task_owner, set())
+        timers.add(handle)
     return handle
 
 
@@ -646,8 +659,9 @@ def spawn_thread(
                 threads.discard(thread)
 
     thread = threading.Thread(target=_runner, name=f"erispulse:{name}", daemon=daemon)
-    threads = _owner_threads.setdefault(task_owner, set())
-    threads.add(thread)
+    with _OWNER_TABLES_LOCK:
+        threads = _owner_threads.setdefault(task_owner, set())
+        threads.add(thread)
     thread.start()
     return thread
 
@@ -659,7 +673,8 @@ def get_owner_timers(owner: str | None) -> set[asyncio.TimerHandle]:
     :param owner: 资源归属者（模块名/适配器平台名）
     :return: 未触发句柄集合的浅拷贝
     """
-    return set(_owner_timers.get(owner, ()))
+    with _OWNER_TABLES_LOCK:
+        return set(_owner_timers.get(owner, ()))
 
 
 def get_owner_threads(owner: str | None) -> set[threading.Thread]:
@@ -669,7 +684,8 @@ def get_owner_threads(owner: str | None) -> set[threading.Thread]:
     :param owner: 资源归属者（模块名/适配器平台名）
     :return: 存活线程集合的浅拷贝
     """
-    return {t for t in _owner_threads.get(owner, ()) if t.is_alive()}
+    with _OWNER_TABLES_LOCK:
+        return {t for t in _owner_threads.get(owner, ()) if t.is_alive()}
 
 
 __all__ = [

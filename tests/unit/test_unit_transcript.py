@@ -165,7 +165,11 @@ class TestRetention:
         evt = _evt()
         for i in range(10):
             transcript.append(evt, "user", f"m{i}")
-        transcript._retention(transcript.session_key_from_event(evt), max_per_session=5, ttl_hours=0)
+        asyncio.run(
+            transcript._retention(
+                transcript.session_key_from_event(evt), max_per_session=5, ttl_hours=0
+            )
+        )
 
         history = asyncio.run(evt.history(50))
         assert len(history) == 5

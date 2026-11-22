@@ -16,6 +16,7 @@ from pathlib import Path
 from typing import Any
 
 from ..Core.constants import (
+    DEFAULT_PLUGINS_DIR_NAME,
     FILE_RELOAD_DEBOUNCE_SECS,
     FILE_WATCH_POLL_INTERVAL_SECS,
     FILE_WATCHER_IGNORED_DIRS,
@@ -275,7 +276,7 @@ class DevWatcher:
 
         plugin_dirs: list[str] = []
         if framework.get("watch_include_plugin_dirs", True):
-            raw_dirs = framework.get("plugins_dir", "plugins")
+            raw_dirs = framework.get("plugins_dir", DEFAULT_PLUGINS_DIR_NAME)
             if isinstance(raw_dirs, str):
                 plugin_dirs = [raw_dirs]
             elif isinstance(raw_dirs, (list, tuple)):

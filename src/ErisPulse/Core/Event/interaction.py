@@ -42,7 +42,7 @@ import asyncio
 import time
 from typing import TYPE_CHECKING, Any
 
-from ...runtime import get_event_config
+from ...runtime import get_event_config_value
 from ...runtime.context import current_owner
 from ..Bases.errors import InteractionCancelled, SessionOccupiedError
 from ..constants import (
@@ -435,9 +435,9 @@ class InteractionManager:
         cmdpass = entry.cmdpass
         if cmdpass is None:
             cmdpass = bool(
-                get_event_config()
-                .get("wait_reply", {})
-                .get("cmdpass", DEFAULT_WAIT_REPLY_CMDPASS)
+                get_event_config_value(
+                    "wait_reply", "cmdpass", DEFAULT_WAIT_REPLY_CMDPASS
+                )
             )
         if not cmdpass and event.get("type", "") == "message":
             # 文本口径与命令分发一致（alt_message 优先 + 段回退）：
@@ -532,8 +532,10 @@ class InteractionManager:
         # 认领事件（认领 + 阻断），阻止低优先级处理器再介入；
         # ErisPulse.event.wait_reply.block = false 时仅认领不阻断（观察者可见）
         try:
-            wait_reply_block = get_event_config().get("wait_reply", {}).get(
-                "block", DEFAULT_WAIT_REPLY_BLOCK
+            wait_reply_block = bool(
+                get_event_config_value(
+                    "wait_reply", "block", DEFAULT_WAIT_REPLY_BLOCK
+                )
             )
         except Exception:
             wait_reply_block = DEFAULT_WAIT_REPLY_BLOCK
@@ -927,6 +929,32 @@ class InteractionManager:
         return count
 
     # ==================== 诊断 ====================
+
+    def sweep_expired(self) -> int:
+        """
+        清扫纯残留的过期条目（proactive_gc 内部资源回收调用）
+
+        仅移除已过 expires_at 且 future 已完结（完成/取消/无 future）的条目
+        ——不触碰仍在等待中的 future（其生命周期归调用方的 wait_for）。
+
+        :return: 清除的条目数
+
+        :example:
+        >>> interaction.sweep_expired()
+        2
+        """
+        now = time.monotonic()
+        removed = 0
+        for table in (self._entries, self._session_entries):
+            for key, entry in list(table.items()):
+                if not entry.expires_at or now <= entry.expires_at:
+                    continue
+                future = entry.future
+                if future is not None and not future.done():
+                    continue  # 调用方仍在等待：留给其自身的超时路径收尾
+                table.pop(key, None)
+                removed += 1
+        return removed
 
     def counts(self) -> dict[str, Any]:
         """

@@ -13,6 +13,7 @@ ErisPulse 生命周期管理模块
 """
 
 import asyncio
+import functools
 import inspect
 import time
 from collections.abc import Callable
@@ -217,18 +218,23 @@ class LifecycleManager:
             raise ValueError(i18n.t("core.lifecycle.event_name_required"))
 
         def decorator(func: Callable) -> Callable:
+            # wraps + kwargs 透传：注册的是 wrapper，但 depends 提取与
+            # 日志名都走 wrapper 的签名/qualname——不带 wraps 会丢失原函数
+            # 的 Depends 声明（静默不注入）与处理器名
             if inspect.iscoroutinefunction(func):
-                async def async_wrapper(data):
+                @functools.wraps(func)
+                async def async_wrapper(data, **kwargs):
                     try:
-                        return await func(data)
+                        return await func(data, **kwargs)
                     finally:
                         self.unregister(event, async_wrapper)
 
                 registered = async_wrapper
             else:
-                def sync_wrapper(data):
+                @functools.wraps(func)
+                def sync_wrapper(data, **kwargs):
                     try:
-                        return func(data)
+                        return func(data, **kwargs)
                     finally:
                         self.unregister(event, sync_wrapper)
 

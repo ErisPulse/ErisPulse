@@ -21,9 +21,13 @@ import asyncio
 import json
 import time
 from collections import deque
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from .Bases.client import BaseClient, BaseClientWebSocket, BaseHttpResponse
+
+if TYPE_CHECKING:
+    from multidict import CIMultiDictProxy
+    from yarl import URL
 from .Bases.errors import (
     ClientConnectionError,
     ClientError,
@@ -98,7 +102,7 @@ class HttpResponse(BaseHttpResponse):
         return self._response.reason
 
     @property
-    def headers(self) -> Any:
+    def headers(self) -> CIMultiDictProxy[str]:
         """
         响应头
 
@@ -125,7 +129,7 @@ class HttpResponse(BaseHttpResponse):
         return self._response.charset
 
     @property
-    def url(self) -> Any:
+    def url(self) -> URL:
         """
         响应 URL (可能因重定向而与请求 URL 不同)
 

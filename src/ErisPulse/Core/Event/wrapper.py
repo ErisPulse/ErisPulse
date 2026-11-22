@@ -728,7 +728,7 @@ class Event(dict):
 
         :return: 机器人平台名称
         """
-        return self.get("self", {}).get("platform", "")
+        return (self.get("self") or {}).get("platform", "")
 
     def get_self_user_id(self) -> str:
         """
@@ -736,7 +736,7 @@ class Event(dict):
 
         :return: 机器人用户ID
         """
-        return self.get("self", {}).get("user_id", "")
+        return (self.get("self") or {}).get("user_id", "")
 
     def get_self_account_id(self) -> str:
         """
@@ -747,7 +747,7 @@ class Event(dict):
 
         :return: 机器人账户标识
         """
-        self_info = self.get("self", {})
+        self_info = (self.get("self") or {})
         return self_info.get("account_id", "") or self_info.get("user_id", "")
 
     def get_self_info(self) -> dict[str, Any]:
@@ -756,7 +756,7 @@ class Event(dict):
 
         :return: 机器人信息字典
         """
-        return self.get("self", {})
+        return (self.get("self") or {})
 
     # ==================== 消息事件专用方法 ====================
 
@@ -1161,7 +1161,7 @@ class Event(dict):
                 i18n.t("core.event.request_missing_id", action=action)
             )
 
-        bot_id = self.get("self", {}).get("account_id", "") or self.get("self", {}).get(
+        bot_id = (self.get("self") or {}).get("account_id", "") or (self.get("self") or {}).get(
             "user_id", ""
         )
 
@@ -1244,7 +1244,7 @@ class Event(dict):
                 )
             )
 
-        bot_id = self.get("self", {}).get("account_id", "") or self.get("self", {}).get(
+        bot_id = (self.get("self") or {}).get("account_id", "") or (self.get("self") or {}).get(
             "user_id", ""
         )
 

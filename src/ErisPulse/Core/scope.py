@@ -957,7 +957,9 @@ class ScopeManager:
             seg_data = segment.get("data")
             user_id = seg_data.get("user_id") if isinstance(seg_data, dict) else None
             if user_id:
-                mention_ids.append(user_id)
+                # str 归一：平台可能透传原生 int（与 has_mention 同口径），
+                # 注解承诺 list[str]
+                mention_ids.append(str(user_id))
         return mention_ids
 
     def _put_cache(self, cache: OrderedDict, key: tuple, value: bool) -> None:

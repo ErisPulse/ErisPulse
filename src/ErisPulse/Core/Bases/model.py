@@ -324,9 +324,6 @@ class Field:
 
 
 class ColumnExpr:
-    # __eq__ 被重载为条件构造（返回 Condition），本对象不支持哈希
-    __hash__ = None  # type: ignore[assignment]
-
     """
     列查询表达式（模型类属性访问的返回值）
 
@@ -337,6 +334,9 @@ class ColumnExpr:
     由 Field.__get__ 在类访问时创建，模块作者无需直接实例化
     {!--< /internal-use >!--}
     """
+
+    # __eq__ 被重载为条件构造（返回 Condition），本对象不支持哈希
+    __hash__ = None  # type: ignore[assignment]
 
     def __init__(self, column: str, category: str = "str"):
         self.column = column
@@ -488,16 +488,16 @@ class QuerySet(Generic[ModelT]):
         self._limit: int | None = None
         self._offset: int | None = None
 
-    def order_by(self, *fields: str) -> QuerySet[ModelT]:
+    def order_by(self, *fields: str) -> Self:
         """排序（``"age"`` 升序 / ``"-age"`` 降序）"""
         self._order.extend(fields)
         return self
 
-    def limit(self, n: int) -> QuerySet[ModelT]:
+    def limit(self, n: int) -> Self:
         self._limit = n
         return self
 
-    def offset(self, n: int) -> QuerySet[ModelT]:
+    def offset(self, n: int) -> Self:
         self._offset = n
         return self
 

@@ -78,10 +78,25 @@ def start_proactive_gc(sdk: SDK) -> None:
                 await asyncio.sleep(interval)
                 round_count += 1
 
+                # 0. 惰性启用内存追踪（配置开关，幂等）——开启后增长门限
+                # 不再误用 RSS，快照可输出 top 分配点
+                try:
+                    from .memory import ensure_tracing
+
+                    ensure_tracing()
+                except Exception:
+                    pass
+
                 # 1. 内部资源回收（廉价，始终执行）
                 evicted = 0
                 try:
                     evicted = sdk.adapter._evict_offline_bots()
+                except Exception:
+                    pass
+                try:
+                    from ..Core.Event.interaction import interaction
+
+                    evicted += interaction.sweep_expired()
                 except Exception:
                     pass
 

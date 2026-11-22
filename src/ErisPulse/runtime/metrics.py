@@ -74,7 +74,12 @@ class MetricsRegistry:
         instance = self._instance_id
         for name, value in sorted(self._counters.items()):
             safe = name.replace(".", "_").replace("-", "_")
+            # HELP/TYPE 元信息（Prometheus 规范；计数器类型统一 counter）
+            lines.append(f"# HELP {prefix}_{safe} {name}")
+            lines.append(f"# TYPE {prefix}_{safe} counter")
             lines.append(f'{prefix}_{safe}{{instance="{instance}"}} {value}')
+        lines.append(f"# HELP {prefix}_uptime_seconds Process uptime in seconds")
+        lines.append(f"# TYPE {prefix}_uptime_seconds gauge")
         lines.append(
             f'{prefix}_uptime_seconds{{instance="{instance}"}} {self.uptime_seconds:.1f}'
         )

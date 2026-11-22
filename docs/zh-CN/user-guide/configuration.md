@@ -133,10 +133,13 @@ MYMODULE_API_KEY=sk-xxx docker compose up -d
 
 | 组件 | 支持热更新的配置 | 行为 |
 |------|----------------|------|
-| **日志 Logger** | `logger.level` / `log_files` / `log_dir`（含分段参数）/ `memory_limit` / `format` / `exclude_levels` | 自动重新应用（带变更检测） |
+| **日志 Logger** | `logger.level` / `log_files` / `log_dir`（含分段参数）/ `memory_limit` / `total_memory_limit` / `format` / `exclude_levels` | 自动重新应用（带变更检测） |
 | **命令系统 CommandHandler** | `event.command.prefix` / `case_sensitive` / `allow_space_prefix` / `must_at_bot` | 下一条消息即生效 |
 | **适配器并发** | `framework.handler_max_concurrency` | 失效缓存信号量，按新值重建 |
 | **主动 GC** | `framework.proactive_gc_*` | 配置变更即时重启 GC 任务，支持运行时调整/禁用/重新启用 |
+| **事件去重/跨账户** | `framework.event_dedupe` / `cross_account_policy` | 惰性缓存失效，下一次事件按新值重读 |
+| **会话账户绑定** | `framework.session_accounts` | 每事件实时读取，变更即时生效 |
+| **内存追踪** | `framework.memory_tracing` | 下一次主动 GC 轮生效（tracemalloc 无法安全热重置帧数） |
 | **主人系统 Master** | `master.users` | 每次 `is_master()` 检查实时读取，无需重启 |
 | **模块/适配器配置** | 各自的配置项 | 触发 `on_config_update(old, new)` 回调 |
 
@@ -247,7 +250,7 @@ users = {}
 level = "INFO"
 format = "rich"
 log_files = []
-log_dir = ""
+log_dir = "logs"
 log_rotation = "size"
 log_max_size_mb = 10
 log_backup_count = 5
@@ -398,7 +401,7 @@ fn.unregister()
 [ErisPulse.logger]
 level = "INFO"
 log_files = []                # 显式日志文件列表（与 log_dir 互斥，优先级更高）
-log_dir = ""                  # 日志目录（设置后自动分段轮转）
+log_dir = "logs"                  # 日志目录（设置后自动分段轮转）
 log_rotation = "size"         # 分段方式: "size" / "date" / "none"
 log_max_size_mb = 10          # size 模式单文件上限（MB）
 log_backup_count = 5          # 保留的历史日志文件数
@@ -413,7 +416,7 @@ exclude_levels = ["EVENT"]
 | level | string | INFO | 日志级别：TRACE, DEBUG, INFO, WARNING, ERROR, CRITICAL（TRACE 为最低级别，输出框架内部详细调试信息） |
 | format | string | rich | 日志输出格式：`rich`（彩色，默认）、`plain`（纯文本无颜色，适合日志采集/管道重定向）、`json`（JSON 结构化，适合 ELK 等） |
 | log_files | array | 空 | 日志输出文件列表（显式路径，不分段） |
-| log_dir | string | 空 | 日志输出目录（自动创建）。设置后写入目录内 `erispulse.log` 并按 `log_rotation` 自动分段；与 `log_files` 互斥，`log_files` 优先 |
+| log_dir | string | "logs" | 日志输出目录（自动创建）。设置后写入目录内 `erispulse.log` 并按 `log_rotation` 自动分段；与 `log_files` 互斥，`log_files` 优先 |
 | log_rotation | string | size | 分段方式：`size`（按大小）/ `date`（按时间）/ `none`（不分段） |
 | log_max_size_mb | float | 10 | size 模式单文件大小上限（MB），超过后轮转为 `.1`/`.2` 备份 |
 | log_backup_count | integer | 5 | 保留的历史日志文件数，超出的最旧备份自动删除 |
@@ -480,7 +483,15 @@ adapters = []
 | watch_include_plugin_dirs | boolean | true | `epsdk run --reload` 是否把插件目录交给插件热重载 watcher 精确处理（单模块重载），并从全量监控中排除 |
 | event_dedupe | boolean | true | 事件幂等去重：相同事件 id 的重复投递（连接层重推 / 网关重发）只分发一次 |
 | cross_account_policy | string | "off" | 跨账户重复受理策略：同一物理消息经多个账户先后到达时的处理——`off` 不关联（事件照常逐一分发，默认）；`mark` 副本注入顶层 `multi_receipt` 字段（指向首个受理事件）后照常分发，模块读取该字段自行裁决；`drop` 副本在分发入口直接丢弃（框架层去重，模块无感）。mention 目标命中接收账户自身（`user_id` / `account_id`）的副本不参与关联（at 点名优待）；策略支持热更新，变更即时生效 |
-| session_accounts | table | {} | 会话账户绑定：`{"平台名": {"会话ID": "账户bot_id"}}`，把会话精确绑定到唯一归属账户——绑定会话仅归属账户分发，其他账户副本丢弃（独立于 `cross_account_policy` 生效，配置即开启；at 点名优待保留）；实时读配置，热更新生效 |
+| session_accounts | table | {} | 会话账户绑定：`{"平台名": {"会话ID": "账户bot_id"}}`，把会话精确绑定到唯一归属账户——绑定会话仅归属账户分发，其他账户副本丢弃（独立于 `cross_account_policy` 生效，配置即开启；at 点名优待保留）。会话 ID 推荐 `"group:123"` 前缀格式（隔离同数值的私聊会话），裸键 `"123"` 兼容写法匹配全部会话类型；实时读配置，热更新生效 |
+| memory_tracing | boolean | false | 内存追踪（tracemalloc）：开启后 `/metrics` 与内存快照可输出 traced 内存与 top 分配点，增长门限不再误用 RSS；约 2 倍分配路径 CPU 开销——排障时开启，常态关闭；热更新，下一次主动 GC 轮生效 |
+
+会话账户绑定示例（推荐前缀键格式）：
+
+```toml
+[ErisPulse.framework.session_accounts.snowluma]
+"group:643319481" = "1325859446"
+```
 
 ### 主动 GC 配置
 
@@ -582,6 +593,14 @@ database = "erispulse"
 > - 连接参数变更后需重启框架生效；连接池创建瞬时失败会自动指数退避重试
 > - 切换后端前可用验证脚本自检：`python tests/devs/test_storage_backend_verify.py --backend mysql`
 > - 事务 / 方言差异 / 自定义后端等完整说明见[存储后端](../advanced/storage-backends.md)
+
+## Web 服务与路由配置
+
+Web 服务器与路由（`[ErisPulse.server]` / `[ErisPulse.router]`）的完整配置项——host / port / auto_start / ssl、CORS 与安全头（`router.cors.*` / `router.security.*`，变更需重启）、接口限流（`router.rate_limit.*`，`rate_limit_trust_proxy` 决定限流以代理头还是对端地址为限流键，反代部署时务必核对）——见[路由系统](../advanced/router.md)与[部署指南](deployment.md)。
+
+## 交互会话配置
+
+交互等待 / 会话互斥租约的参数（`[ErisPulse.interaction]`，含 `checkpoint_ttl` 对话检查点过期时长）见 [Conversation 多轮对话](../advanced/conversation.md)与[交互会话系统](../advanced/interaction.md)。
 
 ## 事件配置
 

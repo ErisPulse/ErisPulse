@@ -28,6 +28,7 @@ from ..constants import (
     STORAGE_BRIDGE_JOIN_TIMEOUT_SECS,
     STORAGE_SYNC_IN_ASYNC_WARN_COOLDOWN_SECS,
     STORAGE_SYNC_WARN_SITES_CAPACITY,
+    STORAGE_TXN_COMMIT_TIMEOUT_SECS,
     STORAGE_TXN_SLOW_WARN_SECS,
 )
 from ..i18n import i18n
@@ -43,6 +44,9 @@ _current_txn: ContextVar["_AsyncTransaction | None"] = ContextVar(
 
 # sync-in-async 警告的调用点登记表（调用点描述 → 最近一次警告的单调时间戳）
 _sync_in_async_warn_sites: "OrderedDict[str, float]" = OrderedDict()
+# 登记表读写锁：_warn_sync_in_async 从任意线程调用，get → move_to_end 与
+# popitem 淘汰的交错会使 move_to_end 抛 KeyError 并沿 AsyncBridge.run 传播
+_sync_in_async_warn_lock = threading.Lock()
 
 # 用户帧判定：模块名以此表为前缀的帧视为框架/标准库内部帧，跳过采集
 # （模块名而非文件路径——用户项目路径可能包含任何子串）
@@ -92,19 +96,23 @@ def _warn_sync_in_async() -> None:
     sites = _capture_user_frames(limit=1)
     callsite = sites[0] if sites else "<未知调用点>"
     now = time.monotonic()
-    last = _sync_in_async_warn_sites.get(callsite)
-    if last is not None and now - last < STORAGE_SYNC_IN_ASYNC_WARN_COOLDOWN_SECS:
-        _sync_in_async_warn_sites.move_to_end(callsite)
-        return
-    _sync_in_async_warn_sites[callsite] = now
-    while len(_sync_in_async_warn_sites) > STORAGE_SYNC_WARN_SITES_CAPACITY:
-        _sync_in_async_warn_sites.popitem(last=False)
-    try:
-        from ..logger import logger
+    should_warn = False
+    with _sync_in_async_warn_lock:
+        last = _sync_in_async_warn_sites.get(callsite)
+        if last is not None and now - last < STORAGE_SYNC_IN_ASYNC_WARN_COOLDOWN_SECS:
+            _sync_in_async_warn_sites.move_to_end(callsite)
+        else:
+            _sync_in_async_warn_sites[callsite] = now
+            while len(_sync_in_async_warn_sites) > STORAGE_SYNC_WARN_SITES_CAPACITY:
+                _sync_in_async_warn_sites.popitem(last=False)
+            should_warn = True
+    if should_warn:
+        try:
+            from ..logger import logger
 
-        logger.warning(i18n.t("core.storage.sync_in_loop_warn_site", callsite=callsite))
-    except Exception:
-        pass
+            logger.warning(i18n.t("core.storage.sync_in_loop_warn_site", callsite=callsite))
+        except Exception:
+            pass
 
 
 def _has_running_loop() -> bool:
@@ -261,6 +269,10 @@ class _AsyncTransaction:
         兜底超时（STORAGE_TXN_BEGIN_TIMEOUT_SECS）：无论后端层行为如何，
         事务开启挂起超过阈值即抛 StorageOperationError——事务无限死等
         （如另一长事务持锁且调用方永不提交）属框架缺陷，必须可观测。
+
+        开启失败（连接获取超时 / BEGIN 超时 / BEGIN 直接抛错如 database
+        is locked）时就地释放已获取的连接——否则连接永久泄漏（SQLite 泄漏
+        连接线程与 fd，池后端泄漏池容量，锁竞争越重泄漏越多）。
         """
         from ..constants import STORAGE_TXN_BEGIN_TIMEOUT_SECS
 
@@ -272,13 +284,29 @@ class _AsyncTransaction:
                 self.storage._begin_txn(self.conn), STORAGE_TXN_BEGIN_TIMEOUT_SECS
             )
         except asyncio.TimeoutError as e:
+            await self._release_failed_conn()
             raise StorageOperationError(
                 f"事务开启超时（>{STORAGE_TXN_BEGIN_TIMEOUT_SECS}s）:"
                 "存在长时间持锁的事务或连接池不可用",
                 operation="transaction_begin",
             ) from e
+        except BaseException:
+            # BEGIN 直接抛错（如 OperationalError: database is locked）：
+            # 先释放连接再向调用方传播原始异常
+            await self._release_failed_conn()
+            raise
         # 持锁时长观测锚点：BEGIN 成功即计时（覆盖事务块内全部用户代码耗时）
         self._started_at = time.monotonic()
+
+    async def _release_failed_conn(self) -> None:
+        """{!--< internal-use >!--} 开启失败路径释放已获取的连接（无连接时为无操作）"""
+        conn, self.conn = self.conn, None
+        if conn is None:
+            return
+        try:
+            await self.storage._release_txn_conn(conn)
+        except Exception:
+            pass
 
     async def finish(self, exc: BaseException | None) -> None:
         """
@@ -293,9 +321,22 @@ class _AsyncTransaction:
             return
         try:
             if exc is None:
-                await self.storage._commit_txn(conn, handle)
+                await asyncio.wait_for(
+                    self.storage._commit_txn(conn, handle),
+                    STORAGE_TXN_COMMIT_TIMEOUT_SECS,
+                )
             else:
-                await self.storage._rollback_txn(conn, handle)
+                await asyncio.wait_for(
+                    self.storage._rollback_txn(conn, handle),
+                    STORAGE_TXN_COMMIT_TIMEOUT_SECS,
+                )
+        except asyncio.TimeoutError as e:
+            raise StorageOperationError(
+                f"事务{'提交' if exc is None else '回滚'}超时"
+                f"（>{STORAGE_TXN_COMMIT_TIMEOUT_SECS:g}s）：连接半死或锁长时间"
+                "不可得，连接已释放交还池侧",
+                operation="transaction_finish",
+            ) from e
         finally:
             await self.storage._release_txn_conn(conn)
             # 回滚路径同样持锁，一并纳入观测
@@ -359,6 +400,9 @@ class _SyncTransaction:
     def __enter__(self) -> _AsyncTransaction:
         storage = self._storage
         txn = storage._bridge_run(storage._new_async_transaction_and_start())
+        # 开启位置采集：__enter__ 运行在用户线程，用户帧可达（桥接循环内
+        # 采集拿不到）；bridge_run 返回即 start 完成，finish 前赋值必然可见
+        txn._open_site = " <- ".join(_capture_user_frames(limit=2)) or "<未知调用点>"
         storage._register_sync_txn(threading.get_ident(), txn)
         self._txn = txn
         return txn

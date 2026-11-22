@@ -6,6 +6,7 @@ ErisPulse 框架配置管理模块
 
 import copy
 import os
+import threading
 from typing import Any
 
 from ..Core.constants import (
@@ -16,19 +17,23 @@ from ..Core.constants import (
     DEFAULT_COMMAND_MUST_AT_BOT,
     DEFAULT_COMMAND_PREFIX,
     DEFAULT_CROSS_RECEIPT_POLICY,
+    DEFAULT_EVENT_DEDUPE_ENABLED,
     DEFAULT_HANDLER_MAX_CONCURRENCY,
     DEFAULT_I18N_LANGUAGE,
     DEFAULT_INTERACTION_CHECKPOINT_TTL_SECS,
     DEFAULT_LAZY_LOADING_ENABLED,
     DEFAULT_LOG_BACKUP_COUNT,
+    DEFAULT_LOG_DIR,
     DEFAULT_LOG_LEVEL,
     DEFAULT_LOG_MAX_SIZE_MB,
     DEFAULT_LOG_MEMORY_LIMIT,
     DEFAULT_LOG_ROTATION,
     DEFAULT_LOG_ROTATION_WHEN,
     DEFAULT_LOG_TOTAL_MEMORY_LIMIT,
+    DEFAULT_MEMORY_TRACING,
     DEFAULT_MESSAGE_IGNORE_SELF,
     DEFAULT_OFFLINE_BOT_EXPIRY_SECS,
+    DEFAULT_PLUGINS_DIR_NAME,
     DEFAULT_PROACTIVE_GC_FULL_EVERY,
     DEFAULT_PROACTIVE_GC_GEN0_MIN,
     DEFAULT_PROACTIVE_GC_GENERATION,
@@ -93,7 +98,7 @@ DEFAULT_ERISPULSE_CONFIG = {
         "log_files": [],
         # 日志目录模式（与 log_files 互斥，log_files 显式路径优先）：
         # 设置后日志自动写入该目录并支持自动分段
-        "log_dir": "",
+        "log_dir": DEFAULT_LOG_DIR,
         "log_rotation": DEFAULT_LOG_ROTATION,          # 分段方式: "size" | "date" | "none"
         "log_max_size_mb": DEFAULT_LOG_MAX_SIZE_MB,    # size 模式单文件上限（MB）
         "log_backup_count": DEFAULT_LOG_BACKUP_COUNT,  # 保留的历史日志文件数
@@ -185,7 +190,7 @@ DEFAULT_ERISPULSE_CONFIG = {
     "framework": {
         "enable_lazy_loading": DEFAULT_LAZY_LOADING_ENABLED,
         # 本地插件文件夹：相对项目根目录，支持字符串或列表
-        "plugins_dir": "plugins",
+        "plugins_dir": DEFAULT_PLUGINS_DIR_NAME,
         "uninit_timeout": DEFAULT_UNINIT_TIMEOUT_SECS,
         "strict_mode": DEFAULT_STRICT_MODE,
         "strict_mode_exceptions": {
@@ -207,7 +212,13 @@ DEFAULT_ERISPULSE_CONFIG = {
         # None = 使用内置默认清单（Core/constants.FILE_WATCHER_IGNORED_DIRS）；
         # 非空列表 = 整体替换默认清单；[] = 不忽略任何目录
         "watch_ignore_dirs": None,
-        # 事件幂等去重见 Core/adapter.py（ErisPulse.framework.event_dedupe）；
+        # 事件幂等去重（ErisPulse.framework.event_dedupe）：相同事件 id 的重复
+        # 投递（连接层重推 / 网关重发）只分发一次；开关支持热更新
+        "event_dedupe": DEFAULT_EVENT_DEDUPE_ENABLED,
+        # 内存追踪（tracemalloc）：开启后 traced_mb 有值、增长门限不再误用
+        # RSS，内存快照可输出 top 分配点；约 2 倍分配路径 CPU 开销——
+        # 排障时开启，常态关闭；开关支持热更新（下次 GC 轮生效）
+        "memory_tracing": DEFAULT_MEMORY_TRACING,
         # 跨账户重复受理策略：同一物理消息经多个账户（或多连接）先后到达时——
         # "off"=不关联（默认，事件照常逐一分发）；
         # "mark"=后续副本注入顶层 multi_receipt 字段（指向首个受理事件）后
@@ -368,8 +379,59 @@ def get_erispulse_config() -> dict[str, Any]:
     用户显式设置（手动编辑 / update_erispulse_config / set_erispulse_section）
     的键不受影响，优先级始终高于内置默认值。
 
-    :return: 完整的 ErisPulse 配置字典
+    :return: 完整的 ErisPulse 配置字典（快照副本，修改不影响后续调用）
     """
+    template = _get_merged_snapshot()
+    # 每次返回快照副本（调用方可能就地修改返回值）；模板缓存免去重复的
+    # 结构补全遍历——deepcopy 本身不可省（返回值须与模板隔离）。
+    # 环境变量覆盖在副本上每调用应用（保持"运行期改 env 即生效"的原语义）
+    result = copy.deepcopy(template)
+    _apply_env_overrides(result, CONFIG_ROOT_KEY)
+    return result
+
+
+# 合并快照模板缓存（合并默认值 + 环境覆盖后的完整配置树）；返回值 deepcopy
+# 于此模板。配置写入路径（update_erispulse_config / set_erispulse_section /
+# 外部 setConfig）经 _invalidate_merged_snapshot 失效
+_merged_snapshot: dict[str, Any] | None = None
+_merged_snapshot_lock = threading.Lock()
+# 构建时 getConfig 结果的浅指纹（对象身份 + 顶层/二级键数）：lifecycle 事件
+# 失效之外的兜底——直接操纵 config 单例内部 _cache 的写路径（含测试）不被
+# 事件覆盖，指纹变化即重建
+_merged_snapshot_fingerprint: tuple | None = None
+
+
+def _config_fingerprint(current: Any) -> tuple:
+    """{!--< internal-use >!--} 配置树浅指纹（对象身份 + 顶层/二级键规模）"""
+    if not isinstance(current, dict):
+        return (id(current), 0, 0)
+    sub = sum(
+        len(v) if isinstance(v, dict) else 0 for v in current.values()
+    )
+    return (id(current), len(current), sub)
+
+
+def _get_merged_snapshot() -> dict[str, Any]:
+    """{!--< internal-use >!--} 取合并快照模板（指纹变化 / 无缓存时重建并登记失效订阅）"""
+    global _merged_snapshot, _merged_snapshot_fingerprint
+    config_service = _get_config_service()
+    current = config_service.getConfig(CONFIG_ROOT_KEY)
+    fingerprint = _config_fingerprint(current)
+    snapshot = _merged_snapshot
+    if snapshot is not None and fingerprint == _merged_snapshot_fingerprint:
+        return snapshot
+    with _merged_snapshot_lock:
+        if _merged_snapshot is None or fingerprint != _merged_snapshot_fingerprint:
+            _merged_snapshot = _build_merged_snapshot()
+            _merged_snapshot_fingerprint = _config_fingerprint(
+                config_service.getConfig(CONFIG_ROOT_KEY)
+            )
+            _subscribe_merged_snapshot_invalidation()
+        return _merged_snapshot
+
+
+def _build_merged_snapshot() -> dict[str, Any]:
+    """{!--< internal-use >!--} 构建合并快照模板（默认值合并；env 覆盖在返回副本时应用）"""
     config_service = _get_config_service()
 
     # 获取现有配置（deepcopy 避免合并默认值时污染缓存）
@@ -382,10 +444,51 @@ def get_erispulse_config() -> dict[str, Any]:
     else:
         result = copy.deepcopy(DEFAULT_ERISPULSE_CONFIG)
 
-    # 环境变量覆盖（Docker / 12-factor）：ERISPULSE_SERVER_PORT 等
-    # 仅对返回副本应用，不持久化到缓存；每调用每生效
-    _apply_env_overrides(result, CONFIG_ROOT_KEY)
     return result
+
+
+def _invalidate_merged_snapshot() -> None:
+    """{!--< internal-use >!--} 配置变更时失效合并快照模板（下次调用重建）"""
+    global _merged_snapshot
+    with _merged_snapshot_lock:
+        _merged_snapshot = None
+
+
+def _subscribe_merged_snapshot_invalidation() -> None:
+    """{!--< internal-use >!--}
+    订阅配置变更事件失效快照模板（外部经 config.setConfig 写入框架节时，
+    update/set_erispulse 系列函数之外的写路径由此兜底失效）
+    """
+    try:
+        from ..Core.lifecycle import lifecycle as _lifecycle
+
+        _lifecycle.register("config.set", lambda _data: _invalidate_merged_snapshot())
+        _lifecycle.register("config.updated", lambda _data: _invalidate_merged_snapshot())
+    except Exception:
+        pass
+
+
+def get_event_config_value(section: str, key: str, default: Any) -> Any:
+    """
+    读取 ``ErisPulse.event.<section>.<key>`` 单值（高频热点路径专用，无快照开销）
+
+    :func:`get_event_config` 每次调用 deepcopy 整棵配置树——每条回复命中
+    事件调用两次即制造 MB 级暂态垃圾；仅读单值的调用点用本入口直取。
+    环境变量覆盖不适用于本入口（低频行为参数不提供 env 覆盖）。
+
+    :param section: 事件配置子节名（如 ``"wait_reply"``）
+    :param key: 键名（如 ``"cmdpass"``）
+    :param default: 键缺失时的默认值
+    :return: 配置值
+    """
+    config_service = _get_config_service()
+    section_config = config_service.getConfig(f"{CONFIG_ROOT_KEY}.event.{section}")
+    if isinstance(section_config, dict) and key in section_config:
+        return section_config[key]
+    section_default = DEFAULT_ERISPULSE_CONFIG.get("event", {}).get(section, {})
+    if isinstance(section_default, dict) and key in section_default:
+        return section_default[key]
+    return default
 
 
 def _apply_env_overrides(config: dict[str, Any], root: str = CONFIG_ROOT_KEY) -> None:
@@ -469,6 +572,7 @@ def update_erispulse_config(new_config: dict[str, Any]) -> bool:
     # 仅按叶子键写入变化，避免整棵覆盖冲掉用户对其它子键的热更新
     for path, value in _iter_leaf_diff(baseline, complete_config):
         config_service.setConfig(f"{CONFIG_ROOT_KEY}.{path}", value)
+    _invalidate_merged_snapshot()
     return True
 
 
@@ -488,7 +592,9 @@ def set_erispulse_section(path: str, value: Any) -> bool:
     >>> set_erispulse_section("event.overrides.acl", {"roll*": {"allow": ["onebot11:123456"]}})
     """
     config_service = _get_config_service()
-    return config_service.setConfig(f"{CONFIG_ROOT_KEY}.{path}", value)
+    result = config_service.setConfig(f"{CONFIG_ROOT_KEY}.{path}", value)
+    _invalidate_merged_snapshot()
+    return result
 
 
 def get_server_config() -> dict[str, Any]:
@@ -559,6 +665,7 @@ __all__ = [
     "get_config",
     "get_erispulse_config",
     "get_event_config",
+    "get_event_config_value",
     "get_framework_config",
     "get_i18n_config",
     "get_logger_config",

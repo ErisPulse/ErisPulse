@@ -296,6 +296,8 @@ class DocsIndexGenerator:
         "user-guide/configuration.md": 3,
         "user-guide/cli-reference.md": 4,
         "user-guide/deployment.md": 5,
+        "user-guide/migration.md": 6,
+        "user-guide/faq.md": 7,
         # 开发者指南
         "developer-guide/README.md": 1,
         "developer-guide/modules/getting-started.md": 2,
@@ -449,6 +451,8 @@ class DocsIndexGenerator:
         "user-guide/installation.md": "fa-download",
         "user-guide/configuration.md": "fa-sliders",
         "user-guide/cli-reference.md": "fa-terminal",
+        "user-guide/migration.md": "fa-right-left",
+        "user-guide/faq.md": "fa-circle-question",
         "user-guide/deployment.md": "fa-cloud-arrow-up",
         # 开发者指南
         "developer-guide/README.md": "fa-code",

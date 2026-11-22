@@ -247,6 +247,13 @@ class ApiDSL:
                 )
 
         params = _adapt_account_param(self._adapter, params)
+        try:
+            from ...runtime.metrics import metrics
+
+            metrics.inc("adapter.api.total")
+            metrics.inc(f"adapter.api.{action}")
+        except Exception:
+            pass
         return await self._adapter.call_api(action, **params)
 
     # ==================== 用户相关动作 ====================
