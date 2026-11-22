@@ -825,6 +825,87 @@ class TestSecretRedaction:
         assert 'token = ""' in toml_text
 
 
+class TestNoneDefaultTomlRendering:
+    """None 默认值的 TOML 模板渲染（TOML 无 null 的占位语义）"""
+
+    def _render(self, c) -> str:
+        from ErisPulse.Core.Bases.config_schema import (
+            dataclass_to_toml_with_comments,
+        )
+
+        return dataclass_to_toml_with_comments(c)
+
+    def test_optional_int_comments_placeholder(self):
+        """Optional[int] = None 渲染注释占位，不产出 "None" 字符串"""
+        from dataclasses import dataclass
+
+        from ErisPulse.Core.Bases.config_schema import BaseConfig
+
+        @dataclass
+        class C(BaseConfig):
+            limit: int | None = None
+
+        text = self._render(C)
+        assert "# limit = 0" in text
+        assert "None" not in text
+
+    def test_optional_str_renders_empty_string(self):
+        from dataclasses import dataclass
+
+        from ErisPulse.Core.Bases.config_schema import BaseConfig
+
+        @dataclass
+        class C(BaseConfig):
+            name: str | None = None
+
+        text = self._render(C)
+        assert 'name = ""' in text
+        assert "None" not in text
+
+    def test_optional_bool_comments_placeholder(self):
+        from dataclasses import dataclass
+
+        from ErisPulse.Core.Bases.config_schema import BaseConfig
+
+        @dataclass
+        class C(BaseConfig):
+            flag: bool | None = None
+
+        text = self._render(C)
+        assert "# flag = false" in text
+        assert "None" not in text
+
+    def test_optional_containers_render_empty(self):
+        from dataclasses import dataclass
+
+        from ErisPulse.Core.Bases.config_schema import BaseConfig
+
+        @dataclass
+        class C(BaseConfig):
+            tags: list | None = None
+            mapping: dict | None = None
+
+        text = self._render(C)
+        assert "tags = []" in text
+        assert "mapping = {}" in text
+        assert "None" not in text
+
+    def test_template_remains_valid_toml(self):
+        """None 占位后的模板仍是合法 TOML（标量占位为注释不落键）"""
+        from dataclasses import dataclass
+
+        from ErisPulse.Core.Bases.config_schema import BaseConfig
+
+        @dataclass
+        class C(BaseConfig):
+            limit: int | None = None
+            name: str | None = None
+            tags: list | None = None
+
+        data = _toml_loads(self._render(C))
+        assert data == {"name": "", "tags": []}
+
+
 class TestConfigSchemaI18n:
     """配置 Schema i18n 解析测试（含 select options label i18n）"""
 

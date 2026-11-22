@@ -321,6 +321,17 @@ def _python_type_to_toml_type(type_hint) -> str:
     }[python_type_category(type_hint)]
 
 
+# None 默认值的 TOML 占位表（键 = python_type_category 类别）
+_TOML_NULL_PLACEHOLDERS = {
+    "int": "0",
+    "float": "0.0",
+    "bool": "false",
+    "str": '""',
+    "list": "[]",
+    "dict": "{}",
+}
+
+
 def _format_toml_value(value) -> str:
     """
     将 Python 值格式化为 TOML 值字符串
@@ -620,12 +631,21 @@ def dataclass_to_toml_with_comments(
         effective_value = (
             "" if (is_secret and value not in ("", None, [], {})) else value
         )
-        toml_value = _format_toml_value(effective_value)
-
-        if required and effective_value in ("", 0, 0.0, False, None, [], {}):
-            lines.append(f"# {f.name} = {toml_value}")
+        if effective_value is None:
+            # None 默认值的 TOML 渲染：TOML 无 null，按字段类别取占位——
+            # 字符串/容器渲染空值（即未设置语义），标量注释占位（赋值后生效）
+            category = python_type_category(f.type)
+            placeholder = _TOML_NULL_PLACEHOLDERS[category]
+            if category in ("int", "float", "bool"):
+                lines.append(f"# {f.name} = {placeholder}")
+            else:
+                lines.append(f"{f.name} = {placeholder}")
         else:
-            lines.append(f"{f.name} = {toml_value}")
+            toml_value = _format_toml_value(effective_value)
+            if required and effective_value in ("", 0, 0.0, False, [], {}):
+                lines.append(f"# {f.name} = {toml_value}")
+            else:
+                lines.append(f"{f.name} = {toml_value}")
 
         lines.append("")
 
