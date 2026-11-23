@@ -2074,12 +2074,16 @@ class AdapterManager(ManagerBase):
         content_key = hashlib.md5(alt_message.encode("utf-8")).hexdigest()
         key = (platform, session_id, sender_id, content_key)
 
+        from ..runtime.frame_config import get_framework_value  # 惰性：Core 装配窗口内快照读取回环
+        receipt_window = get_framework_value(
+            "cross_receipt_window", DEFAULT_CROSS_RECEIPT_WINDOW_SECS
+        )
         now = time.monotonic()
         receipts = self._cross_receipts
         entry = receipts.get(key)
         if entry is not None:
             stored_self_id, stored_event_id, stored_ts = entry
-            if now - stored_ts > DEFAULT_CROSS_RECEIPT_WINDOW_SECS:
+            if now - stored_ts > receipt_window:
                 receipts.pop(key, None)
                 entry = None
 
@@ -2672,6 +2676,10 @@ class AdapterManager(ManagerBase):
                     current_owner.reset(_owner_token)
 
                 _wait_total = sum(w.get("duration", 0.0) for w in _task_waits)
+                from ..runtime.frame_config import get_framework_value  # 惰性：Core 装配窗口内快照读取回环
+                _slow_threshold = get_framework_value(
+                    "handler_slow_threshold", HANDLER_SLOW_THRESHOLD_SECS
+                )
                 _pure = max(0.0, elapsed - _wait_total)
                 # 收集所有者（去重），归因到具体业务模块
                 _owners = sorted(
@@ -2683,14 +2691,14 @@ class AdapterManager(ManagerBase):
 
                 if _task_waits:
                     # 调用过 wait_reply：纯等待属于交互白名单
-                    if _pure > HANDLER_SLOW_THRESHOLD_SECS:
+                    if _pure > _slow_threshold:
                         if _is_bridge:
                             # 桥接层总分慢：单个处理器的慢已由内层精确告警，此处仅 TRACE
                             logger.trace(
                                 i18n.t(
                                     "core.adapter.handler_slow_bridge",
                                     elapsed=f"{elapsed:.2f}",
-                                    threshold=HANDLER_SLOW_THRESHOLD_SECS,
+                                    threshold=_slow_threshold,
                                     type=event_type,
                                     platform=platform,
                                     tag=_owner_tag,
@@ -2702,7 +2710,7 @@ class AdapterManager(ManagerBase):
                                     "core.adapter.handler_slow",
                                     handler=_func_name,
                                     elapsed=f"{elapsed:.2f}",
-                                    threshold=HANDLER_SLOW_THRESHOLD_SECS,
+                                    threshold=_slow_threshold,
                                     type=event_type,
                                     platform=platform,
                                     tag=_owner_tag,
@@ -2721,14 +2729,14 @@ class AdapterManager(ManagerBase):
                                 tag=_owner_tag,
                             )
                         )
-                elif elapsed > HANDLER_SLOW_THRESHOLD_SECS:
+                elif elapsed > _slow_threshold:
                     if _is_bridge:
                         # 桥接层总分慢：单个处理器的慢已由内层精确告警，此处仅 TRACE
                         logger.trace(
                             i18n.t(
                                 "core.adapter.handler_slow_bridge",
                                 elapsed=f"{elapsed:.2f}",
-                                threshold=HANDLER_SLOW_THRESHOLD_SECS,
+                                threshold=_slow_threshold,
                                 type=event_type,
                                 platform=platform,
                                 tag=_owner_tag,
@@ -2740,7 +2748,7 @@ class AdapterManager(ManagerBase):
                                 "core.adapter.handler_slow",
                                 handler=_func_name,
                                 elapsed=f"{elapsed:.2f}",
-                                threshold=HANDLER_SLOW_THRESHOLD_SECS,
+                                threshold=_slow_threshold,
                                 type=event_type,
                                 platform=platform,
                                 tag=_owner_tag,

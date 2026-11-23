@@ -215,11 +215,17 @@ class TestBridgeSlowLogDowngraded:
 
     @staticmethod
     async def _run_slow_task(manager, func):
-        with patch.object(adapter_module, "HANDLER_SLOW_THRESHOLD_SECS", 0.01):
+        # 阈值已配置化（framework.handler_slow_threshold）：以配置写入替代 patch 模块常量
+        from ErisPulse.Core.config import config as global_config
+
+        global_config.setConfig("ErisPulse.framework.handler_slow_threshold", 0.01)
+        try:
             task = manager._dispatch_handler_task(func, _msg(), event_type="message", platform="test")
             if task is not None:
                 await task
             await asyncio.sleep(0.05)
+        finally:
+            global_config.setConfig("ErisPulse.framework.handler_slow_threshold", 5.0)
 
     @pytest.mark.asyncio
     async def test_bridge_slow_not_warned_with_framework_name(self, manager):

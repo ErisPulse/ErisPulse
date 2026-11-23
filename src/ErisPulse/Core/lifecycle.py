@@ -652,8 +652,12 @@ class LifecycleManager:
                     result = await handler(data, **call_kwargs)
                 else:
                     result = handler(data, **call_kwargs)
+                from ..runtime.frame_config import get_framework_value  # 惰性：Core 装配窗口内快照读取回环
+                _slow_threshold = get_framework_value(
+                    "handler_slow_threshold", HANDLER_SLOW_THRESHOLD_SECS
+                )
                 _elapsed = time.monotonic() - _t
-                if _elapsed > HANDLER_SLOW_THRESHOLD_SECS:
+                if _elapsed > _slow_threshold:
                     self._get_logger().warning(
                         i18n.t(
                             "core.lifecycle.handler_slow",
