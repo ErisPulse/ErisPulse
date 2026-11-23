@@ -144,6 +144,12 @@ CONFIG_WRITE_DELAY_SECS: Final[int] = 5
 # 修改影响: watcher 发现脏键仍在（刷盘失败被吞异常保留）时按此间隔补写；调小重试更频繁。
 CONFIG_WRITE_RETRY_DELAY_SECS: Final[float] = 1.0
 
+# 声明式配置模板中嵌套表（含表数组元素）的最大展开层数。
+# 使用位置: Core/Bases/config_schema.py（dataclass_to_toml_with_comments）
+# 修改影响: 嵌套 dataclass / 表数组按层递归渲染模板，达到该层数后不再向下
+#           展开；自引用类型（如树形配置）据此终止递归。
+CONFIG_TEMPLATE_NESTED_TABLE_MAX_DEPTH: Final[int] = 3
+
 # 运行状态目录名（项目根下）：存放机器本地运行状态——配置目录实例锁、CLI
 # 运行状态文件（runtime.json）等；不入版本库（项目模板 .gitignore 忽略本目录）。
 # 使用位置: Core/config.py（实例锁路径推导）、CLI/commands/run.py（runtime.json）。
@@ -1596,6 +1602,7 @@ __all__ = [
     "CONFIG_ROOT_KEY",
     "CONFIG_WRITE_DELAY_SECS",
     "CONFIG_WRITE_RETRY_DELAY_SECS",
+    "CONFIG_TEMPLATE_NESTED_TABLE_MAX_DEPTH",
     "RUNTIME_STATE_DIR_NAME",
     "CONFIRM_HINT_WORDS",
     "CONFIRM_NO_WORDS",

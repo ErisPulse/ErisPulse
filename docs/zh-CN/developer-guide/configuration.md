@@ -45,6 +45,40 @@ class MyAccountConfig(BotAccountConfig):
 
 `ui` 为标准键；`webui` 为旧别名（等价，消费方须同时支持）。
 
+### 容器类型（`list[T]` / `dict[str, T]`）
+
+字段注解为**类型化容器**时，成员类型自动进入 schema：
+
+- `list[int]` / `list[str]` 等标量数组：schema 带 `item`（成员的标量 schema），
+  且未声明 `widget` 时自动推断为 `list` 控件（面板渲染为动态行列表）
+- `list[SomeDataclass]`：`item` 为 `{"type": "object", "fields": {...}}`，
+  面板渲染为**行内多字段**的对象行（行内字段递归支持全部控件与绑定）
+- `dict[str, T]`：动态键表，`item` 承载值类型；面板渲染为键值编辑器
+- 手写 `ui.item` 优先于自动生成（显式声明覆盖推断）
+
+加载（`dict_to_dataclass`）时成员按声明类型规范化：标量做类型转换
+（`["1", 2.0]` → `[1, 2]`）、dataclass 成员实例化（非 dict 标量包装为首个
+字段）、整体 JSON 字符串先解析（面板 JSON 编辑态 / env 覆盖）。
+校验（`validate_config`）递归检查成员类型与 dataclass 成员的嵌套约束，
+错误信息带成员路径（`rules[0]` / `quotas.q`）。
+
+TOML 模板中元素 / 值为 dataclass 的容器渲染为 `[[表数组]]` / `[表.键]` 块
+（有元素时逐元素展开，无元素时输出注释骨架；空容器**不落** `键 = []`——
+静态空数组与后续 `[[键]]` 追加互斥，会导致用户无法再以表数组形式添加）。
+
+```python
+@dataclass
+class RetryRule(BaseConfig):
+    host: str = field(default="", metadata={"description": "目标主机"})
+    port: int = field(default=0, metadata={"description": "端口", "required": True})
+
+@dataclass
+class MyConfig(BaseConfig):
+    rules: list[RetryRule] = field(default_factory=list)   # 面板：对象行列表
+    quotas: dict[str, RetryRule] = field(default_factory=dict)  # 面板：键值表
+    nums: list[int] = field(default_factory=list)          # 面板：标量行列表
+```
+
 ### 通用键
 
 | 键 | 语义 |
@@ -56,6 +90,7 @@ class MyAccountConfig(BotAccountConfig):
 | `placeholder` | 输入占位文本（支持 i18n 字典） |
 | `min` / `max` / `step` | 数值范围与步长（number/slider） |
 | `rows` | 多行文本行数（textarea） |
+| `presets` | 预设色板（color；`["#rrggbb", ...]`，缺省用消费方内置） |
 
 ### 条件显隐/禁用（字段联动）
 
@@ -102,7 +137,7 @@ class MyAccountConfig(BotAccountConfig):
 | `color` | str | 颜色（`#rrggbb`） |
 | `date` / `time` / `datetime` | str | 日期 / 时间 / 日期时间（ISO 字符串） |
 | `kv` | dict | 键值对编辑器（`dict[str, str]`） |
-| `list` | list | 列表编辑器（`item` 声明行内字段：`{"widget": ...}` 或 `{"fields": {...}}` 支持行内嵌套） |
+| `list` | list | 列表编辑器（`item` 声明行内字段：`{"widget": ...}` 或 `{"fields": {...}}` 支持行内嵌套；类型化数组字段自动推断） |
 
 ## 兼容性契约（消费方必须遵守）
 

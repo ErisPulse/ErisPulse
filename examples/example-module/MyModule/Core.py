@@ -62,6 +62,15 @@ class Main(BaseModule):
                 "ui": {"widget": "switch", "group": "advanced", "order": 3},
             },
         )
+        # 类型化容器：成员类型自动进入面板 schema（list 控件免手写 ui.item），
+        # 加载期按元素类型规范化（标量转换），校验递归检查成员
+        watched_users: list[str] = field(
+            default_factory=list,
+            metadata={
+                "description": "关注用户列表（platform:user_id）",
+                "ui": {"group": "advanced", "order": 4},
+            },
+        )
         # example 字段：默认不写入 config.toml（不落盘），仅记录在 config.full.example
         # 运行时走默认值，用户在示例文件中按需复制到 config.toml 后生效
         max_history: int = field(
