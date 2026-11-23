@@ -656,6 +656,10 @@ class SQLStorageBase(BaseStorage):
         self._loop_resources: weakref.WeakKeyDictionary[Any, Any] = (
             weakref.WeakKeyDictionary()
         )
+        # 每事件循环的惰性建连串行化锁（asyncio.Lock：协程让出而不冻结循环）
+        self._resource_create_locks: weakref.WeakKeyDictionary[Any, asyncio.Lock] = (
+            weakref.WeakKeyDictionary()
+        )
         # 建池失败冷却截止时间（monotonic）；0 表示未处于冷却
         self._resource_failed_until: float = 0.0
 
@@ -664,6 +668,10 @@ class SQLStorageBase(BaseStorage):
         if not hasattr(self, "_loop_resources"):
             object.__setattr__(
                 self, "_loop_resources", weakref.WeakKeyDictionary()
+            )
+        if not hasattr(self, "_resource_create_locks"):
+            object.__setattr__(
+                self, "_resource_create_locks", weakref.WeakKeyDictionary()
             )
         if not hasattr(self, "_resource_failed_until"):
             object.__setattr__(self, "_resource_failed_until", 0.0)
@@ -771,77 +779,90 @@ class SQLStorageBase(BaseStorage):
     _RESOURCE_FAIL_COOLDOWN_SECS: float = STORAGE_POOL_FAIL_COOLDOWN_SECS
 
     async def _get_loop_resource(self) -> Any:
-        """{!--< internal-use >!--} 获取当前事件循环的连接资源（惰性创建，幂等，瞬时失败自动重试）"""
+        """{!--< internal-use >!--} 获取当前事件循环的连接资源（惰性创建，幂等，瞬时失败自动重试）
+
+        同一事件循环内的并发首次获取经每循环异步锁串行化——建连含 ``await``，
+        协程竞争下重复建连的输家须销毁多余资源；销毁同样含 ``await``，一律在
+        资源表锁之外执行（线程锁内挂起协程会让同步等待该锁的协程冻结事件循环）。
+        """
         self._ensure_resource_state()
         loop = asyncio.get_running_loop()
-        with self._resources_lock:
-            resource = self._loop_resources.get(loop)
+        resource = self._loop_resources.get(loop)
         if resource is not None:
             return resource
 
-        # 冷却期内快速失败：连接不可达时不阻塞调用方（框架继续运行，仅存储暂不可用）
-        failed_until = getattr(self, "_resource_failed_until", 0.0)
-        was_cooling = failed_until > 0
-        if failed_until > time.monotonic():
-            logger.trace(
-                i18n.t("core.storage.cooldown_fast_fail", backend=self.dialect.name)
-            )
-            raise StorageUnreachableError(
-                i18n.t("core.storage.cooldown", backend=self.dialect.name),
-                backend=self.dialect.name,
-            )
-
-        # 指数退避重试，规避远端瞬时拒绝（连接数限流、数据库重启窗口等）
-        last_error: BaseException | None = None
-        for attempt in range(self._RESOURCE_CREATE_RETRIES):
-            try:
-                resource = await self._create_loop_resource()
-                break
-            except Exception as e:
-                last_error = e
-                if attempt < self._RESOURCE_CREATE_RETRIES - 1:
-                    logger.warning(
-                        i18n.t(
-                            "core.storage.pool_retry",
-                            backend=self.dialect.name,
-                            attempt=attempt + 1,
-                            error=e,
-                        )
-                    )
-                    await asyncio.sleep(
-                        self._RESOURCE_CREATE_BACKOFF_SECS * (attempt + 1)
-                    )
-        else:
-            # 重试耗尽：记录冷却期，期间后续操作快速失败（不再每次阻塞重试），
-            # 框架继续运行（仅存储暂不可用），冷却结束后自动重连试探
-            self._resource_failed_until = time.monotonic() + self._RESOURCE_FAIL_COOLDOWN_SECS
-            logger.warning(
-                i18n.t(
-                    "core.storage.pool_exhausted",
-                    backend=self.dialect.name,
-                    retries=self._RESOURCE_CREATE_RETRIES,
-                    cooldown=int(self._RESOURCE_FAIL_COOLDOWN_SECS),
-                    error=last_error,
-                )
-            )
-            await self._emit_storage_event(
-                EVENT_STORAGE_UNREACHABLE,
-                backend=self.dialect.name,
-                error=str(last_error),
-                cooldown=self._RESOURCE_FAIL_COOLDOWN_SECS,
-            )
-            raise StorageUnreachableError(
-                f"{self.dialect.name}: {last_error}",
-                backend=self.dialect.name,
-                cooldown=self._RESOURCE_FAIL_COOLDOWN_SECS,
-            ) from last_error
-
+        # 每循环异步锁：按循环取用，循环结束即弃（弱键表随循环回收）
         with self._resources_lock:
-            existing = self._loop_resources.get(loop)
-            if existing is not None:
-                await self._destroy_loop_resource(resource)
-                return existing
-            self._loop_resources[loop] = resource
+            create_lock = self._resource_create_locks.get(loop)
+            if create_lock is None:
+                create_lock = asyncio.Lock()
+                self._resource_create_locks[loop] = create_lock
+
+        async with create_lock:
+            resource = self._loop_resources.get(loop)
+            if resource is not None:
+                return resource
+
+            # 冷却期内快速失败：连接不可达时不阻塞调用方（框架继续运行，仅存储暂不可用）
+            failed_until = getattr(self, "_resource_failed_until", 0.0)
+            was_cooling = failed_until > 0
+            if failed_until > time.monotonic():
+                logger.trace(
+                    i18n.t("core.storage.cooldown_fast_fail", backend=self.dialect.name)
+                )
+                raise StorageUnreachableError(
+                    i18n.t("core.storage.cooldown", backend=self.dialect.name),
+                    backend=self.dialect.name,
+                )
+
+            # 指数退避重试，规避远端瞬时拒绝（连接数限流、数据库重启窗口等）
+            last_error: BaseException | None = None
+            for attempt in range(self._RESOURCE_CREATE_RETRIES):
+                try:
+                    resource = await self._create_loop_resource()
+                    break
+                except Exception as e:
+                    last_error = e
+                    if attempt < self._RESOURCE_CREATE_RETRIES - 1:
+                        logger.warning(
+                            i18n.t(
+                                "core.storage.pool_retry",
+                                backend=self.dialect.name,
+                                attempt=attempt + 1,
+                                error=e,
+                            )
+                        )
+                        await asyncio.sleep(
+                            self._RESOURCE_CREATE_BACKOFF_SECS * (attempt + 1)
+                        )
+            else:
+                # 重试耗尽：记录冷却期，期间后续操作快速失败（不再每次阻塞重试），
+                # 框架继续运行（仅存储暂不可用），冷却结束后自动重连试探
+                self._resource_failed_until = time.monotonic() + self._RESOURCE_FAIL_COOLDOWN_SECS
+                logger.warning(
+                    i18n.t(
+                        "core.storage.pool_exhausted",
+                        backend=self.dialect.name,
+                        retries=self._RESOURCE_CREATE_RETRIES,
+                        cooldown=int(self._RESOURCE_FAIL_COOLDOWN_SECS),
+                        error=last_error,
+                    )
+                )
+                await self._emit_storage_event(
+                    EVENT_STORAGE_UNREACHABLE,
+                    backend=self.dialect.name,
+                    error=str(last_error),
+                    cooldown=self._RESOURCE_FAIL_COOLDOWN_SECS,
+                )
+                raise StorageUnreachableError(
+                    f"{self.dialect.name}: {last_error}",
+                    backend=self.dialect.name,
+                    cooldown=self._RESOURCE_FAIL_COOLDOWN_SECS,
+                ) from last_error
+
+            with self._resources_lock:
+                self._loop_resources[loop] = resource
+
         # 建池成功：清除失败冷却（若曾进入冷却，此番重连试探成功即恢复）
         self._resource_failed_until = 0.0
         logger.debug(i18n.t("core.storage.pool_ready", backend=self.dialect.name))

@@ -1197,6 +1197,20 @@ STORAGE_TXN_SLOW_WARN_SECS: Final[float] = 1.0
 # 修改影响: 调小同一调用点警告更频繁（噪声增多），调大更安静。
 STORAGE_SYNC_IN_ASYNC_WARN_COOLDOWN_SECS: Final[float] = 60.0
 
+# sync-in-async 严格模式默认关闭（False = 仅告警）。
+# 使用位置: Core/Bases/storage.py -> _warn_sync_in_async（运行时经
+# framework.strict_sync_in_async 配置覆盖，热更新生效）
+# 修改影响: 开启后异步上下文调用同步存储 API 直接抛 StrictModeError
+# （消息含调用点与 a 前缀方法指引）——开发期开启可当场暴露新增的阻塞式调用。
+STRICT_SYNC_IN_ASYNC_DEFAULT: Final[bool] = False
+
+# sync-in-async 桥接等待上限（秒；仅异步上下文调用生效，纯同步线程不受限）。
+# 使用位置: Core/Bases/storage.py -> _bridge_run（运行时经
+# framework.sync_in_async_bridge_wait 配置覆盖，热更新生效）
+# 修改影响: 超过上限即取消桥接任务并按 fail-soft 语义返回（None/False）——
+# 把"无限冻结事件循环"收敛为有界等待；0 = 不设限（旧行为）。
+SYNC_IN_ASYNC_BRIDGE_WAIT_SECS: Final[float] = 10.0
+
 # sync-in-async 调用点登记表容量上限（防止动态拼接调用点导致的登记表无界增长）。
 # 使用位置: Core/Bases/storage.py -> _warn_sync_in_async()。
 # 修改影响: 仅影响同时跟踪的调用点数量，超出后最旧条目淘汰（其再次触发会重新警告一次）。
@@ -1788,6 +1802,8 @@ __all__ = [
     "SQLITE_JOURNAL_MODE",
     "SQLITE_SYNCHRONOUS_MODE",
     "STORAGE_SYNC_IN_ASYNC_WARN_COOLDOWN_SECS",
+    "STRICT_SYNC_IN_ASYNC_DEFAULT",
+    "SYNC_IN_ASYNC_BRIDGE_WAIT_SECS",
     "STORAGE_SYNC_WARN_SITES_CAPACITY",
     "STORAGE_TXN_SLOW_WARN_SECS",
     "STORAGE_TXN_COMMIT_TIMEOUT_SECS",

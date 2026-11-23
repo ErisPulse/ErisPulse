@@ -104,6 +104,8 @@
   - `运行时` 框架 uninitialize 不再全表清空生命周期钩子：装配级订阅（配置快照失效 / i18n 语言失效 / 收件箱挂接）在 init→uninit→init 循环后保持有效（此前热重载后配置与语言变更不再生效，直至重启）
   - `配置` framework 节调优参数配置化第一批：事务开启/提交超时、慢事务告警阈值、sync-in-async 告警冷却、跨账户受理窗口改为 `ErisPulse.framework.*` 配置项（写后立即生效，无需重启；默认值与原常量一致）
   - `配置` 声明式配置支持类型化容器字段（`list[T]` / `dict[str, T]`）：成员类型自动进入面板 schema（列表/键值控件免手写 `ui.item`）、加载期按成员类型规范化（标量转换 / dataclass 实例化 / JSON 字符串解析）、校验递归检查成员并带路径报错；TOML 模板为 dataclass 容器渲染 `[[表数组]]` / `[表.键]` 骨架，并修复嵌套表之后的同级标量字段被并入表内的既有缺陷（模板现为裸键先行、表块殿后两段式）
+  - `存储` 修复并发首次取用连接资源的死锁：特定窗口（冷启动 / 连接失效重建后的并发首取）会冻结整个事件循环——web（含错误页）无响应、该循环事务永不提交、其他连接每条写精确等 5s 后报 database is locked，持续到重启（kv / ORM / transcript 共用基座全命中；详见 bug-tracker BUG-052）
+  - `存储` sync-in-async 双闸门（治理"生态在异步处理器内调同步存储 API"导致的循环冻结放大）：新增 `framework.strict_sync_in_async`（开发期开关，开启后阻塞式调用直接抛 StrictModeError 并附调用点与迁移指引）与 `framework.sync_in_async_bridge_wait`（运行期止损，异步上下文下的桥接等待默认上限 10s，超时取消并 fail-soft 返回，纯同步线程不受限）；同步事务入口 `transaction()` 一并纳入同款检测
 
 ### 优化
 

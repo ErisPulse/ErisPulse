@@ -276,13 +276,13 @@ rows = builder.Execute()
 
 ```python
 # 提交事务
-with sdk.storage.transaction():
+async with sdk.storage.atransaction():
     sdk.storage.Table("users").Insert({"name": "Eve", "age": 22}).Execute()
     sdk.storage.Table("users").Update({"age": 23}).Where("name = ?", "Eve").Execute()
 
 # 回滚示例
 try:
-    with sdk.storage.transaction():
+    async with sdk.storage.atransaction():
         sdk.storage.Table("users").Delete().Where("name = ?", "Alice").Execute()
         raise Exception("force rollback")
 except Exception:

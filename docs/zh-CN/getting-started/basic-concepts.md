@@ -191,21 +191,21 @@ ErisPulse 支持 5 类事件：
 
 ```python
 # 设置值
-sdk.storage.set("key", "value")
+await sdk.storage.aset("key", "value")
 
 # 获取值
-value = sdk.storage.get("key", "default_value")
+value = await sdk.storage.aget("key", "default_value")
 
 # 批量操作
-sdk.storage.set_multi({
+await sdk.storage.aset_multi({
     "key1": "value1",
     "key2": "value2"
 })
 
 # 事务
-with sdk.storage.transaction():
-    sdk.storage.set("key1", "value1")
-    sdk.storage.set("key2", "value2")
+async with sdk.storage.atransaction():
+    await sdk.storage.aset("key1", "value1")
+    await sdk.storage.aset("key2", "value2")
 ```
 
 ### Config（配置）

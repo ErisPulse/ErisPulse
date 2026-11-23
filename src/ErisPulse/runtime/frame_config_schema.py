@@ -45,6 +45,7 @@ from ..Core.constants import (
     STORAGE_TXN_BEGIN_TIMEOUT_SECS,
     STORAGE_TXN_COMMIT_TIMEOUT_SECS,
     STORAGE_TXN_SLOW_WARN_SECS,
+    SYNC_IN_ASYNC_BRIDGE_WAIT_SECS,
 )
 
 
@@ -59,6 +60,16 @@ class StrictModeExceptionsConfig:
     adapters: list[str] = field(
         default_factory=list,
         metadata={"description": {"i18n": "core.config.framework.strict_mode_exceptions.adapters", "default": "exempt adapter names (glob supported)"}},
+    )
+
+
+@dataclass
+class StrictConfig:
+    """严格模式作用域开关：按域开启严格校验（级别语义随 strict_mode）"""
+
+    sync_in_async: bool = field(
+        default=False,
+        metadata={"description": {"i18n": "core.config.framework.strict.sync_in_async", "default": "raise StrictModeError instead of warning when sync storage APIs are called from async context (development aid)"}},
     )
 
 
@@ -171,6 +182,14 @@ class FrameworkConfig:
         default=HANDLER_SLOW_THRESHOLD_SECS,
         metadata={"description": {"i18n": "core.config.framework.handler_slow_threshold", "default": "warn when a single handler runs longer than this many seconds"}},
     )
+    strict: StrictConfig = field(
+        default_factory=StrictConfig,
+        metadata={"description": {"i18n": "core.config.framework.strict", "default": "strict-mode scope switches"}},
+    )
+    sync_in_async_bridge_wait: float = field(
+        default=SYNC_IN_ASYNC_BRIDGE_WAIT_SECS,
+        metadata={"description": {"i18n": "core.config.framework.sync_in_async_bridge_wait", "default": "max seconds a sync storage call from async context may wait on the bridge (0=unlimited); on timeout the call fails softly"}},
+    )
 
 
 def _fold_defaults(config_class: type) -> dict[str, Any]:
@@ -207,4 +226,4 @@ def framework_defaults() -> dict[str, Any]:
     return _FRAMEWORK_DEFAULTS_CACHE
 
 
-__all__ = ["FrameworkConfig", "StrictModeExceptionsConfig", "framework_defaults"]
+__all__ = ["FrameworkConfig", "StrictConfig", "StrictModeExceptionsConfig", "framework_defaults"]

@@ -442,6 +442,9 @@ TRANSLATIONS = {
     "core.storage.bridge_closed": "The storage sync bridge is closed and cannot execute async operations",
     "core.storage.bridge_reentrant": "Cannot call sync compatibility APIs from the storage bridge thread; use async methods instead",
     "core.storage.sync_in_loop_warn_site": "Storage sync API called inside an async context (blocks the event loop): {callsite} — prefer the a-prefixed async methods (aget / aset / aExecute)",
+    "core.storage.sync_in_loop_summary": "{total} sync storage API calls from async context in the last {window}s ({sites_n} call sites): {callsites} — blocking the event loop; switch to a-prefixed async methods (aget / aset / aExecute etc.)",
+    "core.storage.sync_in_async_strict": "strict mode: sync storage API called from async context is forbidden ({callsite}) — use the corresponding a-prefixed async method (aget / aset / aExecute etc.)",
+    "core.storage.sync_in_async_bridge_timeout": "sync storage call bridge wait timed out (limit {wait}s): {callsite} returned fail-soft — switch to the a-prefixed async method or raise framework.sync_in_async_bridge_wait",
     "core.storage.txn_slow": "Transaction held the write lock for {duration}s (threshold {threshold}s), opened at: {frames} — long transactions block other writes (busy_timeout exhaustion surfaces as database is locked); consider splitting the transaction or moving heavy work out of it",
     "core.storage.busy_timeout_invalid": "Invalid storage.sqlite.busy_timeout config ({value}), falling back to default {fallback}ms",
     # ==================== Configuration Management ====================

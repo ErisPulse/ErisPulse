@@ -114,17 +114,17 @@ async with sdk.storage.atransaction():
     await sdk.storage.Table("users").Insert({"name": "Alice"}).aExecute()
 ```
 
-同步 API（`get/set/transaction/Table(...).Execute()`）继续可用，内部经
-`AsyncBridge` 后台事件循环桥接执行——**推荐一律使用 a 前缀异步方法**
-（`aget` / `aset` / `adelete` / `atransaction` / `aExecute`）：同步接口在
-异步 handler 中调用会阻塞该事件循环直到存储操作完成（高频调用下表现为
-handler 超时、事件处理停摆），框架会对每个调用点输出限频告警（附
-`文件:行号 (函数名)` 调用点，按点冷却防刷屏）——收到告警即应把对应调用
-迁移为 a 前缀异步方法。两条边界必须知晓：
+## 同步方法（慎用）
 
-- **桥接线程内禁止再调同步接口**：同步接口在桥接线程内执行，此时再调
-  同步接口会抛 `RuntimeError`（防重入保护，避免自死锁）
-- **桥接目标循环关闭后调用会失败**：`uninit()` 之后不要再调用存储接口
+每个 a 前缀异步方法都有对应的同步形式（`aget`→`get`、`aset`→`set`、`atransaction`→`transaction`、`aExecute`→`Execute`），内部经后台事件循环桥接执行——**它们会阻塞调用方线程**：
+
+- **在异步 handler 中调用会阻塞整个事件循环**直到存储操作完成：高频调用下表现为 handler 超时、事件处理停摆、web 卡顿，并可能连锁触发 `database is locked`（写等待超时）。框架对每个调用点输出限频告警（附 `文件:行号 (函数名)`），收到告警即应把对应调用迁移为 a 前缀异步方法
+- 开发期可开启 `ErisPulse.framework.strict.sync_in_async = true`：同步调用不再放行，直接抛 `StrictModeError`（附调用点与迁移指引），当场暴露而不是上线后靠卡顿反推
+- 运行期止损：异步上下文下的桥接等待默认上限 10s（`ErisPulse.framework.sync_in_async_bridge_wait`），超时取消并按 fail-soft 语义返回——但这是兜底，不是许可
+
+**请确定你在做什么，否则不要使用同步形式。** 纯同步线程（无事件循环）中调用不受限，是合法场景（如同步入口脚本、桥接等待事务提交）。
+
+`asyncio.to_thread` / 线程池执行同步驱动同理，且在特定场景下有奇效：**后端支持真并发连接时**（PostgreSQL / MySQL——每线程独立连接、服务端 MVCC 并发），把同步驱动挪出事件循环是合理手段。但 SQLite 下**不要**这么做——线程连接会与框架的 aiosqlite 连接互相争抢同一把写锁，竞态面反而扩大，并可能造成写入失败乃至数据丢失。
 
 完整方法对照见 [SQL 查询构建器](sql-builder.md)。
 

@@ -468,9 +468,21 @@ def get_framework_value(key: str, default: Any) -> Any:
     """
     config_service = _get_config_service()
     section_config = config_service.getConfig(f"{CONFIG_ROOT_KEY}.framework")
-    if isinstance(section_config, dict) and key in section_config:
-        return section_config[key]
-    return _framework_defaults().get(key, default)
+    if isinstance(section_config, dict):
+        node: Any = section_config
+        for part in key.split("."):
+            if not isinstance(node, dict) or part not in node:
+                node = None
+                break
+            node = node[part]
+        if node is not None:
+            return node
+    node = _framework_defaults()
+    for part in key.split("."):
+        if not isinstance(node, dict) or part not in node:
+            return default
+        node = node[part]
+    return node
 
 
 def _apply_env_overrides(config: dict[str, Any], root: str = CONFIG_ROOT_KEY) -> None:

@@ -787,6 +787,117 @@ class TestStorageErrorLogging:
 # ==================== 长事务观测与 sync-in-async 调用点限频 ====================
 
 
+class TestSyncInAsyncPolicy:
+    """sync-in-async 双闸门（严格抛错 + 桥接有界等待 fail-soft）"""
+
+    def _cleanup(self):
+        from ErisPulse.Core.config import config as global_config
+
+        global_config.setConfig("ErisPulse.framework.strict.sync_in_async", False)
+        global_config.setConfig("ErisPulse.framework.sync_in_async_bridge_wait", 10.0)
+
+    @pytest.mark.asyncio
+    async def test_strict_mode_raises_with_callsite(self, tmp_path):
+        """严格模式开启后，异步上下文内的同步存储调用直接抛 StrictModeError"""
+        from ErisPulse.Core.Bases.errors import StrictModeError
+        from ErisPulse.Core.config import config as global_config
+        from ErisPulse.Core.storage import StorageManager
+
+        StorageManager._instance = None
+        manager = StorageManager.__new__(StorageManager)
+        manager.db_path = str(tmp_path / "strict.db")
+        manager._init_db()
+        manager._initialized = True
+        global_config.setConfig("ErisPulse.framework.strict.sync_in_async", True)
+        try:
+            # 异步测试体内同步调用（生产 sync-in-async 同形态）→ 严格抛错
+            with pytest.raises(StrictModeError, match="test_unit_storage"):
+                manager.get("any_key")
+        finally:
+            self._cleanup()
+            StorageManager._instance = None
+
+    @pytest.mark.asyncio
+    async def test_bounded_bridge_wait_fails_soft(self):
+        """异步上下文下桥接等待超上限 → 取消并返回 None（fail-soft）"""
+        import asyncio
+
+        StorageManager._instance = None
+        manager = StorageManager.__new__(StorageManager)
+        manager.db_path = "unused"
+        manager._init_db()
+        manager._initialized = True
+
+        from ErisPulse.Core.config import config as global_config
+
+        global_config.setConfig("ErisPulse.framework.sync_in_async_bridge_wait", 0.2)
+        try:
+            async def slow():
+                await asyncio.sleep(2)
+
+            # 在带运行循环的上下文里直接调用（生产 sync-in-async 同形态）：
+            # 桥接等待被限制在 0.2s 内并 fail-soft 返回 None
+            loop = asyncio.get_running_loop()
+            t0 = loop.time()
+            result = manager._bridge_run(slow())
+            elapsed = loop.time() - t0
+            assert result is None
+            assert elapsed < 1.5
+        finally:
+            self._cleanup()
+            StorageManager._instance = None
+
+
+class TestConcurrentFirstAcquire:
+    """并发首次获取循环资源（回归：线程锁内 await 冻结事件循环的死锁）"""
+
+    @pytest.fixture
+    def temp_db_file(self, tmp_path):
+        return str(tmp_path / "race.db")
+
+    @pytest.mark.asyncio
+    async def test_concurrent_first_touch_completes(self, temp_db_file):
+        """同循环多协程并发首取：经每循环异步锁串行建连，全部完成不挂起"""
+        import asyncio
+
+        StorageManager._instance = None
+        manager = StorageManager.__new__(StorageManager)
+        manager.db_path = temp_db_file
+        manager._init_db()
+        manager._initialized = True
+        try:
+            await asyncio.wait_for(
+                asyncio.gather(*(manager.aset(f"race:key{i}", i) for i in range(8))),
+                timeout=15,
+            )
+            values = await asyncio.gather(*(manager.aget(f"race:key{i}") for i in range(8)))
+            assert values == list(range(8))
+        finally:
+            StorageManager._instance = None
+
+    @pytest.mark.asyncio
+    async def test_single_resource_per_loop(self, temp_db_file):
+        """并发首取后每循环仅一条连接资源（无重复建连残留）"""
+
+        StorageManager._instance = None
+        manager = StorageManager.__new__(StorageManager)
+        manager.db_path = temp_db_file
+        manager._init_db()
+        manager._initialized = True
+        try:
+            import asyncio as _a
+
+            loop = _a.get_running_loop()
+            # 桥接循环（_init_db）已占一条；并发首取后当前循环恰好新增一条，
+            # 多于该数即重复建连残留
+            before = len(manager._loop_resources)
+            await _a.gather(*(manager.aset(f"one:key{i}", i) for i in range(8)))
+            assert loop in manager._loop_resources
+            assert len(manager._loop_resources) == before + 1
+        finally:
+            StorageManager._instance = None
+
+
 class TestStorageObservability:
     """长事务持锁观测、sync-in-async 按调用点限频警告与 busy_timeout 配置"""
 
@@ -915,16 +1026,21 @@ class TestStorageObservability:
         assert [r for r in caplog.records if prefix in r.getMessage()]
 
     @pytest.mark.asyncio
-    async def test_sync_in_async_warn_per_callsite(self, storage_manager, caplog, monkeypatch):
-        """异步上下文调用同步 API：首次告警附调用点，冷却期内同点静默"""
+    async def test_sync_in_async_summary_window(self, storage_manager, caplog, monkeypatch):
+        """异步上下文调用同步 API：窗口内聚合，窗口满输出一条汇总（含调用点与次数）"""
         from collections import OrderedDict
 
         storage_bases = importlib.import_module("ErisPulse.Core.Bases.storage")
         monkeypatch.setattr(storage_bases, "_sync_in_async_warn_sites", OrderedDict())
+        monkeypatch.setattr(storage_bases, "_sync_in_async_warn_counts", OrderedDict())
+        monkeypatch.setattr(storage_bases, "_warn_summary_at", 0.0)
         monkeypatch.setattr(
             storage_bases, "STORAGE_SYNC_IN_ASYNC_WARN_COOLDOWN_SECS", 60.0
         )
-        prefix = _i18n_prefix("core.storage.sync_in_loop_warn_site", callsite="")
+        prefix = _i18n_prefix(
+            "core.storage.sync_in_loop_summary",
+            total="", sites_n="", callsites="", window="",
+        )
 
         def do_sync_set():
             storage_manager.set("sync_key", "v")
@@ -933,9 +1049,10 @@ class TestStorageObservability:
             do_sync_set()
             do_sync_set()
 
-        site_warnings = [r for r in caplog.records if prefix in r.getMessage()]
-        assert len(site_warnings) == 1
-        assert "test_unit_storage.py" in site_warnings[0].getMessage()
+        summaries = [r for r in caplog.records if prefix in r.getMessage()]
+        assert len(summaries) == 1
+        msg = summaries[0].getMessage()
+        assert "（1 个调用点）" in msg and "test_unit_storage.py" in msg
 
     def test_resolve_busy_timeout_config_variants(self):
         """busy_timeout 配置解析：合法值/非法值回落/缺省"""

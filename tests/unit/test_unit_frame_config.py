@@ -166,6 +166,8 @@ class TestFrameworkDeclaration:
         "cross_account_policy", "session_accounts", "watch_include_plugin_dirs",
         "txn_begin_timeout", "txn_commit_timeout", "txn_slow_warn", "sync_warn_cooldown",
         "cross_receipt_window", "handler_slow_threshold",
+        "strict",
+        "sync_in_async_bridge_wait",
     }
 
     def test_declaration_covers_full_key_set(self):

@@ -30,9 +30,11 @@ from ..constants import (
     STORAGE_SYNC_WARN_SITES_CAPACITY,
     STORAGE_TXN_COMMIT_TIMEOUT_SECS,
     STORAGE_TXN_SLOW_WARN_SECS,
+    STRICT_SYNC_IN_ASYNC_DEFAULT,
+    SYNC_IN_ASYNC_BRIDGE_WAIT_SECS,
 )
 from ..i18n import i18n
-from .errors import StorageOperationError
+from .errors import StorageOperationError, StrictModeError
 
 # 哨兵值，用于区分"键不存在"和"值为 None"
 _SENTINEL = object()
@@ -47,6 +49,8 @@ _sync_in_async_warn_sites: "OrderedDict[str, float]" = OrderedDict()
 # 登记表读写锁：_warn_sync_in_async 从任意线程调用，get → move_to_end 与
 # popitem 淘汰的交错会使 move_to_end 抛 KeyError 并沿 AsyncBridge.run 传播
 _sync_in_async_warn_lock = threading.Lock()
+_sync_in_async_warn_counts: "OrderedDict[str, int]" = OrderedDict()
+_warn_summary_at = 0.0
 
 # 用户帧判定：模块名以此表为前缀的帧视为框架/标准库内部帧，跳过采集
 # （模块名而非文件路径——用户项目路径可能包含任何子串）
@@ -87,33 +91,63 @@ def _capture_user_frames(limit: int) -> list[str]:
 def _warn_sync_in_async() -> None:
     """
     {!--< internal-use >!--}
-    同步存储 API 在异步上下文调用的按调用点限频警告
+    同步存储 API 在异步上下文调用的聚合告警（防刷屏）
 
-    同步接口从协程线程调用会阻塞该事件循环（桥接等待）；进程级一次性警告
-    无法帮模块定位调用点，改为按「文件:行号 (函数名)」登记——首次警告，
-    冷却期内静默，冷却期满再次触发时重新提醒。
+    不逐调用点即时告警——按「文件:行号 (函数名)」累计计数，每个冷却窗口
+    （``framework.sync_warn_cooldown``，默认 60s）输出一条汇总：次数、调用
+    点数与 Top 调用点。严格模式（``framework.strict.sync_in_async``）开启时
+    不聚合，直接抛错。
     """
+    global _warn_summary_at
+
     sites = _capture_user_frames(limit=1)
     callsite = sites[0] if sites else "<未知调用点>"
     now = time.monotonic()
+    from ...runtime.frame_config import (
+        get_framework_value,  # 惰性：Core 装配窗口内快照读取回环（见 frame_config._framework_defaults）
+    )
+
+    if get_framework_value("strict.sync_in_async", STRICT_SYNC_IN_ASYNC_DEFAULT):
+        # 严格模式：阻塞式调用直接抛错（消息带调用点与 a 前缀指引），
+        # 开发期当场暴露，不进入运行期
+        raise StrictModeError(i18n.t("core.storage.sync_in_async_strict", callsite=callsite))
+
+    window = get_framework_value("sync_warn_cooldown", STORAGE_SYNC_IN_ASYNC_WARN_COOLDOWN_SECS)
     should_warn = False
+    summary_total = 0
+    summary_sites_n = 0
+    summary_sites = ""
     with _sync_in_async_warn_lock:
-        last = _sync_in_async_warn_sites.get(callsite)
-        from ...runtime.frame_config import (
-            get_framework_value,  # 惰性：Core 装配窗口内快照读取回环（见 frame_config._framework_defaults）
+        _sync_in_async_warn_sites[callsite] = now
+        _sync_in_async_warn_counts[callsite] = (
+            _sync_in_async_warn_counts.get(callsite, 0) + 1
         )
-        if last is not None and now - last < get_framework_value("sync_warn_cooldown", STORAGE_SYNC_IN_ASYNC_WARN_COOLDOWN_SECS):
-            _sync_in_async_warn_sites.move_to_end(callsite)
-        else:
-            _sync_in_async_warn_sites[callsite] = now
-            while len(_sync_in_async_warn_sites) > STORAGE_SYNC_WARN_SITES_CAPACITY:
-                _sync_in_async_warn_sites.popitem(last=False)
-            should_warn = True
+        while len(_sync_in_async_warn_sites) > STORAGE_SYNC_WARN_SITES_CAPACITY:
+            _sync_in_async_warn_sites.popitem(last=False)
+        if now - _warn_summary_at >= window:
+            _warn_summary_at = now
+            total = sum(_sync_in_async_warn_counts.values())
+            should_warn = total > 0
+            top = sorted(
+                _sync_in_async_warn_counts.items(), key=lambda kv: -kv[1]
+            )[:5]
+            _sync_in_async_warn_counts.clear()
+            summary_sites = "; ".join(site for site, _count in top)
+            summary_total = total
+            summary_sites_n = len(top)
     if should_warn:
         try:
             from ..logger import logger
 
-            logger.warning(i18n.t("core.storage.sync_in_loop_warn_site", callsite=callsite))
+            logger.warning(
+                i18n.t(
+                    "core.storage.sync_in_loop_summary",
+                    total=summary_total,
+                    sites_n=summary_sites_n,
+                    callsites=summary_sites,
+                    window=int(window),
+                )
+            )
         except Exception:
             pass
 
@@ -803,11 +837,44 @@ class BaseStorage(ABC):
         {!--< internal-use >!--}
         将协程提交到桥接事件循环并阻塞等待结果（同步兼容层的执行入口）
 
+        调用方处于异步上下文时施加有界等待（``framework.sync_in_async_bridge_wait``，
+        默认 10s）：超时取消桥接任务并返回 None（fail-soft）——把"无限冻结
+        调用方事件循环"收敛为有界等待；操作可能仍在桥接循环上完成（写最终
+        落库），仅调用方不再等待。纯同步线程调用不受限（等外事务/迁移等长
+        操作合法）。
+
         :param coro: 要执行的协程对象
-        :param timeout: 可选超时秒数
-        :return: 协程的返回值
+        :param timeout: 可选超时秒数（显式传入时优先于配置上限）
+        :return: 协程的返回值；异步上下文下桥接等待超时返回 None
         """
-        return AsyncBridge().run(coro, timeout)
+        if timeout is None and _has_running_loop():
+            from ...runtime.frame_config import (  # 惰性：Core 装配窗口内快照读取回环
+                get_framework_value,
+            )
+
+            timeout = get_framework_value(
+                "sync_in_async_bridge_wait", SYNC_IN_ASYNC_BRIDGE_WAIT_SECS
+            )
+            if timeout == 0:
+                timeout = None
+        try:
+            return AsyncBridge().run(coro, timeout)
+        except _FutureTimeout:
+            try:
+                frame = sys._getframe(1)
+                site = f"{frame.f_code.co_filename}:{frame.f_lineno} ({frame.f_code.co_name})"
+            except ValueError:
+                site = "?"
+            from ..logger import logger
+
+            logger.warning(
+                i18n.t(
+                    "core.storage.sync_in_async_bridge_timeout",
+                    wait=timeout,
+                    callsite=site,
+                )
+            )
+            return None
 
     def _routing_conn(self) -> Any:
         """
@@ -1150,6 +1217,11 @@ class BaseStorage(ABC):
         """
         if not self._is_ready():
             return _EmptyTransaction()
+
+        if _has_running_loop():
+            # 事件循环线程内开同步事务 = 整个持锁期冻结该循环
+            # （比单条 sync-in-async 危害更大），纳入同款检测/严格模式
+            _warn_sync_in_async()
 
         self._ensure_txn_state()
         registry = self._sync_txns

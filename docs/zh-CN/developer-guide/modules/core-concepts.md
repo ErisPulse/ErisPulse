@@ -159,7 +159,7 @@ from ErisPulse import sdk
 
 # 通过 sdk 对象访问所有核心模块
 sdk.logger.info("日志")
-sdk.storage.set("key", "value")
+await sdk.storage.aset("key", "value")
 
 # 模块自有小状态（计数器/开关/上次运行时间）优先用 self.state——
 # 键自动带 module.state.<模块名>. 前缀，模块卸载重载后仍在：
@@ -361,10 +361,10 @@ class MyModule(BaseModule):
 
 ```python
 # 存储数据
-sdk.storage.set("user:123", {"name": "张三"})
+await sdk.storage.aset("user:123", {"name": "张三"})
 
 # 获取数据
-user = sdk.storage.get("user:123", {})
+user = await sdk.storage.aget("user:123", {})
 
 # 删除数据
 sdk.storage.delete("user:123")
@@ -374,9 +374,9 @@ sdk.storage.delete("user:123")
 
 ```python
 # 使用事务确保数据一致性
-with sdk.storage.transaction():
-    sdk.storage.set("key1", "value1")
-    sdk.storage.set("key2", "value2")
+async with sdk.storage.atransaction():
+    await sdk.storage.aset("key1", "value1")
+    await sdk.storage.aset("key2", "value2")
     # 如果任何操作失败，所有更改都会回滚
 ```
 
