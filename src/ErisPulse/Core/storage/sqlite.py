@@ -36,6 +36,7 @@ class SQLiteDialect(SQLDialect):
 
     name = "sqlite"
     extra_name = "sqlite"
+    # 驱动为零依赖内置 sqlite3（driver_module 为空，跳过安装路径）
 
     key_column_type = "TEXT"
     value_column_type = "TEXT"

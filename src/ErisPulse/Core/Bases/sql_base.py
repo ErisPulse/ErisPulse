@@ -13,8 +13,12 @@ ErisPulse SQL 存储共享基类
 """
 
 import asyncio
+import importlib
 import json
 import re
+import shutil
+import subprocess
+import sys
 import threading
 import time
 import weakref
@@ -148,6 +152,10 @@ class SQLDialect:
     name: str = ""
     # pip 安装 extras 名（驱动缺失提示用）
     extra_name: str = ""
+    # 驱动声明（可插拔机制）：模块导入名与安装 spec（带版本范围；安装时取
+    # 范围内最新版）。空 = 零依赖内置驱动（如 sqlite3），跳过安装路径
+    driver_module: str = ""
+    driver_requires: "list[str]" = []
 
     def translate_sql(self, sql: str) -> str:
         """
@@ -771,6 +779,57 @@ class SQLStorageBase(BaseStorage):
     async def _close_txn_conn(self, conn: Any) -> None:
         """{!--< internal-use >!--} 释放事务专用连接"""
         ...
+
+    # ==================== 驱动管理（可插拔机制） ====================
+
+    def _require_driver(self) -> Any:
+        """
+        {!--< internal-use >!--}
+        通用驱动装载：按方言声明的 ``driver_module`` 导入驱动
+
+        缺失时按 ``driver_requires`` 声明自动安装（探测 uv，回退 pip），
+        ``invalidate_cache`` 后当场重试——装完即用、无需重启。驱动声明为空
+        （零依赖内置驱动，如 sqlite3）返回 None。
+
+        :return: 驱动模块对象（零依赖驱动返回 None）
+        :raises RuntimeError: 安装后仍无法导入时（附 extras 安装指引）
+        """
+        module_name = self.dialect.driver_module
+        if not module_name:
+            return None
+        try:
+            return importlib.import_module(module_name)
+        except ImportError:
+            pass
+
+        specs = self.dialect.driver_requires or [module_name]
+        from ..logger import logger
+
+        logger.warning(
+            i18n.t(
+                "core.storage.driver_installing",
+                backend=self.dialect.name,
+                specs=" ".join(specs),
+            )
+        )
+        uv_path = shutil.which("uv")
+        cmd = (
+            [uv_path, "pip", "install", *specs]
+            if uv_path
+            else [sys.executable, "-m", "pip", "install", *specs]
+        )
+        result = subprocess.run(cmd, capture_output=True, text=True)
+        importlib.invalidate_caches()
+        try:
+            return importlib.import_module(module_name)
+        except ImportError as e:
+            raise RuntimeError(
+                i18n.t(
+                    "core.storage.driver_missing",
+                    backend=self.dialect.name,
+                    extra=self.dialect.extra_name,
+                )
+            ) from e
 
     # 连接资源创建的瞬时失败重试参数（网络抖动/对端限流/数据库重启），取值见 Core/constants.py
     _RESOURCE_CREATE_RETRIES: int = STORAGE_POOL_CREATE_RETRIES

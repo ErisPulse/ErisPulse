@@ -442,6 +442,8 @@ TRANSLATIONS = {
     "core.storage.bridge_closed": "存储同步桥接已关闭，无法执行异步操作",
     "core.storage.bridge_reentrant": "禁止在存储桥接线程内调用同步兼容接口，请改用异步方法",
     "core.storage.sync_in_loop_warn_site": "存储同步 API 在异步上下文调用（阻塞事件循环）：{callsite} —— 请改用对应的 a 前缀异步方法（aget / aset / aExecute 等）",
+    "core.storage.driver_installing": "存储后端 {backend} 驱动缺失，正在自动安装声明的依赖：{specs}（安装完成即用，无需重启）",
+    "core.storage.backend_plugin_failed": "存储后端插件 {name} 加载失败: {error}（已跳过，不影响内置后端）",
     "core.storage.sync_in_loop_summary": "过去 {window}s 内同步存储 API 在异步上下文被调用 {total} 次（{sites_n} 个调用点）：{callsites} —— 阻塞事件循环，请改用 a 前缀异步方法（aget / aset / aExecute 等）",
     "core.storage.sync_in_async_strict": "严格模式：异步上下文调用同步存储 API 已被禁止（{callsite}）—— 请改用对应的 a 前缀异步方法（aget / aset / aExecute 等）",
     "core.storage.sync_in_async_bridge_timeout": "同步存储调用桥接等待超时（上限 {wait}s）：调用点 {callsite} 返回 fail-soft —— 请改用 a 前缀异步方法或调大 framework.sync_in_async_bridge_wait",

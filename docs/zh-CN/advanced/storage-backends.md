@@ -126,6 +126,8 @@ async with sdk.storage.atransaction():
 
 `asyncio.to_thread` / 线程池执行同步驱动同理，且在特定场景下有奇效：**后端支持真并发连接时**（PostgreSQL / MySQL——每线程独立连接、服务端 MVCC 并发），把同步驱动挪出事件循环是合理手段。但 SQLite 下**不要**这么做——线程连接会与框架的 aiosqlite 连接互相争抢同一把写锁，竞态面反而扩大，并可能造成写入失败乃至数据丢失。
 
+**MySQL / PostgreSQL 后端无需手动 to_thread**：框架对真并发后端（`_SUPPORTS_THREAD_BRIDGE` 能力）自动把异步上下文内的同步调用路由到有界线程池（每 worker 独立事件循环，互不排队），主循环阻塞时长即操作本身耗时；等待上限与 fail-soft 语义同上。SQLite 后端维持单桥接循环串行（写锁模型要求）。自定义后端按写锁模型声明该能力（单写引擎保持默认 False）。
+
 完整方法对照见 [SQL 查询构建器](sql-builder.md)。
 
 ## 方言行为差异

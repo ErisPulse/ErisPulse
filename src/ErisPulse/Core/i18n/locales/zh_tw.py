@@ -442,6 +442,8 @@ TRANSLATIONS = {
     "core.storage.bridge_closed": "儲存同步橋接已關閉，無法執行非同步操作",
     "core.storage.bridge_reentrant": "禁止在儲存橋接執行緒內呼叫同步相容介面，請改用非同步方法",
     "core.storage.sync_in_loop_warn_site": "儲存同步介面在非同步上下文中呼叫（阻塞事件循環）：{callsite} —— 請改用對應的 a 前綴非同步方法（aget / aset / aExecute 等）",
+    "core.storage.driver_installing": "儲存後端 {backend} 驅動缺失，正在自動安裝聲明的依賴：{specs}（安裝完成即用，無需重啟）",
+    "core.storage.backend_plugin_failed": "儲存後端外掛 {name} 載入失敗: {error}（已跳過，不影響內建後端）",
     "core.storage.sync_in_loop_summary": "過去 {window}s 內同步儲存 API 在非同步上下文被呼叫 {total} 次（{sites_n} 個呼叫點）：{callsites} —— 阻塞事件循環，請改用 a 前綴非同步方法（aget / aset / aExecute 等）",
     "core.storage.sync_in_async_strict": "嚴格模式：非同步上下文呼叫同步儲存 API 已被禁止（{callsite}）—— 請改用對應的 a 前綴非同步方法（aget / aset / aExecute 等）",
     "core.storage.sync_in_async_bridge_timeout": "同步儲存呼叫橋接等待超時（上限 {wait}s）：呼叫點 {callsite} 回傳 fail-soft —— 請改用 a 前綴非同步方法或調大 framework.sync_in_async_bridge_wait",

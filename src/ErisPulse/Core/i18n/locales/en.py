@@ -442,6 +442,8 @@ TRANSLATIONS = {
     "core.storage.bridge_closed": "The storage sync bridge is closed and cannot execute async operations",
     "core.storage.bridge_reentrant": "Cannot call sync compatibility APIs from the storage bridge thread; use async methods instead",
     "core.storage.sync_in_loop_warn_site": "Storage sync API called inside an async context (blocks the event loop): {callsite} — prefer the a-prefixed async methods (aget / aset / aExecute)",
+    "core.storage.driver_installing": "driver missing for storage backend {backend}, auto-installing declared dependencies: {specs} (ready immediately, no restart needed)",
+    "core.storage.backend_plugin_failed": "storage backend plugin {name} failed to load: {error} (skipped; built-in backends unaffected)",
     "core.storage.sync_in_loop_summary": "{total} sync storage API calls from async context in the last {window}s ({sites_n} call sites): {callsites} — blocking the event loop; switch to a-prefixed async methods (aget / aset / aExecute etc.)",
     "core.storage.sync_in_async_strict": "strict mode: sync storage API called from async context is forbidden ({callsite}) — use the corresponding a-prefixed async method (aget / aset / aExecute etc.)",
     "core.storage.sync_in_async_bridge_timeout": "sync storage call bridge wait timed out (limit {wait}s): {callsite} returned fail-soft — switch to the a-prefixed async method or raise framework.sync_in_async_bridge_wait",

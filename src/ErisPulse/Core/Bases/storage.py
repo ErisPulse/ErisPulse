@@ -13,6 +13,7 @@ ErisPulse 存储基类
 
 import asyncio
 import atexit
+import concurrent.futures
 import sys
 import threading
 import time
@@ -28,6 +29,7 @@ from ..constants import (
     STORAGE_BRIDGE_JOIN_TIMEOUT_SECS,
     STORAGE_SYNC_IN_ASYNC_WARN_COOLDOWN_SECS,
     STORAGE_SYNC_WARN_SITES_CAPACITY,
+    STORAGE_THREAD_BRIDGE_POOL_SIZE,
     STORAGE_TXN_COMMIT_TIMEOUT_SECS,
     STORAGE_TXN_SLOW_WARN_SECS,
     STRICT_SYNC_IN_ASYNC_DEFAULT,
@@ -164,6 +166,40 @@ def _has_running_loop() -> bool:
         return True
     except RuntimeError:
         return False
+
+_THREAD_BRIDGE_LOCAL = threading.local()
+_THREAD_BRIDGE_POOL: "concurrent.futures.ThreadPoolExecutor | None" = None
+_THREAD_BRIDGE_POOL_LOCK = threading.Lock()
+
+
+def _get_thread_bridge_pool() -> "concurrent.futures.ThreadPoolExecutor":
+    """{!--< internal-use >!--} 线程桥接池（进程级懒初始化，退出时随解释器回收）"""
+    global _THREAD_BRIDGE_POOL
+    if _THREAD_BRIDGE_POOL is None:
+        with _THREAD_BRIDGE_POOL_LOCK:
+            if _THREAD_BRIDGE_POOL is None:
+                _THREAD_BRIDGE_POOL = concurrent.futures.ThreadPoolExecutor(
+                    max_workers=STORAGE_THREAD_BRIDGE_POOL_SIZE,
+                    thread_name_prefix="EP-StorageThreadBridge",
+                )
+                atexit.register(_THREAD_BRIDGE_POOL.shutdown, wait=False, cancel_futures=True)
+    return _THREAD_BRIDGE_POOL
+
+
+def _thread_bridge_worker(coro: Any) -> Any:
+    """
+    {!--< internal-use >!--}
+    线程桥接 worker：每线程一个独立事件循环（惰性创建、随线程存活）
+
+    连接资源按循环对象缓存在 ``_loop_resources``（WeakKeyDictionary）——
+    循环随线程持久存在，连接同样复用，不产生逐调用建连。
+    """
+    loop = getattr(_THREAD_BRIDGE_LOCAL, "loop", None)
+    if loop is None:
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        _THREAD_BRIDGE_LOCAL.loop = loop
+    return loop.run_until_complete(coro)
 
 
 class AsyncBridge:
@@ -806,6 +842,10 @@ class BaseStorage(ABC):
     # 是否支持将事务连接路由进异步实现（conn 关键字参数）
     # 内置 SQL 后端为 True；未实现 conn 参数的第三方后端保持 False
     _SUPPORTS_CONN_ROUTING: bool = False
+    # 线程桥接能力：True = 服务端支持真并发连接（MVCC），异步上下文的同步调用
+    # 改走有界线程池（每 worker 独立事件循环，互不排队）；False = 单写锁模型
+    # （SQLite 及未知后端），维持单桥接循环串行——写锁语义要求串行，不可并发
+    _SUPPORTS_THREAD_BRIDGE: bool = False
 
     def __init__(self) -> None:
         # 同步事务登记表：调用线程 ID → 事务句柄
@@ -858,6 +898,10 @@ class BaseStorage(ABC):
             if timeout == 0:
                 timeout = None
         try:
+            if getattr(self, "_SUPPORTS_THREAD_BRIDGE", False) and _has_running_loop():
+                # 真并发后端：有界线程池执行（每 worker 独立事件循环），
+                # 不经过单桥接循环的串行队列——主循环阻塞时长即操作本身耗时
+                return self._thread_bridge_run(coro, timeout)
             return AsyncBridge().run(coro, timeout)
         except _FutureTimeout:
             try:
@@ -875,6 +919,27 @@ class BaseStorage(ABC):
                 )
             )
             return None
+
+    def _thread_bridge_run(self, coro: Any, timeout: float | None) -> Any:
+        """
+        {!--< internal-use >!--}
+        有界线程池桥接：真并发后端（``_SUPPORTS_THREAD_BRIDGE``）的同步调用
+        执行路径——worker 线程各持独立事件循环（连接按循环缓存，随线程存活），
+        调用间互不排队。超时语义与桥接循环一致：取消提交并 fail-soft 抛出
+        （由 :meth:`_bridge_run` 统一转 None 返回）。
+
+        :param coro: 要执行的协程对象
+        :param timeout: 等待上限秒数
+        :return: 协程的返回值
+        """
+        if _has_running_loop():
+            _warn_sync_in_async()
+        future = _get_thread_bridge_pool().submit(_thread_bridge_worker, coro)
+        try:
+            return future.result(timeout)
+        except _FutureTimeout:
+            future.cancel()
+            raise
 
     def _routing_conn(self) -> Any:
         """

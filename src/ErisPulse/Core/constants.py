@@ -1211,6 +1211,13 @@ STRICT_SYNC_IN_ASYNC_DEFAULT: Final[bool] = False
 # 把"无限冻结事件循环"收敛为有界等待；0 = 不设限（旧行为）。
 SYNC_IN_ASYNC_BRIDGE_WAIT_SECS: Final[float] = 10.0
 
+# sync-in-async 线程桥接池大小（仅 _SUPPORTS_THREAD_BRIDGE=True 的后端使用，
+# 当前为 MySQL / PostgreSQL——服务端 MVCC 支持真并发连接；SQLite 单写锁不走此路径）。
+# 使用位置: Core/Bases/storage.py -> _THREAD_BRIDGE_POOL（线程池容量）
+# 修改影响: 调大提升异步上下文同步调用的并发吞吐，代价是每 worker 线程各自
+#           持有一条后端连接（连接数 = 池大小 × 每循环连接池）。
+STORAGE_THREAD_BRIDGE_POOL_SIZE: Final[int] = 4
+
 # sync-in-async 调用点登记表容量上限（防止动态拼接调用点导致的登记表无界增长）。
 # 使用位置: Core/Bases/storage.py -> _warn_sync_in_async()。
 # 修改影响: 仅影响同时跟踪的调用点数量，超出后最旧条目淘汰（其再次触发会重新警告一次）。
@@ -1804,6 +1811,7 @@ __all__ = [
     "STORAGE_SYNC_IN_ASYNC_WARN_COOLDOWN_SECS",
     "STRICT_SYNC_IN_ASYNC_DEFAULT",
     "SYNC_IN_ASYNC_BRIDGE_WAIT_SECS",
+    "STORAGE_THREAD_BRIDGE_POOL_SIZE",
     "STORAGE_SYNC_WARN_SITES_CAPACITY",
     "STORAGE_TXN_SLOW_WARN_SECS",
     "STORAGE_TXN_COMMIT_TIMEOUT_SECS",

@@ -37,6 +37,8 @@ class MySQLDialect(SQLDialect):
 
     name = "mysql"
     extra_name = "mysql"
+    driver_module = "aiomysql"
+    driver_requires = ["aiomysql>=0.2,<0.4"]
 
     key_column_type = "VARCHAR(255)"
     value_column_type = "LONGTEXT"
@@ -104,6 +106,8 @@ class MySQLDialect(SQLDialect):
 
 
 class MySQLStorage(_SingletonMixin, SQLStorageBase):
+    # 服务端 MVCC（真并发连接）：sync-in-async 调用走有界线程池而非单桥接循环
+    _SUPPORTS_THREAD_BRIDGE = True
     """
     MySQL 存储管理器（aiomysql 异步原生实现）
 
@@ -186,20 +190,6 @@ class MySQLStorage(_SingletonMixin, SQLStorageBase):
             raise
 
     # 驱动管理
-
-    def _require_driver(self) -> Any:
-        """{!--< internal-use >!--} 惰性导入 aiomysql，缺失时给出安装指引"""
-        try:
-            import aiomysql
-        except ImportError as e:
-            raise RuntimeError(
-                i18n.t(
-                    "core.storage.driver_missing",
-                    backend="mysql",
-                    extra=self.dialect.extra_name,
-                )
-            ) from e
-        return aiomysql
 
     # 连接池管理
 

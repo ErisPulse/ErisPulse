@@ -36,6 +36,8 @@ class PostgresDialect(SQLDialect):
 
     name = "postgres"
     extra_name = "postgres"
+    driver_module = "asyncpg"
+    driver_requires = ["asyncpg>=0.29,<0.31"]
 
     key_column_type = "TEXT"
     value_column_type = "TEXT"
@@ -108,6 +110,8 @@ class PostgresDialect(SQLDialect):
 
 
 class PostgresStorage(_SingletonMixin, SQLStorageBase):
+    # 服务端 MVCC（真并发连接）：sync-in-async 调用走有界线程池而非单桥接循环
+    _SUPPORTS_THREAD_BRIDGE = True
     """
     PostgreSQL 存储管理器（asyncpg 异步原生实现）
 
@@ -183,20 +187,6 @@ class PostgresStorage(_SingletonMixin, SQLStorageBase):
             raise
 
     # 驱动管理
-
-    def _require_driver(self) -> Any:
-        """{!--< internal-use >!--} 惰性导入 asyncpg，缺失时给出安装指引"""
-        try:
-            import asyncpg
-        except ImportError as e:
-            raise RuntimeError(
-                i18n.t(
-                    "core.storage.driver_missing",
-                    backend="postgres",
-                    extra=self.dialect.extra_name,
-                )
-            ) from e
-        return asyncpg
 
     # 连接池管理
 

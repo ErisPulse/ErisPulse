@@ -787,6 +787,182 @@ class TestStorageErrorLogging:
 # ==================== 长事务观测与 sync-in-async 调用点限频 ====================
 
 
+class TestStoragePluggable:
+    """存储后端可插拔机制（注册表 / entry-points / 驱动声明化）"""
+
+    def test_registry_builtin_backends(self):
+        from ErisPulse.Core.storage import get_registered_backends
+
+        registered = get_registered_backends()
+        for name in ("sqlite", "mysql", "postgres"):
+            assert name in registered
+
+    def test_register_and_duplicate_override(self, tmp_path):
+        """外部注册 + 同名覆盖（后注册生效）"""
+        from ErisPulse.Core.Bases.storage import BaseStorage
+        from ErisPulse.Core.storage import (
+            _REGISTRY,
+            get_registered_backends,
+            register_storage_backend,
+        )
+
+        class FakeBackend(BaseStorage):
+            pass
+
+        register_storage_backend("testplug", FakeBackend)
+        try:
+            assert "testplug" in get_registered_backends()
+            register_storage_backend("testplug", FakeBackend)  # 覆盖不报错
+            assert _REGISTRY["testplug"] is FakeBackend
+        finally:
+            _REGISTRY.pop("testplug", None)
+
+    def test_unknown_backend_lists_available(self):
+        """未知后端报错附可用列表"""
+        import pytest
+
+        from ErisPulse.Core.storage import _REGISTRY, create_storage
+
+        saved = dict(_REGISTRY)
+        _REGISTRY.pop("sqlite", None)
+        try:
+            with pytest.raises(ValueError, match="mysql"):
+                create_storage()
+        finally:
+            _REGISTRY.clear()
+            _REGISTRY.update(saved)
+
+    def test_dialect_driver_declaration(self):
+        """三方言驱动声明：内置零依赖 / MySQL / PG 带版本范围"""
+        from ErisPulse.Core.storage.mysql import MySQLDialect
+        from ErisPulse.Core.storage.postgres import PostgresDialect
+        from ErisPulse.Core.storage.sqlite import SQLiteDialect
+
+        assert SQLiteDialect.driver_module == ""
+        assert MySQLDialect.driver_module == "aiomysql"
+        assert MySQLDialect.driver_requires == ["aiomysql>=0.2,<0.4"]
+        assert PostgresDialect.driver_module == "asyncpg"
+        assert PostgresDialect.driver_requires == ["asyncpg>=0.29,<0.31"]
+
+    def test_require_driver_zero_dep_returns_none(self):
+        """driver_module 为空（零依赖内置驱动）→ 返回 None"""
+        from ErisPulse.Core.Bases.sql_base import SQLDialect, SQLStorageBase
+
+        class _D(SQLDialect):
+            name = "probe"
+
+        class _Fake:
+            dialect = _D()
+
+        assert SQLStorageBase._require_driver(_Fake()) is None
+
+    def test_require_driver_importable_module(self):
+        """已可导入的声明驱动 → 直接返回模块（鸭子 self：_require_driver 只用 dialect）"""
+        import sqlite3
+
+        from ErisPulse.Core.Bases.sql_base import SQLDialect, SQLStorageBase
+
+        class _D(SQLDialect):
+            name = "probe"
+            driver_module = "sqlite3"
+
+        class _Fake:
+            dialect = _D()
+
+        assert SQLStorageBase._require_driver(_Fake()) is sqlite3
+
+    def test_require_driver_missing_raises_with_extras_hint(self):
+        """驱动不可导入且无声明安装范围 → RuntimeError 附 extras 指引"""
+        from ErisPulse.Core.Bases.sql_base import SQLDialect, SQLStorageBase
+
+        class _D(SQLDialect):
+            name = "probe"
+            extra_name = "probe"
+            driver_module = "no_such_driver_xyz"
+
+        class _Fake:
+            dialect = _D()
+
+        with pytest.raises(RuntimeError, match="probe"):
+            SQLStorageBase._require_driver(_Fake())
+
+
+class TestThreadBridge:
+    """真并发后端的线程桥接通道（_SUPPORTS_THREAD_BRIDGE）"""
+
+    def test_capability_flags(self):
+        """内置后端能力声明：MySQL/PG 走线程池，SQLite 走单桥接循环"""
+        from ErisPulse.Core.storage.mysql import MySQLStorage
+        from ErisPulse.Core.storage.postgres import PostgresStorage
+        from ErisPulse.Core.storage.sqlite import SQLiteStorage
+
+        assert MySQLStorage._SUPPORTS_THREAD_BRIDGE is True
+        assert PostgresStorage._SUPPORTS_THREAD_BRIDGE is True
+        assert SQLiteStorage._SUPPORTS_THREAD_BRIDGE is False
+
+    @pytest.mark.asyncio
+    async def test_thread_bridge_returns_result(self, tmp_path):
+        """能力后端的同步调用经线程池执行并返回真实结果（worker 循环连接复用）"""
+        StorageManager._instance = None
+        manager = StorageManager.__new__(StorageManager)
+        manager.db_path = str(tmp_path / "tbridge.db")
+        manager._init_db()
+        manager._initialized = True
+        manager._SUPPORTS_THREAD_BRIDGE = True
+        try:
+            # 异步测试体内同步调用（sync-in-async）→ 线程桥接路径
+            assert manager.set("tb:key", {"v": 1}) is True
+            assert manager.get("tb:key") == {"v": 1}
+            # worker 循环的连接资源已按循环缓存
+            assert len(manager._loop_resources) >= 1
+        finally:
+            StorageManager._instance = None
+
+    @pytest.mark.asyncio
+    async def test_thread_bridge_bounded_timeout_fails_soft(self, tmp_path):
+        """线程桥接超上限 → 取消提交并 fail-soft 返回 None"""
+        import asyncio
+
+        StorageManager._instance = None
+        manager = StorageManager.__new__(StorageManager)
+        manager.db_path = str(tmp_path / "tbridge2.db")
+        manager._init_db()
+        manager._initialized = True
+        manager._SUPPORTS_THREAD_BRIDGE = True
+
+        from ErisPulse.Core.config import config as global_config
+
+        global_config.setConfig("ErisPulse.framework.sync_in_async_bridge_wait", 0.2)
+        try:
+            async def slow():
+                await asyncio.sleep(2)
+
+            loop = asyncio.get_running_loop()
+            t0 = loop.time()
+            result = manager._bridge_run(slow())
+            elapsed = loop.time() - t0
+            assert result is None
+            assert elapsed < 1.5
+        finally:
+            global_config.setConfig("ErisPulse.framework.sync_in_async_bridge_wait", 10.0)
+            StorageManager._instance = None
+
+    @pytest.mark.asyncio
+    async def test_unsupported_backend_keeps_bridge_loop(self, tmp_path):
+        """能力 False 的后端（SQLite/未知）不走线程池——仍经单桥接循环"""
+        StorageManager._instance = None
+        manager = StorageManager.__new__(StorageManager)
+        manager.db_path = str(tmp_path / "nobridge.db")
+        manager._init_db()
+        manager._initialized = True
+        try:
+            assert manager._SUPPORTS_THREAD_BRIDGE is False
+            assert manager.set("plain:key", 1) is True
+            assert manager.get("plain:key") == 1
+        finally:
+            StorageManager._instance = None
+
+
 class TestSyncInAsyncPolicy:
     """sync-in-async 双闸门（严格抛错 + 桥接有界等待 fail-soft）"""
 

@@ -442,6 +442,8 @@ TRANSLATIONS = {
     "core.storage.bridge_closed": "ストレージ同期ブリッジは閉じられており、非同期操作を実行できません",
     "core.storage.bridge_reentrant": "ストレージブリッジスレッド内から同期互換インターフェースを呼び出すことはできません。非同期メソッドを使用してください",
     "core.storage.sync_in_loop_warn_site": "ストレージ同期 API が非同期コンテキスト内で呼び出されています（イベントループをブロック）：{callsite} —— a 接頭辞の非同期メソッド（aget / aset / aExecute など）を使用してください",
+    "core.storage.driver_installing": "ストレージバックエンド {backend} のドライバが不足、宣言された依存関係を自動インストール中：{specs}（インストール後すぐ使用可能、再起動不要）",
+    "core.storage.backend_plugin_failed": "ストレージバックエンドプラグイン {name} の読み込みに失敗: {error}（スキップ、内蔵バックエンドには影響なし）",
     "core.storage.sync_in_loop_summary": "過去 {window}s 秒で同期ストレージ API が非同期コンテキストから {total} 回呼び出されました（{sites_n} 呼び出し点）：{callsites} —— イベントループをブロックします。a 接頭辞の非同期メソッド（aget / aset / aExecute など）に切り替えてください",
     "core.storage.sync_in_async_strict": "厳格モード：非同期コンテキストからの同期ストレージ API 呼び出しは禁止されています（{callsite}）—— 対応する a 接頭辞の非同期メソッド（aget / aset / aExecute など）を使用してください",
     "core.storage.sync_in_async_bridge_timeout": "同期ストレージ呼び出しのブリッジ待ちがタイムアウト（上限 {wait}s）：呼び出し点 {callsite} は fail-soft で返りました —— a 接頭辞の非同期メソッドに切り替えるか framework.sync_in_async_bridge_wait を上げてください",
