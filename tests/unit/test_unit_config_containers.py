@@ -8,7 +8,10 @@ validate_config 成员校验、TOML 模板表数组与动态键表渲染（含 t
 
 from dataclasses import dataclass, field
 
-import tomllib
+try:
+    import tomllib
+except ModuleNotFoundError:  # Python 3.10：tomllib 是 3.11+ 标准库
+    import tomli as tomllib
 
 from ErisPulse.Core.Bases.config_schema import (
     BaseConfig,
