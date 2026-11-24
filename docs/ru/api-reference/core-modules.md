@@ -7,23 +7,23 @@
 
 ## Модуль Storage
 
-Система хранения пар ключ-значение на основе настраиваемого бэкенда (SQLite/MySQL/PostgreSQL), поддерживающая общие SQL-цепные запросы, бэкенд можно переключить одним кликом, подробнее см. [Хранилище бэкендов](../advanced/storage-backends.md).
+Система хранения пар ключ-значение на основе настраиваемых бэкендов (SQLite/MySQL/PostgreSQL), поддерживающая универсальные SQL-запросы с цепочечным вызовом. Бэкенд можно переключать одним нажатием кнопки через конфигурацию, подробнее см. [Бэкенды хранения](../advanced/storage-backends.md).
 
 ### Основные операции
 
 ```python
 from ErisPulse import sdk
 
-sdk.storage.set("key", "value")
-value = sdk.storage.get("key", default_value)
+await sdk.storage.aset("key", "value")
+value = await sdk.storage.aget("key", default_value)
 keys = sdk.storage.keys()
 sdk.storage.delete("key")
 ```
 
-### Пакетные операции
+### Массовые операции
 
 ```python
-sdk.storage.set_multi({"key1": "val1", "key2": "val2"})
+await sdk.storage.aset_multi({"key1": "val1", "key2": "val2"})
 values = sdk.storage.get_multi(["key1", "key2"])
 sdk.storage.delete_multi(["key1", "key2"])
 ```
@@ -31,21 +31,21 @@ sdk.storage.delete_multi(["key1", "key2"])
 ### Транзакционные операции
 
 ```python
-with sdk.storage.transaction():
-    sdk.storage.set("key1", "value1")
-    sdk.storage.set("key2", "value2")
+async with sdk.storage.atransaction():
+    await sdk.storage.aset("key1", "value1")
+    await sdk.storage.aset("key2", "value2")
 ```
 
-### Доступ по свойствам
+### Доступ к свойствам
 
 ```python
-sdk.storage.my_key          # эквивалентно sdk.storage.get("my_key")
-sdk.storage.my_key = "val"  # эквивалентно sdk.storage.set("my_key", "val")
+sdk.storage.my_key          # эквивалентно await sdk.storage.aget("my_key")
+sdk.storage.my_key = "val"  # эквивалентно await sdk.storage.aset("my_key", "val")
 ```
 
-### SQL-цепные запросы
+### SQL-цепочечный запрос
 
-Модуль Storage предоставляет гибкий API для построения SQL-запросов в стиле цепных вызовов, поддерживающий CRUD-операции для пользовательских таблиц.
+Модуль Storage предоставляет универсальный SQL-конструктор запросов в стиле цепочечных вызовов, поддерживающий CRUD-операции для пользовательских таблиц.
 
 ```python
 sdk.storage.CreateTable("users", {
@@ -57,11 +57,11 @@ sdk.storage.Table("users").Insert({"name": "Alice"}).Execute()
 rows = sdk.storage.Table("users").Select("name").Where("id > ?", 0).Execute()
 ```
 
-> Полный API цепных SQL-запросов (Select/Insert/Update/Delete/Where/OrderBy/Limit, AlterTable, транзакции и т.д.) см. в [SQL-построителе запросов](../advanced/sql-builder.md).
+> Полный API цепочечного запроса (Select/Insert/Update/Delete/Where/OrderBy/Limit, AlterTable, транзакции и т.д.) см. в разделе [SQL-конструктор запросов](../advanced/sql-builder.md).
 
-### Абстракция хранилища бэкендов
+### Абстракция бэкендов хранения
 
-`StorageManager` наследуется от абстрактного базового класса `BaseStorage`, поддерживает расширение другими хранилищами (Redis, MySQL и т.д.).
+`StorageManager` наследуется от абстрактного базового класса `BaseStorage`, поддерживает расширение для других типов хранилищ (Redis, MySQL и т.д.).
 
 ```python
 from ErisPulse.Core.Bases.storage import BaseStorage, BaseQueryBuilder
@@ -69,17 +69,17 @@ from ErisPulse.Core.Bases.storage import BaseStorage, BaseQueryBuilder
 
 ### Асинхронный интерфейс
 
-Модули Storage и Config предоставляют асинхронные методы (префикс `a`): **асинхронные методы являются основными, синхронные методы являются совместимыми слоем** (внутренне мостятся к фоновому циклу событий для выполнения). Существующий синхронный код не требует изменений; новые коды в асинхронных обработчиках следует использовать асинхронные методы.
+Модули Storage и Config предоставляют асинхронные методы (с префиксом `a`): **асинхронные методы являются основными, синхронные методы — это совместимый слой** (внутренняя мостовая реализация, выполняющаяся в фоновом событийном цикле). Существующий синхронный код не требует изменений; в новых асинхронных обработчиках следует использовать асинхронные методы.
 
 ```python
-# Асинхронное хранилище
+# Асинхронное хранение
 value = await sdk.storage.aget("key")
 await sdk.storage.aset("key", "value")
 await sdk.storage.adelete("key")
 keys = await sdk.storage.aget_all_keys()
 await sdk.storage.aclear()
 
-# Асинхронные пакетные операции
+# Асинхронные массовые операции
 values = await sdk.storage.aget_multi(["k1", "k2"])
 await sdk.storage.aset_multi({"k1": "v1", "k2": "v2"})
 await sdk.storage.adelete_multi(["k1", "k2"])

@@ -24,6 +24,9 @@ ErisPulse 通用配置 Schema 模块
 > 9. 使用 dict_to_dataclass() 从 TOML 字典填充 dataclass（含环境变量覆盖）
 > 10. 使用 validate_config() 校验配置实例
 > 11. 使用 get_config_schema() 生成 WebUI JSON Schema（含 i18n 支持）
+> 12. 容器类型 ``list[T]`` / ``dict[str, T]`` 的成员类型进入 schema 的 ``item``；
+> dict_to_dataclass() 加载时按成员类型规范化（标量转换 / dataclass 实例化），
+> validate_config() 校验成员类型与嵌套约束
 
 ---
 
@@ -124,6 +127,81 @@ annotations``）；字符串注解从类所在模块全局与类属性（含嵌�
 **返回值**: 嵌套 dataclass 类型，非嵌套字段返回 None
 
 **内部方法**
+
+---
+
+
+### `_annotation_namespaces(config_class: type) -> 'list[Mapping]'`
+
+字符串注解的解析命名空间链
+
+顺序：类所在模块全局 → 沿 ``__qualname__`` 逐级外层的类命名空间 → 类自身
+（子配置类与 ConfigClass 同级声明在外层类中时，短名经由该链解析）。
+
+- **config_class**: 配置 dataclass 类
+
+**返回值**: 命名空间映射列表（按解析优先级排列）
+
+---
+
+
+### `_eval_hint(type_hint, config_class: type)`
+
+求值 PEP 563 字符串注解为类型对象（非字符串注解原样返回）
+
+内置仅开放基础类型构造（:data:`_HINT_EVAL_GLOBALS`），其余名字取字段
+声明处的命名空间链（:func:`_annotation_namespaces`）。
+
+- **type_hint**: 类型注解（类型对象或字符串）
+- **config_class**: 字段所属配置类（字符串注解解析用）
+
+**返回值**: 类型对象；求值失败返回 None
+
+---
+
+
+### `_field_hint(config_class: type, f)`
+
+字段类型注解的类型对象形态（字符串注解求值，失败时返回原字符串）
+
+- **config_class**: 字段所属配置类
+- **f**: dataclass Field 对象
+
+**返回值**: 类型对象或原字符串注解
+
+---
+
+
+### `_is_dataclass_type(obj) -> bool`
+
+obj 是否为 dataclass 类（非实例）
+
+---
+
+
+### `_container_spec(type_hint, config_class: type) -> tuple[str, Any] | None`
+
+解析容器类型注解的成员类型
+
+联合类型（含 ``Optional``）取首个非 ``None`` 分支，与
+:func:`python_type_category` 同序。返回值：数组为 ``("array", 元素类型)``，
+动态键表为 ``("table", 值类型)``；未带类型参数的裸容器成员类型为 ``None``。
+
+- **type_hint**: 类型注解（类型对象或字符串）
+- **config_class**: 字段所属配置类（字符串注解解析用）
+
+**返回值**: ``(容器类别, 成员类型)``；非容器或注解无法求值返回 None
+
+---
+
+
+### `_plain(value) -> Any`
+
+值的纯数据形态（dataclass 实例递归转字典）
+
+- **value**: 任意值
+
+**返回值**: 仅含 dict / list / 标量的等价值
 
 ---
 
@@ -231,28 +309,63 @@ __future__ import annotations`` 下的 ``__annotations__`` 形态）在受限
 ---
 
 
-### `dataclass_to_defaults_dict(config_class: type) -> dict`
+### `dataclass_to_defaults_dict(config_class: type, _seen: tuple[type, ...] = ()) -> dict`
 
 从 dataclass 类生成默认值字典
 
 ``example`` 字段不落盘，故默认值字典同样排除；
-嵌套 dataclass 字段递归展开为普通字典。
+嵌套 dataclass 字段递归展开为普通字典；容器默认值中的 dataclass 实例转为字典。
 
 - **config_class** (`dataclass`): 类
+- **_seen**: 递归用：当前路径上已展开的 dataclass 类（自引用类型不重复展开）
 
-**返回值**: 默认值字典
+**返回值**: 默认值字典（仅含 dict / list / 标量）
 
 ---
 
 
-### `dataclass_to_toml_with_comments(config_class: type, existing_values: dict | None = None, include_example: bool = False, _prefix: str = '') -> str`
+### `_toml_key(key) -> str`
+
+键名的 TOML 字面形式（含 ``[A-Za-z0-9_-]`` 之外字符时加双引号）
+
+- **key**: 键名
+
+**返回值** (`TOML`): 键字面量
+
+---
+
+
+### `_toml_table_blocks(name: str, kind: str, item_type: type, value, include_example: bool, prefix: str, depth: int) -> 'list[str]'`
+
+元素 / 值类型为 dataclass 的容器字段的 TOML 行
+
+有元素时每个元素输出一个 ``[[表数组]]``（数组）或 ``[表.键]``（动态键表）
+块；无元素或嵌套层数达上限时输出注释骨架。空值不落 ``键 = []``——静态
+数组与后续 ``[[键]]`` 追加互斥，落盘后用户无法再以表数组形式追加元素。
+
+- **name**: 字段名
+- **kind**: 容器类别（``"array"`` / ``"table"``）
+- **item_type**: 元素 / 值的 dataclass 类
+- **value**: 字段当前值（元素为字典或 dataclass 实例）
+- **include_example**: 是否包含 ``example`` 字段
+- **prefix**: 当前嵌套路径前缀
+- **depth**: 当前嵌套表层数
+
+**返回值**: 行列表（以空行结尾）
+
+---
+
+
+### `dataclass_to_toml_with_comments(config_class: type, existing_values: dict | None = None, include_example: bool = False, _prefix: str = '', _depth: int = 0) -> str`
 
 将 dataclass class 转为带注释的 TOML 文本
 
 用于首次写入配置文件时生成可读的配置模板。
 description 若为 i18n 字典，则使用其 default/fallback 文本；
 未声明 description 时自动回退到类 docstring 中的字段说明。
-嵌套 dataclass 字段渲染为 ``[子表]`` 节（递归，注释同样保留）。
+嵌套 dataclass 字段渲染为 ``[子表]`` 节（递归，注释同样保留）；
+元素 / 值类型为 dataclass 的容器（``list[T]`` / ``dict[str, T]``）渲染为
+``[[表数组]]`` / ``[表.键]`` 块，无元素时输出注释骨架。
 
 - **config_class** (`dataclass`): 类
 - **existing_values**: 已有的配置值（覆盖默认值）
@@ -260,7 +373,9 @@ description 若为 i18n 字典，则使用其 default/fallback 文本；
 
     example 字段仅进 config.full.example，不写入 config.toml）
 - **_prefix**: 递归用：当前嵌套路径前缀（如 ``"stalker_mode."``）
+- **_depth**: 递归用：当前嵌套表层数（上限
 
+    ``CONFIG_TEMPLATE_NESTED_TABLE_MAX_DEPTH``）
 **返回值** (`TOML`): 文本字符串
 
 ---
@@ -290,6 +405,37 @@ description 若为 i18n 字典，则使用其 default/fallback 文本；
 ---
 
 
+### `_normalize_scalar(value, type_hint)`
+
+标量成员的类型规范化（str→int/float/bool）
+
+- **value**: 原始值
+- **type_hint**: 目标类型
+
+**返回值**: 转换后的值（转换失败时返回原值）
+
+---
+
+
+### `_normalize_container_members(value, kind: str, member_hint, config_class: type)`
+
+容器成员的声明类型规范化
+
+数组元素 / 动态键表值按成员类型转换：标量做类型转换（含标量包装——
+面板布尔控件等输入 ``"true"`` 字符串时按注解还原），dataclass 成员实例化
+（非 dict 元素包装为首个字段，与 Dashboard 列表编辑器的标量行形态对齐）。
+字符串整体值为 JSON 容器文本时先解析。未带成员类型的容器原样返回。
+
+- **value**: 容器值（list / dict；其他原样返回）
+- **kind**: 容器类别（``"array"`` / ``"table"``）
+- **member_hint**: 成员类型注解（None = 未声明）
+- **config_class**: 字段所属配置类（字符串注解解析用）
+
+**返回值**: 规范化后的值（dataclass 成员为实例）
+
+---
+
+
 ### `dict_to_dataclass(config_class: type, data: dict)`
 
 从 TOML dict 填充 dataclass 实例
@@ -298,6 +444,8 @@ description 若为 i18n 字典，则使用其 default/fallback 文本；
 - 忽略 dataclass 中不存在的字段
 - 使用 default/default_factory 填充缺失字段
 - 嵌套 dataclass 字段递归填充（dict → 嵌套实例）
+- 容器字段（``list[T]`` / ``dict[str, T]``）按成员类型规范化
+  （标量转换 / dataclass 实例化 / JSON 字符串解析）
 - 环境变量覆盖（``metadata: {"env": "NAME"}``）：优先级 环境变量 > data > default
 
 - **config_class** (`dataclass`): 类
@@ -412,6 +560,33 @@ description 若为 i18n 字典，则使用其 default/fallback 文本；
 ---
 
 
+### `_item_schema(member_hint, config_class: type) -> dict | None`
+
+容器成员的 schema 形态（Dashboard list 控件的 ``item`` 契约）
+
+dataclass 成员 → ``{"type": "object", "fields": {...}}``（行内多字段对象行）；
+标量成员 → 该标量的单字段 schema（标量行）；无成员类型声明返回 None。
+
+- **member_hint**: 成员类型注解（可为 None）
+- **config_class**: 字段所属配置类（字符串注解解析用）
+
+**返回值**: 成员 schema 字典；无成员类型返回 None
+
+---
+
+
+### `_scalar_schema_fields(f, meta: Mapping) -> dict`
+
+单字段的非嵌套 schema 构造（:func:`_schema_fields` 的标量分支复用体）
+
+- **f**: dataclass Field 对象
+- **meta**: 字段 metadata
+
+**返回值**: 字段 schema 字典
+
+---
+
+
 ### `_schema_fields(config_class: type) -> dict`
 
 递归生成配置类的字段 schema（嵌套 dataclass 字段以 ``fields`` 子树承载）
@@ -431,9 +606,9 @@ description 若为 i18n 字典，则使用其 default/fallback 文本；
 
 键集合以框架规范《配置与 UI 元数据》为准
 （docs/zh-CN/developer-guide/configuration.md）：widget / group / order /
-options / placeholder / min / max / step / rows / show_if / disabled_if /
-value_type / item。框架原样透传，语义（控件行为、值形态、条件算子、
-兼容性契约）由规范定义，消费方（Dashboard 等）实现。
+options / placeholder / min / max / step / rows / presets / show_if /
+disabled_if / value_type / item。框架原样透传，语义（控件行为、值形态、
+条件算子、兼容性契约）由规范定义，消费方（Dashboard 等）实现。
 
 ---
 
@@ -618,4 +793,9 @@ class MyBotConfig(BotAccountConfig):
 国际化配置
 
 控制框架的显示语言和翻译行为
+
+
+### `class _ItemField`
+
+list 控件标量成员的伪 Field（schema 渲染用）
 

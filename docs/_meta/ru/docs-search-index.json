@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 2107,
+  "total_keywords": 2114,
   "keywords": {
     "0 Успех (OK)": [
       {
@@ -599,7 +599,7 @@
     "2. Объект Event": [
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 75,
+        "line": 74,
         "level": 3,
         "title": "2. Объект Event"
       }
@@ -1055,7 +1055,7 @@
     "3. Адаптеры": [
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 92,
+        "line": 91,
         "level": 3,
         "title": "3. Адаптеры"
       }
@@ -1495,7 +1495,7 @@
     "4. Модули": [
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 107,
+        "line": 106,
         "level": 3,
         "title": "4. Модули"
       }
@@ -2645,7 +2645,7 @@
     "Client (Сетевой клиент)": [
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 269,
+        "line": 268,
         "level": 3,
         "title": "Client (Сетевой клиент)"
       }
@@ -2653,7 +2653,7 @@
     "Config (Конфигурация)": [
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 212,
+        "line": 211,
         "level": 3,
         "title": "Config (Конфигурация)"
       }
@@ -2680,6 +2680,14 @@
         "line": 685,
         "level": 2,
         "title": "DSL для отправки сообщений Send"
+      }
+    ],
+    "DSL-интерфейс для отправки сообщений": [
+      {
+        "document": "getting-started/basic-concepts.md",
+        "line": 290,
+        "level": 2,
+        "title": "DSL-интерфейс для отправки сообщений"
       }
     ],
     "Discord": [
@@ -2898,12 +2906,12 @@
         "title": "Internal Breakdown of Hot Reload Chain"
       }
     ],
-    "Logger (Журналирование)": [
+    "Logger (Логирование)": [
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 227,
+        "line": 226,
         "level": 3,
-        "title": "Logger (Журналирование)"
+        "title": "Logger (Логирование)"
       }
     ],
     "MCP сервер": [
@@ -3021,7 +3029,7 @@
     "Router (Маршрутизация)": [
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 254,
+        "line": 253,
         "level": 3,
         "title": "Router (Маршрутизация)"
       }
@@ -3042,12 +3050,12 @@
         "title": "SQL 查询构建器"
       }
     ],
-    "SQL-цепные запросы": [
+    "SQL-цепочечный запрос": [
       {
         "document": "api-reference/core-modules.md",
         "line": 46,
         "level": 3,
-        "title": "SQL-цепные запросы"
+        "title": "SQL-цепочечный запрос"
       }
     ],
     "Send наследует BaseAdapter.Send": [
@@ -3066,12 +3074,12 @@
         "title": "SendDSL详解"
       }
     ],
-    "Storage (Хранилище)": [
+    "Storage (Хранение)": [
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 189,
+        "line": 188,
         "level": 3,
-        "title": "Storage (Хранилище)"
+        "title": "Storage (Хранение)"
       }
     ],
     "Supervisor": [
@@ -3470,114 +3478,114 @@
         "title": "[BUG-034] Scope persist=False runtime bindings silently overwritten by any subsequent config write"
       }
     ],
-    "[BUG-035] Configuration panel select options and dict fields render as [object Object]": [
+    "[BUG-035] Configuration panel select options and dict fields rendered as [object Object]": [
       {
         "document": "bug-tracker.md",
-        "line": 907,
+        "line": 904,
         "level": 3,
-        "title": "[BUG-035] Configuration panel select options and dict fields render as [object Object]"
+        "title": "[BUG-035] Configuration panel select options and dict fields rendered as [object Object]"
       }
     ],
     "[BUG-036] Configuration write failures (ENOENT) when multiple instances share config directory": [
       {
         "document": "bug-tracker.md",
-        "line": 930,
+        "line": 922,
         "level": 3,
         "title": "[BUG-036] Configuration write failures (ENOENT) when multiple instances share config directory"
       }
     ],
-    "[BUG-037] Commands with space-separated names can never be triggered after registration": [
+    "[BUG-037] Commands with space-separated names never trigger after registration": [
       {
         "document": "bug-tracker.md",
-        "line": 959,
+        "line": 946,
         "level": 3,
-        "title": "[BUG-037] Commands with space-separated names can never be triggered after registration"
+        "title": "[BUG-037] Commands with space-separated names never trigger after registration"
       }
     ],
-    "[BUG-038] Runtime bindings with persist=False are persistently written to disk, reviving after module unload": [
+    "[BUG-038] Runtime bindings with persist=False are persisted and \"resurrected\" after module unload": [
       {
         "document": "bug-tracker.md",
-        "line": 986,
+        "line": 968,
         "level": 3,
-        "title": "[BUG-038] Runtime bindings with persist=False are persistently written to disk, reviving after module unload"
+        "title": "[BUG-038] Runtime bindings with persist=False are persisted and \"resurrected\" after module unload"
       }
     ],
-    "[BUG-039] Inconsistent read/write when section write and dot write coexist (dot overwrite lost)": [
+    "[BUG-039] Inconsistent read/write when whole-section and dotted writes coexist (dotted overwrite lost)": [
       {
         "document": "bug-tracker.md",
-        "line": 1014,
+        "line": 990,
         "level": 3,
-        "title": "[BUG-039] Inconsistent read/write when section write and dot write coexist (dot overwrite lost)"
+        "title": "[BUG-039] Inconsistent read/write when whole-section and dotted writes coexist (dotted overwrite lost)"
       }
     ],
-    "[BUG-040] Command tail parameters silently lost in segmented platform messages": [
+    "[BUG-040] Command tail parameters silently lost when platform segments message into multiple text segments": [
       {
         "document": "bug-tracker.md",
-        "line": 1039,
+        "line": 1010,
         "level": 3,
-        "title": "[BUG-040] Command tail parameters silently lost in segmented platform messages"
+        "title": "[BUG-040] Command tail parameters silently lost when platform segments message into multiple text segments"
       }
     ],
-    "[BUG-041] Rejected commands rerun the entire alt_message chain: duplicate replies and permission function side effects triggered twice": [
+    "[BUG-041] Rejected commands via alt_message re-run the entire chain: duplicate replies and permission function side effects triggered twice": [
       {
         "document": "bug-tracker.md",
-        "line": 1051,
+        "line": 1022,
         "level": 3,
-        "title": "[BUG-041] Rejected commands rerun the entire alt_message chain: duplicate replies and permission function side effects triggered twice"
+        "title": "[BUG-041] Rejected commands via alt_message re-run the entire chain: duplicate replies and permission function side effects triggered twice"
       }
     ],
-    "[BUG-042] wait_reply registered within command processor is immediately consumed by the same triggering message": [
+    "[BUG-042] wait_reply registered inside command handler is immediately consumed by the same triggering message": [
       {
         "document": "bug-tracker.md",
-        "line": 1063,
+        "line": 1034,
         "level": 3,
-        "title": "[BUG-042] wait_reply registered within command processor is immediately consumed by the same triggering message"
+        "title": "[BUG-042] wait_reply registered inside command handler is immediately consumed by the same triggering message"
       }
     ],
-    "[BUG-043] Multiple wait paths for the same key in select() silently cancel the earlier one": [
+    "[BUG-043] Multiple wait paths for select() with the same key silently cancel the earlier one": [
       {
         "document": "bug-tracker.md",
-        "line": 1075,
+        "line": 1046,
         "level": 3,
-        "title": "[BUG-043] Multiple wait paths for the same key in select() silently cancel the earlier one"
+        "title": "[BUG-043] Multiple wait paths for select() with the same key silently cancel the earlier one"
       }
     ],
-    "[BUG-044] BaseConverter.at() produces OB11 legacy \"at\" segment, framework mention detection does not recognize": [
+    "[BUG-044] BaseConverter.at() produces legacy \"at\" segment for OB11, and the entire framework mention detection does not recognize it": [
       {
         "document": "bug-tracker.md",
-        "line": 1087,
+        "line": 1058,
         "level": 3,
-        "title": "[BUG-044] BaseConverter.at() produces OB11 legacy \"at\" segment, framework mention detection does not recognize"
+        "title": "[BUG-044] BaseConverter.at() produces legacy \"at\" segment for OB11, and the entire framework mention detection does not recognize it"
       }
     ],
-    "[BUG-045] Interaction primitives permanently timeout and command penetration fail on adapters without alt_message": [
+    "[BUG-045] Interaction primitives permanently timeout and command penetration fail when adapter has no alt_message": [
       {
         "document": "bug-tracker.md",
-        "line": 1099,
+        "line": 1070,
         "level": 3,
-        "title": "[BUG-045] Interaction primitives permanently timeout and command penetration fail on adapters without alt_message"
+        "title": "[BUG-045] Interaction primitives permanently timeout and command penetration fail when adapter has no alt_message"
       }
     ],
-    "[BUG-046] Declarative configuration template's nested subtable headers drift to top level": [
+    "[BUG-046] Declared configuration template's nested subtable header drifts to top-level table": [
       {
         "document": "bug-tracker.md",
-        "line": 1111,
+        "line": 1082,
         "level": 3,
-        "title": "[BUG-046] Declarative configuration template's nested subtable headers drift to top level"
+        "title": "[BUG-046] Declared configuration template's nested subtable header drifts to top-level table"
       }
     ],
-    "[BUG-047] Service directory full enumeration misses lazy-loaded modules": [
+    "[BUG-047] Service directory full enumeration skips lazy-loaded modules": [
       {
         "document": "bug-tracker.md",
-        "line": 1125,
+        "line": 1096,
         "level": 3,
-        "title": "[BUG-047] Service directory full enumeration misses lazy-loaded modules"
+        "title": "[BUG-047] Service directory full enumeration skips lazy-loaded modules"
       }
     ],
     "[BUG-048] Session inbox query API loses message attribution (sender and event metadata)": [
       {
         "document": "bug-tracker.md",
-        "line": 1137,
+        "line": 1108,
         "level": 3,
         "title": "[BUG-048] Session inbox query API loses message attribution (sender and event metadata)"
       }
@@ -3585,25 +3593,33 @@
     "[BUG-049] Inbound bot self-message echo recorded as user, polluting inbox attribution": [
       {
         "document": "bug-tracker.md",
-        "line": 1150,
+        "line": 1121,
         "level": 3,
         "title": "[BUG-049] Inbound bot self-message echo recorded as user, polluting inbox attribution"
       }
     ],
-    "[BUG-050] Running `epsdk restart` in container directly exits container": [
+    "[BUG-050] Container execution of epsdk restart directly exits container": [
       {
         "document": "bug-tracker.md",
-        "line": 1163,
+        "line": 1134,
         "level": 3,
-        "title": "[BUG-050] Running `epsdk restart` in container directly exits container"
+        "title": "[BUG-050] Container execution of epsdk restart directly exits container"
       }
     ],
     "[BUG-051] Cross-account duplicate receipt (drop) mistakenly injures at-mention messages, causing random message loss in multi-account deployment": [
       {
         "document": "bug-tracker.md",
-        "line": 1175,
+        "line": 1146,
         "level": 3,
         "title": "[BUG-051] Cross-account duplicate receipt (drop) mistakenly injures at-mention messages, causing random message loss in multi-account deployment"
+      }
+    ],
+    "[BUG-052] Storage concurrent first acquire deadlock freezes event loop, web site hangs and continues database is locked": [
+      {
+        "document": "bug-tracker.md",
+        "line": 1158,
+        "level": 3,
+        "title": "[BUG-052] Storage concurrent first acquire deadlock freezes event loop, web site hangs and continues database is locked"
       }
     ],
     "__init__.py": [
@@ -4014,12 +4030,12 @@
         "title": "Абстрактные типы"
       }
     ],
-    "Абстракция хранилища бэкендов": [
+    "Абстракция бэкендов хранения": [
       {
         "document": "api-reference/core-modules.md",
         "line": 62,
         "level": 3,
-        "title": "Абстракция хранилища бэкендов"
+        "title": "Абстракция бэкендов хранения"
       }
     ],
     "Аварийный люк: router.app": [
@@ -4294,6 +4310,14 @@
         "title": "Архитектура локальной папки плагинов"
       }
     ],
+    "Архитектура на основе событий": [
+      {
+        "document": "getting-started/basic-concepts.md",
+        "line": 8,
+        "level": 2,
+        "title": "Архитектура на основе событий"
+      }
+    ],
     "Асинхронная инициализация": [
       {
         "document": "advanced/lazy-loading.md",
@@ -4407,7 +4431,7 @@
       },
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 295,
+        "line": 294,
         "level": 3,
         "title": "Базовая отправка"
       },
@@ -4740,14 +4764,6 @@
         "line": 453,
         "level": 2,
         "title": "Взаимодействие (Interaction)"
-      }
-    ],
-    "Взаимодействие между модулями": [
-      {
-        "document": "developer-guide/modules/core-concepts.md",
-        "line": 169,
-        "level": 3,
-        "title": "Взаимодействие между модулями"
       }
     ],
     "Взаимодействие с CLI": [
@@ -5094,12 +5110,12 @@
         "title": "Вывод списка компонентов"
       }
     ],
-    "Выгрузка и полное удаление (purge)": [
+    "Выгрузка и полная выгрузка (purge)": [
       {
         "document": "developer-guide/modules/core-concepts.md",
         "line": 80,
         "level": 3,
-        "title": "Выгрузка и полное удаление (purge)"
+        "title": "Выгрузка и полная выгрузка (purge)"
       }
     ],
     "Вызов API": [
@@ -5412,6 +5428,18 @@
         "title": "Далее"
       },
       {
+        "document": "getting-started/basic-concepts.md",
+        "line": 360,
+        "level": 2,
+        "title": "Далее"
+      },
+      {
+        "document": "getting-started/common-tasks.md",
+        "line": 506,
+        "level": 2,
+        "title": "Далее"
+      },
+      {
         "document": "getting-started/event-handling.md",
         "line": 1094,
         "level": 2,
@@ -5454,6 +5482,14 @@
         "title": "Далее"
       }
     ],
+    "Дальнейшее обучение": [
+      {
+        "document": "developer-guide/modules/core-concepts.md",
+        "line": 450,
+        "level": 3,
+        "title": "Дальнейшее обучение"
+      }
+    ],
     "Дальнейшие шаги": [
       {
         "document": "developer-guide/orm.md",
@@ -5470,12 +5506,6 @@
       {
         "document": "getting-started/README.md",
         "line": 51,
-        "level": 2,
-        "title": "Дальнейшие шаги"
-      },
-      {
-        "document": "getting-started/common-tasks.md",
-        "line": 505,
         "level": 2,
         "title": "Дальнейшие шаги"
       },
@@ -6066,13 +6096,15 @@
         "title": "Доступ к основным модулям"
       }
     ],
-    "Доступ по свойствам": [
+    "Доступ к свойствам": [
       {
         "document": "api-reference/core-modules.md",
         "line": 39,
         "level": 3,
-        "title": "Доступ по свойствам"
-      },
+        "title": "Доступ к свойствам"
+      }
+    ],
+    "Доступ по свойствам": [
       {
         "document": "api-reference/core-modules.md",
         "line": 275,
@@ -6168,6 +6200,14 @@
         "title": "Жизненный цикл адаптера"
       }
     ],
+    "Жизненный цикл в целом": [
+      {
+        "document": "developer-guide/modules/core-concepts.md",
+        "line": 107,
+        "level": 3,
+        "title": "Жизненный цикл в целом"
+      }
+    ],
     "Жизненный цикл модуля": [
       {
         "document": "advanced/lifecycle.md",
@@ -6183,7 +6223,7 @@
       },
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 145,
+        "line": 144,
         "level": 4,
         "title": "Жизненный цикл модуля"
       }
@@ -6226,14 +6266,6 @@
         "line": 92,
         "level": 3,
         "title": "Загрузка модулей"
-      }
-    ],
-    "Задачи по расписанию": [
-      {
-        "document": "getting-started/common-tasks.md",
-        "line": 77,
-        "level": 2,
-        "title": "Задачи по расписанию"
       }
     ],
     "Задержка активации (dormant_after)": [
@@ -6282,6 +6314,14 @@
         "line": 353,
         "level": 4,
         "title": "Запрос зарегистрированных методов платформы"
+      }
+    ],
+    "Запрос методов отправки адаптера": [
+      {
+        "document": "developer-guide/modules/core-concepts.md",
+        "line": 177,
+        "level": 2,
+        "title": "Запрос методов отправки адаптера"
       }
     ],
     "Запрос на группу": [
@@ -7436,6 +7476,12 @@
         "line": 1,
         "level": 1,
         "title": "Коммуникация между модулями"
+      },
+      {
+        "document": "developer-guide/modules/core-concepts.md",
+        "line": 169,
+        "level": 3,
+        "title": "Коммуникация между модулями"
       }
     ],
     "Компонентные отношения": [
@@ -7489,17 +7535,17 @@
     "Контракт совместимости (должен соблюдаться потребителями)": [
       {
         "document": "developer-guide/configuration.md",
-        "line": 107,
+        "line": 138,
         "level": 2,
         "title": "Контракт совместимости (должен соблюдаться потребителями)"
       }
     ],
-    "Контроль прав доступа": [
+    "Контроль доступа": [
       {
         "document": "getting-started/common-tasks.md",
-        "line": 286,
+        "line": 287,
         "level": 2,
-        "title": "Контроль прав доступа"
+        "title": "Контроль доступа"
       }
     ],
     "Контрольный список качества": [
@@ -7948,12 +7994,28 @@
         "title": "Маршруты обратного вызова"
       }
     ],
+    "Массовая отправка нескольких сообщений": [
+      {
+        "document": "getting-started/common-tasks.md",
+        "line": 266,
+        "level": 3,
+        "title": "Массовая отправка нескольких сообщений"
+      }
+    ],
     "Массовая регистрация (через Mixin)": [
       {
         "document": "api-reference/event-system.md",
         "line": 411,
         "level": 5,
         "title": "Массовая регистрация (через Mixin)"
+      }
+    ],
+    "Массовые операции": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 23,
+        "level": 3,
+        "title": "Массовые операции"
       }
     ],
     "Массовые таймауты обработчиков (handler) / бот периодически не реагирует?": [
@@ -8178,12 +8240,12 @@
         "title": "Методы операций с друзьями"
       }
     ],
-    "Методы ответа Event": [
+    "Методы ответа в Event": [
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 321,
+        "line": 320,
         "level": 3,
-        "title": "Методы ответа Event"
+        "title": "Методы ответа в Event"
       }
     ],
     "Методы отправки": [
@@ -8200,14 +8262,6 @@
         "line": 32,
         "level": 3,
         "title": "Методы отправки HTML"
-      }
-    ],
-    "Методы отправки адаптера": [
-      {
-        "document": "developer-guide/modules/core-concepts.md",
-        "line": 177,
-        "level": 2,
-        "title": "Методы отправки адаптера"
       }
     ],
     "Методы отправки медиа": [
@@ -8399,7 +8453,7 @@
     "Механизм обнаружения модулей": [
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 116,
+        "line": 115,
         "level": 4,
         "title": "Механизм обнаружения модулей"
       }
@@ -8444,12 +8498,12 @@
         "title": "Мидлвары: изменение или отклонение до распределения"
       }
     ],
-    "Минимальный рабочий модуль": [
+    "Минимально рабочий модуль": [
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 127,
+        "line": 126,
         "level": 4,
-        "title": "Минимальный рабочий модуль"
+        "title": "Минимально рабочий модуль"
       }
     ],
     "Многоканальное ожидание: expect + select": [
@@ -9086,6 +9140,14 @@
         "title": "Обнаружение маршрутов"
       }
     ],
+    "Обнаружение особенностей платформы": [
+      {
+        "document": "getting-started/common-tasks.md",
+        "line": 207,
+        "level": 3,
+        "title": "Обнаружение особенностей платформы"
+      }
+    ],
     "Обновление данных": [
       {
         "document": "advanced/sql-builder.md",
@@ -9271,7 +9333,7 @@
     "Обработка изображений": [
       {
         "document": "getting-started/common-tasks.md",
-        "line": 440,
+        "line": 441,
         "level": 2,
         "title": "Обработка изображений"
       }
@@ -9613,7 +9675,7 @@
     "Общие ключи": [
       {
         "document": "developer-guide/configuration.md",
-        "line": 48,
+        "line": 78,
         "level": 3,
         "title": "Общие ключи"
       }
@@ -10092,6 +10154,12 @@
         "line": 44,
         "level": 3,
         "title": "Описание основных модулей"
+      },
+      {
+        "document": "getting-started/basic-concepts.md",
+        "line": 186,
+        "level": 2,
+        "title": "Описание основных модулей"
       }
     ],
     "Описание параметра кнопок": [
@@ -10170,14 +10238,6 @@
         "line": 179,
         "level": 2,
         "title": "Описание режимов шифрования"
-      }
-    ],
-    "Определение возможностей платформы": [
-      {
-        "document": "getting-started/common-tasks.md",
-        "line": 207,
-        "level": 3,
-        "title": "Определение возможностей платформы"
       }
     ],
     "Определение типа сообщения": [
@@ -10462,12 +10522,6 @@
         "line": 109,
         "level": 2,
         "title": "Основные концепции"
-      },
-      {
-        "document": "getting-started/basic-concepts.md",
-        "line": 1,
-        "level": 1,
-        "title": "Основные концепции"
       }
     ],
     "Основные концепции адаптера": [
@@ -10566,12 +10620,6 @@
         "line": 21,
         "level": 3,
         "title": "Основные модули"
-      },
-      {
-        "document": "getting-started/basic-concepts.md",
-        "line": 187,
-        "level": 2,
-        "title": "Основные модули"
       }
     ],
     "Основные операции": [
@@ -10616,6 +10664,14 @@
         "line": 247,
         "level": 3,
         "title": "Основные отличия"
+      }
+    ],
+    "Основные понятия": [
+      {
+        "document": "getting-started/basic-concepts.md",
+        "line": 1,
+        "level": 1,
+        "title": "Основные понятия"
       }
     ],
     "Основные принципы": [
@@ -10762,20 +10818,20 @@
         "title": "Ответы API"
       }
     ],
-    "Ответы для конкретных платформ": [
-      {
-        "document": "getting-started/common-tasks.md",
-        "line": 190,
-        "level": 3,
-        "title": "Ответы для конкретных платформ"
-      }
-    ],
     "Откат при горячей перезагрузке": [
       {
         "document": "advanced/ownership.md",
         "line": 186,
         "level": 2,
         "title": "Откат при горячей перезагрузке"
+      }
+    ],
+    "Отладка \"database is locked\" в SQLite": [
+      {
+        "document": "advanced/storage-backends.md",
+        "line": 143,
+        "level": 2,
+        "title": "Отладка \"database is locked\" в SQLite"
       }
     ],
     "Отличие от материалов документации": [
@@ -11028,14 +11084,6 @@
         "title": "Отправка сообщений KMarkdown и карточных сообщений"
       }
     ],
-    "Отправка сообщений SendDSL": [
-      {
-        "document": "getting-started/basic-concepts.md",
-        "line": 291,
-        "level": 2,
-        "title": "Отправка сообщений SendDSL"
-      }
-    ],
     "Отправка сообщений в формате OneBot12": [
       {
         "document": "platform-guide/telegram.md",
@@ -11122,22 +11170,6 @@
         "line": 142,
         "level": 3,
         "title": "Ошибка установки модуля"
-      }
-    ],
-    "Пакетная отправка нескольких сообщений": [
-      {
-        "document": "getting-started/common-tasks.md",
-        "line": 265,
-        "level": 3,
-        "title": "Пакетная отправка нескольких сообщений"
-      }
-    ],
-    "Пакетные операции": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 23,
-        "level": 3,
-        "title": "Пакетные операции"
       }
     ],
     "Панель управления Dashboard": [
@@ -11364,21 +11396,7 @@
         "title": "Переподключение при разрыве соединения"
       }
     ],
-    "Перехват исключений": [
-      {
-        "document": "developer-guide/modules/core-concepts.md",
-        "line": 422,
-        "level": 3,
-        "title": "Перехват исключений"
-      }
-    ],
     "Персистентность данных": [
-      {
-        "document": "getting-started/common-tasks.md",
-        "line": 18,
-        "level": 2,
-        "title": "Персистентность данных"
-      },
       {
         "document": "user-guide/deployment.md",
         "line": 87,
@@ -11408,6 +11426,14 @@
         "line": 16,
         "level": 2,
         "title": "Платформенно-специфические функции"
+      }
+    ],
+    "Платформенно-специфичные ответы": [
+      {
+        "document": "getting-started/common-tasks.md",
+        "line": 190,
+        "level": 3,
+        "title": "Платформенно-специфичные ответы"
       }
     ],
     "Платформенные расширения": [
@@ -11476,12 +11502,12 @@
         "title": "Поведение при сбое подключения"
       }
     ],
-    "Повтор при неудаче + отмена по таймауту": [
+    "Повтор при сбое + отмена по таймауту": [
       {
         "document": "getting-started/common-tasks.md",
-        "line": 250,
+        "line": 251,
         "level": 3,
-        "title": "Повтор при неудаче + отмена по таймауту"
+        "title": "Повтор при сбое + отмена по таймауту"
       }
     ],
     "Повторная обработка на разных аккаунтах": [
@@ -11935,7 +11961,7 @@
     "Подсчёт сообщений": [
       {
         "document": "getting-started/common-tasks.md",
-        "line": 340,
+        "line": 341,
         "level": 3,
         "title": "Подсчёт сообщений"
       }
@@ -11954,6 +11980,14 @@
         "line": 11,
         "level": 2,
         "title": "Позиционирование платформы"
+      }
+    ],
+    "Поймать исключение": [
+      {
+        "document": "developer-guide/modules/core-concepts.md",
+        "line": 422,
+        "level": 3,
+        "title": "Поймать исключение"
       }
     ],
     "Полезные ссылки": [
@@ -11976,14 +12010,6 @@
         "line": 95,
         "level": 3,
         "title": "Политика пропущенных запусков (missed_policy)"
-      }
-    ],
-    "Полная картина жизненного цикла": [
-      {
-        "document": "developer-guide/modules/core-concepts.md",
-        "line": 107,
-        "level": 3,
-        "title": "Полная картина жизненного цикла"
       }
     ],
     "Полная картина принадлежности ресурсов": [
@@ -12049,7 +12075,7 @@
       },
       {
         "document": "developer-guide/configuration.md",
-        "line": 114,
+        "line": 145,
         "level": 2,
         "title": "Полный пример"
       },
@@ -12215,7 +12241,7 @@
     "Пользовательское SQL-хранилище": [
       {
         "document": "advanced/storage-backends.md",
-        "line": 154,
+        "line": 161,
         "level": 2,
         "title": "Пользовательское SQL-хранилище"
       }
@@ -12382,14 +12408,6 @@
         "line": 106,
         "level": 3,
         "title": "Пояснение параметров"
-      }
-    ],
-    "Права в группах": [
-      {
-        "document": "getting-started/common-tasks.md",
-        "line": 323,
-        "level": 3,
-        "title": "Права в группах"
       }
     ],
     "Права доступа и управление доступом команд": [
@@ -12697,7 +12715,7 @@
     "Пример распознавания изображений": [
       {
         "document": "getting-started/common-tasks.md",
-        "line": 471,
+        "line": 472,
         "level": 3,
         "title": "Пример распознавания изображений"
       }
@@ -12830,6 +12848,14 @@
         "title": "Примеры получения сообщений"
       }
     ],
+    "Примеры распространённых задач": [
+      {
+        "document": "getting-started/common-tasks.md",
+        "line": 1,
+        "level": 1,
+        "title": "Примеры распространённых задач"
+      }
+    ],
     "Примеры событий": [
       {
         "document": "platform-guide/onebot11.md",
@@ -12882,14 +12908,6 @@
         "line": 120,
         "level": 3,
         "title": "Примеры стандартных действий API"
-      }
-    ],
-    "Примеры типичных задач": [
-      {
-        "document": "getting-started/common-tasks.md",
-        "line": 1,
-        "level": 1,
-        "title": "Примеры типичных задач"
       }
     ],
     "Примеры управления группами": [
@@ -13104,12 +13122,12 @@
         "title": "Приём событий (WebSocket, кодирование protobuf)"
       }
     ],
-    "Проверка администратора": [
+    "Проверка в группе": [
       {
         "document": "getting-started/common-tasks.md",
-        "line": 288,
+        "line": 324,
         "level": 3,
-        "title": "Проверка администратора"
+        "title": "Проверка в группе"
       }
     ],
     "Проверка зарегистрированных методов": [
@@ -13126,6 +13144,14 @@
         "line": 420,
         "level": 3,
         "title": "Проверка качества перед публикацией"
+      }
+    ],
+    "Проверка на права администратора": [
+      {
+        "document": "getting-started/common-tasks.md",
+        "line": 289,
+        "level": 3,
+        "title": "Проверка на права администратора"
       }
     ],
     "Проверка поддерживаемых методов отправки": [
@@ -13212,14 +13238,6 @@
         "title": "Проверки (три вопроса)"
       }
     ],
-    "Продвинутая отправка сообщений (повторы/таймауты/пакетная отправка)": [
-      {
-        "document": "getting-started/common-tasks.md",
-        "line": 231,
-        "level": 2,
-        "title": "Продвинутая отправка сообщений (повторы/таймауты/пакетная отправка)"
-      }
-    ],
     "Продвинутое: словарный запасной вариант с путями через точку": [
       {
         "document": "advanced/scope.md",
@@ -13229,12 +13247,6 @@
       }
     ],
     "Продолжение пути обучения": [
-      {
-        "document": "developer-guide/modules/core-concepts.md",
-        "line": 450,
-        "level": 3,
-        "title": "Продолжение пути обучения"
-      },
       {
         "document": "developer-guide/modules/getting-started.md",
         "line": 205,
@@ -13349,7 +13361,7 @@
     "Простой поиск": [
       {
         "document": "getting-started/common-tasks.md",
-        "line": 386,
+        "line": 387,
         "level": 3,
         "title": "Простой поиск"
       }
@@ -13601,7 +13613,7 @@
     "Различия в поведении диалектов": [
       {
         "document": "advanced/storage-backends.md",
-        "line": 123,
+        "line": 130,
         "level": 2,
         "title": "Различия в поведении диалектов"
       }
@@ -13636,6 +13648,14 @@
         "line": 287,
         "level": 3,
         "title": "Разрешения / Объявления / Реакции"
+      }
+    ],
+    "Расписание задач": [
+      {
+        "document": "getting-started/common-tasks.md",
+        "line": 77,
+        "level": 2,
+        "title": "Расписание задач"
       }
     ],
     "Расписания / Темы / Аудио": [
@@ -13764,6 +13784,14 @@
         "line": 479,
         "level": 2,
         "title": "Расширенная обработка событий"
+      }
+    ],
+    "Расширенная отправка сообщений (повтор/таймаут/массовая)": [
+      {
+        "document": "getting-started/common-tasks.md",
+        "line": 231,
+        "level": 2,
+        "title": "Расширенная отправка сообщений (повтор/таймаут/массовая)"
       }
     ],
     "Расширенные возможности интерактивных сессий": [
@@ -14366,12 +14394,12 @@
         "title": "Ручное развёртывание (pip)"
       }
     ],
-    "Ручное чтение конфигурации (устарело)": [
+    "Ручное чтение конфигурации (устаревшее)": [
       {
         "document": "developer-guide/modules/core-concepts.md",
         "line": 333,
         "level": 3,
-        "title": "Ручное чтение конфигурации (устарело)"
+        "title": "Ручное чтение конфигурации (устаревшее)"
       }
     ],
     "Ручной вызов Request DSL": [
@@ -14446,6 +14474,12 @@
       {
         "document": "advanced/router.md",
         "line": 512,
+        "level": 2,
+        "title": "Связанная документация"
+      },
+      {
+        "document": "advanced/storage-backends.md",
+        "line": 186,
         "level": 2,
         "title": "Связанная документация"
       },
@@ -14544,12 +14578,6 @@
       {
         "document": "advanced/startup.md",
         "line": 473,
-        "level": 2,
-        "title": "Связанные документы"
-      },
-      {
-        "document": "advanced/storage-backends.md",
-        "line": 179,
         "level": 2,
         "title": "Связанные документы"
       },
@@ -14806,12 +14834,12 @@
         "title": "Семантика определения"
       }
     ],
-    "Семантика ошибок (начиная с 2.12)": [
+    "Семантика сбоев (начиная с 2.12)": [
       {
         "document": "advanced/storage-backends.md",
         "line": 85,
         "level": 2,
-        "title": "Семантика ошибок (начиная с 2.12)"
+        "title": "Семантика сбоев (начиная с 2.12)"
       }
     ],
     "Семантика триггеров": [
@@ -14948,6 +14976,14 @@
         "title": "Синхронная инициализация"
       }
     ],
+    "Синхронные методы (осторожно)": [
+      {
+        "document": "advanced/storage-backends.md",
+        "line": 116,
+        "level": 2,
+        "title": "Синхронные методы (осторожно)"
+      }
+    ],
     "Система интерактивного диалога": [
       {
         "document": "advanced/interaction.md",
@@ -14981,7 +15017,7 @@
     "Система ленивой загрузки": [
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 338,
+        "line": 337,
         "level": 2,
         "title": "Система ленивой загрузки"
       }
@@ -15026,20 +15062,20 @@
         "title": "Система событий"
       }
     ],
-    "Система хранения": [
-      {
-        "document": "developer-guide/modules/core-concepts.md",
-        "line": 350,
-        "level": 2,
-        "title": "Система хранения"
-      }
-    ],
     "Система хранения данных": [
       {
         "document": "developer-guide/modules/best-practices.md",
         "line": 320,
         "level": 2,
         "title": "Система хранения данных"
+      }
+    ],
+    "Система хранилища": [
+      {
+        "document": "developer-guide/modules/core-concepts.md",
+        "line": 350,
+        "level": 2,
+        "title": "Система хранилища"
       }
     ],
     "Системные маршруты": [
@@ -15069,7 +15105,7 @@
     "Скачивание и сохранение изображений": [
       {
         "document": "getting-started/common-tasks.md",
-        "line": 442,
+        "line": 443,
         "level": 3,
         "title": "Скачивание и сохранение изображений"
       }
@@ -15114,12 +15150,6 @@
       {
         "document": "ecosystem/takumi.md",
         "line": 377,
-        "level": 2,
-        "title": "Следующие шаги"
-      },
-      {
-        "document": "getting-started/basic-concepts.md",
-        "line": 361,
         "level": 2,
         "title": "Следующие шаги"
       },
@@ -15362,14 +15392,6 @@
         "line": 33,
         "level": 2,
         "title": "Событийная ленивая активация (activate_on)"
-      }
-    ],
-    "Событийно-ориентированная архитектура": [
-      {
-        "document": "getting-started/basic-concepts.md",
-        "line": 8,
-        "level": 2,
-        "title": "Событийно-ориентированная архитектура"
       }
     ],
     "События HTTP-запросов": [
@@ -15896,6 +15918,14 @@
         "title": "Состояние подключения хранилища"
       }
     ],
+    "Сохранение данных": [
+      {
+        "document": "getting-started/common-tasks.md",
+        "line": 18,
+        "level": 2,
+        "title": "Сохранение данных"
+      }
+    ],
     "Сохранение комментариев и минимизация записи на диск": [
       {
         "document": "user-guide/configuration.md",
@@ -16365,7 +16395,7 @@
     "Справочник виджетов": [
       {
         "document": "developer-guide/configuration.md",
-        "line": 88,
+        "line": 119,
         "level": 2,
         "title": "Справочник виджетов"
       }
@@ -16959,7 +16989,7 @@
     "Статистика сообщений": [
       {
         "document": "getting-started/common-tasks.md",
-        "line": 338,
+        "line": 339,
         "level": 2,
         "title": "Статистика сообщений"
       }
@@ -17005,7 +17035,7 @@
       },
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 151,
+        "line": 150,
         "level": 4,
         "title": "Стратегия загрузки"
       }
@@ -17105,7 +17135,7 @@
     "Схема вывода": [
       {
         "document": "developer-guide/configuration.md",
-        "line": 164,
+        "line": 195,
         "level": 2,
         "title": "Схема вывода"
       }
@@ -17306,6 +17336,14 @@
         "title": "Типы запросов"
       }
     ],
+    "Типы контейнеров (`list[T]` / `dict[str, T]`)": [
+      {
+        "document": "developer-guide/configuration.md",
+        "line": 48,
+        "level": 3,
+        "title": "Типы контейнеров (`list[T]` / `dict[str, T]`)"
+      }
+    ],
     "Типы мета-событий": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -17359,7 +17397,7 @@
     "Типы событий": [
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 173,
+        "line": 172,
         "level": 2,
         "title": "Типы событий"
       },
@@ -17838,12 +17876,12 @@
         "title": "Условия фильтрации"
       }
     ],
-    "Условное отображение/отключение (взаимосвязь полей)": [
+    "Условное отображение/отключение (взаимодействие полей)": [
       {
         "document": "developer-guide/configuration.md",
-        "line": 60,
+        "line": 91,
         "level": 3,
-        "title": "Условное отображение/отключение (взаимосвязь полей)"
+        "title": "Условное отображение/отключение (взаимодействие полей)"
       }
     ],
     "Условное отслеживание": [
@@ -17938,14 +17976,6 @@
         "line": 149,
         "level": 3,
         "title": "Установка через CLI"
-      }
-    ],
-    "Устранение ошибки \"database is locked\" в SQLite": [
-      {
-        "document": "advanced/storage-backends.md",
-        "line": 136,
-        "level": 2,
-        "title": "Устранение ошибки \"database is locked\" в SQLite"
       }
     ],
     "Утверждения для исходящих сообщений": [
@@ -18076,12 +18106,12 @@
         "title": "Формат возвращаемых значений методов отправки"
       }
     ],
-    "Формат значения (`value_type`, используется для `multiselect`)": [
+    "Формат значения (`value_type`, используется в `multiselect`)": [
       {
         "document": "developer-guide/configuration.md",
-        "line": 78,
+        "line": 109,
         "level": 3,
-        "title": "Формат значения (`value_type`, используется для `multiselect`)"
+        "title": "Формат значения (`value_type`, используется в `multiselect`)"
       }
     ],
     "Форматы вывода": [
@@ -18135,7 +18165,7 @@
     "Функция поиска": [
       {
         "document": "getting-started/common-tasks.md",
-        "line": 384,
+        "line": 385,
         "level": 2,
         "title": "Функция поиска"
       }
@@ -18228,6 +18258,14 @@
         "title": "Цепочечные методы-модификаторы (можно комбинировать)"
       }
     ],
+    "Цепочечные модификаторы": [
+      {
+        "document": "getting-started/basic-concepts.md",
+        "line": 307,
+        "level": 3,
+        "title": "Цепочечные модификаторы"
+      }
+    ],
     "Цепочечные модификаторы (можно комбинировать)": [
       {
         "document": "platform-guide/snowluma.md",
@@ -18270,12 +18308,6 @@
       {
         "document": "api-reference/adapter-system.md",
         "line": 157,
-        "level": 3,
-        "title": "Цепочка модификаторов"
-      },
-      {
-        "document": "getting-started/basic-concepts.md",
-        "line": 308,
         "level": 3,
         "title": "Цепочка модификаторов"
       },

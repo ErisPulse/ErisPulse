@@ -93,7 +93,7 @@ Log example: `mysql connection pool creation ultimately failed (retried 3 times)
 
 Wrap important writes in try/except with compensation handling; keep transaction blocks to pure DB operations only.
 
-## Native Async API
+## Asynchronous Native API
 
 ```python
 # KV operations
@@ -108,25 +108,25 @@ await sdk.storage.aCreateTable("users", {
 })
 rows = await sdk.storage.Table("users").Select("name").ToDict().aExecute()
 
-# Async transactions
+# Asynchronous transaction
 async with sdk.storage.atransaction():
     await sdk.storage.aset("key1", "value1")
     await sdk.storage.Table("users").Insert({"name": "Alice"}).aExecute()
 ```
 
-The sync API (`get/set/transaction/Table(...).Execute()`) remains available, executed internally via
-the `AsyncBridge` background event loop—**we recommend using the `a`-prefixed async methods exclusively**
-(`aget` / `aset` / `adelete` / `atransaction` / `aExecute`): calling sync interfaces inside
-async handlers blocks that event loop until the storage operation completes (under high-frequency calls this manifests
-as handler timeouts and stalled event processing). The framework emits a rate-limited warning per call site
-(including the `file:line (function name)` call site, with per-site cooldown to prevent spamming)—upon receiving a warning, migrate the corresponding call
-to the `a`-prefixed async method. Two boundaries must be understood:
+## Synchronous Methods (Use with Caution)
 
-- **Do not call sync interfaces from within the bridge thread**: sync interfaces execute on the bridge thread; calling a
-  sync interface again there raises `RuntimeError` (re-entrancy protection to avoid self-deadlock)
-- **Calls fail after the bridged target loop is closed**: do not call storage interfaces after `uninit()`
+Each a-prefixed asynchronous method has a corresponding synchronous version (`aget` → `get`, `aset` → `set`, `atransaction` → `transaction`, `aExecute` → `Execute`), which internally executes via a background event loop bridge — **they block the calling thread**:
 
-For the complete method mapping, see [SQL Query Builder](sql-builder.md).
+- **Calling them within an asynchronous handler will block the entire event loop** until the storage operation completes: frequent calls can lead to handler timeouts, halted event processing, web lag, and may trigger `database is locked` (write wait timeout) as a chain reaction. The framework issues rate-limited warnings (with `file:line (function name)`) for each call site; upon receiving such warnings, you should migrate the corresponding call to its a-prefixed asynchronous method.
+- During development, you can enable `ErisPulse.framework.strict.sync_in_async = true`: synchronous calls will no longer be allowed and will directly throw a `StrictModeError` (with call site and migration guidance), exposing issues immediately rather than discovering them only after deployment through lag-induced speculation.
+- For runtime mitigation: the default timeout for bridged waiting in asynchronous contexts is 10 seconds (`ErisPulse.framework.sync_in_async_bridge_wait`); if exceeded, the operation is canceled and a fail-soft semantic is returned — but this is a fallback, not an approval.
+
+**Please ensure you know what you are doing; otherwise, do not use synchronous forms.** Pure synchronous threads (without an event loop) are unrestricted and represent legitimate scenarios (e.g., synchronous entry scripts, bridged waiting for transaction commits).
+
+Using `asyncio.to_thread` or thread pools to execute synchronous drivers is similarly valid and can be effective in specific scenarios: **when the backend supports true concurrent connections** (PostgreSQL / MySQL — each thread has an independent connection, server-side MVCC concurrency), moving synchronous drivers out of the event loop is a reasonable approach. However, do **not** do this with SQLite — thread connections will compete with the framework's `aiosqlite` connections for the same write lock, increasing race conditions and potentially causing write failures or even data loss.
+
+See the full method comparison in [SQL Query Builder](sql-builder.md).
 
 ## Dialect Behavior Differences
 

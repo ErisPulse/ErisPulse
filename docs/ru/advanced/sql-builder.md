@@ -271,22 +271,22 @@ rows = builder.Execute()
 
 ## Использование в транзакциях
 
-Цепочечные операции полностью поддерживают транзакции:
+Цепочечные операции полностью поддерживаются в транзакциях:
 
 ```python
 # Подтверждение транзакции
-with sdk.storage.transaction():
+async with sdk.storage.atransaction():
     sdk.storage.Table("users").Insert({"name": "Eve", "age": 22}).Execute()
     sdk.storage.Table("users").Update({"age": 23}).Where("name = ?", "Eve").Execute()
 
 # Пример отката
 try:
-    with sdk.storage.transaction():
+    async with sdk.storage.atransaction():
         sdk.storage.Table("users").Delete().Where("name = ?", "Alice").Execute()
         raise Exception("force rollback")
 except Exception:
     pass
-# Запись Alice всё ещё существует
+# Запись об Алисе по-прежнему существует
 ```
 
 ## Асинхронный API

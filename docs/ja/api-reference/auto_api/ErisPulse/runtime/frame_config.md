@@ -14,6 +14,16 @@ ErisPulse 框架配置管理模块
 ## 函数列表
 
 
+### `_framework_defaults() -> dict[str, Any]`
+
+framework 节默认值（FrameworkConfig 声明折叠，结果缓存）
+
+惰性调用：声明模块自带折叠、零 Core 依赖，可安全用于 Core 装配窗口
+内的快照构建（Logger 构造期即读 logger 配置触发本路径）。
+
+---
+
+
 ### `_deep_merge(base: dict[str, Any], override: dict[str, Any]) -> dict[str, Any]`
 
 深度合并两个字典，override 中的值覆盖 base 中的对应值
@@ -118,6 +128,22 @@ update/set_erispulse 系列函数之外的写路径由此兜底失效）
 - **section**: 事件配置子节名（如 ``"wait_reply"``）
 - **key**: 键名（如 ``"cmdpass"``）
 - **default**: 键缺失时的默认值
+
+**返回值**: 配置值
+
+---
+
+
+### `get_framework_value(key: str, default: Any) -> Any`
+
+读取 ``ErisPulse.framework.<key>`` 单值（高频热点路径专用，无快照开销）
+
+:func:`get_erispulse_config` 每次调用合并整棵配置树——事务/慢处理器
+告警等逐调用读取点走本入口直取。声明默认值经 :func:`_framework_defaults`
+兜底，Core/constants 同名常量保留为直接引用方的兼容默认。
+
+- **key** (`framework`): 节键名（如 ``"txn_begin_timeout"``）
+- **default**: 键缺失时的兜底值
 
 **返回值**: 配置值
 

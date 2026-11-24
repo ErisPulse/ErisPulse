@@ -17,6 +17,47 @@ ErisPulse 国际化模块
 
 ---
 
+## 函数列表
+
+
+### `on_language_config_changed(data: Any) -> None`
+
+配置写入事件的语言缓存失效广播（模块级，由 config 侧订阅转发）
+
+遍历全部活跃实例执行失效——覆盖非单例实例（测试/工具构造）。
+
+- **data**: 事件数据（含 ``key`` 的 dict，或任意载荷）
+
+**内部方法**
+由 Core/__init__ 装配点订阅 config.set / config.updated 后转发。
+
+---
+
+
+### `set_language_source(provider: Callable[[], Any] | None) -> None`
+
+注册语言来源回调（模块级便捷入口，转发到 :class:`I18nManager`）
+
+由 config 模块初始化后调用，注入读取 ``ErisPulse.i18n.language`` 的回调；
+i18n 不直接 import config，断开 config ⇄ i18n 顶层互引环。
+
+- **provider**: 返回语言配置值的回调（None 卸载）
+
+---
+
+
+### `set_event_emitter(emitter: Callable[[str, dict[str, Any]], None] | None) -> None`
+
+注册语言变更事件发射回调（模块级便捷入口，转发到 :class:`I18nManager`）
+
+由 Core 装配点注入（``lifecycle.emit_sync``），i18n 不直接 import
+lifecycle，断开 i18n ⇄ lifecycle 顶层互引环。
+
+- **emitter**: ``emitter(event, payload)`` 形式的发射回调（None 卸载）
+
+---
+
+
 ## 类列表
 
 
@@ -154,20 +195,56 @@ BCP 47 格式的 locale 名称（如 "zh-CN", "en-US"）
 ---
 
 
-##### `_ensure_config_invalidation_hook() -> None`
+##### `set_language_source(provider: Callable[[], Any] | None) -> None`
 
-注册配置写入对语言缓存的失效监听
+注册语言来源回调（由 config 侧反向注入）
 
-惰性注册一次（避免 Core 单例构造顺序上的导入环），
-监听 ``config.set`` / ``config.updated`` 两类事件。
+注册后 ``_get_effective_language`` 读取项目配置语言时经该回调获取，
+i18n 不再直接 import config（避免 config ⇄ i18n 顶层互引环）。
+
+- **provider**: 返回 ``ErisPulse.i18n.language`` 值的回调（None 卸载）
 
 **内部方法**
-注册失败静默跳过，不影响语言解析本身。
+由 config 模块在初始化后调用；生态代码无需使用。
+
+**示例**:
+
+```python
+i18n.set_language_source(lambda: config.getConfig("ErisPulse.i18n.language"))
+```
 
 ---
 
 
-##### `_on_language_config_changed(data: Any) -> None`
+##### `set_event_emitter(emitter: Callable[[str, dict[str, Any]], None] | None) -> None`
+
+注册事件发射回调（由 config 侧反向注入）
+
+语言切换事件（``i18n.language.changed``）经该回调转发到生命周期总线，
+i18n 不直接 import lifecycle（避免 i18n ⇄ lifecycle 互引环）。
+
+- **emitter**: ``emitter(event, payload)`` 形式的转发回调（None 卸载）
+
+**内部方法**
+由 config 模块在初始化后调用；生态代码无需使用。
+
+---
+
+
+##### `_ensure_config_invalidation_hook() -> None`
+
+注册配置写入对语言缓存的失效监听
+
+惰性注册一次；监听 ``config.set`` / ``config.updated`` 两类事件。
+订阅动作由 config 侧代为完成（config 订阅后转发调用本方法）——
+i18n 不直接 import lifecycle，避免 i18n ⇄ lifecycle 互引环。
+
+**内部方法**
+
+---
+
+
+##### `on_language_config_changed(data: Any) -> None`
 
 配置事件回调：ErisPulse.i18n.* 写入或外部配置重载时清除语言缓存
 

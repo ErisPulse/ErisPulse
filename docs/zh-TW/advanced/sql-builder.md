@@ -1,9 +1,9 @@
 # SQL 查詢建構器
 
 > [!TIP]
-> **什麼時候需要閱讀這篇**：需要鏈式 SQL 查詢或自定義儲存後端時。不需要則跳過，不會影響其他功能的使用。
+> **什麼時候需要閱讀這篇**：需要鏈式 SQL 查詢或自定義儲存後端時。不需要則跳過，不影響其他功能的使用。
 
-ErisPulse 的 Storage 模組提供鏈式呼叫風格的通用 SQL 查詢建構器，支援自定義表的建立、查詢、更新和刪除操作。
+ErisPulse 的 Storage 模塊提供鏈式呼叫風格的通用 SQL 查詢建構器，支援自定義表的建立、查詢、更新和刪除操作。
 
 ## 架構設計
 
@@ -18,8 +18,8 @@ Bases/storage.py                    Core/storage.py
                                     └──────────────────────────┘
 ```
 
-- `BaseStorage` / `BaseQueryBuilder` 是抽象基類，定義統一介面；框架內建 SQLite / MySQL / PostgreSQL 三種實現（自定義後端亦可依此擴展，見[儲存後端](storage-backends.md)）
-- `StorageManager` 按 `ErisPulse.storage.backend` 配置調度具體後端，預設 SQLite，完全向後相容
+- `BaseStorage` / `BaseQueryBuilder` 是抽象基類，定義統一介面；框架內建 SQLite / MySQL / PostgreSQL 三種實現（自定義後端亦可按此擴展，見[儲存後端](storage-backends.md)）
+- `StorageManager` 按 `ErisPulse.storage.backend` 配置調度具體後端，預設 SQLite，完全向後兼容
 
 ## 導入
 
@@ -28,7 +28,7 @@ from ErisPulse import sdk
 # 或
 from ErisPulse.Core import storage
 
-# ABC 基類（用於型別註解或自訂實作）
+# ABC 基類（用於型別標註或自定義實現）
 from ErisPulse.Core.Bases.storage import BaseStorage, BaseQueryBuilder
 ```
 
@@ -82,7 +82,7 @@ sdk.storage.AlterTable("users") \
 # 單筆插入（傳入字典）
 sdk.storage.Table("users").Insert({"name": "Alice", "age": 30}).Execute()
 
-# 批次插入（傳入字典列表）
+# 批量插入（傳入字典列表）
 sdk.storage.Table("users").InsertMulti([
     {"name": "Bob", "age": 25},
     {"name": "Charlie", "age": 35},
@@ -129,7 +129,7 @@ row = sdk.storage.Table("users").Select("name", "age") \
 # row: {"name": "Alice", "age": 30} 或 None
 ```
 
-> `ToDict()` 是鏈式標記（返回 self）：未呼叫它的鏈保持原有 `list[tuple]` 行為，完全向後相容；`copy()` 會保留該標記。
+> `ToDict()` 是鏈式標記（返回 self）：未呼叫它的鏈保持原有 `list[tuple]` 行為，完全向後兼容；`copy()` 會保留該標記。
 
 手動 zip 方式（與 ToDict 等價，適合無法改鏈的場景）：
 
@@ -241,9 +241,9 @@ count = sdk.storage.Table("users").Where("age > ?", 18).Count()
 exists = sdk.storage.Table("users").Where("name = ?", "Alice").Exists()
 ```
 
-## 複用查詢條件
+## 復用查詢條件
 
-使用 `copy()` 深拷貝建構器，複用基礎條件：
+使用 `copy()` 深拷貝建構器，復用基礎條件：
 
 ```python
 base = sdk.storage.Table("users").Where("age > ?", 20)
@@ -275,13 +275,13 @@ rows = builder.Execute()
 
 ```python
 # 提交事務
-with sdk.storage.transaction():
+async with sdk.storage.atransaction():
     sdk.storage.Table("users").Insert({"name": "Eve", "age": 22}).Execute()
     sdk.storage.Table("users").Update({"age": 23}).Where("name = ?", "Eve").Execute()
 
 # 回滾示例
 try:
-    with sdk.storage.transaction():
+    async with sdk.storage.atransaction():
         sdk.storage.Table("users").Delete().Where("name = ?", "Alice").Execute()
         raise Exception("force rollback")
 except Exception:
@@ -292,7 +292,7 @@ except Exception:
 ## 異步原生 API
 
 2.8.0 起儲存層以異步為原生主介面，所有終止方法都有對應的 a 前綴異步版本，
-異步 handler 內推薦使用（避免同步相容層短暫阻塞事件循環）：
+異步 handler 內推薦使用（避免同步相容層短暫阻塞事件迴圈）：
 
 ```python
 # 異步事務
@@ -327,11 +327,11 @@ keys = await sdk.storage.aget_all_keys()
 |------|---------|------|
 | `Select().Execute()` | `list[tuple]` | 元組列表，按欄位順序排列 |
 | `Select().ExecuteOne()` | `tuple \| None` | 單筆元組或 None |
-| `Insert().Execute()` | `int` | 受影響列數 |
-| `InsertMulti().Execute()` | `int` | 插入列數 |
-| `Update().Execute()` | `int` | 受影響列數 |
-| `Delete().Execute()` | `int` | 受影響列數 |
-| `Count()` | `int` | 符合條件列數 |
+| `Insert().Execute()` | `int` | 受影響行數 |
+| `InsertMulti().Execute()` | `int` | 插入行數 |
+| `Update().Execute()` | `int` | 受影響行數 |
+| `Delete().Execute()` | `int` | 受影響行數 |
+| `Count()` | `int` | 匹配行數 |
 | `Exists()` | `bool` | 是否存在 |
 
 ### 回傳值處理示例
@@ -339,10 +339,10 @@ keys = await sdk.storage.aget_all_keys()
 ```python
 # Select 回傳元組，按索引取值
 rows = sdk.storage.Table("users").Select("name", "age").Execute()
-first_name = rows[0][0]  # 第一列第一欄 name
-first_age = rows[0][1]   # 第一列第二欄 age
+first_name = rows[0][0]  # 第一行第一欄 name
+first_age = rows[0][1]   # 第一行第二欄 age
 
-# 推薦：用欄位名列表 + zip 轉為字典，程式碼更易讀
+# 推薦：用欄位名列表 + zip 轉為字典，程式碼更可讀
 cols = ["name", "age"]
 rows = sdk.storage.Table("users").Select(*cols).Execute()
 for row in rows:
@@ -353,7 +353,7 @@ for row in rows:
 row = sdk.storage.Table("users").Select("name").Where("id = ?", 1).ExecuteOne()
 name = row[0] if row else None
 
-# Insert/Update/Delete 回傳受影響列數
+# Insert/Update/Delete 回傳受影響行數
 affected = sdk.storage.Table("users").Delete().Where("age < ?", 18).Execute()
 print(f"刪除了 {affected} 條記錄")
 ```
@@ -396,9 +396,9 @@ sdk.storage.Table("users").Where(f"name = '{user_input}'").Execute()
 .Where("name IN (?, ?, ?)", "Alice", "Bob", "Charlie")
 ```
 
-## 自訂儲存後端
+## 自定義儲存後端
 
-2.8.0 起抽象層以**異步方法為原生契約**：繼承 `BaseStorage` 實作異步抽象方法，
+2.8.0 起抽象層以**異步方法為原生契約**：繼承 `BaseStorage` 實現異步抽象方法，
 同步 `get/set/Execute` 等由基類自動橋接提供：
 
 ```python
@@ -406,7 +406,7 @@ from ErisPulse.Core.Bases.storage import BaseStorage, BaseQueryBuilder
 
 class MyQueryBuilder(BaseQueryBuilder):
     async def aExecute(self):
-        # 實作具體執行邏輯
+        # 實現具體執行邏輯
         ...
 
     async def aExecuteOne(self):
@@ -426,13 +426,13 @@ class MyStorage(BaseStorage):
     async def aset(self, key, value):
         ...
 
-    # 實作其他異步抽象方法與事務連接 hook ...
+    # 實現其他異步抽象方法與事務連接 hook ...
     def Table(self, table_name):
         return MyQueryBuilder(self, table_name)
 ```
 
 > [!TIP]
-> 若不想實作事務連接路由（`conn` 關鍵字參數），保持類屬性
+> 若不想實現事務連接路由（`conn` 關鍵字參數），保持類屬性
 > `_SUPPORTS_CONN_ROUTING = False`（預設）即可，事務功能仍可用（隔離性受限）。
 > 純 SQL 後端可直接繼承 `Core/Bases/sql_base.py` 的 `SQLStorageBase` +
 > `SQLQueryBuilder`，只需提供連接管理與方言執行漏斗，詳見

@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1992,
+  "total_keywords": 1995,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -3927,7 +3927,7 @@
     "Schema 输出": [
       {
         "document": "developer-guide/configuration.md",
-        "line": 164,
+        "line": 199,
         "level": 2,
         "title": "Schema 输出"
       }
@@ -4740,6 +4740,14 @@
         "title": "[BUG-051] 跨账户重复受理（drop）误伤 at 点名消息，多账户部署消息随机丢失"
       }
     ],
+    "[BUG-052] 存储并发首取死锁冻结事件循环，web 全站挂起并持续 database is locked": [
+      {
+        "document": "bug-tracker.md",
+        "line": 1169,
+        "level": 3,
+        "title": "[BUG-052] 存储并发首取死锁冻结事件循环，web 全站挂起并持续 database is locked"
+      }
+    ],
     "__init__.py": [
       {
         "document": "developer-guide/modules/getting-started.md",
@@ -5501,7 +5509,7 @@
     "widget 名录": [
       {
         "document": "developer-guide/configuration.md",
-        "line": 88,
+        "line": 123,
         "level": 2,
         "title": "widget 名录"
       }
@@ -5749,7 +5757,7 @@
       },
       {
         "document": "getting-started/common-tasks.md",
-        "line": 505,
+        "line": 506,
         "level": 2,
         "title": "下一步"
       },
@@ -7311,7 +7319,7 @@
     "值形态（`value_type`，用于 `multiselect`）": [
       {
         "document": "developer-guide/configuration.md",
-        "line": 78,
+        "line": 113,
         "level": 3,
         "title": "值形态（`value_type`，用于 `multiselect`）"
       }
@@ -7551,7 +7559,7 @@
     "兼容性契约（消费方必须遵守）": [
       {
         "document": "developer-guide/configuration.md",
-        "line": 107,
+        "line": 142,
         "level": 2,
         "title": "兼容性契约（消费方必须遵守）"
       }
@@ -8678,6 +8686,14 @@
         "title": "同步初始化"
       }
     ],
+    "同步方法（慎用）": [
+      {
+        "document": "advanced/storage-backends.md",
+        "line": 117,
+        "level": 2,
+        "title": "同步方法（慎用）"
+      }
+    ],
     "同步流程": [
       {
         "document": "platform-guide/matrix.md",
@@ -9085,7 +9101,7 @@
     "图片下载和存储": [
       {
         "document": "getting-started/common-tasks.md",
-        "line": 442,
+        "line": 443,
         "level": 3,
         "title": "图片下载和存储"
       }
@@ -9093,7 +9109,7 @@
     "图片处理": [
       {
         "document": "getting-started/common-tasks.md",
-        "line": 440,
+        "line": 441,
         "level": 2,
         "title": "图片处理"
       }
@@ -9101,7 +9117,7 @@
     "图片识别示例": [
       {
         "document": "getting-started/common-tasks.md",
-        "line": 471,
+        "line": 472,
         "level": 3,
         "title": "图片识别示例"
       }
@@ -9965,7 +9981,7 @@
     "失败重试 + 超时取消": [
       {
         "document": "getting-started/common-tasks.md",
-        "line": 250,
+        "line": 251,
         "level": 3,
         "title": "失败重试 + 超时取消"
       }
@@ -10385,7 +10401,7 @@
       },
       {
         "document": "developer-guide/configuration.md",
-        "line": 114,
+        "line": 149,
         "level": 2,
         "title": "完整示例"
       },
@@ -10474,6 +10490,14 @@
         "line": 139,
         "level": 3,
         "title": "容器内重启（PID 1 实例）"
+      }
+    ],
+    "容器类型（`list[T]` / `dict[str, T]`）": [
+      {
+        "document": "developer-guide/configuration.md",
+        "line": 48,
+        "level": 3,
+        "title": "容器类型（`list[T]` / `dict[str, T]`）"
       }
     ],
     "容器里 `epsdk restart` 容器退出了？": [
@@ -11909,7 +11933,7 @@
     "批量发送多条消息": [
       {
         "document": "getting-started/common-tasks.md",
-        "line": 265,
+        "line": 266,
         "level": 3,
         "title": "批量发送多条消息"
       }
@@ -12169,7 +12193,7 @@
     "搜索功能": [
       {
         "document": "getting-started/common-tasks.md",
-        "line": 384,
+        "line": 385,
         "level": 2,
         "title": "搜索功能"
       }
@@ -13093,7 +13117,7 @@
     "权限控制": [
       {
         "document": "getting-started/common-tasks.md",
-        "line": 286,
+        "line": 287,
         "level": 2,
         "title": "权限控制"
       }
@@ -13101,7 +13125,7 @@
     "条件显隐/禁用（字段联动）": [
       {
         "document": "developer-guide/configuration.md",
-        "line": 60,
+        "line": 95,
         "level": 3,
         "title": "条件显隐/禁用（字段联动）"
       }
@@ -14707,7 +14731,7 @@
     "消息统计": [
       {
         "document": "getting-started/common-tasks.md",
-        "line": 338,
+        "line": 339,
         "level": 2,
         "title": "消息统计"
       }
@@ -14739,7 +14763,7 @@
     "消息计数": [
       {
         "document": "getting-started/common-tasks.md",
-        "line": 340,
+        "line": 341,
         "level": 3,
         "title": "消息计数"
       }
@@ -15667,7 +15691,7 @@
     "简单搜索": [
       {
         "document": "getting-started/common-tasks.md",
-        "line": 386,
+        "line": 387,
         "level": 3,
         "title": "简单搜索"
       }
@@ -15699,7 +15723,7 @@
     "管理员检查": [
       {
         "document": "getting-started/common-tasks.md",
-        "line": 288,
+        "line": 289,
         "level": 3,
         "title": "管理员检查"
       }
@@ -15983,7 +16007,7 @@
     "群组权限": [
       {
         "document": "getting-started/common-tasks.md",
-        "line": 323,
+        "line": 324,
         "level": 3,
         "title": "群组权限"
       }
@@ -17607,7 +17631,7 @@
     "通用键": [
       {
         "document": "developer-guide/configuration.md",
-        "line": 48,
+        "line": 82,
         "level": 3,
         "title": "通用键"
       }

@@ -7,23 +7,23 @@
 
 ## Storage モジュール
 
-設定可能なバックエンド（SQLite/MySQL/PostgreSQL）に基づくキーバリューストアシステムで、汎用 SQL チェーンクエリをサポートし、バックエンドは設定でワンクリックで切り替え可能です。詳細は [ストレージバックエンド](../advanced/storage-backends.md) を参照してください。
+可変なバックエンド（SQLite/MySQL/PostgreSQL）を基盤としたキー/値ストアシステムで、汎用的な SQL チェーン式クエリをサポート。バックエンドは設定で簡単に切り替え可能。詳細は [ストレージバックエンド](../advanced/storage-backends.md) を参照。
 
 ### 基本操作
 
 ```python
 from ErisPulse import sdk
 
-sdk.storage.set("key", "value")
-value = sdk.storage.get("key", default_value)
+await sdk.storage.aset("key", "value")
+value = await sdk.storage.aget("key", default_value)
 keys = sdk.storage.keys()
 sdk.storage.delete("key")
 ```
 
-### 一括操作
+### バッチ操作
 
 ```python
-sdk.storage.set_multi({"key1": "val1", "key2": "val2"})
+await sdk.storage.aset_multi({"key1": "val1", "key2": "val2"})
 values = sdk.storage.get_multi(["key1", "key2"])
 sdk.storage.delete_multi(["key1", "key2"])
 ```
@@ -31,21 +31,21 @@ sdk.storage.delete_multi(["key1", "key2"])
 ### トランザクション操作
 
 ```python
-with sdk.storage.transaction():
-    sdk.storage.set("key1", "value1")
-    sdk.storage.set("key2", "value2")
+async with sdk.storage.atransaction():
+    await sdk.storage.aset("key1", "value1")
+    await sdk.storage.aset("key2", "value2")
 ```
 
 ### 属性アクセス
 
 ```python
-sdk.storage.my_key          # sdk.storage.get("my_key") と同等
-sdk.storage.my_key = "val"  # sdk.storage.set("my_key", "val") と同等
+sdk.storage.my_key          # await sdk.storage.aget("my_key") に等価
+sdk.storage.my_key = "val"  # await sdk.storage.aset("my_key", "val") に等価
 ```
 
-### SQL チェーンクエリ
+### SQLチェーン式クエリ
 
-Storage モジュールは、チェーン呼び出しスタイルの汎用 SQL クエリビルダーを提供し、カスタムテーブルに対する CRUD 操作をサポートします。
+Storage モジュールはチェーン式呼び出しスタイルの汎用 SQL クエリビルダーを提供し、カスタムテーブルの CRUD 操作をサポートします。
 
 ```python
 sdk.storage.CreateTable("users", {
@@ -57,11 +57,11 @@ sdk.storage.Table("users").Insert({"name": "Alice"}).Execute()
 rows = sdk.storage.Table("users").Select("name").Where("id > ?", 0).Execute()
 ```
 
-> 完全なチェーンクエリ API（Select/Insert/Update/Delete/Where/OrderBy/Limit、AlterTable、トランザクションなど）については、[SQL クエリビルダー](../advanced/sql-builder.md) を参照してください。
+> 完全なチェーン式クエリ API（Select/Insert/Update/Delete/Where/OrderBy/Limit、AlterTable、トランザクションなど）については、[SQLクエリビルダー](../advanced/sql-builder.md) を参照してください。
 
-### ストレージバックエンド抽象
+### ストレージバックエンドの抽象化
 
-`StorageManager` は `BaseStorage` 抽象基底クラスを継承しており、他のストレージメディア（Redis、MySQL など）への拡張をサポートします。
+`StorageManager` は `BaseStorage` 抽象基底クラスを継承し、他のストレージメディア（Redis、MySQL など）への拡張をサポートします。
 
 ```python
 from ErisPulse.Core.Bases.storage import BaseStorage, BaseQueryBuilder
@@ -69,7 +69,7 @@ from ErisPulse.Core.Bases.storage import BaseStorage, BaseQueryBuilder
 
 ### 非同期インターフェース
 
-Storage モジュールと Config モジュールの両方に非同期メソッド（接頭辞 `a`）が用意されています：**非同期がネイティブの主インターフェースで、同期メソッドは互換レイヤーです**（内部でバックグラウンドのイベントループにブリッジして実行されます）。既存の同期コードを変更する必要はありません。非同期ハンドラ内の新しいコードでは、優先的に非同期メソッドを使用してください。
+Storage と Config モジュールはともに非同期メソッド（接頭辞 `a`）を提供しています。**非同期メソッドが元の主インターフェースで、同期メソッドは互換性層**（内部でバックグラウンドイベントループに橋渡し）です。既存の同期コードは変更不要。非同期ハンドラ内では新規コードで優先的に非同期メソッドを使用してください。
 
 ```python
 # 非同期ストレージ
@@ -79,7 +79,7 @@ await sdk.storage.adelete("key")
 keys = await sdk.storage.aget_all_keys()
 await sdk.storage.aclear()
 
-# 非同期一括操作
+# 非同期バッチ操作
 values = await sdk.storage.aget_multi(["k1", "k2"])
 await sdk.storage.aset_multi({"k1": "v1", "k2": "v2"})
 await sdk.storage.adelete_multi(["k1", "k2"])

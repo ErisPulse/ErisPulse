@@ -52,13 +52,13 @@
           "icon": "fa-door-open"
         },
         {
-          "title": "Основные концепции",
+          "title": "Основные понятия",
           "path": "getting-started/basic-concepts.md",
           "level": 1,
           "icon": "fa-lightbulb"
         },
         {
-          "title": "Примеры типичных задач",
+          "title": "Примеры распространённых задач",
           "path": "getting-started/common-tasks.md",
           "level": 1,
           "icon": "fa-list-check"

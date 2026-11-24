@@ -191,36 +191,36 @@ ErisPulse 支援 5 類事件：
 
 ```python
 # 設定值
-sdk.storage.set("key", "value")
+await sdk.storage.aset("key", "value")
 
-# 取得值
-value = sdk.storage.get("key", "default_value")
+# 獲取值
+value = await sdk.storage.aget("key", "預設值")
 
-# 批次操作
-sdk.storage.set_multi({
+# 批量操作
+await sdk.storage.aset_multi({
     "key1": "value1",
     "key2": "value2"
 })
 
 # 事務
-with sdk.storage.transaction():
-    sdk.storage.set("key1", "value1")
-    sdk.storage.set("key2", "value2")
+async with sdk.storage.atransaction():
+    await sdk.storage.aset("key1", "value1")
+    await sdk.storage.aset("key2", "value2")
 ```
 
-### Config（設定）
+### Config（配置）
 
 TOML 格式的設定檔管理。
 
 ```python
-# 取得設定
+# 獲取設定
 config = sdk.config.getConfig("MyModule", {})
 
 # 設定設定
 sdk.config.setConfig("MyModule", {"key": "value"})
 
 # 讀取嵌套設定
-value = sdk.config.getConfig("MyModule.subkey", "default")
+value = sdk.config.getConfig("MyModule.subkey", "預設值")
 ```
 
 ### Logger（日誌）
@@ -233,17 +233,17 @@ sdk.logger.info("這是一條資訊")
 sdk.logger.warning("這是一條警告")
 sdk.logger.error("這是一條錯誤")
 
-# 取得子日誌記錄器
+# 獲取子日誌記錄器
 child_logger = sdk.logger.get_child("submodule")
 child_logger.info("子模組日誌")
 ```
 
 **屬性存取語法糖**
 
-除了使用 `get_child()` 方法外，你還可以透過**屬性存取**的方式建立子 logger，這是一種更簡潔的**語法糖**寫法：
+除了使用 `get_child()` 方法外，你也可以透過**屬性存取**的方式建立子 logger，這是一種更簡潔的**語法糖**寫法：
 
 ```python
-# 透過屬性存取建立子logger
+# 透過屬性存取建立子 logger
 sdk.logger.mymodule.info("模組訊息")
 
 # 支援嵌套存取

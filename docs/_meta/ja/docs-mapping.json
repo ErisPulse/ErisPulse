@@ -208,7 +208,7 @@
               "icon": "fa-puzzle-piece"
             },
             {
-              "title": "モジュールのコアコンセプト",
+              "title": "モジュールの基本概念",
               "path": "developer-guide/modules/core-concepts.md",
               "level": 1,
               "icon": "fa-cubes-stacked"

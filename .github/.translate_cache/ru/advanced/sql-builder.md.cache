@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "1097c733282f7099951570bfe961045f",
-  "file_hash": "1097c733282f7099951570bfe961045f",
-  "translated_at": "2026-10-14T02:09:18.516393",
+  "hash": "d3b362e2a55d7f493322b5196a636ec3",
+  "file_hash": "d3b362e2a55d7f493322b5196a636ec3",
+  "translated_at": "2026-11-24T02:19:17.090560",
   "target_lang": "ru",
   "chunks": [
     {
@@ -34,8 +34,8 @@
       "translation": "## Сброс построителя\n\n```python\nbuilder = sdk.storage.Table(\"users\").Select(\"name\").Where(\"age > ?\", 18)\nbuilder.clear()\n\n# Перестроение запроса\nbuilder.Select(\"name\", \"age\").Where(\"name = ?\", \"Alice\")\nrows = builder.Execute()\n```"
     },
     {
-      "hash": "614cc321db58004b1f8a1433b87a33fc",
-      "translation": "## Использование в транзакциях\n\nЦепочечные операции полностью поддерживают транзакции:\n\n```python\n# Подтверждение транзакции\nwith sdk.storage.transaction():\n    sdk.storage.Table(\"users\").Insert({\"name\": \"Eve\", \"age\": 22}).Execute()\n    sdk.storage.Table(\"users\").Update({\"age\": 23}).Where(\"name = ?\", \"Eve\").Execute()\n\n# Пример отката\ntry:\n    with sdk.storage.transaction():\n        sdk.storage.Table(\"users\").Delete().Where(\"name = ?\", \"Alice\").Execute()\n        raise Exception(\"force rollback\")\nexcept Exception:\n    pass\n# Запись Alice всё ещё существует\n```"
+      "hash": "f88def5327c3f611b3a35a18371f17e6",
+      "translation": "## Использование в транзакциях\n\nЦепочечные операции полностью поддерживаются в транзакциях:\n\n```python\n# Подтверждение транзакции\nasync with sdk.storage.atransaction():\n    sdk.storage.Table(\"users\").Insert({\"name\": \"Eve\", \"age\": 22}).Execute()\n    sdk.storage.Table(\"users\").Update({\"age\": 23}).Where(\"name = ?\", \"Eve\").Execute()\n\n# Пример отката\ntry:\n    async with sdk.storage.atransaction():\n        sdk.storage.Table(\"users\").Delete().Where(\"name = ?\", \"Alice\").Execute()\n        raise Exception(\"force rollback\")\nexcept Exception:\n    pass\n# Запись об Алисе по-прежнему существует\n```"
     },
     {
       "hash": "d3551479105266293dbdf244b8c01a08",

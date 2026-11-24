@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 2123,
+  "total_keywords": 2128,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -3092,12 +3092,12 @@
         "title": "Config モジュール"
       }
     ],
-    "Config（設定）": [
+    "Config（構成）": [
       {
         "document": "getting-started/basic-concepts.md",
         "line": 211,
         "level": 3,
-        "title": "Config（設定）"
+        "title": "Config（構成）"
       }
     ],
     "Conversation 多輪対話": [
@@ -3724,12 +3724,12 @@
         "title": "Logger モジュール"
       }
     ],
-    "Logger（ログ）": [
+    "Logger（ロガー）": [
       {
         "document": "getting-started/basic-concepts.md",
         "line": 226,
         "level": 3,
-        "title": "Logger（ログ）"
+        "title": "Logger（ロガー）"
       }
     ],
     "MCP サーバー": [
@@ -4160,12 +4160,12 @@
         "title": "Router モジュール"
       }
     ],
-    "Router（ルーティング）": [
+    "Router（ルーター）": [
       {
         "document": "getting-started/basic-concepts.md",
         "line": 253,
         "level": 3,
-        "title": "Router（ルーティング）"
+        "title": "Router（ルーター）"
       }
     ],
     "SDK のコアアーキテクチャ": [
@@ -4185,12 +4185,6 @@
       }
     ],
     "SDK オブジェクト": [
-      {
-        "document": "developer-guide/modules/core-concepts.md",
-        "line": 150,
-        "level": 2,
-        "title": "SDK オブジェクト"
-      },
       {
         "document": "developer-guide/modules/getting-started.md",
         "line": 190,
@@ -4222,6 +4216,14 @@
         "title": "SDKとの関係"
       }
     ],
+    "SDKオブジェクト": [
+      {
+        "document": "developer-guide/modules/core-concepts.md",
+        "line": 149,
+        "level": 2,
+        "title": "SDKオブジェクト"
+      }
+    ],
     "SQL クエリビルダ": [
       {
         "document": "advanced/sql-builder.md",
@@ -4230,20 +4232,20 @@
         "title": "SQL クエリビルダ"
       }
     ],
-    "SQL チェーンクエリ": [
+    "SQLite \"database is locked\" のトラブルシューティング": [
+      {
+        "document": "advanced/storage-backends.md",
+        "line": 144,
+        "level": 2,
+        "title": "SQLite \"database is locked\" のトラブルシューティング"
+      }
+    ],
+    "SQLチェーン式クエリ": [
       {
         "document": "api-reference/core-modules.md",
         "line": 46,
         "level": 3,
-        "title": "SQL チェーンクエリ"
-      }
-    ],
-    "SQLite \"database is locked\" のトラブルシューティング": [
-      {
-        "document": "advanced/storage-backends.md",
-        "line": 137,
-        "level": 2,
-        "title": "SQLite \"database is locked\" のトラブルシューティング"
+        "title": "SQLチェーン式クエリ"
       }
     ],
     "SVG 出力の例": [
@@ -4542,12 +4544,12 @@
         "title": "Transcript セッション受信トレイ"
       }
     ],
-    "UI メタデータ（`metadata[\"ui\"]` サブテーブル）": [
+    "UI 元データ（`metadata[\"ui\"]` サブテーブル）": [
       {
         "document": "developer-guide/configuration.md",
         "line": 44,
         "level": 2,
-        "title": "UI メタデータ（`metadata[\"ui\"]` サブテーブル）"
+        "title": "UI 元データ（`metadata[\"ui\"]` サブテーブル）"
       }
     ],
     "Using メソッド": [
@@ -4714,12 +4716,12 @@
         "title": "Webサービスとルーティング設定"
       }
     ],
-    "Where パラメータの渡し方": [
+    "Whereのパラメータ渡しルール": [
       {
         "document": "advanced/sql-builder.md",
         "line": 379,
         "level": 3,
-        "title": "Where パラメータの渡し方"
+        "title": "Whereのパラメータ渡しルール"
       }
     ],
     "Windows PowerShell の実行ポリシー": [
@@ -4978,148 +4980,156 @@
         "title": "[BUG-033] wait_reply の保留中の返信が高優先度ハンドラーによりスターベーション（飢餓）状態に陥る"
       }
     ],
-    "[BUG-034] スコープの persist=False ランタイムバインディングが、その後の任意の設定書き込みによってサイレントに消去される": [
+    "[BUG-034] スコープ persist=False の実行時バインディングが任意の後続の設定書き込みによって静かに上書きされる": [
       {
         "document": "bug-tracker.md",
         "line": 886,
         "level": 3,
-        "title": "[BUG-034] スコープの persist=False ランタイムバインディングが、その後の任意の設定書き込みによってサイレントに消去される"
+        "title": "[BUG-034] スコープ persist=False の実行時バインディングが任意の後続の設定書き込みによって静かに上書きされる"
       }
     ],
-    "[BUG-035] 設定パネルの select 選択肢および辞書フィールドが [object Object] と表示される": [
+    "[BUG-035] 設定パネルの select オプションと辞書フィールドが [object Object] にレンダリングされる": [
       {
         "document": "bug-tracker.md",
-        "line": 906,
+        "line": 907,
         "level": 3,
-        "title": "[BUG-035] 設定パネルの select 選択肢および辞書フィールドが [object Object] と表示される"
+        "title": "[BUG-035] 設定パネルの select オプションと辞書フィールドが [object Object] にレンダリングされる"
       }
     ],
-    "[BUG-036] マルチインスタンスで設定ディレクトリを共有する際に設定書き込みが散発的に失敗する（ENOENT）": [
+    "[BUG-036] 複数インスタンスが共有する設定ディレクトリで設定の書き込みが偶発的に失敗する（ENOENT）": [
       {
         "document": "bug-tracker.md",
-        "line": 924,
+        "line": 925,
         "level": 3,
-        "title": "[BUG-036] マルチインスタンスで設定ディレクトリを共有する際に設定書き込みが散発的に失敗する（ENOENT）"
+        "title": "[BUG-036] 複数インスタンスが共有する設定ディレクトリで設定の書き込みが偶発的に失敗する（ENOENT）"
       }
     ],
-    "[BUG-037] 空白を含むサブコマンド名が登録後、永久にトリガーされない": [
+    "[BUG-037] 空白文字を含むコマンド名でサブコマンドを登録した後、決してトリガーされない": [
       {
         "document": "bug-tracker.md",
-        "line": 950,
+        "line": 951,
         "level": 3,
-        "title": "[BUG-037] 空白を含むサブコマンド名が登録後、永久にトリガーされない"
+        "title": "[BUG-037] 空白文字を含むコマンド名でサブコマンドを登録した後、決してトリガーされない"
       }
     ],
-    "[BUG-038] persist=False ランタイムバインディングが永続化書き込みに巻き込まれてディスクに書き込まれ、モジュールのアンロード後にディスクから「復活」する": [
+    "[BUG-038] persist=False の実行時バインディングが永続化書き込みによってディスクに落とされ、モジュールのアンロード後にディスクから「復活」する": [
       {
         "document": "bug-tracker.md",
-        "line": 974,
+        "line": 975,
         "level": 3,
-        "title": "[BUG-038] persist=False ランタイムバインディングが永続化書き込みに巻き込まれてディスクに書き込まれ、モジュールのアンロード後にディスクから「復活」する"
+        "title": "[BUG-038] persist=False の実行時バインディングが永続化書き込みによってディスクに落とされ、モジュールのアンロード後にディスクから「復活」する"
       }
     ],
-    "[BUG-039] セクション全体書き込みとドット区切り書き込みの併存時に読み書きが不一致になる（ドット区切りオーバーライドの消失）": [
+    "[BUG-039] 整節書き込みと点分書き込みが共存するときの読み書きの不整合（点分覆写が失われる）": [
       {
         "document": "bug-tracker.md",
-        "line": 998,
+        "line": 999,
         "level": 3,
-        "title": "[BUG-039] セクション全体書き込みとドット区切り書き込みの併存時に読み書きが不一致になる（ドット区切りオーバーライドの消失）"
+        "title": "[BUG-039] 整節書き込みと点分書き込みが共存するときの読み書きの不整合（点分覆写が失われる）"
       }
     ],
-    "[BUG-040] プラットフォームがセグメント分割したメッセージのコマンド末尾パラメータがサイレントに失われる": [
+    "[BUG-040] プラットフォームがメッセージを複数のテキストセグメントに分割したとき、コマンドの末尾パラメータが静かに失われる": [
       {
         "document": "bug-tracker.md",
-        "line": 1020,
+        "line": 1023,
         "level": 3,
-        "title": "[BUG-040] プラットフォームがセグメント分割したメッセージのコマンド末尾パラメータがサイレントに失われる"
+        "title": "[BUG-040] プラットフォームがメッセージを複数のテキストセグメントに分割したとき、コマンドの末尾パラメータが静かに失われる"
       }
     ],
-    "[BUG-041] 拒否されたコマンドが alt_message 経由でチェーン全体を再実行：重複応答と権限関数の副作用二重トリガー": [
+    "[BUG-041] 拒否されたコマンドが alt_message で一連の再実行：重複した返信と権限関数の副作用が二度実行される": [
       {
         "document": "bug-tracker.md",
-        "line": 1032,
+        "line": 1037,
         "level": 3,
-        "title": "[BUG-041] 拒否されたコマンドが alt_message 経由でチェーン全体を再実行：重複応答と権限関数の副作用二重トリガー"
+        "title": "[BUG-041] 拒否されたコマンドが alt_message で一連の再実行：重複した返信と権限関数の副作用が二度実行される"
       }
     ],
-    "[BUG-042] コマンドハンドラー内で登録された wait_reply が同一のトリガーメッセージによって即座に消費される": [
+    "[BUG-042] コマンドハンドラ内で登録された wait_reply が同一条のトリガーメッセージで即座に消費される": [
       {
         "document": "bug-tracker.md",
-        "line": 1044,
+        "line": 1051,
         "level": 3,
-        "title": "[BUG-042] コマンドハンドラー内で登録された wait_reply が同一のトリガーメッセージによって即座に消費される"
+        "title": "[BUG-042] コマンドハンドラ内で登録された wait_reply が同一条のトリガーメッセージで即座に消費される"
       }
     ],
-    "[BUG-043] select() の同一キー複数経路待ちで後から登録した方が前者をサイレントにキャンセルする": [
+    "[BUG-043] select() で同じキーに複数の待機ルートが後者が前者を静かにキャンセルする": [
       {
         "document": "bug-tracker.md",
-        "line": 1056,
+        "line": 1065,
         "level": 3,
-        "title": "[BUG-043] select() の同一キー複数経路待ちで後から登録した方が前者をサイレントにキャンセルする"
+        "title": "[BUG-043] select() で同じキーに複数の待機ルートが後者が前者を静かにキャンセルする"
       }
     ],
-    "[BUG-044] BaseConverter.at() が OB11 のレガシー \"at\" セグメントを生成し、フレームワーク全体の mention 判定が認識しない": [
+    "[BUG-044] BaseConverter.at() が OB11 の遺残「at」セグメントを生成し、フレームワーク全体のメンション判定が認識しない": [
       {
         "document": "bug-tracker.md",
-        "line": 1068,
+        "line": 1079,
         "level": 3,
-        "title": "[BUG-044] BaseConverter.at() が OB11 のレガシー \"at\" セグメントを生成し、フレームワーク全体の mention 判定が認識しない"
+        "title": "[BUG-044] BaseConverter.at() が OB11 の遺残「at」セグメントを生成し、フレームワーク全体のメンション判定が認識しない"
       }
     ],
-    "[BUG-045] alt_message を持たないアダプターでインタラクションプリミティブが永久にタイムアウトし、コマンドのパススルーが機能しない": [
+    "[BUG-045] alt_message を持たない适配器ではインタラクション原語が永久にタイムアウトし、コマンドの透過が無効化される": [
       {
         "document": "bug-tracker.md",
-        "line": 1080,
+        "line": 1093,
         "level": 3,
-        "title": "[BUG-045] alt_message を持たないアダプターでインタラクションプリミティブが永久にタイムアウトし、コマンドのパススルーが機能しない"
+        "title": "[BUG-045] alt_message を持たない适配器ではインタラクション原語が永久にタイムアウトし、コマンドの透過が無効化される"
       }
     ],
-    "[BUG-046] 宣言的設定テンプレートのネストされたサブテーブルヘッダーがトップレベルテーブルにずれる": [
+    "[BUG-046] 宣言的設定テンプレートのネストされたサブテーブルヘッダーがルートテーブルに漂移する": [
       {
         "document": "bug-tracker.md",
-        "line": 1092,
+        "line": 1107,
         "level": 3,
-        "title": "[BUG-046] 宣言的設定テンプレートのネストされたサブテーブルヘッダーがトップレベルテーブルにずれる"
+        "title": "[BUG-046] 宣言的設定テンプレートのネストされたサブテーブルヘッダーがルートテーブルに漂移する"
       }
     ],
-    "[BUG-047] サービスディレクトリの全量列挙が遅延ロードモジュールを取りこぼす": [
+    "[BUG-047] サービスディレクトリの全量列挙が遅延ロードモジュールを除外する": [
       {
         "document": "bug-tracker.md",
-        "line": 1106,
+        "line": 1121,
         "level": 3,
-        "title": "[BUG-047] サービスディレクトリの全量列挙が遅延ロードモジュールを取りこぼす"
+        "title": "[BUG-047] サービスディレクトリの全量列挙が遅延ロードモジュールを除外する"
       }
     ],
-    "[BUG-048] セッション受信トレイのクエリ API がメッセージの帰属を欠落させる（sender とイベントメタデータ）": [
+    "[BUG-048] 会話受信箱のクエリ API がメッセージの帰因（sender とイベントメタデータ）を失う": [
       {
         "document": "bug-tracker.md",
-        "line": 1118,
+        "line": 1135,
         "level": 3,
-        "title": "[BUG-048] セッション受信トレイのクエリ API がメッセージの帰属を欠落させる（sender とイベントメタデータ）"
+        "title": "[BUG-048] 会話受信箱のクエリ API がメッセージの帰因（sender とイベントメタデータ）を失う"
       }
     ],
-    "[BUG-049] 着信したボット自身の送信メッセージのエコーが user として記録され、受信トレイの帰属を汚染する": [
+    "[BUG-049] インバウンド bot 自発メッセージのエコーが user として記録され、受信箱の帰因を汚染する": [
       {
         "document": "bug-tracker.md",
-        "line": 1131,
+        "line": 1150,
         "level": 3,
-        "title": "[BUG-049] 着信したボット自身の送信メッセージのエコーが user として記録され、受信トレイの帰属を汚染する"
+        "title": "[BUG-049] インバウンド bot 自発メッセージのエコーが user として記録され、受信箱の帰因を汚染する"
       }
     ],
-    "[BUG-050] コンテナ内で epsdk restart を実行するとコンテナが直接終了する": [
+    "[BUG-050] 容器内で `epsdk restart` を実行するとコンテナが直ちに終了する": [
       {
         "document": "bug-tracker.md",
-        "line": 1144,
+        "line": 1165,
         "level": 3,
-        "title": "[BUG-050] コンテナ内で epsdk restart を実行するとコンテナが直接終了する"
+        "title": "[BUG-050] 容器内で `epsdk restart` を実行するとコンテナが直ちに終了する"
       }
     ],
-    "[BUG-051] クロスアカウント重複受理（drop）が at メンションメッセージを誤って排除し、マルチアカウントデプロイでメッセージがランダムに失われる": [
+    "[BUG-051] 複数アカウントの重複受信（drop）が @メンションメッセージを誤って破棄し、多アカウントデプロイでメッセージがランダムに失われる": [
       {
         "document": "bug-tracker.md",
-        "line": 1156,
+        "line": 1179,
         "level": 3,
-        "title": "[BUG-051] クロスアカウント重複受理（drop）が at メンションメッセージを誤って排除し、マルチアカウントデプロイでメッセージがランダムに失われる"
+        "title": "[BUG-051] 複数アカウントの重複受信（drop）が @メンションメッセージを誤って破棄し、多アカウントデプロイでメッセージがランダムに失われる"
+      }
+    ],
+    "[BUG-052] ストレージの並行最初の取得でデッドロックがイベントループを凍結し、web 全体が停止し、database is locked が継続する": [
+      {
+        "document": "bug-tracker.md",
+        "line": 1193,
+        "level": 3,
+        "title": "[BUG-052] ストレージの並行最初の取得でデッドロックがイベントループを凍結し、web 全体が停止し、database is locked が継続する"
       }
     ],
     "__init__.py": [
@@ -5589,7 +5599,7 @@
     "on_before_unload メソッド": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 65,
+        "line": 64,
         "level": 3,
         "title": "on_before_unload メソッド"
       }
@@ -5597,7 +5607,7 @@
     "on_load メソッド": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 35,
+        "line": 34,
         "level": 3,
         "title": "on_load メソッド"
       }
@@ -5605,7 +5615,7 @@
     "on_unload メソッド": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 50,
+        "line": 49,
         "level": 3,
         "title": "on_unload メソッド"
       }
@@ -5952,12 +5962,12 @@
         "title": "wait(prompt=None, timeout=None)"
       }
     ],
-    "widget カタログ": [
+    "widget 名録": [
       {
         "document": "developer-guide/configuration.md",
-        "line": 88,
+        "line": 116,
         "level": 2,
-        "title": "widget カタログ"
+        "title": "widget 名録"
       }
     ],
     "ws_connect パラメータ": [
@@ -6624,14 +6634,6 @@
         "title": "アダプタ標準変換規格"
       }
     ],
-    "アダプタ送信メソッドの照会": [
-      {
-        "document": "developer-guide/modules/core-concepts.md",
-        "line": 178,
-        "level": 2,
-        "title": "アダプタ送信メソッドの照会"
-      }
-    ],
     "アダプタ開発のベストプラクティス": [
       {
         "document": "developer-guide/adapters/best-practices.md",
@@ -6683,7 +6685,7 @@
     "アンロードと完全アンロード（purge）": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 81,
+        "line": 80,
         "level": 3,
         "title": "アンロードと完全アンロード（purge）"
       }
@@ -6708,6 +6710,14 @@
         "line": 40,
         "level": 2,
         "title": "アーキテクチャ概要"
+      }
+    ],
+    "アーキテクチャ設計": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 8,
+        "level": 2,
+        "title": "アーキテクチャ設計"
       }
     ],
     "イベントでのアカウント識別": [
@@ -6899,7 +6909,7 @@
     "イベントハンドラのライフサイクル": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 394,
+        "line": 393,
         "level": 3,
         "title": "イベントハンドラのライフサイクル"
       }
@@ -6907,7 +6917,7 @@
     "イベントハンドラの登録": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 378,
+        "line": 377,
         "level": 3,
         "title": "イベントハンドラの登録"
       }
@@ -7075,7 +7085,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 376,
+        "line": 375,
         "level": 2,
         "title": "イベント処理"
       }
@@ -7587,7 +7597,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 421,
+        "line": 420,
         "level": 2,
         "title": "エラー処理"
       },
@@ -7633,7 +7643,7 @@
     "カスタム SQL バックエンド": [
       {
         "document": "advanced/storage-backends.md",
-        "line": 155,
+        "line": 162,
         "level": 2,
         "title": "カスタム SQL バックエンド"
       }
@@ -7686,12 +7696,12 @@
         "title": "キャンセルチェーン（タスク登録表）"
       }
     ],
-    "キーワードフィルタ": [
+    "キーワードフィルタリング": [
       {
         "document": "getting-started/common-tasks.md",
         "line": 149,
         "level": 3,
-        "title": "キーワードフィルタ"
+        "title": "キーワードフィルタリング"
       }
     ],
     "クイックスタート": [
@@ -7792,6 +7802,14 @@
         "title": "グループにボタン付きメッセージを送信"
       }
     ],
+    "グループの権限": [
+      {
+        "document": "getting-started/common-tasks.md",
+        "line": 324,
+        "level": 3,
+        "title": "グループの権限"
+      }
+    ],
     "グループアルバム": [
       {
         "document": "platform-guide/snowluma.md",
@@ -7884,14 +7902,6 @@
         "line": 163,
         "level": 3,
         "title": "グループ操作メソッド"
-      }
-    ],
-    "グループ権限": [
-      {
-        "document": "getting-started/common-tasks.md",
-        "line": 323,
-        "level": 3,
-        "title": "グループ権限"
       }
     ],
     "グループ用ロボットを作りたい（メッセージ処理、グループ管理、通知）": [
@@ -8036,18 +8046,12 @@
         "line": 44,
         "level": 3,
         "title": "コアモジュールの説明"
-      },
-      {
-        "document": "getting-started/basic-concepts.md",
-        "line": 186,
-        "level": 2,
-        "title": "コアモジュールの説明"
       }
     ],
     "コアモジュールへのアクセス": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 152,
+        "line": 151,
         "level": 3,
         "title": "コアモジュールへのアクセス"
       }
@@ -8306,6 +8310,14 @@
         "title": "コンテナ内の再起動（PID 1 インスタンス）"
       }
     ],
+    "コンテナ型（`list[T]` / `dict[str, T]`）": [
+      {
+        "document": "developer-guide/configuration.md",
+        "line": 48,
+        "level": 3,
+        "title": "コンテナ型（`list[T]` / `dict[str, T]`）"
+      }
+    ],
     "コンテンツ閲覧拡張アクション（エコシステムモジュール向け）": [
       {
         "document": "platform-guide/bilibili.md",
@@ -8526,14 +8538,6 @@
         "title": "サポートされるメッセージ送信タイプ"
       }
     ],
-    "サポートされる送信メソッドの一覧表示": [
-      {
-        "document": "developer-guide/modules/core-concepts.md",
-        "line": 182,
-        "level": 3,
-        "title": "サポートされる送信メソッドの一覧表示"
-      }
-    ],
     "サポートされる送信メソッドの照会": [
       {
         "document": "api-reference/adapter-system.md",
@@ -8705,7 +8709,7 @@
     "スキーマ出力": [
       {
         "document": "developer-guide/configuration.md",
-        "line": 164,
+        "line": 192,
         "level": 2,
         "title": "スキーマ出力"
       }
@@ -8777,7 +8781,7 @@
     "ストレージシステム": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 351,
+        "line": 350,
         "level": 2,
         "title": "ストレージシステム"
       }
@@ -8790,12 +8794,12 @@
         "title": "ストレージバックエンド"
       }
     ],
-    "ストレージバックエンド抽象": [
+    "ストレージバックエンドの抽象化": [
       {
         "document": "api-reference/core-modules.md",
         "line": 62,
         "level": 3,
-        "title": "ストレージバックエンド抽象"
+        "title": "ストレージバックエンドの抽象化"
       }
     ],
     "ストレージ・システム": [
@@ -8998,18 +9002,18 @@
         "title": "タスクの管理"
       }
     ],
-    "タプルを辞書に変換": [
+    "タプルを辞書に変換する": [
       {
         "document": "advanced/sql-builder.md",
         "line": 112,
         "level": 4,
-        "title": "タプルを辞書に変換"
+        "title": "タプルを辞書に変換する"
       }
     ],
     "ダイアレクトの動作差異": [
       {
         "document": "advanced/storage-backends.md",
-        "line": 124,
+        "line": 131,
         "level": 2,
         "title": "ダイアレクトの動作差異"
       }
@@ -9144,14 +9148,6 @@
         "title": "チェーン呼び出し"
       }
     ],
-    "チェーン呼び出しによるクエリ": [
-      {
-        "document": "advanced/sql-builder.md",
-        "line": 77,
-        "level": 2,
-        "title": "チェーン呼び出しによるクエリ"
-      }
-    ],
     "チェーン呼び出しの例": [
       {
         "document": "platform-guide/discord.md",
@@ -9230,6 +9226,14 @@
         "line": 207,
         "level": 3,
         "title": "チェーン式呼び出しの例"
+      }
+    ],
+    "チェーン形式のクエリ": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 77,
+        "level": 2,
+        "title": "チェーン形式のクエリ"
       }
     ],
     "チェーン装飾": [
@@ -9348,6 +9352,14 @@
         "title": "テストの実行"
       }
     ],
+    "テーブルの削除": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 55,
+        "level": 3,
+        "title": "テーブルの削除"
+      }
+    ],
     "テーブルの存在確認": [
       {
         "document": "advanced/sql-builder.md",
@@ -9370,14 +9382,6 @@
         "line": 69,
         "level": 2,
         "title": "テーブル作成と CRUD"
-      }
-    ],
-    "テーブル削除": [
-      {
-        "document": "advanced/sql-builder.md",
-        "line": 55,
-        "level": 3,
-        "title": "テーブル削除"
       }
     ],
     "テーブル構造の変更": [
@@ -9560,12 +9564,12 @@
         "title": "トランザクションでの使用"
       }
     ],
-    "トランザクションの使い方": [
+    "トランザクションの使用": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 366,
+        "line": 365,
         "level": 3,
-        "title": "トランザクションの使い方"
+        "title": "トランザクションの使用"
       }
     ],
     "トランザクション操作": [
@@ -9574,6 +9578,14 @@
         "line": 31,
         "level": 3,
         "title": "トランザクション操作"
+      }
+    ],
+    "トランスレーター送信メソッドの検索": [
+      {
+        "document": "developer-guide/modules/core-concepts.md",
+        "line": 177,
+        "level": 2,
+        "title": "トランスレーター送信メソッドの検索"
       }
     ],
     "トリガの意味": [
@@ -9884,6 +9896,14 @@
         "title": "バッチ全体のルールとコールバック"
       }
     ],
+    "バッチ操作": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 23,
+        "level": 3,
+        "title": "バッチ操作"
+      }
+    ],
     "バージョンアップと移行ガイド": [
       {
         "document": "user-guide/migration.md",
@@ -9948,12 +9968,12 @@
         "title": "パラメータの説明"
       }
     ],
-    "パラメータ化されたクエリ": [
+    "パラメータ化クエリ": [
       {
         "document": "advanced/sql-builder.md",
         "line": 360,
         "level": 2,
-        "title": "パラメータ化されたクエリ"
+        "title": "パラメータ化クエリ"
       }
     ],
     "パラメータ説明": [
@@ -9986,12 +10006,12 @@
         "title": "ビューポートと出力形式"
       }
     ],
-    "ビルダーのリセット": [
+    "ビルダのリセット": [
       {
         "document": "advanced/sql-builder.md",
         "line": 261,
         "level": 2,
-        "title": "ビルダーのリセット"
+        "title": "ビルダのリセット"
       }
     ],
     "ファイルに書き込まない example フィールド（v2.8.0+）": [
@@ -10098,12 +10118,12 @@
         "title": "フレームワーク設定"
       }
     ],
-    "ブラックリストフィルタ": [
+    "ブラックリストフィルタリング": [
       {
         "document": "getting-started/common-tasks.md",
         "line": 170,
         "level": 3,
-        "title": "ブラックリストフィルタ"
+        "title": "ブラックリストフィルタリング"
       }
     ],
     "ブロードキャスト": [
@@ -10198,6 +10218,14 @@
         "line": 71,
         "level": 2,
         "title": "プラットフォームの制限"
+      }
+    ],
+    "プラットフォームの多様性対応": [
+      {
+        "document": "getting-started/common-tasks.md",
+        "line": 188,
+        "level": 2,
+        "title": "プラットフォームの多様性対応"
       }
     ],
     "プラットフォームの機能検出": [
@@ -10827,7 +10855,7 @@
     "メソッドの詳細情報の取得": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 190,
+        "line": 189,
         "level": 3,
         "title": "メソッドの詳細情報の取得"
       }
@@ -10931,9 +10959,17 @@
     "メッセージのカウント": [
       {
         "document": "getting-started/common-tasks.md",
-        "line": 340,
+        "line": 341,
         "level": 3,
         "title": "メッセージのカウント"
+      }
+    ],
+    "メッセージのフィルタリング": [
+      {
+        "document": "getting-started/common-tasks.md",
+        "line": 147,
+        "level": 2,
+        "title": "メッセージのフィルタリング"
       }
     ],
     "メッセージの受信": [
@@ -10963,7 +10999,7 @@
     "メッセージの統計": [
       {
         "document": "getting-started/common-tasks.md",
-        "line": 338,
+        "line": 339,
         "level": 2,
         "title": "メッセージの統計"
       }
@@ -11174,14 +11210,6 @@
         "title": "メッセージトランザクション：message_tx"
       }
     ],
-    "メッセージフィルタ": [
-      {
-        "document": "getting-started/common-tasks.md",
-        "line": 147,
-        "level": 2,
-        "title": "メッセージフィルタ"
-      }
-    ],
     "メッセージ内容": [
       {
         "document": "developer-guide/modules/event-wrapper.md",
@@ -11320,12 +11348,12 @@
         "title": "メッセージ送信"
       }
     ],
-    "メッセージ送信の高度な機能（リトライ/タイムアウト/一括送信）": [
+    "メッセージ送信の高度な機能（再試行/タイムアウト/一括送信）": [
       {
         "document": "getting-started/common-tasks.md",
         "line": 231,
         "level": 2,
-        "title": "メッセージ送信の高度な機能（リトライ/タイムアウト/一括送信）"
+        "title": "メッセージ送信の高度な機能（再試行/タイムアウト/一括送信）"
       }
     ],
     "メッセージ送信メソッド": [
@@ -11530,14 +11558,6 @@
         "title": "モジュールのオンデマンドロード"
       }
     ],
-    "モジュールのコアコンセプト": [
-      {
-        "document": "developer-guide/modules/core-concepts.md",
-        "line": 1,
-        "level": 1,
-        "title": "モジュールのコアコンセプト"
-      }
-    ],
     "モジュールのテスト": [
       {
         "document": "developer-guide/modules/getting-started.md",
@@ -11557,7 +11577,7 @@
     "モジュールのライフサイクル": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 9,
+        "line": 8,
         "level": 2,
         "title": "モジュールのライフサイクル"
       },
@@ -11598,6 +11618,14 @@
         "line": 187,
         "level": 3,
         "title": "モジュールの取得の統一されたエントリーポイント"
+      }
+    ],
+    "モジュールの基本概念": [
+      {
+        "document": "developer-guide/modules/core-concepts.md",
+        "line": 1,
+        "level": 1,
+        "title": "モジュールの基本概念"
       }
     ],
     "モジュールクラスでの使用": [
@@ -11776,14 +11804,6 @@
         "title": "モジュール間の渡し渡し / 再利用"
       }
     ],
-    "モジュール間の通信": [
-      {
-        "document": "developer-guide/modules/core-concepts.md",
-        "line": 170,
-        "level": 3,
-        "title": "モジュール間の通信"
-      }
-    ],
     "モジュール間呼び出し（RPC）": [
       {
         "document": "api-reference/core-modules.md",
@@ -11797,6 +11817,12 @@
         "document": "advanced/module-communication.md",
         "line": 1,
         "level": 1,
+        "title": "モジュール間通信"
+      },
+      {
+        "document": "developer-guide/modules/core-concepts.md",
+        "line": 169,
+        "level": 3,
         "title": "モジュール間通信"
       }
     ],
@@ -11832,12 +11858,12 @@
         "title": "ユーザーAPIの例"
       }
     ],
-    "ユーザーのデータの保存": [
+    "ユーザーのデータ保存": [
       {
         "document": "getting-started/common-tasks.md",
         "line": 38,
         "level": 3,
-        "title": "ユーザーのデータの保存"
+        "title": "ユーザーのデータ保存"
       }
     ],
     "ユーザーのプライベートチャットにボタン付きメッセージを送信": [
@@ -11907,7 +11933,7 @@
     "ライフサイクルの全体像": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 108,
+        "line": 107,
         "level": 3,
         "title": "ライフサイクルの全体像"
       }
@@ -11946,20 +11972,20 @@
         "title": "ライフサイクルイベント"
       }
     ],
-    "ライフサイクルイベントの使用": [
-      {
-        "document": "getting-started/common-tasks.md",
-        "line": 130,
-        "level": 3,
-        "title": "ライフサイクルイベントの使用"
-      }
-    ],
     "ライフサイクルイベントの監視": [
       {
         "document": "architecture.md",
         "line": 192,
         "level": 3,
         "title": "ライフサイクルイベントの監視"
+      }
+    ],
+    "ライフサイクルイベントを使用": [
+      {
+        "document": "getting-started/common-tasks.md",
+        "line": 130,
+        "level": 3,
+        "title": "ライフサイクルイベントを使用"
       }
     ],
     "ライフサイクルフック": [
@@ -11984,6 +12010,14 @@
         "line": 181,
         "level": 2,
         "title": "ラグジュアリーなモジュールと呼び出し"
+      }
+    ],
+    "ラグジュアリーなロード機構": [
+      {
+        "document": "developer-guide/modules/core-concepts.md",
+        "line": 397,
+        "level": 2,
+        "title": "ラグジュアリーなロード機構"
       }
     ],
     "ラグロードモジュールの使用": [
@@ -12466,6 +12500,14 @@
         "title": "レンダリング結果の送信"
       }
     ],
+    "ログの記録": [
+      {
+        "document": "developer-guide/modules/core-concepts.md",
+        "line": 437,
+        "level": 3,
+        "title": "ログの記録"
+      }
+    ],
     "ログメッセージ": [
       {
         "document": "advanced/i18n.md",
@@ -12501,12 +12543,6 @@
         "document": "developer-guide/modules/best-practices.md",
         "line": 347,
         "level": 2,
-        "title": "ログ記録"
-      },
-      {
-        "document": "developer-guide/modules/core-concepts.md",
-        "line": 438,
-        "level": 3,
         "title": "ログ記録"
       }
     ],
@@ -12593,7 +12629,7 @@
     "ロード戦略": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 11,
+        "line": 10,
         "level": 3,
         "title": "ロード戦略"
       },
@@ -12628,14 +12664,6 @@
         "title": "一回限りの登録（once）"
       }
     ],
-    "一括操作": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 23,
-        "level": 3,
-        "title": "一括操作"
-      }
-    ],
     "一括構築モード（Build）": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
@@ -12658,6 +12686,14 @@
         "title": "一括登録（Mixin クラス）"
       }
     ],
+    "一括送信": [
+      {
+        "document": "getting-started/common-tasks.md",
+        "line": 266,
+        "level": 3,
+        "title": "一括送信"
+      }
+    ],
     "一般的な request": [
       {
         "document": "advanced/client.md",
@@ -12672,6 +12708,14 @@
         "line": 202,
         "level": 3,
         "title": "一般的なアクションエントリ"
+      }
+    ],
+    "一般的なキー": [
+      {
+        "document": "developer-guide/configuration.md",
+        "line": 75,
+        "level": 3,
+        "title": "一般的なキー"
       }
     ],
     "一般的なパラメータ": [
@@ -12781,7 +12825,7 @@
     "互換性契約（コンシューマーが遵守すべき事項）": [
       {
         "document": "developer-guide/configuration.md",
-        "line": 107,
+        "line": 135,
         "level": 2,
         "title": "互換性契約（コンシューマーが遵守すべき事項）"
       }
@@ -13006,14 +13050,12 @@
         "line": 408,
         "level": 3,
         "title": "例外のキャッチ"
-      }
-    ],
-    "例外の捕捉": [
+      },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 423,
+        "line": 422,
         "level": 3,
-        "title": "例外の捕捉"
+        "title": "例外のキャッチ"
       }
     ],
     "例外一覧": [
@@ -13112,12 +13154,12 @@
         "title": "修飾子とルールの継承"
       }
     ],
-    "値の形式（`value_type`、`multiselect` 用）": [
+    "値の形態（`value_type`、`multiselect` 用）": [
       {
         "document": "developer-guide/configuration.md",
-        "line": 78,
+        "line": 106,
         "level": 3,
-        "title": "値の形式（`value_type`、`multiselect` 用）"
+        "title": "値の形態（`value_type`、`multiselect` 用）"
       }
     ],
     "優先度と滞留時の破棄（Priority）": [
@@ -13216,14 +13258,6 @@
         "title": "共通インターフェース"
       }
     ],
-    "共通キー": [
-      {
-        "document": "developer-guide/configuration.md",
-        "line": 48,
-        "level": 3,
-        "title": "共通キー"
-      }
-    ],
     "共通フィールド（すべてのイベントタイプ）": [
       {
         "document": "developer-guide/adapters/converter.md",
@@ -13241,12 +13275,6 @@
       }
     ],
     "内容リスト": [
-      {
-        "document": "getting-started/common-tasks.md",
-        "line": 6,
-        "level": 2,
-        "title": "内容リスト"
-      },
       {
         "document": "user-guide/README.md",
         "line": 8,
@@ -13468,6 +13496,14 @@
         "title": "利用可能な属性"
       }
     ],
+    "利用可能な送信メソッドの一覧表示": [
+      {
+        "document": "developer-guide/modules/core-concepts.md",
+        "line": 181,
+        "level": 3,
+        "title": "利用可能な送信メソッドの一覧表示"
+      }
+    ],
     "前提知識": [
       {
         "document": "advanced/README.md",
@@ -13515,7 +13551,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 400,
+        "line": 399,
         "level": 3,
         "title": "動作原理"
       },
@@ -13581,7 +13617,7 @@
     "即時ロード": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 408,
+        "line": 407,
         "level": 3,
         "title": "即時ロード"
       }
@@ -13768,6 +13804,14 @@
         "line": 399,
         "level": 3,
         "title": "同期フロー"
+      }
+    ],
+    "同期メソッド（慎重に使用）": [
+      {
+        "document": "advanced/storage-backends.md",
+        "line": 117,
+        "level": 2,
+        "title": "同期メソッド（慎重に使用）"
       }
     ],
     "同期初期化": [
@@ -14112,12 +14156,6 @@
         "title": "基本的な使い方"
       },
       {
-        "document": "developer-guide/modules/core-concepts.md",
-        "line": 353,
-        "level": 3,
-        "title": "基本的な使い方"
-      },
-      {
         "document": "getting-started/ide-completion.md",
         "line": 17,
         "level": 2,
@@ -14140,6 +14178,12 @@
       {
         "document": "developer-guide/adapters/send-dsl.md",
         "line": 709,
+        "level": 3,
+        "title": "基本的な使用"
+      },
+      {
+        "document": "developer-guide/modules/core-concepts.md",
+        "line": 352,
         "level": 3,
         "title": "基本的な使用"
       }
@@ -14316,14 +14360,6 @@
         "title": "多インスタンスデプロイ"
       }
     ],
-    "多プラットフォーム対応": [
-      {
-        "document": "getting-started/common-tasks.md",
-        "line": 188,
-        "level": 2,
-        "title": "多プラットフォーム対応"
-      }
-    ],
     "多段対話 (conversation)": [
       {
         "document": "getting-started/event-handling.md",
@@ -14356,20 +14392,20 @@
         "title": "失敗セマンティクス（2.12 以降）"
       }
     ],
-    "失敗時のリトライ + タイムアウト": [
-      {
-        "document": "getting-started/common-tasks.md",
-        "line": 250,
-        "level": 3,
-        "title": "失敗時のリトライ + タイムアウト"
-      }
-    ],
     "失敗時のレスポンス例": [
       {
         "document": "standards/api-response.md",
         "line": 52,
         "level": 4,
         "title": "失敗時のレスポンス例"
+      }
+    ],
+    "失敗時の再試行 + タイムアウト": [
+      {
+        "document": "getting-started/common-tasks.md",
+        "line": 251,
+        "level": 3,
+        "title": "失敗時の再試行 + タイムアウト"
       }
     ],
     "失敗時の自動リトライ（Retry）": [
@@ -14396,12 +14432,12 @@
         "title": "子ロガー"
       }
     ],
-    "学習を続けるパス": [
+    "学習の継続": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 451,
+        "line": 450,
         "level": 3,
-        "title": "学習を続けるパス"
+        "title": "学習の継続"
       }
     ],
     "学習パス": [
@@ -14463,7 +14499,7 @@
     "完全な例": [
       {
         "document": "developer-guide/configuration.md",
-        "line": 114,
+        "line": 142,
         "level": 2,
         "title": "完全な例"
       },
@@ -14610,22 +14646,6 @@
         "title": "宣言型の翻訳キー（v2.7.0+）"
       }
     ],
-    "宣言型翻訳キー（v2.7.0+）": [
-      {
-        "document": "developer-guide/modules/core-concepts.md",
-        "line": 293,
-        "level": 3,
-        "title": "宣言型翻訳キー（v2.7.0+）"
-      }
-    ],
-    "宣言型設定（推奨）": [
-      {
-        "document": "developer-guide/modules/core-concepts.md",
-        "line": 208,
-        "level": 3,
-        "title": "宣言型設定（推奨）"
-      }
-    ],
     "宣言式イベント拡張メソッド（v2.7.0+）": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -14672,6 +14692,22 @@
         "line": 101,
         "level": 2,
         "title": "宣言的マルチターン：`.got()` チェーン（2.11+）"
+      }
+    ],
+    "宣言的構成（推奨）": [
+      {
+        "document": "developer-guide/modules/core-concepts.md",
+        "line": 207,
+        "level": 3,
+        "title": "宣言的構成（推奨）"
+      }
+    ],
+    "宣言的翻訳キー（v2.7.0+）": [
+      {
+        "document": "developer-guide/modules/core-concepts.md",
+        "line": 292,
+        "level": 3,
+        "title": "宣言的翻訳キー（v2.7.0+）"
       }
     ],
     "宣言的設定クラスとの関係": [
@@ -15196,12 +15232,12 @@
         "title": "手動でのプロジェクト作成"
       }
     ],
-    "手動での設定読み込み（廃止予定）": [
+    "手動での構成読み取り（廃止済み）": [
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 334,
+        "line": 333,
         "level": 3,
-        "title": "手動での設定読み込み（廃止予定）"
+        "title": "手動での構成読み取り（廃止済み）"
       }
     ],
     "手動でカスタム翻訳を登録する（旧方法）": [
@@ -15942,12 +15978,12 @@
         "title": "本地プラグインフォルダのアーキテクチャ"
       }
     ],
-    "条件による表示/非表示・無効化（フィールド連動）": [
+    "条件による表示/非表示・無効化（フィールドの連動）": [
       {
         "document": "developer-guide/configuration.md",
-        "line": 60,
+        "line": 88,
         "level": 3,
-        "title": "条件による表示/非表示・無効化（フィールド連動）"
+        "title": "条件による表示/非表示・無効化（フィールドの連動）"
       }
     ],
     "条件フィルタ": [
@@ -15974,20 +16010,20 @@
         "title": "条目テンプレート"
       }
     ],
-    "架構設計": [
-      {
-        "document": "advanced/sql-builder.md",
-        "line": 8,
-        "level": 2,
-        "title": "架構設計"
-      }
-    ],
     "核心メソッド": [
       {
         "document": "advanced/i18n.md",
         "line": 428,
         "level": 4,
         "title": "核心メソッド"
+      }
+    ],
+    "核心モジュールの説明": [
+      {
+        "document": "getting-started/basic-concepts.md",
+        "line": 186,
+        "level": 2,
+        "title": "核心モジュールの説明"
       }
     ],
     "核心機能": [
@@ -16053,7 +16089,7 @@
     "検索機能": [
       {
         "document": "getting-started/common-tasks.md",
-        "line": 384,
+        "line": 385,
         "level": 2,
         "title": "検索機能"
       }
@@ -16096,6 +16132,22 @@
         "line": 59,
         "level": 2,
         "title": "概要"
+      }
+    ],
+    "構成のホット更新（on_config_update）": [
+      {
+        "document": "developer-guide/modules/core-concepts.md",
+        "line": 265,
+        "level": 3,
+        "title": "構成のホット更新（on_config_update）"
+      }
+    ],
+    "構成管理": [
+      {
+        "document": "developer-guide/modules/core-concepts.md",
+        "line": 205,
+        "level": 2,
+        "title": "構成管理"
       }
     ],
     "構築モードへの移行": [
@@ -16541,7 +16593,7 @@
     "権限制御": [
       {
         "document": "getting-started/common-tasks.md",
-        "line": 286,
+        "line": 287,
         "level": 2,
         "title": "権限制御"
       }
@@ -16715,7 +16767,7 @@
       },
       {
         "document": "getting-started/common-tasks.md",
-        "line": 505,
+        "line": 506,
         "level": 2,
         "title": "次のステップ"
       },
@@ -16874,20 +16926,20 @@
         "title": "注意事項"
       }
     ],
+    "深入とトラブルシューティング": [
+      {
+        "document": "developer-guide/modules/core-concepts.md",
+        "line": 454,
+        "level": 3,
+        "title": "深入とトラブルシューティング"
+      }
+    ],
     "深度統合（オプション）": [
       {
         "document": "ecosystem/qvqchat.md",
         "line": 58,
         "level": 3,
         "title": "深度統合（オプション）"
-      }
-    ],
-    "深掘りとトラブルシューティング": [
-      {
-        "document": "developer-guide/modules/core-concepts.md",
-        "line": 455,
-        "level": 3,
-        "title": "深掘りとトラブルシューティング"
       }
     ],
     "添付ファイル付きのメール": [
@@ -17071,7 +17123,7 @@
     "画像のダウンロードと保存": [
       {
         "document": "getting-started/common-tasks.md",
-        "line": 442,
+        "line": 443,
         "level": 3,
         "title": "画像のダウンロードと保存"
       }
@@ -17079,7 +17131,7 @@
     "画像処理": [
       {
         "document": "getting-started/common-tasks.md",
-        "line": 440,
+        "line": 441,
         "level": 2,
         "title": "画像処理"
       }
@@ -17087,7 +17139,7 @@
     "画像認識の例": [
       {
         "document": "getting-started/common-tasks.md",
-        "line": 471,
+        "line": 472,
         "level": 3,
         "title": "画像認識の例"
       }
@@ -17098,6 +17150,14 @@
         "line": 140,
         "level": 3,
         "title": "異なるターゲットへの送信"
+      }
+    ],
+    "異スレッド非同期API": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 292,
+        "level": 2,
+        "title": "異スレッド非同期API"
       }
     ],
     "登録API": [
@@ -17160,6 +17220,12 @@
       {
         "document": "developer-guide/README.md",
         "line": 8,
+        "level": 2,
+        "title": "目次"
+      },
+      {
+        "document": "getting-started/common-tasks.md",
+        "line": 6,
         "level": 2,
         "title": "目次"
       }
@@ -17233,7 +17299,7 @@
     "管理者チェック": [
       {
         "document": "getting-started/common-tasks.md",
-        "line": 288,
+        "line": 289,
         "level": 3,
         "title": "管理者チェック"
       }
@@ -17257,7 +17323,7 @@
     "簡単な検索": [
       {
         "document": "getting-started/common-tasks.md",
-        "line": 386,
+        "line": 387,
         "level": 3,
         "title": "簡単な検索"
       }
@@ -17588,14 +17654,6 @@
         "title": "複数サーバー送信"
       }
     ],
-    "複数メッセージの一括送信": [
-      {
-        "document": "getting-started/common-tasks.md",
-        "line": 265,
-        "level": 3,
-        "title": "複数メッセージの一括送信"
-      }
-    ],
     "複数要素のメッセージ": [
       {
         "document": "advanced/message-builder.md",
@@ -17702,14 +17760,6 @@
         "line": 638,
         "level": 4,
         "title": "設定のホットアップデート"
-      }
-    ],
-    "設定のホットアップデート（on_config_update）": [
-      {
-        "document": "developer-guide/modules/core-concepts.md",
-        "line": 266,
-        "level": 3,
-        "title": "設定のホットアップデート（on_config_update）"
       }
     ],
     "設定のホットリロード": [
@@ -17943,12 +17993,6 @@
         "document": "developer-guide/adapters/core-concepts.md",
         "line": 328,
         "level": 3,
-        "title": "設定管理"
-      },
-      {
-        "document": "developer-guide/modules/core-concepts.md",
-        "line": 206,
-        "level": 2,
         "title": "設定管理"
       }
     ],
@@ -18544,14 +18588,6 @@
         "title": "遅れ時のポリシー（missed_policy）"
       }
     ],
-    "遅延ロード機構": [
-      {
-        "document": "developer-guide/modules/core-concepts.md",
-        "line": 398,
-        "level": 2,
-        "title": "遅延ロード機構"
-      }
-    ],
     "遅延読み込みシステム": [
       {
         "document": "getting-started/basic-concepts.md",
@@ -18827,7 +18863,7 @@
       },
       {
         "document": "advanced/sql-builder.md",
-        "line": 439,
+        "line": 438,
         "level": 2,
         "title": "関連ドキュメント"
       },
@@ -18839,7 +18875,7 @@
       },
       {
         "document": "advanced/storage-backends.md",
-        "line": 180,
+        "line": 187,
         "level": 2,
         "title": "関連ドキュメント"
       },
@@ -18911,7 +18947,7 @@
       },
       {
         "document": "developer-guide/modules/core-concepts.md",
-        "line": 449,
+        "line": 448,
         "level": 2,
         "title": "関連ドキュメント"
       },
@@ -18992,14 +19028,6 @@
         "line": 172,
         "level": 3,
         "title": "静的ファクトリ + チェーン混合"
-      }
-    ],
-    "非同期のネイティブ API": [
-      {
-        "document": "advanced/sql-builder.md",
-        "line": 292,
-        "level": 2,
-        "title": "非同期のネイティブ API"
       }
     ],
     "非同期インターフェース": [

@@ -113,19 +113,19 @@ async with sdk.storage.atransaction():
     await sdk.storage.Table("users").Insert({"name": "Alice"}).aExecute()
 ```
 
-同步 API（`get/set/transaction/Table(...).Execute()`）繼續可用，內部經
-`AsyncBridge` 後台事件循環橋接執行——**推薦一律使用 a 前綴異步方法**
-（`aget` / `aset` / `adelete` / `atransaction` / `aExecute`）：同步接口在
-異步 handler 中調用會阻塞該事件循環直到存儲操作完成（高頻調用下表現為
-handler 超時、事件處理停擺），框架會對每個調用點輸出限頻告警（附
-`文件:行號 (函數名)` 調用點，按點冷卻防刷屏）——收到告警即應把對應調用
-遷移為 a 前綴異步方法。兩條邊界必須知曉：
+## 同步方法（請謹慎使用）
 
-- **橋接線程內禁止再調同步接口**：同步接口在橋接線程內執行，此時再調
-  同步接口會拋 `RuntimeError`（防重入保護，避免自死鎖）
-- **橋接目標循環關閉後調用會失敗**：`uninit()` 之後不要再調用存儲接口
+每個以 `a` 開頭的非同步方法都有對應的同步版本（`aget`→`get`、`aset`→`set`、`atransaction`→`transaction`、`aExecute`→`Execute`），這些同步方法透過內部的背景事件循環橋接執行——**它們會阻塞呼叫方的執行緒**：
 
-完整方法對照見 [SQL 查詢建構器](sql-builder.md)。
+- **在非同步 handler 中呼叫會阻塞整個事件循環**，直到儲存操作完成：如果頻繁呼叫，會導致 handler 超時、事件處理停擺、web 卡頓，並可能連鎖觸發 `database is locked`（寫入等待超時）。框架會針對每個呼叫點輸出限頻警告（附上 `檔案:行號 (函數名)`），收到警告後就應該將對應的呼叫遷移為 `a` 開頭的非同步方法。
+- 在開發階段，可以開啟 `ErisPulse.framework.strict.sync_in_async = true`：同步呼叫將不再被允許，直接拋出 `StrictModeError`（附上呼叫點與遷移指引），這樣可以在開發階段就暴露問題，而不是等到上線後才靠卡頓來反推。
+- 在執行階段的應急措施：非同步上下文下的橋接等待預設上限為 10 秒（`ErisPulse.framework.sync_in_async_bridge_wait`），超過時間限制則取消並按照 fail-soft 的語意回傳——但這只是兜底措施，並不代表允許這樣做。
+
+**請務必確認你明白自己在做什麼，否則請不要使用同步版本。** 在純同步執行緒（無事件循環）中呼叫則不受限制，這是合法的使用場景（例如同步入口腳本、橋接等待事務提交）。
+
+使用 `asyncio.to_thread` 或線程池執行同步驅動也同樣適用，且在特定場景下有奇效：**當後端支援真正的並發連接時**（PostgreSQL / MySQL——每個執行緒獨立連接、服務端 MVCC 並發），將同步驅動挪出事件循環是合理的手段。但在 SQLite 下**請不要這麼做**——執行緒連接會與框架的 `aiosqlite` 連接互相爭奪同一把寫入鎖，反而會擴大競爭面，並可能導致寫入失敗甚至資料丟失。
+
+完整的對照方法請參閱 [SQL 查詢建構器](sql-builder.md)。
 
 ## 方言行為差異
 

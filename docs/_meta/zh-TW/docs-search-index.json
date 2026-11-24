@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 2073,
+  "total_keywords": 2077,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -2918,12 +2918,12 @@
         "title": "Config 模組"
       }
     ],
-    "Config（設定）": [
+    "Config（配置）": [
       {
         "document": "getting-started/basic-concepts.md",
         "line": 211,
         "level": 3,
-        "title": "Config（設定）"
+        "title": "Config（配置）"
       }
     ],
     "Conversation 多輪對話": [
@@ -3858,6 +3858,14 @@
         "title": "SDK 偵錯"
       }
     ],
+    "SDK 對象": [
+      {
+        "document": "developer-guide/modules/core-concepts.md",
+        "line": 153,
+        "level": 2,
+        "title": "SDK 對象"
+      }
+    ],
     "SDK 核心架構": [
       {
         "document": "architecture.md",
@@ -3867,12 +3875,6 @@
       }
     ],
     "SDK 物件": [
-      {
-        "document": "developer-guide/modules/core-concepts.md",
-        "line": 153,
-        "level": 2,
-        "title": "SDK 物件"
-      },
       {
         "document": "developer-guide/modules/getting-started.md",
         "line": 189,
@@ -3888,20 +3890,20 @@
         "title": "SDK 頂層入口一覽"
       }
     ],
+    "SQL 串接查詢": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 46,
+        "level": 3,
+        "title": "SQL 串接查詢"
+      }
+    ],
     "SQL 查詢建構器": [
       {
         "document": "advanced/sql-builder.md",
         "line": 1,
         "level": 1,
         "title": "SQL 查詢建構器"
-      }
-    ],
-    "SQL 鏈式查詢": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 46,
-        "level": 3,
-        "title": "SQL 鏈式查詢"
       }
     ],
     "SQLite \"database is locked\" 排查": [
@@ -3931,7 +3933,7 @@
     "Schema 輸出": [
       {
         "document": "developer-guide/configuration.md",
-        "line": 164,
+        "line": 199,
         "level": 2,
         "title": "Schema 輸出"
       }
@@ -4490,12 +4492,12 @@
         "title": "[BUG-017] WebSocket 路由 auto_accept 標誌在服務重啟後丟失"
       }
     ],
-    "[BUG-018] HTTP/WS 客戶端併發調用導致崩潰與連接泄漏": [
+    "[BUG-018] HTTP/WS 客戶端並發調用導致崩潰與連接泄漏": [
       {
         "document": "bug-tracker.md",
         "line": 469,
         "level": 3,
-        "title": "[BUG-018] HTTP/WS 客戶端併發調用導致崩潰與連接泄漏"
+        "title": "[BUG-018] HTTP/WS 客戶端並發調用導致崩潰與連接泄漏"
       }
     ],
     "[BUG-019] 適配器熱重載時路由衝突導致重載失敗": [
@@ -4514,20 +4516,20 @@
         "title": "[BUG-020] 子進程模式 `ep run <script>` 找不到腳本所在目錄的子包"
       }
     ],
-    "[BUG-021] SQL 查詢建構器拒絕合法通配符和列表達式": [
+    "[BUG-021] SQL 查詢構建器拒絕合法通配符和列表達式": [
       {
         "document": "bug-tracker.md",
         "line": 541,
         "level": 3,
-        "title": "[BUG-021] SQL 查詢建構器拒絕合法通配符和列表達式"
+        "title": "[BUG-021] SQL 查詢構建器拒絕合法通配符和列表達式"
       }
     ],
-    "[BUG-022] _resolve_account() 賬戶解析迴歸（_accounts_data 未填充）": [
+    "[BUG-022] _resolve_account() 賬戶解析回歸（_accounts_data 未填充）": [
       {
         "document": "bug-tracker.md",
         "line": 571,
         "level": 3,
-        "title": "[BUG-022] _resolve_account() 賬戶解析迴歸（_accounts_data 未填充）"
+        "title": "[BUG-022] _resolve_account() 賬戶解析回歸（_accounts_data 未填充）"
       }
     ],
     "[BUG-023] 修改賬戶配置後適配器緩存未刷新導致賬戶解析失敗": [
@@ -4594,156 +4596,164 @@
         "title": "[BUG-032] 配置延遲刷盤期間「寫後立讀」讀到舊值"
       }
     ],
-    "[BUG-033] wait_reply 挂起的回覆被高优先级处理器饿死": [
+    "[BUG-033] wait_reply 挂起的回覆被高優先級處理器餓死": [
       {
         "document": "bug-tracker.md",
         "line": 863,
         "level": 3,
-        "title": "[BUG-033] wait_reply 挂起的回覆被高优先级处理器饿死"
+        "title": "[BUG-033] wait_reply 挂起的回覆被高優先級處理器餓死"
       }
     ],
-    "[BUG-034] 作用域 persist=False 运行时绑定被任意后续配置写入静默冲掉": [
+    "[BUG-034] 作用域 persist=False 運行時綁定被任意後續配置寫入靜默沖掉": [
       {
         "document": "bug-tracker.md",
-        "line": 883,
+        "line": 885,
         "level": 3,
-        "title": "[BUG-034] 作用域 persist=False 运行时绑定被任意后续配置写入静默冲掉"
+        "title": "[BUG-034] 作用域 persist=False 運行時綁定被任意後續配置寫入靜默沖掉"
       }
     ],
-    "[BUG-035] 配置面板 select 选项与字典字段渲染为 [object Object]": [
+    "[BUG-035] 配置面板 select 選項與字典字段渲染為 [object Object]": [
       {
         "document": "bug-tracker.md",
-        "line": 903,
+        "line": 905,
         "level": 3,
-        "title": "[BUG-035] 配置面板 select 选项与字典字段渲染为 [object Object]"
+        "title": "[BUG-035] 配置面板 select 選項與字典字段渲染為 [object Object]"
       }
     ],
-    "[BUG-036] 多实例共享配置目录时配置写入偶发失败（ENOENT）": [
+    "[BUG-036] 多實例共享配置目錄時配置寫入偶發失敗（ENOENT）": [
       {
         "document": "bug-tracker.md",
-        "line": 921,
+        "line": 923,
         "level": 3,
-        "title": "[BUG-036] 多实例共享配置目录时配置写入偶发失败（ENOENT）"
+        "title": "[BUG-036] 多實例共享配置目錄時配置寫入偶發失敗（ENOENT）"
       }
     ],
-    "[BUG-037] 空格子命令名注册后永远无法被触发": [
+    "[BUG-037] 空格子命令名註冊後永遠無法被觸發": [
       {
         "document": "bug-tracker.md",
-        "line": 947,
+        "line": 949,
         "level": 3,
-        "title": "[BUG-037] 空格子命令名注册后永远无法被触发"
+        "title": "[BUG-037] 空格子命令名註冊後永遠無法被觸發"
       }
     ],
-    "[BUG-038] persist=False 运行时绑定被持久化写入顺带落盘，模块卸载后从磁盘\"复活\"": [
+    "[BUG-038] persist=False 運行時綁定被持久化寫入順帶落盤，模塊卸載後從磁盤\"復活\"": [
       {
         "document": "bug-tracker.md",
-        "line": 971,
+        "line": 973,
         "level": 3,
-        "title": "[BUG-038] persist=False 运行时绑定被持久化写入顺带落盘，模块卸载后从磁盘\"复活\""
+        "title": "[BUG-038] persist=False 運行時綁定被持久化寫入順帶落盤，模塊卸載後從磁盤\"復活\""
       }
     ],
-    "[BUG-039] 整节写与点分写并存时读写不一致（点分覆写丢失）": [
+    "[BUG-039] 整節寫與點分寫並存時讀寫不一致（點分覆寫丟失）": [
       {
         "document": "bug-tracker.md",
-        "line": 995,
+        "line": 997,
         "level": 3,
-        "title": "[BUG-039] 整节写与点分写并存时读写不一致（点分覆写丢失）"
+        "title": "[BUG-039] 整節寫與點分寫並存時讀寫不一致（點分覆寫丟失）"
       }
     ],
-    "[BUG-040] 平台切段消息的命令尾部参数静默丢失": [
+    "[BUG-040] 平台切段消息的命令尾部參數靜默丟失": [
       {
         "document": "bug-tracker.md",
-        "line": 1017,
+        "line": 1021,
         "level": 3,
-        "title": "[BUG-040] 平台切段消息的命令尾部参数静默丢失"
+        "title": "[BUG-040] 平台切段消息的命令尾部參數靜默丟失"
       }
     ],
-    "[BUG-041] 被拒绝命令经 alt_message 整链重跑：重复回复与权限函数副作用双触发": [
+    "[BUG-041] 被拒絕命令經 alt_message 整鏈重跑：重複回覆與權限函數副作用雙觸發": [
       {
         "document": "bug-tracker.md",
-        "line": 1029,
+        "line": 1033,
         "level": 3,
-        "title": "[BUG-041] 被拒绝命令经 alt_message 整链重跑：重复回复与权限函数副作用双触发"
+        "title": "[BUG-041] 被拒絕命令經 alt_message 整鏈重跑：重複回覆與權限函數副作用雙觸發"
       }
     ],
-    "[BUG-042] 命令处理器内注册的 wait_reply 被同一条触发消息立即消费": [
+    "[BUG-042] 命令處理器內註冊的 wait_reply 被同一條觸發消息立即消費": [
       {
         "document": "bug-tracker.md",
-        "line": 1041,
+        "line": 1045,
         "level": 3,
-        "title": "[BUG-042] 命令处理器内注册的 wait_reply 被同一条触发消息立即消费"
+        "title": "[BUG-042] 命令處理器內註冊的 wait_reply 被同一條觸發消息立即消費"
       }
     ],
-    "[BUG-043] select() 同键多路等待后者静默取消前者": [
+    "[BUG-043] select() 同鍵多路等待後者靜默取消前者": [
       {
         "document": "bug-tracker.md",
-        "line": 1053,
+        "line": 1057,
         "level": 3,
-        "title": "[BUG-043] select() 同键多路等待后者静默取消前者"
+        "title": "[BUG-043] select() 同鍵多路等待後者靜默取消前者"
       }
     ],
-    "[BUG-044] BaseConverter.at() 产出 OB11 遗留 \"at\" 段，全框架 mention 判定不识别": [
+    "[BUG-044] BaseConverter.at() 產出 OB11 遺留 \"at\" 段，全框架 mention 判定不識別": [
       {
         "document": "bug-tracker.md",
-        "line": 1065,
+        "line": 1069,
         "level": 3,
-        "title": "[BUG-044] BaseConverter.at() 产出 OB11 遗留 \"at\" 段，全框架 mention 判定不识别"
+        "title": "[BUG-044] BaseConverter.at() 產出 OB11 遺留 \"at\" 段，全框架 mention 判定不識別"
       }
     ],
-    "[BUG-045] 无 alt_message 的适配器上交互原语永久超时、命令穿透失效": [
+    "[BUG-045] 無 alt_message 的適配器上交互原語永久超時、命令穿透失效": [
       {
         "document": "bug-tracker.md",
-        "line": 1077,
+        "line": 1081,
         "level": 3,
-        "title": "[BUG-045] 无 alt_message 的适配器上交互原语永久超时、命令穿透失效"
+        "title": "[BUG-045] 無 alt_message 的適配器上交互原語永久超時、命令穿透失效"
       }
     ],
-    "[BUG-046] 声明式配置模板的嵌套子表头漂移为顶层表": [
+    "[BUG-046] 聲明式配置模板的嵌套子表頭漂移為頂層表": [
       {
         "document": "bug-tracker.md",
-        "line": 1089,
+        "line": 1093,
         "level": 3,
-        "title": "[BUG-046] 声明式配置模板的嵌套子表头漂移为顶层表"
+        "title": "[BUG-046] 聲明式配置模板的嵌套子表頭漂移為頂層表"
       }
     ],
-    "[BUG-047] 服务目录全量枚举漏掉懒加载模块": [
+    "[BUG-047] 服務目錄全量枚舉漏掉懶加載模塊": [
       {
         "document": "bug-tracker.md",
-        "line": 1103,
+        "line": 1107,
         "level": 3,
-        "title": "[BUG-047] 服务目录全量枚举漏掉懒加载模块"
+        "title": "[BUG-047] 服務目錄全量枚舉漏掉懶加載模塊"
       }
     ],
-    "[BUG-048] 会话收件箱查询 API 丢失消息归因（sender 与事件元数据）": [
+    "[BUG-048] 會話收件箱查詢 API 丟失消息歸因（sender 與事件元數據）": [
       {
         "document": "bug-tracker.md",
-        "line": 1115,
+        "line": 1119,
         "level": 3,
-        "title": "[BUG-048] 会话收件箱查询 API 丢失消息归因（sender 与事件元数据）"
+        "title": "[BUG-048] 會話收件箱查詢 API 丟失消息歸因（sender 與事件元數據）"
       }
     ],
-    "[BUG-049] 入站 bot 自发消息回声被记为 user，污染收件箱归因": [
+    "[BUG-049] 入站 bot 自發消息回聲被記為 user，污染收件箱歸因": [
       {
         "document": "bug-tracker.md",
-        "line": 1128,
+        "line": 1132,
         "level": 3,
-        "title": "[BUG-049] 入站 bot 自发消息回声被记为 user，污染收件箱归因"
+        "title": "[BUG-049] 入站 bot 自發消息回聲被記為 user，污染收件箱歸因"
       }
     ],
-    "[BUG-050] 容器内执行 epsdk restart 直接退出容器": [
+    "[BUG-050] 容器內執行 epsdk restart 直接退出容器": [
       {
         "document": "bug-tracker.md",
-        "line": 1141,
+        "line": 1145,
         "level": 3,
-        "title": "[BUG-050] 容器内执行 epsdk restart 直接退出容器"
+        "title": "[BUG-050] 容器內執行 epsdk restart 直接退出容器"
       }
     ],
-    "[BUG-051] 跨账户重复受理（drop）误伤 at 点名消息，多账户部署消息随机丢失": [
+    "[BUG-051] 跨賬戶重複受理（drop）誤傷 at 點名消息，多賬戶部署消息隨機丟失": [
       {
         "document": "bug-tracker.md",
-        "line": 1153,
+        "line": 1157,
         "level": 3,
-        "title": "[BUG-051] 跨账户重复受理（drop）误伤 at 点名消息，多账户部署消息随机丢失"
+        "title": "[BUG-051] 跨賬戶重複受理（drop）誤傷 at 點名消息，多賬戶部署消息隨機丟失"
+      }
+    ],
+    "[BUG-052] 存儲並發首取死鎖凍結事件循環，web 全站掛起並持續 database is locked": [
+      {
+        "document": "bug-tracker.md",
+        "line": 1169,
+        "level": 3,
+        "title": "[BUG-052] 存儲並發首取死鎖凍結事件循環，web 全站掛起並持續 database is locked"
       }
     ],
     "__init__.py": [
@@ -5511,7 +5521,7 @@
     "widget 名錄": [
       {
         "document": "developer-guide/configuration.md",
-        "line": 88,
+        "line": 123,
         "level": 2,
         "title": "widget 名錄"
       }
@@ -5759,7 +5769,7 @@
       },
       {
         "document": "getting-started/common-tasks.md",
-        "line": 505,
+        "line": 506,
         "level": 2,
         "title": "下一步"
       },
@@ -5920,14 +5930,6 @@
         "line": 242,
         "level": 3,
         "title": "不需要資料表結構、只儲存幾個鍵值"
-      }
-    ],
-    "严重性分级": [
-      {
-        "document": "bug-tracker.md",
-        "line": 39,
-        "level": 2,
-        "title": "严重性分级"
       }
     ],
     "並行事件處理": [
@@ -6606,6 +6608,14 @@
         "title": "事務使用"
       }
     ],
+    "事務操作": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 31,
+        "level": 3,
+        "title": "事務操作"
+      }
+    ],
     "二、我要開發模組 / 轉接器": [
       {
         "document": "README.md",
@@ -6708,14 +6718,6 @@
         "line": 110,
         "level": 2,
         "title": "交易"
-      }
-    ],
-    "交易操作": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 31,
-        "level": 3,
-        "title": "交易操作"
       }
     ],
     "什麼是適配器": [
@@ -7014,6 +7016,14 @@
         "title": "使用者優先：主人生效範圍由使用者最終決定"
       }
     ],
+    "使用者數據存儲": [
+      {
+        "document": "getting-started/common-tasks.md",
+        "line": 38,
+        "level": 3,
+        "title": "使用者數據存儲"
+      }
+    ],
     "使用者狀態變更事件": [
       {
         "document": "platform-guide/ideaura.md",
@@ -7143,7 +7153,7 @@
     "值形態（`value_type`，用於 `multiselect`）": [
       {
         "document": "developer-guide/configuration.md",
-        "line": 78,
+        "line": 113,
         "level": 3,
         "title": "值形態（`value_type`，用於 `multiselect`）"
       }
@@ -7264,12 +7274,6 @@
         "line": 319,
         "level": 2,
         "title": "儲存系統"
-      },
-      {
-        "document": "developer-guide/modules/core-concepts.md",
-        "line": 358,
-        "level": 2,
-        "title": "儲存系統"
       }
     ],
     "儲存與資料庫": [
@@ -7374,18 +7378,16 @@
         "title": "內容列表"
       },
       {
+        "document": "getting-started/common-tasks.md",
+        "line": 6,
+        "level": 2,
+        "title": "內容列表"
+      },
+      {
         "document": "user-guide/README.md",
         "line": 8,
         "level": 2,
         "title": "內容列表"
-      }
-    ],
-    "內容清單": [
-      {
-        "document": "getting-started/common-tasks.md",
-        "line": 6,
-        "level": 2,
-        "title": "內容清單"
       }
     ],
     "內容瀏覽擴展動作（供生態模組使用）": [
@@ -7539,7 +7541,7 @@
     "兼容性契約（消費方必須遵守）": [
       {
         "document": "developer-guide/configuration.md",
-        "line": 107,
+        "line": 142,
         "level": 2,
         "title": "兼容性契約（消費方必須遵守）"
       }
@@ -8206,6 +8208,14 @@
         "title": "同步初始化"
       }
     ],
+    "同步方法（請謹慎使用）": [
+      {
+        "document": "advanced/storage-backends.md",
+        "line": 116,
+        "level": 2,
+        "title": "同步方法（請謹慎使用）"
+      }
+    ],
     "同步流程": [
       {
         "document": "platform-guide/matrix.md",
@@ -8444,6 +8454,14 @@
         "title": "嚴格模式"
       }
     ],
+    "嚴重性分級": [
+      {
+        "document": "bug-tracker.md",
+        "line": 39,
+        "level": 2,
+        "title": "嚴重性分級"
+      }
+    ],
     "四、生態與官方用戶端": [
       {
         "document": "README.md",
@@ -8634,18 +8652,18 @@
         "title": "國際化配置"
       }
     ],
-    "圖片下載和存儲": [
+    "圖片下載和儲存": [
       {
         "document": "getting-started/common-tasks.md",
-        "line": 442,
+        "line": 443,
         "level": 3,
-        "title": "圖片下載和存儲"
+        "title": "圖片下載和儲存"
       }
     ],
     "圖片處理": [
       {
         "document": "getting-started/common-tasks.md",
-        "line": 440,
+        "line": 441,
         "level": 2,
         "title": "圖片處理"
       }
@@ -8653,7 +8671,7 @@
     "圖片識別範例": [
       {
         "document": "getting-started/common-tasks.md",
-        "line": 471,
+        "line": 472,
         "level": 3,
         "title": "圖片識別範例"
       }
@@ -9359,7 +9377,7 @@
     "失敗重試 + 超時取消": [
       {
         "document": "getting-started/common-tasks.md",
-        "line": 250,
+        "line": 251,
         "level": 3,
         "title": "失敗重試 + 超時取消"
       }
@@ -9562,20 +9580,20 @@
         "title": "存儲後端"
       }
     ],
+    "存儲系統": [
+      {
+        "document": "developer-guide/modules/core-concepts.md",
+        "line": 358,
+        "level": 2,
+        "title": "存儲系統"
+      }
+    ],
     "存儲連接狀態": [
       {
         "document": "advanced/lifecycle.md",
         "line": 309,
         "level": 3,
         "title": "存儲連接狀態"
-      }
-    ],
-    "存取核心模組": [
-      {
-        "document": "developer-guide/modules/core-concepts.md",
-        "line": 155,
-        "level": 3,
-        "title": "存取核心模組"
       }
     ],
     "學習路徑": [
@@ -9745,7 +9763,7 @@
       },
       {
         "document": "developer-guide/configuration.md",
-        "line": 114,
+        "line": 149,
         "level": 2,
         "title": "完整示例"
       }
@@ -9842,6 +9860,14 @@
         "line": 62,
         "level": 3,
         "title": "容器裡 `epsdk restart` 容器退出了？"
+      }
+    ],
+    "容器類型（`list[T]` / `dict[str, T]`）": [
+      {
+        "document": "developer-guide/configuration.md",
+        "line": 48,
+        "level": 3,
+        "title": "容器類型（`list[T]` / `dict[str, T]`）"
       }
     ],
     "富媒體": [
@@ -10806,6 +10832,14 @@
         "title": "從本地插件到發佈"
       }
     ],
+    "復用查詢條件": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 244,
+        "level": 2,
+        "title": "復用查詢條件"
+      }
+    ],
     "循環對話": [
       {
         "document": "advanced/conversation.md",
@@ -11204,12 +11238,12 @@
         "title": "批量建構模式（Build）"
       }
     ],
-    "批量發送多條消息": [
+    "批量發送多條訊息": [
       {
         "document": "getting-started/common-tasks.md",
-        "line": 265,
+        "line": 266,
         "level": 3,
-        "title": "批量發送多條消息"
+        "title": "批量發送多條訊息"
       }
     ],
     "批量註冊（Mixin 類）": [
@@ -11445,7 +11479,7 @@
     "搜尋功能": [
       {
         "document": "getting-started/common-tasks.md",
-        "line": 384,
+        "line": 385,
         "level": 2,
         "title": "搜尋功能"
       }
@@ -12464,14 +12498,6 @@
         "title": "本地開發（免打包）"
       }
     ],
-    "条目模板": [
-      {
-        "document": "bug-tracker.md",
-        "line": 65,
-        "level": 2,
-        "title": "条目模板"
-      }
-    ],
     "架構概覽": [
       {
         "document": "architecture.md",
@@ -12796,12 +12822,20 @@
         "title": "條件過濾"
       }
     ],
-    "條件顯示/禁用（欄位聯動）": [
+    "條件顯隱/禁用（字段聯動）": [
       {
         "document": "developer-guide/configuration.md",
-        "line": 60,
+        "line": 95,
         "level": 3,
-        "title": "條件顯示/禁用（欄位聯動）"
+        "title": "條件顯隱/禁用（字段聯動）"
+      }
+    ],
+    "條目模板": [
+      {
+        "document": "bug-tracker.md",
+        "line": 65,
+        "level": 2,
+        "title": "條目模板"
       }
     ],
     "概念對照": [
@@ -13551,7 +13585,7 @@
     "權限控制": [
       {
         "document": "getting-started/common-tasks.md",
-        "line": 286,
+        "line": 287,
         "level": 2,
         "title": "權限控制"
       }
@@ -13848,44 +13882,12 @@
         "title": "消息發送方法"
       }
     ],
-    "消息發送進階（重試/超時/批量）": [
-      {
-        "document": "getting-started/common-tasks.md",
-        "line": 231,
-        "level": 2,
-        "title": "消息發送進階（重試/超時/批量）"
-      }
-    ],
     "消息相關": [
       {
         "document": "platform-guide/telegram.md",
         "line": 395,
         "level": 3,
         "title": "消息相關"
-      }
-    ],
-    "消息統計": [
-      {
-        "document": "getting-started/common-tasks.md",
-        "line": 338,
-        "level": 2,
-        "title": "消息統計"
-      }
-    ],
-    "消息計數": [
-      {
-        "document": "getting-started/common-tasks.md",
-        "line": 340,
-        "level": 3,
-        "title": "消息計數"
-      }
-    ],
-    "消息過濾": [
-      {
-        "document": "getting-started/common-tasks.md",
-        "line": 147,
-        "level": 2,
-        "title": "消息過濾"
       }
     ],
     "消息類型判斷": [
@@ -14392,14 +14394,6 @@
         "title": "用戶使用指南"
       }
     ],
-    "用戶數據存儲": [
-      {
-        "document": "getting-started/common-tasks.md",
-        "line": 38,
-        "level": 3,
-        "title": "用戶數據存儲"
-      }
-    ],
     "異常層級": [
       {
         "document": "advanced/client.md",
@@ -14436,6 +14430,14 @@
         "line": 45,
         "level": 3,
         "title": "異常體系"
+      }
+    ],
+    "異步介面": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 70,
+        "level": 3,
+        "title": "異步介面"
       }
     ],
     "異步初始化": [
@@ -15271,7 +15273,7 @@
     "管理員檢查": [
       {
         "document": "getting-started/common-tasks.md",
-        "line": 288,
+        "line": 289,
         "level": 3,
         "title": "管理員檢查"
       }
@@ -15309,7 +15311,7 @@
     "簡單搜尋": [
       {
         "document": "getting-started/common-tasks.md",
-        "line": 386,
+        "line": 387,
         "level": 3,
         "title": "簡單搜尋"
       }
@@ -15320,14 +15322,6 @@
         "line": 20,
         "level": 3,
         "title": "簡單計數器"
-      }
-    ],
-    "类型分类": [
-      {
-        "document": "bug-tracker.md",
-        "line": 49,
-        "level": 2,
-        "title": "类型分类"
       }
     ],
     "系統要求": [
@@ -15587,7 +15581,7 @@
     "群組權限": [
       {
         "document": "getting-started/common-tasks.md",
-        "line": 323,
+        "line": 324,
         "level": 3,
         "title": "群組權限"
       }
@@ -15774,20 +15768,20 @@
         "title": "自動遷移（階段二）"
       }
     ],
+    "自定義儲存後端": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 399,
+        "level": 2,
+        "title": "自定義儲存後端"
+      }
+    ],
     "自訂 SQL 後端": [
       {
         "document": "advanced/storage-backends.md",
         "line": 162,
         "level": 2,
         "title": "自訂 SQL 後端"
-      }
-    ],
-    "自訂儲存後端": [
-      {
-        "document": "advanced/sql-builder.md",
-        "line": 399,
-        "level": 2,
-        "title": "自訂儲存後端"
       }
     ],
     "自訂字型": [
@@ -16116,14 +16110,6 @@
         "title": "複合主鍵與聯合唯一"
       }
     ],
-    "複用查詢條件": [
-      {
-        "document": "advanced/sql-builder.md",
-        "line": 244,
-        "level": 2,
-        "title": "複用查詢條件"
-      }
-    ],
     "覆寫內建方法": [
       {
         "document": "api-reference/event-system.md",
@@ -16344,12 +16330,28 @@
         "title": "訊息發送"
       }
     ],
+    "訊息發送進階（重試/超時/批量）": [
+      {
+        "document": "getting-started/common-tasks.md",
+        "line": 231,
+        "level": 2,
+        "title": "訊息發送進階（重試/超時/批量）"
+      }
+    ],
     "訊息管理方法": [
       {
         "document": "platform-guide/telegram.md",
         "line": 155,
         "level": 3,
         "title": "訊息管理方法"
+      }
+    ],
+    "訊息統計": [
+      {
+        "document": "getting-started/common-tasks.md",
+        "line": 339,
+        "level": 2,
+        "title": "訊息統計"
       }
     ],
     "訊息編輯事件": [
@@ -16384,12 +16386,28 @@
         "title": "訊息與事件"
       }
     ],
+    "訊息計數": [
+      {
+        "document": "getting-started/common-tasks.md",
+        "line": 341,
+        "level": 3,
+        "title": "訊息計數"
+      }
+    ],
     "訊息轉發事件": [
       {
         "document": "platform-guide/ideaura.md",
         "line": 242,
         "level": 3,
         "title": "訊息轉發事件"
+      }
+    ],
+    "訊息過濾": [
+      {
+        "document": "getting-started/common-tasks.md",
+        "line": 147,
+        "level": 2,
+        "title": "訊息過濾"
       }
     ],
     "訊息配置": [
@@ -16414,6 +16432,14 @@
         "line": 66,
         "level": 2,
         "title": "記憶體診斷"
+      }
+    ],
+    "訪問核心模組": [
+      {
+        "document": "developer-guide/modules/core-concepts.md",
+        "line": 155,
+        "level": 3,
+        "title": "訪問核心模組"
       }
     ],
     "設定": [
@@ -17273,7 +17299,7 @@
     "通用鍵": [
       {
         "document": "developer-guide/configuration.md",
-        "line": 48,
+        "line": 82,
         "level": 3,
         "title": "通用鍵"
       }
@@ -18728,12 +18754,12 @@
         "title": "關聯映射（relationship）"
       }
     ],
-    "關鍵字過濾": [
+    "關鍵詞過濾": [
       {
         "document": "getting-started/common-tasks.md",
         "line": 149,
         "level": 3,
-        "title": "關鍵字過濾"
+        "title": "關鍵詞過濾"
       }
     ],
     "關閉噪音折疊": [
@@ -18824,14 +18850,6 @@
         "title": "靜態工廠 + 鏈式混合"
       }
     ],
-    "非同步介面": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 70,
-        "level": 3,
-        "title": "非同步介面"
-      }
-    ],
     "非同步程式設計": [
       {
         "document": "developer-guide/modules/best-practices.md",
@@ -18906,6 +18924,14 @@
         "line": 198,
         "level": 3,
         "title": "額外操作方法"
+      }
+    ],
+    "類型分類": [
+      {
+        "document": "bug-tracker.md",
+        "line": 49,
+        "level": 2,
+        "title": "類型分類"
       }
     ],
     "類型存根命令": [

@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 2052,
+  "total_keywords": 2055,
   "keywords": {
     "0 Success (OK)": [
       {
@@ -553,7 +553,7 @@
     "2. Event Object": [
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 75,
+        "line": 74,
         "level": 3,
         "title": "2. Event Object"
       }
@@ -1034,12 +1034,12 @@
         "title": "2xxxx Handler Error"
       }
     ],
-    "3. Adapter": [
+    "3. Adapters": [
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 92,
+        "line": 91,
         "level": 3,
-        "title": "3. Adapter"
+        "title": "3. Adapters"
       }
     ],
     "3. Clean Up on Adapter Shutdown": [
@@ -1538,12 +1538,12 @@
         "title": "4. Message Segment Standard"
       }
     ],
-    "4. Module": [
+    "4. Modules": [
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 107,
+        "line": 106,
         "level": 3,
-        "title": "4. Module"
+        "title": "4. Modules"
       }
     ],
     "4. PM2 (Node Ecosystem Operations)": [
@@ -3078,12 +3078,12 @@
         "title": "Additional Operation Methods"
       }
     ],
-    "Administrator Check": [
+    "Admin Check": [
       {
         "document": "getting-started/common-tasks.md",
-        "line": 288,
+        "line": 289,
         "level": 3,
-        "title": "Administrator Check"
+        "title": "Admin Check"
       }
     ],
     "Advanced Features Version Quick Reference": [
@@ -3260,14 +3260,6 @@
         "title": "Article Message Segment (yunhu_user_post)"
       }
     ],
-    "Async Interfaces": [
-      {
-        "document": "api-reference/core-modules.md",
-        "line": 70,
-        "level": 3,
-        "title": "Async Interfaces"
-      }
-    ],
     "Async Processing": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
@@ -3284,12 +3276,28 @@
         "title": "Asynchronous Initialization"
       }
     ],
+    "Asynchronous Interfaces": [
+      {
+        "document": "api-reference/core-modules.md",
+        "line": 70,
+        "level": 3,
+        "title": "Asynchronous Interfaces"
+      }
+    ],
     "Asynchronous Native API": [
+      {
+        "document": "advanced/storage-backends.md",
+        "line": 96,
+        "level": 2,
+        "title": "Asynchronous Native API"
+      }
+    ],
+    "Asynchronous Native APIs": [
       {
         "document": "advanced/sql-builder.md",
         "line": 292,
         "level": 2,
-        "title": "Asynchronous Native API"
+        "title": "Asynchronous Native APIs"
       }
     ],
     "Asynchronous Processing Mechanism": [
@@ -3566,14 +3574,6 @@
         "title": "Basic Commands"
       }
     ],
-    "Basic Concepts": [
-      {
-        "document": "getting-started/basic-concepts.md",
-        "line": 1,
-        "level": 1,
-        "title": "Basic Concepts"
-      }
-    ],
     "Basic Information": [
       {
         "document": "platform-guide/bilibili.md",
@@ -3718,12 +3718,12 @@
         "title": "Basic Message Types"
       }
     ],
-    "Basic Metadata (metadata top-level keys)": [
+    "Basic Metadata (Top-level keys in `metadata`)": [
       {
         "document": "developer-guide/configuration.md",
         "line": 36,
         "level": 2,
-        "title": "Basic Metadata (metadata top-level keys)"
+        "title": "Basic Metadata (Top-level keys in `metadata`)"
       }
     ],
     "Basic Methods": [
@@ -3801,7 +3801,7 @@
       },
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 295,
+        "line": 294,
         "level": 3,
         "title": "Basic Sending"
       },
@@ -3937,7 +3937,7 @@
     "Batch Send Multiple Messages": [
       {
         "document": "getting-started/common-tasks.md",
-        "line": 265,
+        "line": 266,
         "level": 3,
         "title": "Batch Send Multiple Messages"
       }
@@ -4466,6 +4466,14 @@
         "title": "Chainable Modifier Methods (can be combined)"
       }
     ],
+    "Chainable Modifiers": [
+      {
+        "document": "getting-started/basic-concepts.md",
+        "line": 307,
+        "level": 3,
+        "title": "Chainable Modifiers"
+      }
+    ],
     "Chainable Queries": [
       {
         "document": "advanced/sql-builder.md",
@@ -4566,12 +4574,6 @@
         "line": 158,
         "level": 3,
         "title": "Chained Modifiers"
-      },
-      {
-        "document": "getting-started/basic-concepts.md",
-        "line": 308,
-        "level": 3,
-        "title": "Chained Modifiers"
       }
     ],
     "Chaining Mode (Instance)": [
@@ -4657,7 +4659,7 @@
     "Client (Network Client)": [
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 269,
+        "line": 268,
         "level": 3,
         "title": "Client (Network Client)"
       }
@@ -4932,14 +4934,6 @@
         "title": "Common Issues and Considerations"
       }
     ],
-    "Common Keys": [
-      {
-        "document": "developer-guide/configuration.md",
-        "line": 48,
-        "level": 3,
-        "title": "Common Keys"
-      }
-    ],
     "Common Methods": [
       {
         "document": "api-reference/core-modules.md",
@@ -5037,7 +5031,7 @@
     "Compatibility Contract (Consumers Must Comply)": [
       {
         "document": "developer-guide/configuration.md",
-        "line": 107,
+        "line": 134,
         "level": 2,
         "title": "Compatibility Contract (Consumers Must Comply)"
       }
@@ -5083,7 +5077,7 @@
       },
       {
         "document": "developer-guide/configuration.md",
-        "line": 114,
+        "line": 141,
         "level": 2,
         "title": "Complete Example"
       },
@@ -5172,20 +5166,20 @@
         "title": "Conditional Listening"
       }
     ],
-    "Conditional Show/Hide and Disable (Field Linkage)": [
+    "Conditional Visibility/Disablement (Field Linkage)": [
       {
         "document": "developer-guide/configuration.md",
-        "line": 60,
+        "line": 87,
         "level": 3,
-        "title": "Conditional Show/Hide and Disable (Field Linkage)"
+        "title": "Conditional Visibility/Disablement (Field Linkage)"
       }
     ],
-    "Config": [
+    "Config (Configuration)": [
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 212,
+        "line": 211,
         "level": 3,
-        "title": "Config"
+        "title": "Config (Configuration)"
       }
     ],
     "Config Hot Reload (on_config_update)": [
@@ -5658,6 +5652,14 @@
         "title": "Container Restart (PID 1 Instance)"
       }
     ],
+    "Container Types (`list[T]` / `dict[str, T]`)": [
+      {
+        "document": "developer-guide/configuration.md",
+        "line": 48,
+        "level": 3,
+        "title": "Container Types (`list[T]` / `dict[str, T]`)"
+      }
+    ],
     "Content Browsing Extension Actions (for ecosystem modules)": [
       {
         "document": "platform-guide/bilibili.md",
@@ -5667,12 +5669,6 @@
       }
     ],
     "Content List": [
-      {
-        "document": "getting-started/common-tasks.md",
-        "line": 6,
-        "level": 2,
-        "title": "Content List"
-      },
       {
         "document": "user-guide/README.md",
         "line": 8,
@@ -5956,12 +5952,12 @@
         "title": "Core Module Description"
       }
     ],
-    "Core Module Descriptions": [
+    "Core Module Explanations": [
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 187,
+        "line": 186,
         "level": 2,
-        "title": "Core Module Descriptions"
+        "title": "Core Module Explanations"
       }
     ],
     "Core Modules": [
@@ -6892,6 +6888,14 @@
         "title": "Download"
       }
     ],
+    "Download and Store Images": [
+      {
+        "document": "getting-started/common-tasks.md",
+        "line": 443,
+        "level": 3,
+        "title": "Download and Store Images"
+      }
+    ],
     "Dropping a Table": [
       {
         "document": "advanced/sql-builder.md",
@@ -7805,7 +7809,7 @@
     "Event Reply Methods": [
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 321,
+        "line": 320,
         "level": 3,
         "title": "Event Reply Methods"
       }
@@ -7881,7 +7885,7 @@
     "Event Types": [
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 173,
+        "line": 172,
         "level": 2,
         "title": "Event Types"
       },
@@ -7984,14 +7988,6 @@
         "title": "Example Usage in a Module"
       }
     ],
-    "Example of Return Value Handling": [
-      {
-        "document": "advanced/sql-builder.md",
-        "line": 336,
-        "level": 3,
-        "title": "Example of Return Value Handling"
-      }
-    ],
     "Examples": [
       {
         "document": "api-reference/core-modules.md",
@@ -8066,12 +8062,12 @@
         "title": "Exception Overview"
       }
     ],
-    "Execute Logic After Successful Sending": [
+    "Execute Logic After Successful Send": [
       {
         "document": "getting-started/common-tasks.md",
         "line": 237,
         "level": 3,
-        "title": "Execute Logic After Successful Sending"
+        "title": "Execute Logic After Successful Send"
       }
     ],
     "Exemption List": [
@@ -8614,6 +8610,14 @@
         "title": "From Local Plugin to Publishing"
       }
     ],
+    "Fundamentals": [
+      {
+        "document": "getting-started/basic-concepts.md",
+        "line": 1,
+        "level": 1,
+        "title": "Fundamentals"
+      }
+    ],
     "GET": [
       {
         "document": "advanced/client.md",
@@ -8660,6 +8664,14 @@
         "line": 45,
         "level": 2,
         "title": "General Interfaces"
+      }
+    ],
+    "General Keys": [
+      {
+        "document": "developer-guide/configuration.md",
+        "line": 74,
+        "level": 3,
+        "title": "General Keys"
       }
     ],
     "General Recommendations": [
@@ -8911,7 +8923,7 @@
     "Group Permissions": [
       {
         "document": "getting-started/common-tasks.md",
-        "line": 323,
+        "line": 324,
         "level": 3,
         "title": "Group Permissions"
       }
@@ -9396,18 +9408,10 @@
         "title": "I18nManager"
       }
     ],
-    "Image Download and Storage": [
-      {
-        "document": "getting-started/common-tasks.md",
-        "line": 442,
-        "level": 3,
-        "title": "Image Download and Storage"
-      }
-    ],
     "Image Processing": [
       {
         "document": "getting-started/common-tasks.md",
-        "line": 440,
+        "line": 441,
         "level": 2,
         "title": "Image Processing"
       }
@@ -9415,7 +9419,7 @@
     "Image Recognition Example": [
       {
         "document": "getting-started/common-tasks.md",
-        "line": 471,
+        "line": 472,
         "level": 3,
         "title": "Image Recognition Example"
       }
@@ -9947,7 +9951,7 @@
     "Lazy Loading System": [
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 338,
+        "line": 337,
         "level": 2,
         "title": "Lazy Loading System"
       }
@@ -10162,19 +10166,17 @@
         "title": "Listing Supported Send Methods"
       }
     ],
-    "Load Strategy": [
-      {
-        "document": "getting-started/basic-concepts.md",
-        "line": 151,
-        "level": 4,
-        "title": "Load Strategy"
-      }
-    ],
     "Loading Strategy": [
       {
         "document": "developer-guide/modules/core-concepts.md",
         "line": 11,
         "level": 3,
+        "title": "Loading Strategy"
+      },
+      {
+        "document": "getting-started/basic-concepts.md",
+        "line": 150,
+        "level": 4,
         "title": "Loading Strategy"
       }
     ],
@@ -10248,12 +10250,12 @@
         "title": "Log Subscription (Push Mode)"
       }
     ],
-    "Logger": [
+    "Logger (Logging)": [
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 227,
+        "line": 226,
         "level": 3,
-        "title": "Logger"
+        "title": "Logger (Logging)"
       }
     ],
     "Logger Configuration": [
@@ -10633,7 +10635,7 @@
     "Message Counting": [
       {
         "document": "getting-started/common-tasks.md",
-        "line": 340,
+        "line": 341,
         "level": 3,
         "title": "Message Counting"
       }
@@ -10965,7 +10967,7 @@
     "Message Statistics": [
       {
         "document": "getting-started/common-tasks.md",
-        "line": 338,
+        "line": 339,
         "level": 2,
         "title": "Message Statistics"
       }
@@ -11285,7 +11287,7 @@
     "Minimal Viable Module": [
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 127,
+        "line": 126,
         "level": 4,
         "title": "Minimal Viable Module"
       }
@@ -11373,7 +11375,7 @@
     "Module Discovery Mechanism": [
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 116,
+        "line": 115,
         "level": 4,
         "title": "Module Discovery Mechanism"
       }
@@ -11417,7 +11419,7 @@
       },
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 145,
+        "line": 144,
         "level": 4,
         "title": "Module Lifecycle"
       }
@@ -11712,14 +11714,6 @@
         "title": "Naming Conventions"
       }
     ],
-    "Native Async API": [
-      {
-        "document": "advanced/storage-backends.md",
-        "line": 96,
-        "level": 2,
-        "title": "Native Async API"
-      }
-    ],
     "Native Renderer": [
       {
         "document": "ecosystem/takumi.md",
@@ -11863,7 +11857,13 @@
       },
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 361,
+        "line": 360,
+        "level": 2,
+        "title": "Next Steps"
+      },
+      {
+        "document": "getting-started/common-tasks.md",
+        "line": 506,
         "level": 2,
         "title": "Next Steps"
       },
@@ -12627,7 +12627,7 @@
     "Permission Control": [
       {
         "document": "getting-started/common-tasks.md",
-        "line": 286,
+        "line": 287,
         "level": 2,
         "title": "Permission Control"
       }
@@ -13710,6 +13710,12 @@
         "title": "Related Documentation"
       },
       {
+        "document": "advanced/sql-builder.md",
+        "line": 435,
+        "level": 2,
+        "title": "Related Documentation"
+      },
+      {
         "document": "advanced/startup.md",
         "line": 482,
         "level": 2,
@@ -13804,12 +13810,6 @@
       {
         "document": "advanced/lazy-loading.md",
         "line": 283,
-        "level": 2,
-        "title": "Related Documents"
-      },
-      {
-        "document": "advanced/sql-builder.md",
-        "line": 439,
         "level": 2,
         "title": "Related Documents"
       },
@@ -14275,7 +14275,7 @@
     "Retry on Failure + Timeout Cancellation": [
       {
         "document": "getting-started/common-tasks.md",
-        "line": 250,
+        "line": 251,
         "level": 3,
         "title": "Retry on Failure + Timeout Cancellation"
       }
@@ -14288,12 +14288,12 @@
         "title": "Return Value Conventions"
       }
     ],
-    "Return Value Description": [
+    "Return Value Explanation": [
       {
         "document": "advanced/sql-builder.md",
         "line": 323,
         "level": 2,
-        "title": "Return Value Description"
+        "title": "Return Value Explanation"
       }
     ],
     "Return Value Format": [
@@ -14302,6 +14302,14 @@
         "line": 197,
         "level": 2,
         "title": "Return Value Format"
+      }
+    ],
+    "Return Value Handling Examples": [
+      {
+        "document": "advanced/sql-builder.md",
+        "line": 336,
+        "level": 3,
+        "title": "Return Value Handling Examples"
       }
     ],
     "Return Value Structure": [
@@ -14456,12 +14464,12 @@
         "title": "Route Middleware"
       }
     ],
-    "Router": [
+    "Router (Routing)": [
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 254,
+        "line": 253,
         "level": 3,
-        "title": "Router"
+        "title": "Router (Routing)"
       }
     ],
     "Router Manager": [
@@ -14630,12 +14638,12 @@
         "title": "SDK Top-level Entry Points Overview"
       }
     ],
-    "SQL Chained Queries": [
+    "SQL Chainable Queries": [
       {
         "document": "api-reference/core-modules.md",
         "line": 46,
         "level": 3,
-        "title": "SQL Chained Queries"
+        "title": "SQL Chainable Queries"
       }
     ],
     "SQL Query Builder": [
@@ -14713,7 +14721,7 @@
     "Schema Output": [
       {
         "document": "developer-guide/configuration.md",
-        "line": 164,
+        "line": 191,
         "level": 2,
         "title": "Schema Output"
       }
@@ -14753,7 +14761,7 @@
     "Search Functionality": [
       {
         "document": "getting-started/common-tasks.md",
-        "line": 384,
+        "line": 385,
         "level": 2,
         "title": "Search Functionality"
       }
@@ -15057,7 +15065,7 @@
     "SendDSL Message Sending": [
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 291,
+        "line": 290,
         "level": 2,
         "title": "SendDSL Message Sending"
       }
@@ -15351,7 +15359,7 @@
     "Simple Search": [
       {
         "document": "getting-started/common-tasks.md",
-        "line": 386,
+        "line": 387,
         "level": 3,
         "title": "Simple Search"
       }
@@ -15924,12 +15932,12 @@
         "title": "Sticker Message Segment (yunhu_user_sticker)"
       }
     ],
-    "Storage": [
+    "Storage (Storage)": [
       {
         "document": "getting-started/basic-concepts.md",
-        "line": 189,
+        "line": 188,
         "level": 3,
-        "title": "Storage"
+        "title": "Storage (Storage)"
       }
     ],
     "Storage Backend Abstraction": [
@@ -16360,6 +16368,14 @@
         "title": "Synchronous Initialization"
       }
     ],
+    "Synchronous Methods (Use with Caution)": [
+      {
+        "document": "advanced/storage-backends.md",
+        "line": 117,
+        "level": 2,
+        "title": "Synchronous Methods (Use with Caution)"
+      }
+    ],
     "System Emoticons": [
       {
         "document": "platform-guide/snowluma.md",
@@ -16404,6 +16420,12 @@
       {
         "document": "developer-guide/README.md",
         "line": 8,
+        "level": 2,
+        "title": "Table of Contents"
+      },
+      {
+        "document": "getting-started/common-tasks.md",
+        "line": 6,
         "level": 2,
         "title": "Table of Contents"
       }
@@ -16814,12 +16836,12 @@
         "title": "Typical Workflow Patterns"
       }
     ],
-    "UI Metadata (the `metadata[\"ui\"]` Subtable)": [
+    "UI Metadata (`metadata[\"ui\"]` sub-table)": [
       {
         "document": "developer-guide/configuration.md",
         "line": 44,
         "level": 2,
-        "title": "UI Metadata (the `metadata[\"ui\"]` Subtable)"
+        "title": "UI Metadata (`metadata[\"ui\"]` sub-table)"
       }
     ],
     "Unified Event Override Configuration (event.overrides)": [
@@ -17326,12 +17348,12 @@
         "title": "Utility Modules: Handle \"Unload Notifications\" When Managing Other Modules' Resources"
       }
     ],
-    "Value Form (`value_type`, used for `multiselect`)": [
+    "Value Shape (`value_type`, used for `multiselect`)": [
       {
         "document": "developer-guide/configuration.md",
-        "line": 78,
+        "line": 105,
         "level": 3,
-        "title": "Value Form (`value_type`, used for `multiselect`)"
+        "title": "Value Shape (`value_type`, used for `multiselect`)"
       }
     ],
     "Verification of Installation": [
@@ -17642,12 +17664,6 @@
     ],
     "What's Next": [
       {
-        "document": "getting-started/common-tasks.md",
-        "line": 505,
-        "level": 2,
-        "title": "What's Next"
-      },
-      {
         "document": "getting-started/first-bot.md",
         "line": 157,
         "level": 2,
@@ -17767,7 +17783,7 @@
     "Widget Catalog": [
       {
         "document": "developer-guide/configuration.md",
-        "line": 88,
+        "line": 115,
         "level": 2,
         "title": "Widget Catalog"
       }
@@ -18060,12 +18076,12 @@
         "title": "[BUG-033] wait_reply suspended replies starved by high-priority processors"
       }
     ],
-    "[BUG-034] Scope persist=False runtime bindings silently wiped out by any subsequent configuration write": [
+    "[BUG-034] Runtime bindings with persist=False silently overwritten by subsequent configuration writes": [
       {
         "document": "bug-tracker.md",
         "line": 882,
         "level": 3,
-        "title": "[BUG-034] Scope persist=False runtime bindings silently wiped out by any subsequent configuration write"
+        "title": "[BUG-034] Runtime bindings with persist=False silently overwritten by subsequent configuration writes"
       }
     ],
     "[BUG-035] Configuration panel select options and dict fields rendered as [object Object]": [
@@ -18076,132 +18092,140 @@
         "title": "[BUG-035] Configuration panel select options and dict fields rendered as [object Object]"
       }
     ],
-    "[BUG-036] Occasional configuration write failures (ENOENT) when multiple instances share a configuration directory": [
+    "[BUG-036] Configuration write failures (ENOENT) when multiple instances share configuration directory": [
       {
         "document": "bug-tracker.md",
         "line": 920,
         "level": 3,
-        "title": "[BUG-036] Occasional configuration write failures (ENOENT) when multiple instances share a configuration directory"
+        "title": "[BUG-036] Configuration write failures (ENOENT) when multiple instances share configuration directory"
       }
     ],
-    "[BUG-037] Space-separated subcommand names can never be triggered after registration": [
+    "[BUG-037] Commands with space-separated names can never be triggered after registration": [
       {
         "document": "bug-tracker.md",
         "line": 946,
         "level": 3,
-        "title": "[BUG-037] Space-separated subcommand names can never be triggered after registration"
+        "title": "[BUG-037] Commands with space-separated names can never be triggered after registration"
       }
     ],
-    "[BUG-038] persist=False runtime bindings get incidentally persisted by persistence writes and \"resurrect\" from disk after module unloading": [
+    "[BUG-038] Runtime bindings with persist=False are written to disk along with persistent writes, resurrecting after module unload": [
       {
         "document": "bug-tracker.md",
         "line": 970,
         "level": 3,
-        "title": "[BUG-038] persist=False runtime bindings get incidentally persisted by persistence writes and \"resurrect\" from disk after module unloading"
+        "title": "[BUG-038] Runtime bindings with persist=False are written to disk along with persistent writes, resurrecting after module unload"
       }
     ],
-    "[BUG-039] Read/write inconsistency when whole-section writes and dotted writes coexist (dotted overrides lost)": [
+    "[BUG-039] Inconsistent read/write when section write and dotted write coexist (dotted overwrite lost)": [
       {
         "document": "bug-tracker.md",
         "line": 994,
         "level": 3,
-        "title": "[BUG-039] Read/write inconsistency when whole-section writes and dotted writes coexist (dotted overrides lost)"
+        "title": "[BUG-039] Inconsistent read/write when section write and dotted write coexist (dotted overwrite lost)"
       }
     ],
-    "[BUG-040] Trailing command arguments silently lost for platform-segmented messages": [
+    "[BUG-040] Silent loss of trailing parameters in command after message split into segments": [
       {
         "document": "bug-tracker.md",
         "line": 1016,
         "level": 3,
-        "title": "[BUG-040] Trailing command arguments silently lost for platform-segmented messages"
+        "title": "[BUG-040] Silent loss of trailing parameters in command after message split into segments"
       }
     ],
-    "[BUG-041] Denied commands re-run the entire chain via alt_message: duplicate replies and double-triggered permission function side effects": [
+    "[BUG-041] Rejected commands rerun entire alt_message chain: duplicate replies and permission function side effects triggered twice": [
       {
         "document": "bug-tracker.md",
         "line": 1028,
         "level": 3,
-        "title": "[BUG-041] Denied commands re-run the entire chain via alt_message: duplicate replies and double-triggered permission function side effects"
+        "title": "[BUG-041] Rejected commands rerun entire alt_message chain: duplicate replies and permission function side effects triggered twice"
       }
     ],
-    "[BUG-042] wait_reply registered inside a command handler is immediately consumed by the same triggering message": [
+    "[BUG-042] wait_reply registered inside command handler is immediately consumed by the same trigger message": [
       {
         "document": "bug-tracker.md",
         "line": 1040,
         "level": 3,
-        "title": "[BUG-042] wait_reply registered inside a command handler is immediately consumed by the same triggering message"
+        "title": "[BUG-042] wait_reply registered inside command handler is immediately consumed by the same trigger message"
       }
     ],
-    "[BUG-043] select(): multi-branch waits on the same key where later ones silently cancel earlier ones": [
+    "[BUG-043] Multiple wait paths for the same key in select() silently cancel the earlier one": [
       {
         "document": "bug-tracker.md",
         "line": 1052,
         "level": 3,
-        "title": "[BUG-043] select(): multi-branch waits on the same key where later ones silently cancel earlier ones"
+        "title": "[BUG-043] Multiple wait paths for the same key in select() silently cancel the earlier one"
       }
     ],
-    "[BUG-044] BaseConverter.at() produces the OB11 legacy \"at\" segment, unrecognized by framework-wide mention detection": [
+    "[BUG-044] BaseConverter.at() produces OB11 legacy \"at\" segment, entire framework mention detection does not recognize": [
       {
         "document": "bug-tracker.md",
         "line": 1064,
         "level": 3,
-        "title": "[BUG-044] BaseConverter.at() produces the OB11 legacy \"at\" segment, unrecognized by framework-wide mention detection"
+        "title": "[BUG-044] BaseConverter.at() produces OB11 legacy \"at\" segment, entire framework mention detection does not recognize"
       }
     ],
-    "[BUG-045] On adapters without alt_message, interaction primitives time out forever and command pass-through fails": [
+    "[BUG-045] Interaction primitives permanently timeout and command penetration fail when alt_message is missing": [
       {
         "document": "bug-tracker.md",
         "line": 1076,
         "level": 3,
-        "title": "[BUG-045] On adapters without alt_message, interaction primitives time out forever and command pass-through fails"
+        "title": "[BUG-045] Interaction primitives permanently timeout and command penetration fail when alt_message is missing"
       }
     ],
-    "[BUG-046] Nested sub-table headers in declarative configuration templates drift into top-level tables": [
+    "[BUG-046] Declaration configuration template's nested subtable header drifts to top level": [
       {
         "document": "bug-tracker.md",
         "line": 1088,
         "level": 3,
-        "title": "[BUG-046] Nested sub-table headers in declarative configuration templates drift into top-level tables"
+        "title": "[BUG-046] Declaration configuration template's nested subtable header drifts to top level"
       }
     ],
-    "[BUG-047] Service directory full enumeration misses lazy-loaded modules": [
+    "[BUG-047] Service directory full enumeration skips lazy-loaded modules": [
       {
         "document": "bug-tracker.md",
         "line": 1102,
         "level": 3,
-        "title": "[BUG-047] Service directory full enumeration misses lazy-loaded modules"
+        "title": "[BUG-047] Service directory full enumeration skips lazy-loaded modules"
       }
     ],
-    "[BUG-048] Conversation inbox query APIs lose message attribution (sender and event metadata)": [
+    "[BUG-048] Session inbox query API loses message attribution (sender and event metadata)": [
       {
         "document": "bug-tracker.md",
         "line": 1114,
         "level": 3,
-        "title": "[BUG-048] Conversation inbox query APIs lose message attribution (sender and event metadata)"
+        "title": "[BUG-048] Session inbox query API loses message attribution (sender and event metadata)"
       }
     ],
-    "[BUG-049] Inbound bot self-message echoes recorded as user, polluting inbox attribution": [
+    "[BUG-049] Inbound bot self-message echo recorded as user, polluting inbox attribution": [
       {
         "document": "bug-tracker.md",
         "line": 1127,
         "level": 3,
-        "title": "[BUG-049] Inbound bot self-message echoes recorded as user, polluting inbox attribution"
+        "title": "[BUG-049] Inbound bot self-message echo recorded as user, polluting inbox attribution"
       }
     ],
-    "[BUG-050] Running epsdk restart inside a container exits the container outright": [
+    "[BUG-050] Container execution of `epsdk restart` exits container directly": [
       {
         "document": "bug-tracker.md",
         "line": 1140,
         "level": 3,
-        "title": "[BUG-050] Running epsdk restart inside a container exits the container outright"
+        "title": "[BUG-050] Container execution of `epsdk restart` exits container directly"
       }
     ],
-    "[BUG-051] Cross-account duplicate receipt (drop) collateral damage to at-mention messages, random message loss in multi-account deployments": [
+    "[BUG-051] Cross-account duplicate receipt (drop) mistakenly injures at-mention messages, causing random message loss in multi-account deployment": [
       {
         "document": "bug-tracker.md",
         "line": 1152,
         "level": 3,
-        "title": "[BUG-051] Cross-account duplicate receipt (drop) collateral damage to at-mention messages, random message loss in multi-account deployments"
+        "title": "[BUG-051] Cross-account duplicate receipt (drop) mistakenly injures at-mention messages, causing random message loss in multi-account deployment"
+      }
+    ],
+    "[BUG-052] Concurrent storage first fetch deadlock freezes event loop, web site hangs and continues database is locked": [
+      {
+        "document": "bug-tracker.md",
+        "line": 1164,
+        "level": 3,
+        "title": "[BUG-052] Concurrent storage first fetch deadlock freezes event loop, web site hangs and continues database is locked"
       }
     ],
     "__init__.py": [

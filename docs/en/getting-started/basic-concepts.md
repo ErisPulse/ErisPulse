@@ -1,55 +1,55 @@
-# Basic Concepts
+# Fundamentals
 
 > [!NOTE]
-> **Required reading for the L1 core** — the 2nd of the "Five L1 Core Articles" listed on the documentation homepage (Module Development Introduction → **Basic Concepts** → Event Wrapper Class → Configuration File Guide → Exception Handling).
+> **L1 Core Must-Read** — The second article in the "L1 Core Five" series on the documentation homepage (Module Development Introduction → **Fundamentals** → Event Wrapper Class → Configuration File Explanation → Exception Handling).
 
-What components does a message pass through from the moment a user sends it to the moment the bot replies? What are adapters and modules each responsible for? After reading this article, you will be able to answer on your own the design questions you encounter when writing handlers, instead of merely copying examples.
+What components does a message pass through from the user's sending to the robot's reply? What are the responsibilities of adapters and modules? After reading this article, you will be able to answer design questions yourself when writing handlers, rather than just copying examples.
 
 ## Event-Driven Architecture
 
-ErisPulse adopts an event-driven architecture; all interactions are passed and processed through events.
+ErisPulse uses an event-driven architecture, where all interactions are passed and processed through events.
 
 ### Event Flow
 
 ```
-User sends a message
+User sends message
       │
       ▼
-Platform receives it
+Platform receives
       │
       ▼
-Adapter receives the platform's native event
+Adapter receives native platform event
       │
       ▼
-Converted to a OneBot12 standard event
+Converts to OneBot12 standard event
       │
       ▼
-Submitted to the event system
+Submits to event system
       │
       ▼
-Dispatched to registered handlers
+Distributes to registered handlers
       │
       ▼
-Module processes the event
+Module processes event
       │
       ▼
-Response sent through the adapter
+Sends response via adapter
       │
       ▼
-Platform displays it to the user
+Platform displays to user
 ```
 
 ### OneBot12 Standard
 
-ErisPulse uses OneBot12 as its core event standard. OneBot12 is a universal chatbot application interface standard that defines a unified event format.
+ErisPulse uses OneBot12 as its core event standard. OneBot12 is a general-purpose chatbot application programming interface standard that defines a unified event format.
 
-All adapters convert platform-specific events to the OneBot12 format, ensuring code consistency.
+All adapters convert platform-specific events into OneBot12 format to ensure code consistency.
 
 ## Core Components
 
 ### 1. SDK Object
 
-The SDK is the unified entry point for all functionality, providing access to core components.
+The SDK is the unified entry point for all features, providing access to core components.
 
 ```python
 from ErisPulse import sdk
@@ -66,11 +66,10 @@ sdk.lifecycle  # Lifecycle system
 ```
 
 > [!WARNING]
-> **Always import from the root**: `from ErisPulse.Core import adapter` / `import ErisPulse.Core.adapter`
-> binds to the **manager instance** (the `AdapterManager` singleton) rather than the submodule — the
-> re-export in the `ErisPulse.Core` package shadows the submodule of the same name. When writing
-> tests, patching, or needing the module object itself, always use the `from ErisPulse import sdk`
-> root import (`sdk.adapter` is the manager instance).
+> **Import from root** : `from ErisPulse.Core import adapter` / `import ErisPulse.Core.adapter`
+> This binds to the **manager instance** (`AdapterManager` singleton) rather than the submodule—`ErisPulse.Core`
+> package's re-export will mask the same-named submodule. When writing tests, patching, or needing the module object itself, always use
+> `from ErisPulse import sdk` root import (where `sdk.adapter` is the manager instance).
 
 ### 2. Event Object
 
@@ -85,44 +84,44 @@ async def info_handler(event):
     platform = event.get_platform()
     text = event.get_text()
     
-    # Send a reply
+    # Send reply
     await event.reply(f"User: {user_id}, Platform: {platform}")
 ```
 
-### 3. Adapter
+### 3. Adapters
 
-Adapters are the bridge between ErisPulse and external platforms.
+Adapters serve as bridges between ErisPulse and external platforms.
 
 **Responsibilities:**
-- Receiving platform-native events
-- Converting them to the OneBot12 standard format
-- Sending standard-format events to the platform
+- Receive native platform events
+- Convert them into OneBot12 standard format
+- Send standard format events back to the platform
 
-**Example adapters:**
-- Yunhu adapter: communicates with the Yunhu platform
-- Telegram adapter: communicates with the Telegram Bot API
-- OneBot11 adapter: communicates with OneBot11-compatible applications
-- Email adapter: handles email sending and receiving
+**Example Adapters:**
+- Yunhu Adapter: Communicates with the Yunhu platform
+- Telegram Adapter: Communicates with the Telegram Bot API
+- OneBot11 Adapter: Communicates with OneBot11 compatible applications
+- Email Adapter: Handles email sending and receiving
 
-### 4. Module
+### 4. Modules
 
-Modules are the basic unit of functionality extension; they can:
+Modules are the basic units of functional extension and can:
 
 - Register event handlers
 - Implement business logic
-- Call adapters to send messages
+- Use adapters to send messages
 - Use services provided by core modules
 
 #### Module Discovery Mechanism
 
-ErisPulse discovers installed modules through Python's `importlib.metadata.entry_points`. Modules declare entry points in `pyproject.toml`:
+ErisPulse discovers installed modules via Python's `importlib.metadata.entry_points`. Modules declare entry points in `pyproject.toml`:
 
 ```toml
 [project.entry-points."erispulse.module"]
 MyModule = "my_package:Main"
 ```
 
-During SDK initialization, all entry points in the `erispulse.module` group are scanned, module classes are registered with the `ModuleManager`, and then they are initialized one by one after a topological sort by dependencies.
+When the SDK initializes, it scans all entry points in the `erispulse.module` group, registers the module class to the `ModuleManager`, then initializes them in topological order based on dependencies.
 
 #### Minimal Viable Module
 
@@ -145,12 +144,12 @@ class Main(BaseModule):
 #### Module Lifecycle
 
 - **Registration**: The SDK discovers the module class and registers it with the manager
-- **Loading**: A module instance is created and `on_load(event)` is called (`event = {"module_name": "MyModule"}`)
-- **Unloading**: `on_unload(event)` is called to clean up resources
+- **Loading**: Creates a module instance and calls `on_load(event)` (`event = {"module_name": "MyModule"}`)
+- **Unloading**: Calls `on_unload(event)` to clean up resources
 
-#### Load Strategy
+#### Loading Strategy
 
-Declare a module's loading behavior via `get_load_strategy()`:
+Declare the module's loading behavior using `get_load_strategy()`:
 
 ```python
 from ErisPulse.loaders import ModuleLoadStrategy
@@ -159,59 +158,59 @@ class Main(BaseModule):
     @staticmethod
     def get_load_strategy():
         return ModuleLoadStrategy(
-            lazy_load=True,   # Whether to lazy load (default True)
-            priority=0        # Load priority; higher values are initialized first
+            lazy_load=True,   # Whether to load lazily (default True)
+            priority=0        # Loading priority, higher values initialize earlier
         )
 ```
 
-- **`lazy_load=True` (default)**: The module is initialized only when first accessed via `sdk.MyModule`, reducing startup time
-- **`lazy_load=False`**: The module is initialized immediately at SDK startup, suitable for modules that need to listen for lifecycle events or run scheduled tasks
-- **`priority`**: Modules with the same priority are loaded in registration order; higher values are initialized first
+- **`lazy_load=True` (default)**: The module initializes only when first accessed via `sdk.MyModule`, reducing startup time
+- **`lazy_load=False`**: The module initializes immediately at SDK startup, suitable for modules that need to listen to lifecycle events or perform scheduled tasks
+- **`priority`**: Modules with the same priority load in registration order; higher values initialize earlier
 
-> For a detailed explanation of the lazy loading mechanism, see [Lazy Loading System](../advanced/lazy-loading.md).
+> For detailed explanations of the lazy loading mechanism, please refer to [Lazy Loading System](../advanced/lazy-loading.md).
 
 ## Event Types
 
-ErisPulse supports 5 types of events:
+ErisPulse supports five types of events:
 
 | Event Type | Decorator | Description |
 |---------|--------|------|
-| Message events | `@message.on_message()` | Any message sent by users (private chats, group chats) |
-| Command events | `@command("name")` | Messages starting with the command prefix (e.g., `/hello`) |
-| Notice events | `@notice.on_friend_add()` etc. | System notices (friend additions, group member changes, etc.) |
-| Request events | `@request.on_friend_request()` etc. | User requests (friend requests, group invitations) |
-| Meta events | `@meta.on_connect()` etc. | System-level events (connect, disconnect, heartbeat) |
+| Message Event | `@message.on_message()` | Any message sent by the user (private chat, group chat) |
+| Command Event | `@command("name")` | Messages starting with a command prefix (e.g., `/hello`) |
+| Notice Event | `@notice.on_friend_add()` etc. | System notifications (e.g., friend added, group member changes) |
+| Request Event | `@request.on_friend_request()` etc. | User requests (e.g., friend requests, group invitations) |
+| Meta Event | `@meta.on_connect()` etc. | System-level events (e.g., connection, disconnection, heartbeat) |
 
-> For detailed usage and code examples of each event type, see [Event Handling Introduction](event-handling.md).
+> For detailed usage and code examples of each event type, please refer to [Event Handling Introduction](event-handling.md).
 
-## Core Module Descriptions
+## Core Module Explanations
 
-### Storage
+### Storage (Storage)
 
-A SQLite-based key-value storage system for persisting data.
+A key-value storage system based on SQLite, used for persistent data storage.
 
 ```python
-# Set a value
-sdk.storage.set("key", "value")
+# Set value
+await sdk.storage.aset("key", "value")
 
-# Get a value
-value = sdk.storage.get("key", "default_value")
+# Get value
+value = await sdk.storage.aget("key", "default_value")
 
 # Batch operations
-sdk.storage.set_multi({
+await sdk.storage.aset_multi({
     "key1": "value1",
     "key2": "value2"
 })
 
 # Transactions
-with sdk.storage.transaction():
-    sdk.storage.set("key1", "value1")
-    sdk.storage.set("key2", "value2")
+async with sdk.storage.atransaction():
+    await sdk.storage.aset("key1", "value1")
+    await sdk.storage.aset("key2", "value2")
 ```
 
-### Config
+### Config (Configuration)
 
-TOML-format configuration file management.
+TOML-based configuration file management.
 
 ```python
 # Get configuration
@@ -224,36 +223,36 @@ sdk.config.setConfig("MyModule", {"key": "value"})
 value = sdk.config.getConfig("MyModule.subkey", "default")
 ```
 
-### Logger
+### Logger (Logging)
 
 A modular logging system.
 
 ```python
 # Log messages
 sdk.logger.info("This is an info message")
-sdk.logger.warning("This is a warning")
-sdk.logger.error("This is an error")
+sdk.logger.warning("This is a warning message")
+sdk.logger.error("This is an error message")
 
-# Get a child logger
+# Get child logger
 child_logger = sdk.logger.get_child("submodule")
 child_logger.info("Submodule log")
 ```
 
 **Attribute Access Syntactic Sugar**
 
-Besides the `get_child()` method, you can also create child loggers via **attribute access**, which is a more concise **syntactic sugar** style:
+In addition to using the `get_child()` method, you can also create child loggers using **attribute access**, which is a more concise **syntactic sugar** approach:
 
 ```python
-# Create a child logger via attribute access
+# Create child logger via attribute access
 sdk.logger.mymodule.info("Module message")
 
-# Supports nested access
+# Support nested access
 sdk.logger.mymodule.database.info("Database message")
 ```
 
-### Router
+### Router (Routing)
 
-HTTP and WebSocket route management, based on FastAPI + Uvicorn. Supports decorator routes, middleware, grouping, rate limiting, and CORS.
+HTTP and WebSocket routing management, based on FastAPI + Uvicorn. Supports decorator routing, middleware, grouping, rate limiting, and CORS.
 
 ```python
 from ErisPulse.Core import HttpRequest
@@ -264,11 +263,11 @@ async def handler(request: HttpRequest):
     return {"status": "ok"}
 ```
 
-> For the full router API (WebSocket, middleware, rate limiting, CORS, etc.), see [Router Manager](../advanced/router.md).
+> For the complete routing API (WebSocket, middleware, rate limiting, CORS, etc.), please refer to [Router Manager](../advanced/router.md).
 
 ### Client (Network Client)
 
-A unified network client that consolidates HTTP requests, WebSocket connections, connection pool management, automatic retries, timeout control, request statistics, and lifecycle event integration.
+A unified network client that aggregates HTTP requests, WebSocket connections, connection pooling, automatic retries, timeout control, request statistics, and lifecycle event integration.
 
 ```python
 from ErisPulse.Core import client
@@ -286,35 +285,35 @@ async for text in ws.iter_text():
     await ws.send_text(f"Echo: {text}")
 ```
 
-> For the full network client API, see [Network Client](../advanced/client.md).
+> For the complete network client API, please refer to [Network Client](../advanced/client.md).
 
 ## SendDSL Message Sending
 
-Adapters provide a chained-call message sending interface.
+Adapters provide a chain-call message sending interface.
 
 ### Basic Sending
 
 ```python
-# Get an adapter instance
+# Get adapter instance
 yunhu = sdk.adapter.get("yunhu")
 
-# Send a message
+# Send message
 await yunhu.Send.To("user", "U1001").Text("Hello")
 
-# Specify the sending account
+# Specify sending account
 await yunhu.Send.Using("bot1").To("group", "G1001").Text("Group message")
 ```
 
-### Chained Modifiers
+### Chainable Modifiers
 
 ```python
-# Mention a user
+# @user
 await yunhu.Send.To("group", "G1001").At("U2001").Text("@message")
 
-# Reply to a message
+# Reply to message
 await yunhu.Send.To("group", "G1001").Reply("msg123").Text("Reply")
 
-# Mention everyone
+# @all
 await yunhu.Send.To("group", "G1001").AtAll().Text("Announcement")
 ```
 
@@ -328,7 +327,7 @@ async def test_handler(event):
     # Simple text reply
     await event.reply("Reply content")
     
-    # Send an image
+    # Send image
     await event.reply("http://example.com/image.jpg", method="Image")
     
     # Send voice
@@ -337,7 +336,7 @@ async def test_handler(event):
 
 ## Lazy Loading System
 
-ErisPulse enables module lazy loading by default; modules are initialized only when first accessed (e.g., `sdk.MyModule`), which significantly improves startup speed.
+ErisPulse enables module lazy loading by default. Modules are only initialized when first accessed (e.g., `sdk.MyModule`), significantly improving startup speed.
 
 ```python
 from ErisPulse.loaders import ModuleLoadStrategy
@@ -347,18 +346,18 @@ class Main(BaseModule):
     def get_load_strategy():
         return ModuleLoadStrategy(
             lazy_load=True,   # Enable lazy loading (default)
-            priority=0        # Load priority; higher values are initialized first
+            priority=0        # Loading priority, higher values initialize earlier
         )
 ```
 
-**Scenarios requiring lazy loading to be disabled (`lazy_load=False`):**
-- Modules that listen for lifecycle events (e.g., `core.init.complete`)
+**Scenarios where lazy loading should be disabled (`lazy_load=False`):**
+- Modules that listen to lifecycle events (e.g., `core.init.complete`)
 - Modules that start scheduled tasks or background services
-- Modules that need to complete initialization before other modules are loaded
+- Modules that need to complete initialization before other modules load
 
-> For detailed lazy loading mechanisms and caveats, see [Lazy Loading System](../advanced/lazy-loading.md).
+> For detailed explanations of the lazy loading mechanism and precautions, please refer to [Lazy Loading System](../advanced/lazy-loading.md).
 
 ## Next Steps
 
-- **Continue along the L1 path**: Next up, [Event Wrapper Class](../developer-guide/modules/event-wrapper.md) — master all the read/write methods of the event object
-- **Learn while writing**: [Event Handling Introduction](event-handling.md) provides copy-ready handler patterns organized by event type; [Common Task Examples](common-tasks.md) covers persistence, scheduled tasks, permission control, and other common features
+- **Continue along the L1 path**: The next article [Event Wrapper Class](../developer-guide/modules/event-wrapper.md), where you will learn all read/write methods of the event object
+- **Want to learn while coding**: [Event Handling Introduction](event-handling.md) provides ready-to-copy handler writing methods by event type; [Common Tasks Examples](common-tasks.md) covers commonly used features such as persistence, scheduled tasks, and permission control
