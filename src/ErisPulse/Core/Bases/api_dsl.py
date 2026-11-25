@@ -17,6 +17,7 @@ from typing import TYPE_CHECKING, Any
 
 from ...runtime.context import get_current_event_account
 from ..i18n import i18n
+from ..logger import logger
 
 if TYPE_CHECKING:
     # Self 用于让链式方法返回子类类型，使 IDE 能补全平台特有方法
@@ -252,8 +253,8 @@ class ApiDSL:
 
             metrics.inc("adapter.api.total")
             metrics.inc(f"adapter.api.{action}")
-        except Exception:
-            pass
+        except Exception as e:
+            logger.debug(f"api metrics inc failed: {e!r}")
         return await self._adapter.call_api(action, **params)
 
     # ==================== 用户相关动作 ====================

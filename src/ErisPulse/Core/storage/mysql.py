@@ -38,7 +38,6 @@ class MySQLDialect(SQLDialect):
     name = "mysql"
     extra_name = "mysql"
     driver_module = "aiomysql"
-    driver_requires = ["aiomysql>=0.2,<0.4"]
 
     key_column_type = "VARCHAR(255)"
     value_column_type = "LONGTEXT"
@@ -243,13 +242,15 @@ class MySQLStorage(_SingletonMixin, SQLStorageBase):
                 # 归还失败（连接状态未知）：直接丢弃，池侧按断连淘汰
                 try:
                     await conn.close()
-                except Exception:
-                    pass
+                except Exception as e:
+                    logger.debug(
+                        i18n.t("core.storage.txn_conn_release_failed", error=e)
+                    )
             return
         try:
             await conn.close()
-        except Exception:
-            pass
+        except Exception as e:
+            logger.debug(i18n.t("core.storage.txn_conn_release_failed", error=e))
 
     # 事务控制
 

@@ -62,6 +62,16 @@ SERVER_SHUTDOWN_TIMEOUT_SECS: Final[float] = 5.0
 # 超时视为启动失败并回退旧配置（修改影响：过大延长失败感知，过小误判慢启动）
 ROUTER_RELOAD_STARTUP_TIMEOUT_SECS: Final[float] = 10.0
 
+# 等待新 uvicorn 实例进入 started 状态的轮询间隔（秒）。
+# 使用位置: Core/router.py -> _wait_server_started()（reload 启动就绪轮询）
+# 修改影响: 调小缩短启动感知延迟但增加空转 CPU，调大则最长多等一个间隔才判就绪。
+ROUTER_STARTUP_POLL_INTERVAL_SECS: Final[float] = 0.05
+
+# 端口占用探测的连接超时（秒）。
+# 使用位置: Core/router.py -> 端口探测（启动前/重启前判断端口是否可绑定）
+# 修改影响: 调小在负载高的机器上会把"端口空闲"误判为超时，调大拖慢每次探测。
+ROUTER_PORT_PROBE_TIMEOUT_SECS: Final[float] = 0.5
+
 # 内嵌 uvicorn 所依赖的已验证版本范围（与 pyproject.toml 的依赖约束保持一致）。
 # 使用位置: Core/router.py -> _create_uvicorn_server() 接口缺失告警的文案。
 # 修改影响: 内嵌启动走私有接口 Server._serve()（0.34.0 引入），兼容性按能力
@@ -1805,6 +1815,8 @@ __all__ = [
     "RETCODE_SDK_FAILURE",
     "SERVER_SHUTDOWN_TIMEOUT_SECS",
     "ROUTER_RELOAD_STARTUP_TIMEOUT_SECS",
+    "ROUTER_STARTUP_POLL_INTERVAL_SECS",
+    "ROUTER_PORT_PROBE_TIMEOUT_SECS",
     "SQLITE_BUSY_TIMEOUT_MS",
     "SQLITE_JOURNAL_MODE",
     "SQLITE_SYNCHRONOUS_MODE",

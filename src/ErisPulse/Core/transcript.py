@@ -24,7 +24,7 @@ ErisPulse 会话收件箱（transcript）
 
 持久性说明：追加先进内存缓冲，由后台任务批量落盘（延迟至多
 ``TRANSCRIPT_FLUSH_INTERVAL_SECS`` 秒）；正常退出（``sdk.uninit`` / 进程
-atexit）会强制刷盘。进程被硬崩溃 / 强杀时，最近一批未落盘记录（约 1 秒内）
+退出阶段）会强制刷盘。进程被硬崩溃 / 强杀时，最近一批未落盘记录（约 1 秒内）
 可能丢失。
 
 使用方式::
@@ -39,13 +39,13 @@ atexit）会强制刷盘。进程被硬崩溃 / 强杀时，最近一批未落�
 """
 
 import asyncio
-import atexit
 import json
 import threading
 import time
 from collections import deque
 from typing import Any
 
+from .Bases.storage import _PreJoinExitHooks
 from .constants import (
     DEFAULT_TRANSCRIPT_ENABLED,
     DEFAULT_TRANSCRIPT_MAX_PER_SESSION,
@@ -99,7 +99,7 @@ class TranscriptManager:
         self._buffer_lock = threading.Lock()
         self._flusher_started: bool = False
         self._flushing: bool = False
-        self._atexit_registered: bool = False
+        self._exit_flush_registered: bool = False
         self._hooks_registered: bool = False
         self._cfg_cache: dict[str, Any] | None = None
         # 运行时保留策略覆盖（set_retention 写入；优先于配置，重启失效）
@@ -144,12 +144,13 @@ class TranscriptManager:
             lifecycle.on("config.updated")(self._invalidate_config_cache)
         except Exception:
             pass
-        if not self._atexit_registered:
-            self._atexit_registered = True
+        if not self._exit_flush_registered:
+            self._exit_flush_registered = True
+            # 登记在存储退出钩子序列内：刷盘须早于存储连接停止
             try:
-                atexit.register(self._flush_on_exit)
-            except Exception:
-                pass
+                _PreJoinExitHooks.register_flusher(self._flush_on_exit)
+            except Exception as e:
+                logger.debug(f"transcript exit flush registration failed: {e!r}")
 
     def _flush_on_exit(self) -> None:
         """
@@ -157,7 +158,7 @@ class TranscriptManager:
         进程退出兜底：同步刷掉未落盘缓冲（镜像 config._flush_on_exit）
 
         以看门狗线程限时执行——解释器收尾阶段存储同步桥的后台线程可能已
-        无法调度（自由线程构建下尤其如此），在 atexit 里直接走同步桥会
+        无法调度（自由线程构建下尤其如此），直接在主线程走同步桥可能
         永久阻塞、令进程退出挂死；超时即放弃（至多丢一批缓冲），保证
         退出必然完成。缓冲为空时刷盘立即返回，无任何开销。
         """
@@ -360,15 +361,15 @@ class TranscriptManager:
                 await self._amigrate_add_sender()
                 await self._amigrate_add_meta()
             # 查询/保留策略索引：retention 的 session_key 裁剪与 TTL 删除
-            # 均为按列过滤，无索引时全表扫描；方言不支持时静默跳过
+            # 均为按列过滤，无索引时全表扫描；方言不支持时跳过（debug 留痕）
             try:
                 for idx_sql in (
                     f"CREATE INDEX IF NOT EXISTS idx_transcript_session ON {TRANSCRIPT_TABLE} (session_key)",
                     f"CREATE INDEX IF NOT EXISTS idx_transcript_ts ON {TRANSCRIPT_TABLE} (ts)",
                 ):
                     await storage._execute_query("dml", idx_sql, [])
-            except Exception:
-                pass
+            except Exception as e:
+                logger.debug(f"transcript index creation skipped: {e!r}")
             self._table_ready = True
             return True
         except Exception as e:

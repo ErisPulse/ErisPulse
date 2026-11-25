@@ -74,6 +74,41 @@ entry = module_finder.find_by_name("MyModule")  # EntryPoint | None
 
 每个 `EntryPoint` 可以 `.load()` 得到对应的类，但通常不用你手动调——Loader 会做。
 
+#### 可插拔扩展点：entry-points
+
+Finder 的发现协议就是 Python 的 entry-points：任何已安装的包在 `pyproject.toml` 里声明对应分组，装上即被发现、卸载即消失，框架零改动。框架开放的分组：
+
+| 分组 | 发现方 | 登记内容 |
+|------|--------|----------|
+| `erispulse.adapter` | `AdapterFinder`（加载期读取） | 适配器类 |
+| `erispulse.module` | `ModuleFinder`（加载期读取） | 模块类 |
+| `erispulse.storage.backends` | `create_storage()`（创建存储实例前扫描） | 存储后端类 |
+
+以自定义存储后端为例，包只需声明分组与导入路径：
+
+```toml
+[project.entry-points."erispulse.storage.backends"]
+mydb = "my_erispulse_backend:MyStorage"
+```
+
+```toml
+# 用户侧：改一行配置即启用
+[ErisPulse.storage]
+backend = "mydb"
+```
+
+适配器 / 模块同样只需声明分组，写法见 [发布指南](../developer-guide/publishing.md)。不走 entry-points 的场景（运行时动态注册）可在导入后直接调用注册函数：
+
+```python
+from ErisPulse.Core.storage import register_storage_backend
+
+from my_erispulse_backend import MyStorage
+
+register_storage_backend("mydb", MyStorage)
+```
+
+存储后端的完整契约（基类、方言、能力声明）见 [存储后端](storage-backends.md)。
+
 ### 2. 加载层：Loader
 
 Loader 在 Finder 之上做了"导入 + 读元数据 + 判断启用/禁用"。

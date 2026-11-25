@@ -147,6 +147,13 @@ def snapshot(label: str = "", *, detail: bool = False) -> dict[str, Any]:
     return result
 
 
+def _trace_probe_failure(lens: str, error: BaseException) -> None:
+    """{!--< internal-use >!--} 容器归因探测失败留痕（惰性取 logger：runtime 层不顶层依赖 Core.logger）"""
+    from ..Core.logger import logger
+
+    logger.trace(f"memory.container_counts: {lens} probe failed: {error!r}")
+
+
 def _container_counts() -> dict[str, int]:
     """{!--< internal-use >!--} 框架内部累积容器的长度归因（近零成本的 len 读取）"""
     counts: dict[str, int] = {}
@@ -155,8 +162,8 @@ def _container_counts() -> dict[str, int]:
 
         interaction_counts = interaction.counts()
         counts.update({f"interaction.{k}": v for k, v in interaction_counts.items()})
-    except Exception:
-        pass
+    except Exception as e:
+        _trace_probe_failure("interaction", e)
     try:
         from ..Core.adapter import adapter
 
@@ -164,22 +171,22 @@ def _container_counts() -> dict[str, int]:
         counts["adapter.cross_receipts"] = len(adapter._cross_receipts)
         counts["adapter.bots"] = len(adapter._bots)
         counts["adapter.pending_handler_tasks"] = len(adapter._pending_handler_tasks)
-    except Exception:
-        pass
+    except Exception as e:
+        _trace_probe_failure("adapter", e)
     try:
         from .tasks import _owner_tasks, _owner_threads, _owner_timers
 
         counts["tasks.owner_tasks"] = sum(len(v) for v in _owner_tasks.values())
         counts["tasks.owner_timers"] = sum(len(v) for v in _owner_timers.values())
         counts["tasks.owner_threads"] = sum(len(v) for v in _owner_threads.values())
-    except Exception:
-        pass
+    except Exception as e:
+        _trace_probe_failure("tasks", e)
     try:
         from ..Core.transcript import transcript
 
         counts["transcript.buffer"] = len(transcript._buffer)
-    except Exception:
-        pass
+    except Exception as e:
+        _trace_probe_failure("transcript", e)
     return counts
 
 

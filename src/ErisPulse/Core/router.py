@@ -57,7 +57,9 @@ from .constants import (
     DEFAULT_WS_AUTO_ACCEPT,
     FALLBACK_IPV4,
     FALLBACK_IPV6_HOST,
+    ROUTER_PORT_PROBE_TIMEOUT_SECS,
     ROUTER_RELOAD_STARTUP_TIMEOUT_SECS,
+    ROUTER_STARTUP_POLL_INTERVAL_SECS,
     SERVER_SHUTDOWN_TIMEOUT_SECS,
     UVICORN_COMPAT_RANGE,
     WILDCARD_IPV4,
@@ -2942,8 +2944,8 @@ class RouterManager:
                 if p:
                     try:
                         Path(p).unlink(missing_ok=True)
-                    except Exception:
-                        pass
+                    except Exception as e:
+                        logger.debug(f"temp cert file cleanup failed ({p}): {e!r}")
 
     def _create_uvicorn_server(
         self, config: uvicorn.Config
@@ -3217,7 +3219,7 @@ class RouterManager:
                 return True
             if self._server_task.done():
                 return False
-            await asyncio.sleep(0.05)
+            await asyncio.sleep(ROUTER_STARTUP_POLL_INTERVAL_SECS)
         return bool(self._uvicorn_server.started)
 
     @_web_stack_required
@@ -3325,7 +3327,7 @@ class RouterManager:
         else:
             family = socket.AF_INET
         probe = socket.socket(family, socket.SOCK_STREAM)
-        probe.settimeout(0.5)
+        probe.settimeout(ROUTER_PORT_PROBE_TIMEOUT_SECS)
         try:
             result = probe.connect_ex((probe_host, port))
         finally:

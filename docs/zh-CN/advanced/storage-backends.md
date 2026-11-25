@@ -83,6 +83,10 @@ pool_max = 10
 
 日志示例：`mysql 连接池创建最终失败（已重试 3 次），30 秒后自动重连；期间存储操作将快速失败，框架其余功能不受影响`
 
+## 进程退出
+
+未调用 `sdk.uninit()` 就结束的进程（独立脚本、中断后的收尾）在解释器退出阶段自动关闭存储：先完成依赖存储的退出刷盘（收件箱缓冲），再停止全部数据库连接，最后停止后台桥接循环。SQLite 的连接线程不会随进程退出自动结束，框架因此在解释器回收线程之前完成这三步；`atexit` 回调晚于线程回收，不要在其中访问存储。
+
 ## 失败语义（2.12 起）
 
 | 场景 | 行为 |
@@ -120,7 +124,7 @@ async with sdk.storage.atransaction():
 
 - **在异步 handler 中调用会阻塞整个事件循环**直到存储操作完成：高频调用下表现为 handler 超时、事件处理停摆、web 卡顿，并可能连锁触发 `database is locked`（写等待超时）。框架对每个调用点输出限频告警（附 `文件:行号 (函数名)`），收到告警即应把对应调用迁移为 a 前缀异步方法
 - 开发期可开启 `ErisPulse.framework.strict.sync_in_async = true`：同步调用不再放行，直接抛 `StrictModeError`（附调用点与迁移指引），当场暴露而不是上线后靠卡顿反推
-- 运行期止损：异步上下文下的桥接等待默认上限 10s（`ErisPulse.framework.sync_in_async_bridge_wait`），超时取消并按 fail-soft 语义返回——但这是兜底，不是许可
+- 运行期止损：异步上下文下的桥接等待默认上限 10s（`ErisPulse.framework.sync_in_async_bridge_wait`），超时后调用方按 fail-soft 语义拿到 `None` 返回；排队中的写操作**不丢弃**（仍在后台完成，事后失败以 WARNING 告警），同步事务的提交 / 连接归还同样会完成，事务开启超时则抛 `StorageOperationError`——但这是兜底，不是许可
 
 **请确定你在做什么，否则不要使用同步形式。** 纯同步线程（无事件循环）中调用不受限，是合法场景（如同步入口脚本、桥接等待事务提交）。
 
@@ -161,6 +165,26 @@ async with sdk.storage.atransaction():
 锁互斥矩阵（WAL 模式）：**读与读、读与写不互斥**；互斥只发生在**写与写**之间——事务专用连接（`BEGIN IMMEDIATE` 持锁至提交）与各事件循环的共享连接写操作竞争同一把写锁，长事务是写等待超时的首要嫌疑。
 
 > `busy_timeout` 经 `ErisPulse.storage.sqlite.busy_timeout` 配置（毫秒，默认 5000）；调大可延长写锁排队耐心，改动需重启生效（PRAGMA 应用于连接建立时）。
+
+## 后端注册（可插拔）
+
+后端通过注册表发现，不限于内置三种：
+
+```python
+from ErisPulse.Core.storage import get_registered_backends
+
+print(get_registered_backends())   # ['mysql', 'postgres', 'sqlite', ...外部注册的后端]
+```
+
+| Item / 项 | Description / 说明 |
+|---|---|
+| 注册 / Register | 外部包在模块导入时调用 `register_storage_backend(name, cls)`；`ErisPulse.storage.backend` 填注册名即启用 |
+| 发现 / Discovery | 外部包在 `pyproject.toml` 声明 entry-points 组 `erispulse.storage.backends`，框架创建存储实例前扫描并加载 |
+| 驱动声明 / Driver | 方言以 `driver_module` 声明驱动导入名（空 = 零依赖内置驱动）。**驱动依赖由后端包自身的 `pyproject.toml` 声明、随包安装**——框架不在运行时安装任何依赖，缺失时直接报错并附安装指引 |
+| 能力声明 / Capability | 后端以类属性声明能力，框架据此路由：`_SUPPORTS_THREAD_BRIDGE`（真并发后端，sync-in-async 走有界线程池）、`_SUPPORTS_CONN_ROUTING`（同步事务连接路由） |
+| 未注册的后端 | 报错并列出当前可用后端 |
+
+内置后端同样走这套注册表（`sqlite` / `mysql` / `postgres` 在导入时自注册），外部后端与内置后端地位相同。
 
 ## 自定义 SQL 后端
 

@@ -14,16 +14,18 @@ ErisPulse 存储基类
 import asyncio
 import atexit
 import concurrent.futures
+import logging
 import sys
 import threading
 import time
+import weakref
 from abc import ABC, abstractmethod
 from collections import OrderedDict
-from collections.abc import AsyncIterator
+from collections.abc import AsyncIterator, Callable
 from concurrent.futures import TimeoutError as _FutureTimeout
 from contextlib import AbstractAsyncContextManager, asynccontextmanager
 from contextvars import ContextVar
-from typing import Any, Generic, TypeVar
+from typing import Any, ClassVar, Generic, TypeVar
 
 from ..constants import (
     STORAGE_BRIDGE_JOIN_TIMEOUT_SECS,
@@ -36,6 +38,7 @@ from ..constants import (
     SYNC_IN_ASYNC_BRIDGE_WAIT_SECS,
 )
 from ..i18n import i18n
+from ..logger import logger
 from .errors import StorageOperationError, StrictModeError
 
 # 哨兵值，用于区分"键不存在"和"值为 None"
@@ -202,6 +205,67 @@ def _thread_bridge_worker(coro: Any) -> Any:
     return loop.run_until_complete(coro)
 
 
+class _PreJoinExitHooks:
+    """
+    {!--< internal-use >!--}
+    解释器退出时先于线程 join 执行的钩子序列
+
+    CPython 退出先执行 ``threading._shutdown()``——依次调用经
+    ``threading._register_atexit`` 登记的回调，再 join 全部非 daemon 线程——
+    ``atexit`` 回调排在其后。aiosqlite 0.22 起连接线程为非 daemon 线程，
+    依赖 ``atexit`` 关闭连接的进程会永久停在 join 上。本序列在 join 之前
+    按序执行：依赖存储的退出刷盘 → 停止全部存活后端的同步资源 → 停止桥接循环。
+    """
+
+    _flushers: ClassVar[list[Callable[[], None]]] = []
+    _registered: ClassVar[bool] = False
+
+    @classmethod
+    def register_flusher(cls, flusher: Callable[[], None]) -> None:
+        """
+        登记退出刷盘回调（须在后端连接停止之前完成的落盘）
+
+        :param flusher: 无参回调，在退出阶段的主线程内同步执行
+        """
+        cls._flushers.append(flusher)
+        cls.ensure_registered()
+
+    @classmethod
+    def ensure_registered(cls) -> None:
+        """{!--< internal-use >!--} 向 ``threading._register_atexit`` 登记本序列（幂等）"""
+        if cls._registered:
+            return
+        from threading import _register_atexit  # pyright: ignore[reportAttributeAccessIssue]
+
+        _register_atexit(cls._run)
+        cls._registered = True
+
+    @classmethod
+    def _run(cls) -> None:
+        """
+        {!--< internal-use >!--}
+        刷盘 → 停后端同步资源 → 停桥
+
+        单步失败不阻断后续步骤与进程退出；留痕走标准库 logging（标准 logging
+        的 shutdown 晚于本序列）。
+        """
+        exit_log = logging.getLogger(f"{__name__}.exit")
+        for flusher in tuple(cls._flushers):
+            try:
+                flusher()
+            except Exception:
+                exit_log.warning("storage exit flusher failed", exc_info=True)
+        for backend in list(BaseStorage._LIVE_BACKENDS):
+            try:
+                backend._stop_sync_resources()
+            except Exception:
+                exit_log.warning("storage backend stop failed at exit", exc_info=True)
+        try:
+            AsyncBridge().close()
+        except Exception:
+            exit_log.warning("storage bridge close failed at exit", exc_info=True)
+
+
 class AsyncBridge:
     """
     同步兼容层的后台事件循环桥接器
@@ -241,7 +305,7 @@ class AsyncBridge:
             self._thread.start()
             self._ready.wait()
             self._started = True
-            atexit.register(self.close)
+            _PreJoinExitHooks.ensure_registered()
 
     def _run_loop(self) -> None:
         """{!--< internal-use >!--} 桥接线程入口：启动常驻事件循环"""
@@ -272,14 +336,53 @@ class AsyncBridge:
             except Exception:
                 pass
 
-    def run(self, coro: Any, timeout: float | None = None) -> Any:
+    @staticmethod
+    def _watch_abandoned(future: "concurrent.futures.Future[Any]") -> None:
+        """
+        {!--< internal-use >!--}
+        跟进调用方已超时返回的桥接操作
+
+        未取消的操作留在执行队列中继续完成，完成后在此留痕：失败 WARNING
+        （调用方已拿到超时返回值，无从得知这次失败），成功 DEBUG。回调在完成
+        该 future 的线程内执行——桥接循环线程内经 ``call_soon`` 投递，不占循环。
+
+        :param future: 调用方已放弃等待的 future
+        """
+
+        def _done(fut: "concurrent.futures.Future[Any]") -> None:
+            try:
+                fut.result()
+            except concurrent.futures.CancelledError:
+                return
+            except BaseException as e:
+                failure = e  # except 的 as 变量在块结束时被删除，闭包须经独立名字持有
+
+                def _report() -> None:
+                    logger.warning(i18n.t("core.storage.sync_bridge_late_failure", error=failure))
+
+            else:
+
+                def _report() -> None:
+                    logger.debug("sync storage op finished after caller timeout")
+
+            try:
+                asyncio.get_running_loop().call_soon(_report)
+            except RuntimeError:
+                _report()
+
+        future.add_done_callback(_done)
+
+    def run(self, coro: Any, timeout: float | None = None, *, cancel_on_timeout: bool = False) -> Any:
         """
         在桥接事件循环上执行协程并阻塞等待结果
 
         :param coro: 要执行的协程对象（所有权移交本方法）
         :param timeout: 可选超时秒数（默认无限等待）
+        :param cancel_on_timeout: 等待超时后是否取消尚未完成的操作；False 时操作
+            留在桥接循环上继续完成（写不丢），结果经 :meth:`_watch_abandoned` 留痕
         :return: 协程的返回值
         :raises RuntimeError: 桥接已关闭或在桥接线程内重入调用时
+        :raises concurrent.futures.TimeoutError: 等待超时
         """
         loop = self._loop
         if loop is None or loop.is_closed():
@@ -296,7 +399,10 @@ class AsyncBridge:
         try:
             return future.result(timeout)
         except _FutureTimeout:
-            future.cancel()
+            if cancel_on_timeout:
+                future.cancel()
+            else:
+                self._watch_abandoned(future)
             raise
 
     def close(self) -> None:
@@ -382,8 +488,9 @@ class _AsyncTransaction:
             return
         try:
             await self.storage._release_txn_conn(conn)
-        except Exception:
-            pass
+        except Exception as e:
+            # 归还失败即连接泄漏：必须可见（WARNING 起步），不得静默
+            logger.warning(i18n.t("core.storage.txn_conn_release_failed", error=e))
 
     async def finish(self, exc: BaseException | None) -> None:
         """
@@ -433,8 +540,6 @@ class _AsyncTransaction:
         if duration <= slow_warn:
             return
         try:
-            from ..logger import logger
-
             logger.warning(
                 i18n.t(
                     "core.storage.txn_slow",
@@ -443,8 +548,8 @@ class _AsyncTransaction:
                     frames=self._open_site,
                 )
             )
-        except Exception:
-            pass
+        except Exception as e:
+            logger.debug(f"slow-txn warning emit failed: {e!r}")
 
 
 class _EmptyTransaction:
@@ -482,7 +587,16 @@ class _SyncTransaction:
 
     def __enter__(self) -> _AsyncTransaction:
         storage = self._storage
-        txn = storage._bridge_run(storage._new_async_transaction_and_start())
+        # 开启可取消：超时后尚未开始的开绝不延迟执行（否则取得连接与写锁后
+        # 无人收尾）；已开始的开启被取消时由 start() 就地释放连接
+        txn = storage._bridge_run(
+            storage._new_async_transaction_and_start(), cancel_on_timeout=True
+        )
+        if txn is None:
+            raise StorageOperationError(
+                "事务开启等待超时：桥接循环拥堵，未取得事务",
+                operation="transaction_begin",
+            )
         # 开启位置采集：__enter__ 运行在用户线程，用户帧可达（桥接循环内
         # 采集拿不到）；bridge_run 返回即 start 完成，finish 前赋值必然可见
         txn._open_site = " <- ".join(_capture_user_frames(limit=2)) or "<未知调用点>"
@@ -498,6 +612,7 @@ class _SyncTransaction:
         if txn is None:
             return
         storage._unregister_sync_txn(threading.get_ident())
+        # 收尾不可取消：提交/回滚与连接归还即使调用方超时返回也必须在桥接循环上完成
         storage._bridge_run(txn.finish(exc_val))
         # 不吞异常：与旧版 _Transaction 一致，异常照常向外传播
 
@@ -847,10 +962,21 @@ class BaseStorage(ABC):
     # （SQLite 及未知后端），维持单桥接循环串行——写锁语义要求串行，不可并发
     _SUPPORTS_THREAD_BRIDGE: bool = False
 
+    # 存活后端登记表（弱引用）：退出阶段据此停止各后端的同步资源
+    _LIVE_BACKENDS: ClassVar["weakref.WeakSet[BaseStorage]"] = weakref.WeakSet()
+
     def __init__(self) -> None:
         # 同步事务登记表：调用线程 ID → 事务句柄
         self._sync_txns: dict[int, _AsyncTransaction] = {}
         self._sync_txns_lock = threading.Lock()
+
+    def _register_live(self) -> None:
+        """{!--< internal-use >!--} 登记为存活后端，并确保退出钩子序列已登记"""
+        BaseStorage._LIVE_BACKENDS.add(self)
+        _PreJoinExitHooks.ensure_registered()
+
+    def _stop_sync_resources(self) -> None:  # noqa: B027
+        """{!--< internal-use >!--} 退出阶段不经事件循环同步停止后端资源；默认无需处理"""
 
     def _ensure_txn_state(self) -> None:
         """
@@ -872,19 +998,23 @@ class BaseStorage(ABC):
         """
         return True
 
-    def _bridge_run(self, coro: Any, timeout: float | None = None) -> Any:
+    def _bridge_run(
+        self, coro: Any, timeout: float | None = None, *, cancel_on_timeout: bool = False
+    ) -> Any:
         """
         {!--< internal-use >!--}
         将协程提交到桥接事件循环并阻塞等待结果（同步兼容层的执行入口）
 
         调用方处于异步上下文时施加有界等待（``framework.sync_in_async_bridge_wait``，
-        默认 10s）：超时取消桥接任务并返回 None（fail-soft）——把"无限冻结
-        调用方事件循环"收敛为有界等待；操作可能仍在桥接循环上完成（写最终
-        落库），仅调用方不再等待。纯同步线程调用不受限（等外事务/迁移等长
-        操作合法）。
+        默认 10s）：超时后调用方拿到 None 返回（fail-soft）——把"无限冻结调用方
+        事件循环"收敛为有界等待。默认不取消尚未完成的操作：写操作仍在桥接
+        循环上完成（写最终落库），完成后的失败另行告警；只读调用方传入
+        ``cancel_on_timeout=True``，超时即取消排队中的操作。纯同步线程调用不受限
+        （等待事务、迁移等长操作属合法场景）。
 
         :param coro: 要执行的协程对象
         :param timeout: 可选超时秒数（显式传入时优先于配置上限）
+        :param cancel_on_timeout: 等待超时后是否取消尚未完成的操作
         :return: 协程的返回值；异步上下文下桥接等待超时返回 None
         """
         if timeout is None and _has_running_loop():
@@ -901,16 +1031,14 @@ class BaseStorage(ABC):
             if getattr(self, "_SUPPORTS_THREAD_BRIDGE", False) and _has_running_loop():
                 # 真并发后端：有界线程池执行（每 worker 独立事件循环），
                 # 不经过单桥接循环的串行队列——主循环阻塞时长即操作本身耗时
-                return self._thread_bridge_run(coro, timeout)
-            return AsyncBridge().run(coro, timeout)
+                return self._thread_bridge_run(coro, timeout, cancel_on_timeout)
+            return AsyncBridge().run(coro, timeout, cancel_on_timeout=cancel_on_timeout)
         except _FutureTimeout:
             try:
                 frame = sys._getframe(1)
                 site = f"{frame.f_code.co_filename}:{frame.f_lineno} ({frame.f_code.co_name})"
             except ValueError:
                 site = "?"
-            from ..logger import logger
-
             logger.warning(
                 i18n.t(
                     "core.storage.sync_in_async_bridge_timeout",
@@ -920,16 +1048,19 @@ class BaseStorage(ABC):
             )
             return None
 
-    def _thread_bridge_run(self, coro: Any, timeout: float | None) -> Any:
+    def _thread_bridge_run(
+        self, coro: Any, timeout: float | None, cancel_on_timeout: bool = False
+    ) -> Any:
         """
         {!--< internal-use >!--}
         有界线程池桥接：真并发后端（``_SUPPORTS_THREAD_BRIDGE``）的同步调用
         执行路径——worker 线程各持独立事件循环（连接按循环缓存，随线程存活），
-        调用间互不排队。超时语义与桥接循环一致：取消提交并 fail-soft 抛出
-        （由 :meth:`_bridge_run` 统一转 None 返回）。
+        调用间互不排队。超时语义与桥接循环一致：调用方拿到 None 返回（由
+        :meth:`_bridge_run` 统一转换）；操作默认不取消，留在队列中继续完成。
 
         :param coro: 要执行的协程对象
         :param timeout: 等待上限秒数
+        :param cancel_on_timeout: 等待超时后是否取消尚未完成的操作
         :return: 协程的返回值
         """
         if _has_running_loop():
@@ -938,7 +1069,10 @@ class BaseStorage(ABC):
         try:
             return future.result(timeout)
         except _FutureTimeout:
-            future.cancel()
+            if cancel_on_timeout:
+                future.cancel()
+            else:
+                AsyncBridge._watch_abandoned(future)
             raise
 
     def _routing_conn(self) -> Any:
@@ -1204,8 +1338,8 @@ class BaseStorage(ABC):
         """
         conn = self._routing_conn()
         if conn is not None:
-            return self._bridge_run(self.aget(key, default, conn=conn))
-        return self._bridge_run(self.aget(key, default))
+            return self._bridge_run(self.aget(key, default, conn=conn), cancel_on_timeout=True)
+        return self._bridge_run(self.aget(key, default), cancel_on_timeout=True)
 
     def set(self, key: str, value: Any) -> bool:
         """
@@ -1249,8 +1383,8 @@ class BaseStorage(ABC):
         """
         conn = self._routing_conn()
         if conn is not None:
-            return self._bridge_run(self.aget_all_keys(conn=conn))
-        return self._bridge_run(self.aget_all_keys())
+            return self._bridge_run(self.aget_all_keys(conn=conn), cancel_on_timeout=True)
+        return self._bridge_run(self.aget_all_keys(), cancel_on_timeout=True)
 
     def clear(self) -> bool:
         """

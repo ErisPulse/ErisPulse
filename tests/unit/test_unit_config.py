@@ -8,6 +8,8 @@ import importlib
 import os
 import tempfile
 import time
+from dataclasses import dataclass
+from types import SimpleNamespace
 from unittest.mock import patch
 
 import pytest
@@ -19,7 +21,9 @@ except ModuleNotFoundError:  # Python 3.10：tomllib 是 3.11+ 标准库
 
 import tomlclass
 
-from ErisPulse.Core.config import ConfigManager
+from ErisPulse.Core.Bases.adapter import BaseAdapter
+from ErisPulse.Core.Bases.module import BaseModule
+from ErisPulse.Core.config import ConfigManager, config
 
 # importlib.import_module 返回真实子模块（Core.logger 包属性被 Logger 单例遮蔽）
 logger_module = importlib.import_module("ErisPulse.Core.logger")
@@ -2550,3 +2554,64 @@ class TestRuntimeStateGitignore:
         assert any(
             level == "debug" and ".gitignore" in message for message, level in calls
         ), "写入失败应以 debug 级别留痕"
+
+
+# ==================== cfg setter 落盘留痕 ====================
+
+@dataclass
+class _ProbeConfig:
+    name: str = "probe"
+
+
+class TestCfgPersistTrace:
+    """BaseAdapter / BaseModule 的 cfg setter 落盘异常留痕（数据写入路径不得静默）"""
+
+    @staticmethod
+    def _capture_warning(monkeypatch):
+        warnings: list[str] = []
+        monkeypatch.setattr(logger_module.logger, "warning", lambda msg, *args, **kwargs: warnings.append(msg))
+        return warnings
+
+    @pytest.mark.parametrize("owner", [BaseAdapter, BaseModule], ids=["adapter", "module"])
+    def test_non_dataclass_value_warns_and_keeps_instance(self, owner, monkeypatch):
+        """赋非 dataclass：asdict 抛错 → warning 留痕；适配器的内存实例仍然生效"""
+        warnings = self._capture_warning(monkeypatch)
+        stub = SimpleNamespace(_get_config_key=lambda: "Probe.cfg")
+        value = object()
+
+        owner.cfg.fset(stub, value)
+
+        assert len(warnings) == 1 and "Probe.cfg" in warnings[0]
+        if owner is BaseAdapter:
+            assert stub._config_instance is value
+
+    @pytest.mark.parametrize("owner", [BaseAdapter, BaseModule], ids=["adapter", "module"])
+    def test_set_config_raising_warns(self, owner, monkeypatch):
+        """setConfig 抛错 → warning 留痕，不向调用方传播"""
+
+        def boom(*args, **kwargs):
+            raise RuntimeError("storage down")
+
+        monkeypatch.setattr(config, "setConfig", boom)
+        warnings = self._capture_warning(monkeypatch)
+        stub = SimpleNamespace(_get_config_key=lambda: "Probe.cfg")
+
+        owner.cfg.fset(stub, _ProbeConfig())
+
+        assert len(warnings) == 1 and "Probe.cfg" in warnings[0]
+
+    @pytest.mark.parametrize("owner", [BaseAdapter, BaseModule], ids=["adapter", "module"])
+    def test_none_value_skips_persist(self, owner, monkeypatch):
+        """赋 None：不触发落盘与告警"""
+
+        def boom(*args, **kwargs):
+            raise AssertionError("None 不应触发落盘")
+
+        monkeypatch.setattr(config, "setConfig", boom)
+        warnings = self._capture_warning(monkeypatch)
+        stub = SimpleNamespace(_get_config_key=lambda: "Probe.cfg")
+
+        owner.cfg.fset(stub, None)
+
+        assert getattr(stub, "_config_instance", None) is None
+        assert warnings == []

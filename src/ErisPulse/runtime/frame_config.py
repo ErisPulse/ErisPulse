@@ -428,6 +428,7 @@ def _subscribe_merged_snapshot_invalidation() -> None:
         _lifecycle.register("config.set", lambda _data: _invalidate_merged_snapshot())
         _lifecycle.register("config.updated", lambda _data: _invalidate_merged_snapshot())
     except Exception:
+        # 装配窗口内 lifecycle 未就绪：指纹校验兜底失效（见 _get_merged_snapshot）
         pass
 
 

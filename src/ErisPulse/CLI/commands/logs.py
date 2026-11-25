@@ -57,6 +57,7 @@ class LogsCommand(Command):
                 )
                 return Path(str(log_dir)) / str(filename)
         except Exception:
+            # 配置读取失败回落默认路径（CLI 一次性读取，无 logger 可用）
             pass
         return Path("logs") / "erispulse.log"
 

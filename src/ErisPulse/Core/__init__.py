@@ -96,6 +96,7 @@ try:
     lifecycle.on("config.updated")(_i18n_invalidate)
     i18n.set_event_emitter(lifecycle.emit_sync)
 except Exception:
+    # 装配窗口内 lifecycle 未就绪：语言缓存改由指纹/下次读取兜底
     pass
 
 env = storage

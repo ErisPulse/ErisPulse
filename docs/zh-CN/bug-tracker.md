@@ -1179,3 +1179,16 @@ _apply_rate_limit 解析 window=3600（100/hour）
 
 **严重性**: 🔴 严重（整循环冻结 + 写丢失，kv/ORM/transcript 共用基座全命中）
 **类型**: 存储
+
+### [BUG-053] 存储连接未关闭时进程退出挂死（aiosqlite 0.22 连接线程不再是 daemon 线程）
+
+**问题**: 未显式关闭存储（或调用 `sdk.uninit()`）就结束的进程——独立脚本、Ctrl+C 中断后的收尾、测试进程——在业务代码跑完后不退出，永久停在解释器退出阶段；Windows / Linux 均复现。
+**原因**: CPython 退出先执行 `threading._shutdown()`（join 全部非 daemon 线程），之后才执行 `atexit` 回调。aiosqlite 0.22 起连接工作线程不再带 `daemon=True`，而存储关闭钩子与收件箱退出刷盘都注册在 `atexit`：连接线程等关闭、关闭等 join 结束，互等。
+**影响版本**: 依赖解析到 aiosqlite ≥ 0.22 的全部版本（`aiosqlite>=0.20.0` 无上限，默认 SQLite 后端必现）
+**修复版本**: 2.12.1-dev.1
+**修复内容**: 存储层新增先于线程回收的退出钩子序列（经 `threading._register_atexit` 登记）：依赖存储的退出刷盘（收件箱缓冲）→ 同步停止全部存活连接的工作线程（不经事件循环）→ 停止桥接循环。同步桥接的有界等待语义一并收口：超时后写操作不取消（仍在后台完成，事后失败告警）、事务收尾必达、事务开启超时抛 StorageOperationError——此前排队中的写会被取消丢弃，事务收尾被取消则连接与写锁永不释放。
+**修复日期**: 2026/11/25
+**回归测试**: tests/unit/test_unit_storage.py::TestStorageExitHooks（钩子顺序 / 单步失败不阻断 / 登记通道 / SQLite 连接不经事件循环即停止）、::TestSyncBridgeTimeoutSemantics（写不丢 / 事后失败留痕 / 开启超时报错 / 收尾必达）
+
+**严重性**: 🔴 严重（默认 SQLite 后端必现，进程无法正常退出）
+**类型**: 存储

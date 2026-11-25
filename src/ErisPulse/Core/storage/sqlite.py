@@ -12,6 +12,7 @@ ErisPulse SQLite 存储后端（aiosqlite 异步原生实现）
 """
 
 import sqlite3
+import weakref
 from pathlib import Path
 from typing import Any
 
@@ -223,6 +224,7 @@ class SQLiteStorage(_SingletonMixin, SQLStorageBase):
         except Exception:
             await conn.close()
             raise
+        self._track_connection(conn)
         return conn
 
     async def _destroy_loop_resource(self, resource: aiosqlite.Connection) -> None:
@@ -246,11 +248,26 @@ class SQLiteStorage(_SingletonMixin, SQLStorageBase):
         except Exception:
             await conn.close()
             raise
+        self._track_connection(conn)
         return conn
 
     async def _close_txn_conn(self, conn: aiosqlite.Connection) -> None:
         """{!--< internal-use >!--} 关闭事务专用连接"""
         await conn.close()
+
+    def _track_connection(self, conn: aiosqlite.Connection) -> None:
+        """{!--< internal-use >!--} 登记存活连接（弱引用），供退出阶段同步停止其工作线程"""
+        conns = getattr(self, "_live_connections", None)
+        if conns is None:
+            conns = weakref.WeakSet()
+            self._live_connections = conns
+        conns.add(conn)
+        self._register_live()
+
+    def _stop_sync_resources(self) -> None:
+        """{!--< internal-use >!--} 退出阶段不经事件循环，直接停止全部存活连接的工作线程"""
+        for conn in list(getattr(self, "_live_connections", ())):
+            conn.stop()
 
     # 事务控制
 

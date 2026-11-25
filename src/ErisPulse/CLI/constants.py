@@ -80,6 +80,11 @@ INIT_ERISPULSE_DEPENDENCY: str = "erispulse>=2.10.0"
 # 修改影响: 调小会更容易走强杀分支（可能留下半完成的安装状态），调大拖慢停止体感。
 CLI_CHILD_TERMINATE_WAIT_SECS: float = 5.0
 
+# 等待进程退出的轮询间隔（秒）。
+# 使用位置: CLI/utils/runtime_state.py（wait_pid_exit：terminate 后轮询进程是否已退出）
+# 修改影响: 调小更快感知退出但增加空转，调大则退出后最多多等一个间隔才返回。
+CLI_PID_EXIT_POLL_INTERVAL_SECS: float = 0.15
+
 # uv 可用性探测（python -m uv --version）的超时（秒）。
 # 使用位置: CLI/utils/package_manager.py 的 _resolve_uv_command。
 # 修改影响: 调大会在无 uv 环境下拖慢首次安装探测，调小可能误判 uv 不可用。
@@ -153,6 +158,7 @@ __all__ = [
     "MODULE_ENTRY_POINT_GROUP",
     "PYPI_PACKAGE_JSON_URL_TEMPLATE",
     "CLI_CHILD_TERMINATE_WAIT_SECS",
+    "CLI_PID_EXIT_POLL_INTERVAL_SECS",
     "CLI_UV_PROBE_TIMEOUT_SECS",
     "CLI_UV_PROJECT_TIMEOUT_SECS",
     "CLI_UV_UNSUPPORTED_FLAGS",

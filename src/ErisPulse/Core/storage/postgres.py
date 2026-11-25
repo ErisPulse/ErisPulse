@@ -37,7 +37,6 @@ class PostgresDialect(SQLDialect):
     name = "postgres"
     extra_name = "postgres"
     driver_module = "asyncpg"
-    driver_requires = ["asyncpg>=0.29,<0.31"]
 
     key_column_type = "TEXT"
     value_column_type = "TEXT"
@@ -239,13 +238,15 @@ class PostgresStorage(_SingletonMixin, SQLStorageBase):
                 # 归还失败（连接状态未知）：直接丢弃，池侧按断连淘汰
                 try:
                     await conn.close()
-                except Exception:
-                    pass
+                except Exception as e:
+                    logger.debug(
+                        i18n.t("core.storage.txn_conn_release_failed", error=e)
+                    )
             return
         try:
             await conn.close()
-        except Exception:
-            pass
+        except Exception as e:
+            logger.debug(i18n.t("core.storage.txn_conn_release_failed", error=e))
 
     # 事务控制（asyncpg 推荐使用 transaction() 句柄）
 

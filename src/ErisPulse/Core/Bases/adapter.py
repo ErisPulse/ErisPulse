@@ -1595,10 +1595,12 @@ class BaseAdapter(ABC):
         if value is not None:
             from dataclasses import asdict
 
+            key = type(self).__name__
             try:
-                config_mgr.setConfig(self._get_config_key(), asdict(value))
-            except Exception:
-                pass
+                key = self._get_config_key()
+                config_mgr.setConfig(key, asdict(value))
+            except Exception as e:
+                logger.warning(i18n.t("core.config.cfg_persist_failed", key=key, error=e))
 
     @property
     def config(self) -> Any:

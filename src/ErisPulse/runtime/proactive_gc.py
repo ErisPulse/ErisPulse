@@ -21,6 +21,7 @@ from ..Core.constants import (
     DEFAULT_PROACTIVE_GC_MEMORY_GROWTH_MB,
 )
 from ..Core.i18n import i18n
+from ..Core.logger import logger
 
 if TYPE_CHECKING:
     from ..sdk import SDK
@@ -54,8 +55,8 @@ def start_proactive_gc(sdk: SDK) -> None:
     try:
         sdk.lifecycle.register("config.set", sdk._on_gc_config_event)
         sdk.lifecycle.register("config.updated", sdk._on_gc_config_event)
-    except Exception:
-        pass
+    except Exception as e:
+        logger.debug(i18n.t("runtime.gc.hook_register_failed", error=e))
 
     sdk._gc_config_snapshot = sdk._read_gc_config()
     if sdk._gc_config_snapshot[0] <= 0:
@@ -84,8 +85,8 @@ def start_proactive_gc(sdk: SDK) -> None:
                     from .memory import ensure_tracing
 
                     ensure_tracing()
-                except Exception:
-                    pass
+                except Exception as e:
+                    logger.debug(f"ensure_tracing failed: {e!r}")
 
                 # 1. 内部资源回收（廉价，始终执行）
                 evicted = 0
@@ -154,13 +155,10 @@ def start_proactive_gc(sdk: SDK) -> None:
                 # GC 异常不应中断循环；首次 warning 留痕，恢复前降为 debug 防
                 # 刷屏（空转无痕难排查，持续刷屏同样难排查）
                 try:
-                    from ..Core.i18n import i18n as _i18n
-                    from ..Core.logger import logger
-
                     if loop_error_reported:
-                        logger.debug(_i18n.t("runtime.gc.loop_error", error=e))
+                        logger.debug(i18n.t("runtime.gc.loop_error", error=e))
                     else:
-                        logger.warning(_i18n.t("runtime.gc.loop_error", error=e))
+                        logger.warning(i18n.t("runtime.gc.loop_error", error=e))
                     loop_error_reported = True
                 except Exception:
                     pass

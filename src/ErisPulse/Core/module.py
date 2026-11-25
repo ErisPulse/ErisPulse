@@ -475,8 +475,11 @@ class ModuleManager(ManagerBase):
                     from ..runtime.tasks import spawn_background
 
                     spawn_background(self._replay_events(module_name, replay))
-            except Exception:
-                pass
+            except Exception as e:
+                # 派发失败即重放不发生（模块错过加载窗口内的事件）：必须可见
+                logger.warning(
+                    i18n.t("core.module.replay_spawn_failed", name=module_name, error=e)
+                )
 
             await lifecycle.submit_event(
                 "module.load",
@@ -2861,8 +2864,8 @@ class ModuleManager(ManagerBase):
 
             metrics.inc("modules.call.total")
             metrics.inc(f"modules.call.{module_name}")
-        except Exception:
-            pass
+        except Exception as e:
+            logger.debug(f"module call metrics inc failed: {e!r}")
 
         # scope 出站审计（调用方维度：actions.<caller>.call，name=<module>.<method>）
         caller = current_owner.get()

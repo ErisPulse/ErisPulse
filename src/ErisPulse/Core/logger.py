@@ -230,6 +230,7 @@ class _JsonFormatter(logging.Formatter):
             if _trace_id:
                 log_entry["trace_id"] = str(_trace_id)
         except Exception:
+            # 日志器自身的异常隔离：此处不可再调 logger（递归）
             pass
         if record.exc_info and record.exc_info[0] is not None:
             log_entry["exception"] = self.formatException(record.exc_info)
