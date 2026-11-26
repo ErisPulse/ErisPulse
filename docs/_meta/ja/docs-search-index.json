@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 2080,
+  "total_keywords": 2083,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -26,14 +26,6 @@
         "title": "1 つでインストールするスクリプト（新規環境に推奨）"
       }
     ],
-    "1 つのパッケージで複数のモジュールを登録できますか？": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 183,
-        "level": 3,
-        "title": "1 つのパッケージで複数のモジュールを登録できますか？"
-      }
-    ],
     "1. BaseAdapter 層（ほとんどの場合オーバーライド不要）": [
       {
         "document": "developer-guide/adapters/getting-started.md",
@@ -53,7 +45,7 @@
     "1. Dockerfile の作成": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 207,
+        "line": 232,
         "level": 3,
         "title": "1. Dockerfile の作成"
       }
@@ -117,7 +109,7 @@
     "1. pyproject.toml の設定": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 42,
+        "line": 41,
         "level": 3,
         "title": "1. pyproject.toml の設定"
       }
@@ -488,6 +480,14 @@
         "title": "1xxxx 動作リクエストエラー（Request Error）"
       }
     ],
+    "1つのパッケージで複数のモジュールを登録できるか？": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 208,
+        "level": 3,
+        "title": "1つのパッケージで複数のモジュールを登録できるか？"
+      }
+    ],
     "2 つの宣言の使い分け": [
       {
         "document": "developer-guide/orm.md",
@@ -523,7 +523,7 @@
     "2. GitHub Actions ワークフローの作成": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 235,
+        "line": 260,
         "level": 3,
         "title": "2. GitHub Actions ワークフローの作成"
       }
@@ -547,7 +547,7 @@
     "2. PyPI へのリリース": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 79,
+        "line": 78,
         "level": 3,
         "title": "2. PyPI へのリリース"
       }
@@ -1097,7 +1097,7 @@
     "3. ビルドのトリガー": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 304,
+        "line": 329,
         "level": 3,
         "title": "3. ビルドのトリガー"
       }
@@ -1134,12 +1134,12 @@
         "title": "3. プラットフォーム固有メソッド命名"
       }
     ],
-    "3. モジュールストアへの提出": [
+    "3. モジュールストアに提出（ErisPulse Workbench）": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 94,
+        "line": 93,
         "level": 3,
-        "title": "3. モジュールストアへの提出"
+        "title": "3. モジュールストアに提出（ErisPulse Workbench）"
       }
     ],
     "3. リソース管理": [
@@ -1462,12 +1462,12 @@
         "title": "4. アダプタの起動"
       }
     ],
-    "4. イメージを公開設定にする": [
+    "4. イメージを公開に設定": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 319,
+        "line": 344,
         "level": 3,
-        "title": "4. イメージを公開設定にする"
+        "title": "4. イメージを公開に設定"
       }
     ],
     "4. カスタムタイプの拡張": [
@@ -1508,14 +1508,6 @@
         "line": 106,
         "level": 3,
         "title": "4. モジュール"
-      }
-    ],
-    "4. リリース済みモジュールの管理": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 110,
-        "level": 3,
-        "title": "4. リリース済みモジュールの管理"
       }
     ],
     "4. 使用方法": [
@@ -1564,6 +1556,14 @@
         "line": 187,
         "level": 3,
         "title": "4. 接続情報の公開"
+      }
+    ],
+    "4. 既にリリースしたモジュールの管理": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 138,
+        "level": 3,
+        "title": "4. 既にリリースしたモジュールの管理"
       }
     ],
     "4. 組み合わせて使用": [
@@ -1737,7 +1737,7 @@
     "5. ユーザーの使用": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 326,
+        "line": 351,
         "level": 3,
         "title": "5. ユーザーの使用"
       }
@@ -3060,12 +3060,12 @@
         "title": "Discord 特有のメソッドの使用"
       }
     ],
-    "Docker Hub への同時公開": [
+    "Docker Hub にも同時に公開する": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 358,
+        "line": 383,
         "level": 3,
-        "title": "Docker Hub への同時公開"
+        "title": "Docker Hub にも同時に公開する"
       }
     ],
     "Docker を使用する": [
@@ -3079,17 +3079,17 @@
     "Docker イメージ vs PyPI リリース": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 381,
+        "line": 406,
         "level": 3,
         "title": "Docker イメージ vs PyPI リリース"
       }
     ],
-    "Docker イメージによるアプリの配布": [
+    "Docker イメージでアプリケーションを配布する": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 197,
+        "line": 222,
         "level": 2,
-        "title": "Docker イメージによるアプリの配布"
+        "title": "Docker イメージでアプリケーションを配布する"
       }
     ],
     "Docker 方式": [
@@ -5994,12 +5994,6 @@
         "title": "よくある質問"
       },
       {
-        "document": "developer-guide/publishing.md",
-        "line": 177,
-        "level": 2,
-        "title": "よくある質問"
-      },
-      {
         "document": "getting-started/first-bot.md",
         "line": 119,
         "level": 2,
@@ -6299,7 +6293,7 @@
     "アダプター": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 64,
+        "line": 63,
         "level": 4,
         "title": "アダプター"
       }
@@ -7576,14 +7570,6 @@
         "title": "クイックリファレンス"
       }
     ],
-    "クイックリリース": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 38,
-        "level": 2,
-        "title": "クイックリリース"
-      }
-    ],
     "クエリメソッド": [
       {
         "document": "platform-guide/onebot11.md",
@@ -8243,7 +8229,7 @@
     "コード品質": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 131,
+        "line": 156,
         "level": 3,
         "title": "コード品質"
       }
@@ -8332,14 +8318,6 @@
         "line": 372,
         "level": 3,
         "title": "サポートされていない標準アクション"
-      }
-    ],
-    "サポートされている提出タイプ": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 31,
-        "level": 3,
-        "title": "サポートされている提出タイプ"
       }
     ],
     "サポートされている標準アクション": [
@@ -9427,7 +9405,7 @@
     "ドキュメント": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 153,
+        "line": 178,
         "level": 3,
         "title": "ドキュメント"
       }
@@ -9732,12 +9710,12 @@
         "title": "パス処理"
       }
     ],
-    "パッケージ名は必ず `ErisPulse-` で始める必要がありますか？": [
+    "パッケージ名は `ErisPulse-` で始める必要があるか？": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 179,
+        "line": 204,
         "level": 3,
-        "title": "パッケージ名は必ず `ErisPulse-` で始める必要がありますか？"
+        "title": "パッケージ名は `ErisPulse-` で始める必要があるか？"
       }
     ],
     "パッケージ管理コマンド": [
@@ -11233,7 +11211,7 @@
     "モジュール": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 46,
+        "line": 45,
         "level": 4,
         "title": "モジュール"
       }
@@ -11373,7 +11351,7 @@
     "モジュールストアの概要": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 9,
+        "line": 8,
         "level": 2,
         "title": "モジュールストアの概要"
       }
@@ -12039,49 +12017,41 @@
     "リリース": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 160,
+        "line": 185,
         "level": 3,
         "title": "リリース"
       }
     ],
-    "リリースとモジュールストアガイド": [
+    "リリースとモジュールストアのガイド": [
       {
         "document": "developer-guide/publishing.md",
         "line": 1,
         "level": 1,
-        "title": "リリースとモジュールストアガイド"
+        "title": "リリースとモジュールストアのガイド"
       }
     ],
     "リリース前に品質を確保する": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 395,
+        "line": 420,
         "level": 3,
         "title": "リリース前に品質を確保する"
       }
     ],
-    "リリース前チェックリスト": [
+    "リリース前のチェックリスト": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 127,
+        "line": 152,
         "level": 2,
-        "title": "リリース前チェックリスト"
+        "title": "リリース前のチェックリスト"
       }
     ],
-    "リリース後にユーザーが使えるようにする": [
+    "リリース後にユーザーが使いやすいようにする": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 400,
+        "line": 425,
         "level": 3,
-        "title": "リリース後にユーザーが使えるようにする"
-      }
-    ],
-    "リリース済みモジュールの更新": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 119,
-        "level": 2,
-        "title": "リリース済みモジュールの更新"
+        "title": "リリース後にユーザーが使いやすいようにする"
       }
     ],
     "リレーションマッピング（relationship）": [
@@ -12500,6 +12470,14 @@
         "title": "一般的な設定位置"
       }
     ],
+    "一般的な質問": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 202,
+        "level": 2,
+        "title": "一般的な質問"
+      }
+    ],
     "一般的タスクの例": [
       {
         "document": "getting-started/common-tasks.md",
@@ -12562,14 +12540,6 @@
         "line": 1,
         "level": 1,
         "title": "云湖用户平台特性文档"
-      }
-    ],
-    "互換性": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 139,
-        "level": 3,
-        "title": "互換性"
       }
     ],
     "互換性契約（コンシューマーが遵守すべき事項）": [
@@ -13032,6 +13002,14 @@
         "line": 115,
         "level": 3,
         "title": "共通フィールド（すべてのイベントタイプ）"
+      }
+    ],
+    "兼容性": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 164,
+        "level": 3,
+        "title": "兼容性"
       }
     ],
     "内容リスト": [
@@ -14470,12 +14448,12 @@
         "title": "宣言的設定（推奨）"
       }
     ],
-    "審査にはどのくらい時間がかかりますか？": [
+    "審査にはどのくらい時間がかかるか？": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 193,
+        "line": 218,
         "level": 3,
-        "title": "審査にはどのくらい時間がかかりますか？"
+        "title": "審査にはどのくらい時間がかかるか？"
       }
     ],
     "対応していないタイプの処理": [
@@ -15286,6 +15264,14 @@
         "title": "推奨記述方法"
       }
     ],
+    "提出可能なタイプ": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 30,
+        "level": 3,
+        "title": "提出可能なタイプ"
+      }
+    ],
     "支持/非サポートのメッセージセグメント": [
       {
         "document": "platform-guide/minecraft.md",
@@ -15430,12 +15416,28 @@
         "title": "方法 3: uv tool を使用したインストール（グローバル CLI、推奨）"
       }
     ],
+    "方法1：ウェブサイトから提出（初回推奨）": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 97,
+        "level": 4,
+        "title": "方法1：ウェブサイトから提出（初回推奨）"
+      }
+    ],
     "方法1：ローカルプロセス（推奨）": [
       {
         "document": "ai-support/README.md",
         "line": 93,
         "level": 3,
         "title": "方法1：ローカルプロセス（推奨）"
+      }
+    ],
+    "方法2：API による自主提出（CLI / CI 環境）": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 103,
+        "level": 4,
+        "title": "方法2：API による自主提出（CLI / CI 環境）"
       }
     ],
     "方法2：公式オンラインエンドポイント": [
@@ -15460,6 +15462,14 @@
         "line": 123,
         "level": 2,
         "title": "方言の動作の違い"
+      }
+    ],
+    "既にリリースしたモジュールの更新": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 144,
+        "level": 2,
+        "title": "既にリリースしたモジュールの更新"
       }
     ],
     "既に接続済みのプラットフォーム機能": [
@@ -16278,6 +16288,12 @@
     ],
     "次に進む": [
       {
+        "document": "developer-guide/publishing.md",
+        "line": 418,
+        "level": 2,
+        "title": "次に進む"
+      },
+      {
         "document": "ecosystem/qvqchat.md",
         "line": 154,
         "level": 2,
@@ -16338,12 +16354,6 @@
       {
         "document": "developer-guide/orm.md",
         "line": 227,
-        "level": 2,
-        "title": "次のステップ"
-      },
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 393,
         "level": 2,
         "title": "次のステップ"
       },
@@ -17347,7 +17357,7 @@
       },
       {
         "document": "developer-guide/publishing.md",
-        "line": 147,
+        "line": 172,
         "level": 3,
         "title": "設定"
       },
@@ -18150,6 +18160,14 @@
         "title": "通知操作者"
       }
     ],
+    "速攻リリース": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 37,
+        "level": 2,
+        "title": "速攻リリース"
+      }
+    ],
     "速習": [
       {
         "document": "advanced/client.md",
@@ -18222,12 +18240,12 @@
         "title": "遅延送信（Defer）"
       }
     ],
-    "適用シナリオ": [
+    "適用シーン": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 201,
+        "line": 226,
         "level": 3,
-        "title": "適用シナリオ"
+        "title": "適用シーン"
       }
     ],
     "適用対象": [
@@ -18345,7 +18363,7 @@
     "開発モードでのテスト": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 167,
+        "line": 192,
         "level": 2,
         "title": "開発モードでのテスト"
       }
@@ -18600,12 +18618,12 @@
         "title": "関連リンク"
       }
     ],
-    "閲覧と検索": [
+    "閲覧と発見": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 13,
+        "line": 12,
         "level": 3,
-        "title": "閲覧と検索"
+        "title": "閲覧と発見"
       }
     ],
     "閲読上の注意": [

@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 2011,
+  "total_keywords": 2013,
   "keywords": {
     "0 Success (OK)": [
       {
@@ -80,12 +80,12 @@
         "title": "1. Core Principles"
       }
     ],
-    "1. Create a Dockerfile": [
+    "1. Create Dockerfile": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 206,
+        "line": 232,
         "level": 3,
-        "title": "1. Create a Dockerfile"
+        "title": "1. Create Dockerfile"
       }
     ],
     "1. Create a Project": [
@@ -526,12 +526,12 @@
         "title": "2. Correct Asynchronous Operations"
       }
     ],
-    "2. Create a GitHub Actions Workflow": [
+    "2. Create GitHub Actions Workflow": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 234,
+        "line": 260,
         "level": 3,
-        "title": "2. Create a GitHub Actions Workflow"
+        "title": "2. Create GitHub Actions Workflow"
       }
     ],
     "2. Create pyproject.toml": [
@@ -1170,12 +1170,12 @@
         "title": "3. Standardization Workflow (How New Capabilities Enter the Standard)"
       }
     ],
-    "3. Submit to the Module Store": [
+    "3. Submit to the Module Store (ErisPulse Workbench)": [
       {
         "document": "developer-guide/publishing.md",
         "line": 93,
         "level": 3,
-        "title": "3. Submit to the Module Store"
+        "title": "3. Submit to the Module Store (ErisPulse Workbench)"
       }
     ],
     "3. Support Platform-Specific Methods": [
@@ -1194,12 +1194,12 @@
         "title": "3. The Request Inner Class (No Override Needed in Most Cases)"
       }
     ],
-    "3. Trigger the Build": [
+    "3. Trigger Build": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 303,
+        "line": 329,
         "level": 3,
-        "title": "3. Trigger the Build"
+        "title": "3. Trigger Build"
       }
     ],
     "3.1 Chained Calls": [
@@ -1453,7 +1453,7 @@
     "4. Manage Published Modules": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 109,
+        "line": 138,
         "level": 3,
         "title": "4. Manage Published Modules"
       }
@@ -1498,12 +1498,12 @@
         "title": "4. Session Identifier Isolation Across Platforms"
       }
     ],
-    "4. Set the Image to Public": [
+    "4. Set Image to Public": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 318,
+        "line": 344,
         "level": 3,
-        "title": "4. Set the Image to Public"
+        "title": "4. Set Image to Public"
       }
     ],
     "4. Starting Adapters": [
@@ -1741,7 +1741,7 @@
     "5. User Usage": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 325,
+        "line": 351,
         "level": 3,
         "title": "5. User Usage"
       }
@@ -3142,6 +3142,14 @@
         "title": "Api.Using() Account Routing Fix (0.3.1)"
       }
     ],
+    "Applicable Scenarios": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 226,
+        "level": 3,
+        "title": "Applicable Scenarios"
+      }
+    ],
     "Approval via Module Side (Event-based)": [
       {
         "document": "platform-guide/yunhu_user.md",
@@ -4246,12 +4254,12 @@
         "title": "Callback Routes"
       }
     ],
-    "Can a single package register multiple modules?": [
+    "Can one package register multiple modules?": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 182,
+        "line": 208,
         "level": 3,
-        "title": "Can a single package register multiple modules?"
+        "title": "Can one package register multiple modules?"
       }
     ],
     "Cancellation timeline (module unload)": [
@@ -4617,7 +4625,7 @@
     "Code Quality": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 130,
+        "line": 156,
         "level": 3,
         "title": "Code Quality"
       }
@@ -4949,7 +4957,7 @@
     "Compatibility": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 138,
+        "line": 164,
         "level": 3,
         "title": "Compatibility"
       }
@@ -5141,7 +5149,7 @@
       },
       {
         "document": "developer-guide/publishing.md",
-        "line": 146,
+        "line": 172,
         "level": 3,
         "title": "Configuration"
       },
@@ -6401,7 +6409,7 @@
     "Development Mode Testing": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 166,
+        "line": 192,
         "level": 2,
         "title": "Development Mode Testing"
       }
@@ -6543,7 +6551,7 @@
     "Distributing Applications via Docker Images": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 196,
+        "line": 222,
         "level": 2,
         "title": "Distributing Applications via Docker Images"
       }
@@ -6559,7 +6567,7 @@
     "Docker Image vs PyPI Publishing": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 380,
+        "line": 406,
         "level": 3,
         "title": "Docker Image vs PyPI Publishing"
       }
@@ -6667,7 +6675,7 @@
     "Documentation": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 152,
+        "line": 178,
         "level": 3,
         "title": "Documentation"
       }
@@ -6891,7 +6899,7 @@
     "Ensure Quality Before Publishing": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 394,
+        "line": 420,
         "level": 3,
         "title": "Ensure Quality Before Publishing"
       }
@@ -8062,12 +8070,6 @@
     ],
     "FAQ": [
       {
-        "document": "developer-guide/publishing.md",
-        "line": 176,
-        "level": 2,
-        "title": "FAQ"
-      },
-      {
         "document": "getting-started/first-bot.md",
         "line": 119,
         "level": 2,
@@ -8376,6 +8378,12 @@
       {
         "document": "ai-support/README.md",
         "line": 144,
+        "level": 2,
+        "title": "Frequently Asked Questions"
+      },
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 202,
         "level": 2,
         "title": "Frequently Asked Questions"
       }
@@ -9064,14 +9072,6 @@
         "title": "Heartbeat Mechanism"
       }
     ],
-    "Help Users Get Started After Publishing": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 399,
-        "level": 3,
-        "title": "Help Users Get Started After Publishing"
-      }
-    ],
     "High-Level Methods (Recommended)": [
       {
         "document": "advanced/client.md",
@@ -9189,7 +9189,7 @@
     "How long does the review take?": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 192,
+        "line": 218,
         "level": 3,
         "title": "How long does the review take?"
       }
@@ -10164,6 +10164,14 @@
         "title": "MCP Server"
       }
     ],
+    "Make It Usable After Publishing": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 425,
+        "level": 3,
+        "title": "Make It Usable After Publishing"
+      }
+    ],
     "Manage Tasks": [
       {
         "document": "ecosystem/cron.md",
@@ -10926,6 +10934,22 @@
         "title": "Method 1: Local Process (Recommended)"
       }
     ],
+    "Method 1: Web Submission (Recommended for First-Time Use)": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 97,
+        "level": 4,
+        "title": "Method 1: Web Submission (Recommended for First-Time Use)"
+      }
+    ],
+    "Method 2: API Submission (CLI / CI Scenarios)": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 103,
+        "level": 4,
+        "title": "Method 2: API Submission (CLI / CI Scenarios)"
+      }
+    ],
     "Method 2: Install with uv (Recommended)": [
       {
         "document": "user-guide/installation.md",
@@ -11272,14 +11296,6 @@
         "title": "Module Series — `Core/module.py` (`sdk.module.call`)"
       }
     ],
-    "Module Store Overview": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 8,
-        "level": 2,
-        "title": "Module Store Overview"
-      }
-    ],
     "Module Testing (ErisPulse-Testing)": [
       {
         "document": "developer-guide/testing.md",
@@ -11499,7 +11515,7 @@
     "Must package names start with `ErisPulse-`?": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 178,
+        "line": 204,
         "level": 3,
         "title": "Must package names start with `ErisPulse-`?"
       }
@@ -11617,7 +11633,7 @@
       },
       {
         "document": "developer-guide/publishing.md",
-        "line": 392,
+        "line": 418,
         "level": 2,
         "title": "Next Steps"
       },
@@ -12278,6 +12294,14 @@
         "title": "Overview of the 17 Tools"
       }
     ],
+    "Overview of the Module Store": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 8,
+        "level": 2,
+        "title": "Overview of the Module Store"
+      }
+    ],
     "Owned Resources Overview": [
       {
         "document": "advanced/ownership.md",
@@ -12759,7 +12783,7 @@
     "Pre-Publish Checklist": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 126,
+        "line": 152,
         "level": 2,
         "title": "Pre-Publish Checklist"
       }
@@ -12898,6 +12922,14 @@
         "title": "Proxy Configuration"
       }
     ],
+    "Publish Simultaneously to Docker Hub": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 383,
+        "level": 3,
+        "title": "Publish Simultaneously to Docker Hub"
+      }
+    ],
     "Publish Your Module": [
       {
         "document": "developer-guide/README.md",
@@ -12909,7 +12941,7 @@
     "Publishing": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 159,
+        "line": 185,
         "level": 3,
         "title": "Publishing"
       }
@@ -12928,14 +12960,6 @@
         "line": 1,
         "level": 1,
         "title": "Publishing and Module Store Guide"
-      }
-    ],
-    "Publishing to Docker Hub as Well": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 357,
-        "level": 3,
-        "title": "Publishing to Docker Hub as Well"
       }
     ],
     "Q1: Why is private converted to user when sending?": [
@@ -13082,12 +13106,12 @@
         "title": "Quick Initialization"
       }
     ],
-    "Quick Publish": [
+    "Quick Publishing": [
       {
         "document": "developer-guide/publishing.md",
         "line": 37,
         "level": 2,
-        "title": "Quick Publish"
+        "title": "Quick Publishing"
       }
     ],
     "Quick Reference": [
@@ -16706,6 +16730,14 @@
         "title": "Unsupported Standard Actions (retcode=10002)"
       }
     ],
+    "Update Published Modules": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 144,
+        "level": 2,
+        "title": "Update Published Modules"
+      }
+    ],
     "Update Requirements": [
       {
         "document": "platform-guide/maintain-notes.md",
@@ -16728,14 +16760,6 @@
         "line": 205,
         "level": 3,
         "title": "Updating Data"
-      }
-    ],
-    "Updating Published Modules": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 118,
-        "level": 2,
-        "title": "Updating Published Modules"
       }
     ],
     "Upgrading Components": [
@@ -16826,14 +16850,6 @@
         "line": 620,
         "level": 4,
         "title": "Usage in RouteGroup"
-      }
-    ],
-    "Use Cases": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 200,
-        "level": 3,
-        "title": "Use Cases"
       }
     ],
     "Use event.reply() for automatic reply (it automatically selects the correct send method based on the platform)": [

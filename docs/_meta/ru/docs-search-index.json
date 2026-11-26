@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 2065,
+  "total_keywords": 2067,
   "keywords": {
     "0 Успех (OK)": [
       {
@@ -261,7 +261,7 @@
     "1. Создание Dockerfile": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 206,
+        "line": 232,
         "level": 3,
         "title": "1. Создание Dockerfile"
       }
@@ -684,20 +684,20 @@
         "title": "2. Соглашения об именовании модулей"
       }
     ],
-    "2. Создание GitHub Actions workflow": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 234,
-        "level": 3,
-        "title": "2. Создание GitHub Actions workflow"
-      }
-    ],
     "2. Создание pyproject.toml": [
       {
         "document": "developer-guide/adapters/getting-started.md",
         "line": 77,
         "level": 3,
         "title": "2. Создание pyproject.toml"
+      }
+    ],
+    "2. Создание workflow для GitHub Actions": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 260,
+        "level": 3,
+        "title": "2. Создание workflow для GitHub Actions"
       }
     ],
     "2. Стандартизация временных меток": [
@@ -1015,7 +1015,7 @@
     "3. Запуск сборки": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 303,
+        "line": 329,
         "level": 3,
         "title": "3. Запуск сборки"
       }
@@ -1028,12 +1028,12 @@
         "title": "3. Именование платформенно-специфичных методов"
       }
     ],
-    "3. Отправка в магазин модулей": [
+    "3. Отправка в магазин модулей (ErisPulse Workbench)": [
       {
         "document": "developer-guide/publishing.md",
         "line": 93,
         "level": 3,
-        "title": "3. Отправка в магазин модулей"
+        "title": "3. Отправка в магазин модулей (ErisPulse Workbench)"
       }
     ],
     "3. Отсутствие поля `self`": [
@@ -1428,14 +1428,6 @@
         "title": "4. Модули"
       }
     ],
-    "4. Настройка образа как публичного": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 318,
-        "level": 3,
-        "title": "4. Настройка образа как публичного"
-      }
-    ],
     "4. Описание расширенных полей": [
       {
         "document": "platform-guide/maintain-notes.md",
@@ -1511,9 +1503,17 @@
     "4. Управление опубликованными модулями": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 109,
+        "line": 138,
         "level": 3,
         "title": "4. Управление опубликованными модулями"
+      }
+    ],
+    "4. Установка образа как публичного": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 344,
+        "level": 3,
+        "title": "4. Установка образа как публичного"
       }
     ],
     "4. Экосистема и официальный клиент": [
@@ -1668,12 +1668,12 @@
         "title": "5. Инициализация модуля"
       }
     ],
-    "5. Использование пользователем": [
+    "5. Использование пользователями": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 325,
+        "line": 351,
         "level": 3,
-        "title": "5. Использование пользователем"
+        "title": "5. Использование пользователями"
       }
     ],
     "5. Обработка неизвестных событий": [
@@ -2618,12 +2618,12 @@
         "title": "Discord"
       }
     ],
-    "Docker-образы (GHCR) vs PyPI": [
+    "Docker-образ vs публикация на PyPI": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 380,
+        "line": 406,
         "level": 3,
-        "title": "Docker-образы (GHCR) vs PyPI"
+        "title": "Docker-образ vs публикация на PyPI"
       }
     ],
     "ErisPulse-ApiMCP 控制机器人的人工智能客户端": [
@@ -5316,12 +5316,6 @@
         "title": "Далее"
       },
       {
-        "document": "developer-guide/publishing.md",
-        "line": 392,
-        "level": 2,
-        "title": "Далее"
-      },
-      {
         "document": "ecosystem/apimcp.md",
         "line": 72,
         "level": 2,
@@ -5701,7 +5695,7 @@
     "Документация": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 152,
+        "line": 178,
         "level": 3,
         "title": "Документация"
       }
@@ -5888,6 +5882,14 @@
         "line": 18,
         "level": 2,
         "title": "Документы с материалами"
+      }
+    ],
+    "Должно ли имя пакета начинаться с `ErisPulse-`?": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 204,
+        "level": 3,
+        "title": "Должно ли имя пакета начинаться с `ErisPulse-`?"
       }
     ],
     "Дополнение message_id в событиях сообщений": [
@@ -7123,7 +7125,7 @@
     "Качество кода": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 130,
+        "line": 156,
         "level": 3,
         "title": "Качество кода"
       }
@@ -7437,7 +7439,7 @@
       },
       {
         "document": "developer-guide/publishing.md",
-        "line": 146,
+        "line": 172,
         "level": 3,
         "title": "Конфигурация"
       },
@@ -8528,12 +8530,12 @@
         "title": "Модуль Storage"
       }
     ],
-    "Можно ли зарегистрировать несколько модулей в одном пакете?": [
+    "Может ли один пакет регистрировать несколько модулей?": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 182,
+        "line": 208,
         "level": 3,
-        "title": "Можно ли зарегистрировать несколько модулей в одном пакете?"
+        "title": "Может ли один пакет регистрировать несколько модулей?"
       }
     ],
     "Моменты обновления": [
@@ -9021,7 +9023,7 @@
     "Обновление опубликованного модуля": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 118,
+        "line": 144,
         "level": 2,
         "title": "Обновление опубликованного модуля"
       }
@@ -9612,14 +9614,6 @@
         "title": "Объяснение расширенных полей"
       }
     ],
-    "Обязательно ли имя пакета должно начинаться с `ErisPulse-`?": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 178,
-        "level": 3,
-        "title": "Обязательно ли имя пакета должно начинаться с `ErisPulse-`?"
-      }
-    ],
     "Обязательные поля": [
       {
         "document": "bug-tracker.md",
@@ -9694,6 +9688,14 @@
         "line": 227,
         "level": 3,
         "title": "Ограничения циклов событий"
+      }
+    ],
+    "Одновременная публикация на Docker Hub": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 383,
+        "level": 3,
+        "title": "Одновременная публикация на Docker Hub"
       }
     ],
     "Одноразовая регистрация (once)": [
@@ -12110,6 +12112,14 @@
         "title": "После написания"
       }
     ],
+    "После публикации: помогите пользователям начать работу": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 425,
+        "level": 3,
+        "title": "После публикации: помогите пользователям начать работу"
+      }
+    ],
     "После улучшения адаптера": [
       {
         "document": "developer-guide/adapters/best-practices.md",
@@ -12918,6 +12928,14 @@
         "title": "Проверка зарегистрированных методов"
       }
     ],
+    "Проверка качества перед публикацией": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 420,
+        "level": 3,
+        "title": "Проверка качества перед публикацией"
+      }
+    ],
     "Проверка поддерживаемых методов отправки": [
       {
         "document": "api-reference/adapter-system.md",
@@ -13000,14 +13018,6 @@
         "line": 231,
         "level": 3,
         "title": "Проверки (три вопроса)"
-      }
-    ],
-    "Проверочный список перед публикацией": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 126,
-        "level": 2,
-        "title": "Проверочный список перед публикацией"
       }
     ],
     "Продвинутая отправка сообщений (повторы/таймауты/пакетная отправка)": [
@@ -13311,7 +13321,7 @@
     "Публикация": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 159,
+        "line": 185,
         "level": 3,
         "title": "Публикация"
       }
@@ -13322,22 +13332,6 @@
         "line": 89,
         "level": 2,
         "title": "Публикация вашего модуля"
-      }
-    ],
-    "Публикация и использование пользователями": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 399,
-        "level": 3,
-        "title": "Публикация и использование пользователями"
-      }
-    ],
-    "Публикация на Docker Hub": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 357,
-        "level": 3,
-        "title": "Публикация на Docker Hub"
       }
     ],
     "Пул соединений и широковещательная рассылка": [
@@ -13463,7 +13457,7 @@
     "Распространение приложений через Docker-образы": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 196,
+        "line": 222,
         "level": 2,
         "title": "Распространение приложений через Docker-образы"
       }
@@ -14875,7 +14869,7 @@
     "Сколько времени занимает проверка?": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 192,
+        "line": 218,
         "level": 3,
         "title": "Сколько времени занимает проверка?"
       }
@@ -15311,7 +15305,7 @@
     "Совместимость": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 138,
+        "line": 164,
         "level": 3,
         "title": "Совместимость"
       }
@@ -15980,6 +15974,14 @@
         "title": "Способ 1: Установка с помощью pip"
       }
     ],
+    "Способ 1: отправка через веб-интерфейс (рекомендуется при первом использовании)": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 97,
+        "level": 4,
+        "title": "Способ 1: отправка через веб-интерфейс (рекомендуется при первом использовании)"
+      }
+    ],
     "Способ 2: Официальная онлайн-точка подключения": [
       {
         "document": "ai-support/README.md",
@@ -15994,6 +15996,14 @@
         "line": 24,
         "level": 3,
         "title": "Способ 2: Установка с помощью uv (рекомендуется)"
+      }
+    ],
+    "Способ 2: самостоятельная отправка через API (сценарии CLI / CI)": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 103,
+        "level": 4,
+        "title": "Способ 2: самостоятельная отправка через API (сценарии CLI / CI)"
       }
     ],
     "Способ 3: Установка с помощью uv tool (глобальный CLI, рекомендуется)": [
@@ -16846,12 +16856,12 @@
         "title": "Сценарии быстрой проверки"
       }
     ],
-    "Сценарии использования": [
+    "Сценарии применения": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 200,
+        "line": 226,
         "level": 3,
-        "title": "Сценарии использования"
+        "title": "Сценарии применения"
       }
     ],
     "Сценарий установки за один клик (рекомендуется для новых сред)": [
@@ -16933,7 +16943,7 @@
     "Тестирование в режиме разработки": [
       {
         "document": "developer-guide/publishing.md",
-        "line": 166,
+        "line": 192,
         "level": 2,
         "title": "Тестирование в режиме разработки"
       }
@@ -17238,14 +17248,6 @@
         "line": 374,
         "level": 3,
         "title": "Триггеризация"
-      }
-    ],
-    "Убедитесь в качестве перед публикацией": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 394,
-        "level": 3,
-        "title": "Убедитесь в качестве перед публикацией"
       }
     ],
     "Увеличение участников группы": [
@@ -18075,7 +18077,7 @@
       },
       {
         "document": "developer-guide/publishing.md",
-        "line": 176,
+        "line": 202,
         "level": 2,
         "title": "Часто задаваемые вопросы"
       },
@@ -18114,6 +18116,14 @@
         "line": 361,
         "level": 2,
         "title": "Частые вопросы и важные замечания"
+      }
+    ],
+    "Чек-лист перед публикацией": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 152,
+        "level": 2,
+        "title": "Чек-лист перед публикацией"
       }
     ],
     "Через переменные окружения": [
@@ -18157,6 +18167,12 @@
       }
     ],
     "Что дальше": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 418,
+        "level": 2,
+        "title": "Что дальше"
+      },
       {
         "document": "developer-guide/testing.md",
         "line": 156,
