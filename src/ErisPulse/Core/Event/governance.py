@@ -20,7 +20,6 @@ import time
 from collections import deque
 from typing import TYPE_CHECKING, Any
 
-from .. import logger
 from ..constants import (
     GOVERNANCE_STATE_MAX_ENTRIES,
     GOVERNANCE_USAGE_KEY_PREFIX,
@@ -28,6 +27,7 @@ from ..constants import (
     UNKNOWN_PLATFORM,
 )
 from ..i18n import i18n
+from ..logger import logger
 from .trace import trace_step
 
 if TYPE_CHECKING:

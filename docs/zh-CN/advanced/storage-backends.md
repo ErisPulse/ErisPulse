@@ -83,12 +83,16 @@ pool_max = 10
 
 日志示例：`mysql 连接池创建最终失败（已重试 3 次），30 秒后自动重连；期间存储操作将快速失败，框架其余功能不受影响`
 
+## 进程退出
+
+未调用 `sdk.uninit()` 就结束的进程（独立脚本、中断后的收尾）在解释器退出阶段自动关闭存储：先完成依赖存储的退出刷盘（收件箱缓冲），再停止全部数据库连接，最后停止后台桥接循环。SQLite 的连接线程不会随进程退出自动结束，框架因此在解释器回收线程之前完成这三步；`atexit` 回调晚于线程回收，不要在其中访问存储。
+
 ## 失败语义（2.12 起）
 
 | 场景 | 行为 |
 |------|------|
 | 操作执行失败（写锁超时 / SQL 错误 / 约束冲突） | **抛 `StorageOperationError`**（写路径：aset / adelete / aclear / set_multi 及同步桥同路径）——不再静默 `False`，重要写入失败必须可见 |
-| 连接级不可达（冷却期快速失败） | 返回 `False` / `None`（规则 26 框架韧性语义，另有 `storage.unreachable` / `storage.recovered` 事件） |
+| 连接级不可达（冷却期快速失败） | 返回 `False` / `None`（连接级不可达时快速失败，伴随 `storage.unreachable` / `storage.recovered` 事件） |
 | 事务开启超时（>30s） | 抛 `StorageOperationError`（`STORAGE_TXN_BEGIN_TIMEOUT_SECS`） |
 
 重要写入请用 try/except 包裹并做补偿；事务块内只放纯 DB 操作。
@@ -114,14 +118,19 @@ async with sdk.storage.atransaction():
     await sdk.storage.Table("users").Insert({"name": "Alice"}).aExecute()
 ```
 
-同步 API（`get/set/transaction/Table(...).Execute()`）继续可用，内部经
-`AsyncBridge` 后台事件循环桥接执行——在异步 handler 中调用会短暂阻塞
-该事件循环，**首次调用会输出一次性告警**（"建议改用 a 前缀异步方法"），
-推荐优先使用 a 前缀异步方法。两条边界必须知晓：
+## 同步方法（慎用）
 
-- **桥接线程内禁止再调同步接口**：同步接口在桥接线程内执行，此时再调
-  同步接口会抛 `RuntimeError`（防重入保护，避免自死锁）
-- **桥接目标循环关闭后调用会失败**：`uninit()` 之后不要再调用存储接口
+每个 a 前缀异步方法都有对应的同步形式（`aget`→`get`、`aset`→`set`、`atransaction`→`transaction`、`aExecute`→`Execute`），内部经后台事件循环桥接执行——**它们会阻塞调用方线程**：
+
+- **在异步 handler 中调用会阻塞整个事件循环**直到存储操作完成：高频调用下表现为 handler 超时、事件处理停摆、web 卡顿，并可能连锁触发 `database is locked`（写等待超时）。框架对每个调用点输出限频告警（附 `文件:行号 (函数名)`），收到告警即应把对应调用迁移为 a 前缀异步方法
+- 开发期可开启 `ErisPulse.framework.strict.sync_in_async = true`：同步调用不再放行，直接抛 `StrictModeError`（附调用点与迁移指引），当场暴露而不是上线后靠卡顿反推
+- 运行期止损：异步上下文下的桥接等待默认上限 10s（`ErisPulse.framework.sync_in_async_bridge_wait`），超时后调用方按 fail-soft 语义拿到 `None` 返回；排队中的写操作**不丢弃**（仍在后台完成，事后失败以 WARNING 告警），同步事务的提交 / 连接归还同样会完成，事务开启超时则抛 `StorageOperationError`——但这是兜底，不是许可
+
+**请确定你在做什么，否则不要使用同步形式。** 纯同步线程（无事件循环）中调用不受限，是合法场景（如同步入口脚本、桥接等待事务提交）。
+
+`asyncio.to_thread` / 线程池执行同步驱动同理，且在特定场景下有奇效：**后端支持真并发连接时**（PostgreSQL / MySQL——每线程独立连接、服务端 MVCC 并发），把同步驱动挪出事件循环是合理手段。但 SQLite 下**不要**这么做——线程连接会与框架的 aiosqlite 连接互相争抢同一把写锁，竞态面反而扩大，并可能造成写入失败乃至数据丢失。
+
+**MySQL / PostgreSQL 后端无需手动 to_thread**：框架对真并发后端（`_SUPPORTS_THREAD_BRIDGE` 能力）自动把异步上下文内的同步调用路由到有界线程池（每 worker 独立事件循环，互不排队），主循环阻塞时长即操作本身耗时；等待上限与 fail-soft 语义同上。SQLite 后端维持单桥接循环串行（写锁模型要求）。自定义后端按写锁模型声明该能力（单写引擎保持默认 False）。
 
 完整方法对照见 [SQL 查询构建器](sql-builder.md)。
 
@@ -141,18 +150,41 @@ async with sdk.storage.atransaction():
 
 ## SQLite "database is locked" 排查
 
-框架 SQLite 后端已内建：**WAL 日志模式**（读写不互斥）+ **busy_timeout 5000ms**（写锁竞争自动等待）+ autocommit 连接 + 多事件循环各持共享连接 + **事务 `BEGIN IMMEDIATE`**（2.12 起——事务开始即取写锁，消除 deferred 事务「先读后写」升级时的 `SQLITE_BUSY_SNAPSHOT`，该 busy 不重试、`busy_timeout` 无法缓解，是高频读写混合下间歇性 locked 的框架内根因）。
+框架 SQLite 后端已内建：**WAL 日志模式**（读写不互斥）+ **busy_timeout**（写锁竞争自动等待，默认 5000ms，配置项见下）+ autocommit 连接 + 多事件循环各持共享连接 + **事务 `BEGIN IMMEDIATE`**（2.12 起——事务开始即取写锁，消除 deferred 事务「先读后写」升级时的 `SQLITE_BUSY_SNAPSHOT`，该 busy 不重试、`busy_timeout` 无法缓解，是高频读写混合下间歇性 locked 的框架内根因）。
 
 2.12+ 纯框架使用（存储 / ORM / 混合双路径交错写）不应再出现 locked；仍遇到时按以下顺序排查：
 
 | 场景 | 判定 | 处置 |
 |------|------|------|
-| 事务内慢操作 | `atransaction` 块内有慢活（外部 HTTP、大计算），持锁超过 busy_timeout | 事务块内只做库操作，慢操作移出 |
+| 事务内慢操作 | `atransaction` 块内有慢活（外部 HTTP、大计算），持锁超过 busy_timeout——框架对持锁超过 1s（`STORAGE_TXN_SLOW_WARN_SECS`）的事务输出告警并附开启位置，可据此直接定位 | 事务块内只做库操作，慢操作移出 |
+| 同步 API 阻塞事件循环 | 事件 handler 大量超时 + 按调用点的「存储同步 API 在异步上下文调用」告警 | 告警指出的调用点迁移为 a 前缀异步方法（`set` → `aset` 等） |
 | 混用第二套 ORM | 同一进程内 sqlmodel / SQLAlchemy / 裸 sqlite3 自开连接写同一个库文件 | **同一库文件只用一套 ORM**（内置本就是异步原生），不要混用过渡 |
 | 多进程同文件 | 多实例 / Dashboard / 数据库工具打开同一 sqlite | 各实例独立 `config/` 目录；管理工具用只读模式打开；高频写场景切 mysql / postgres（配置一改零代码迁移） |
 | 旧版本框架 | `<2.12` 的 deferred 事务升级问题 | 升级框架 |
 
-> `busy_timeout` 当前为类常量 `_SQLITE_BUSY_TIMEOUT_MS = 5000`（`Core/storage/sqlite.py`）；如需调整属于源码级修改，不作为运行时配置暴露。
+锁互斥矩阵（WAL 模式）：**读与读、读与写不互斥**；互斥只发生在**写与写**之间——事务专用连接（`BEGIN IMMEDIATE` 持锁至提交）与各事件循环的共享连接写操作竞争同一把写锁，长事务是写等待超时的首要嫌疑。
+
+> `busy_timeout` 经 `ErisPulse.storage.sqlite.busy_timeout` 配置（毫秒，默认 5000）；调大可延长写锁排队耐心，改动需重启生效（PRAGMA 应用于连接建立时）。
+
+## 后端注册（可插拔）
+
+后端通过注册表发现，不限于内置三种：
+
+```python
+from ErisPulse.Core.storage import get_registered_backends
+
+print(get_registered_backends())   # ['mysql', 'postgres', 'sqlite', ...外部注册的后端]
+```
+
+| Item / 项 | Description / 说明 |
+|---|---|
+| 注册 / Register | 外部包在模块导入时调用 `register_storage_backend(name, cls)`；`ErisPulse.storage.backend` 填注册名即启用 |
+| 发现 / Discovery | 外部包在 `pyproject.toml` 声明 entry-points 组 `erispulse.storage.backends`，框架创建存储实例前扫描并加载 |
+| 驱动声明 / Driver | 方言以 `driver_module` 声明驱动导入名（空 = 零依赖内置驱动）。**驱动依赖由后端包自身的 `pyproject.toml` 声明、随包安装**——框架不在运行时安装任何依赖，缺失时直接报错并附安装指引 |
+| 能力声明 / Capability | 后端以类属性声明能力，框架据此路由：`_SUPPORTS_THREAD_BRIDGE`（真并发后端，sync-in-async 走有界线程池）、`_SUPPORTS_CONN_ROUTING`（同步事务连接路由） |
+| 未注册的后端 | 报错并列出当前可用后端 |
+
+内置后端同样走这套注册表（`sqlite` / `mysql` / `postgres` 在导入时自注册），外部后端与内置后端地位相同。
 
 ## 自定义 SQL 后端
 

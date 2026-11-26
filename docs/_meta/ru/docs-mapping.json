@@ -52,13 +52,13 @@
           "icon": "fa-door-open"
         },
         {
-          "title": "Основные концепции",
+          "title": "Основные понятия",
           "path": "getting-started/basic-concepts.md",
           "level": 1,
           "icon": "fa-lightbulb"
         },
         {
-          "title": "Примеры типичных задач",
+          "title": "Примеры распространённых задач",
           "path": "getting-started/common-tasks.md",
           "level": 1,
           "icon": "fa-list-check"
@@ -113,7 +113,7 @@
     "Руководство пользователя": {
       "description": "Настройка и справочник команд ErisPulse",
       "icon": "fa-book-open",
-      "count": 5,
+      "count": 7,
       "documents": [
         {
           "title": "Руководство пользователя",
@@ -144,6 +144,18 @@
           "path": "user-guide/deployment.md",
           "level": 1,
           "icon": "fa-cloud-arrow-up"
+        },
+        {
+          "title": "Руководство по обновлению и миграции",
+          "path": "user-guide/migration.md",
+          "level": 1,
+          "icon": "fa-right-left"
+        },
+        {
+          "title": "Часто задаваемые вопросы (FAQ)",
+          "path": "user-guide/faq.md",
+          "level": 1,
+          "icon": "fa-circle-question"
         }
       ],
       "subgroups": {}
@@ -172,7 +184,7 @@
           "icon": "fa-code"
         },
         {
-          "title": "Уровень модели данных (ORM)",
+          "title": "Слой моделей данных (ORM)",
           "path": "developer-guide/orm.md",
           "level": 1,
           "icon": "fa-code"
@@ -256,10 +268,10 @@
     "Руководство по платформам": {
       "description": "Возможности платформ и документация адаптеров",
       "icon": "fa-plug",
-      "count": 22,
+      "count": 23,
       "documents": [
         {
-          "title": "Документация ErisPulse PlatformFeatures",
+          "title": "Документация по функциям платформы ErisPulse",
           "path": "platform-guide/README.md",
           "level": 1,
           "icon": "fa-server"
@@ -381,6 +393,12 @@
         {
           "title": "Документация по функциональным возможностям платформы Terminal",
           "path": "platform-guide/terminal.md",
+          "level": 1,
+          "icon": "fa-plug"
+        },
+        {
+          "title": "Адаптер WeChat ClawBot (WechatClaw) - Документация по функциональным возможностям платформы",
+          "path": "platform-guide/wechatclaw.md",
           "level": 1,
           "icon": "fa-plug"
         },
@@ -515,7 +533,7 @@
           "icon": "fa-fire"
         },
         {
-          "title": "Бэкенды хранилища",
+          "title": "Хранилище",
           "path": "advanced/storage-backends.md",
           "level": 1,
           "icon": "fa-server"

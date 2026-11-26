@@ -129,48 +129,52 @@ MYMODULE_API_KEY=sk-xxx docker compose up -d
 
 ## 配置熱更新
 
-從 2.7.0 起，框架對配置熱更新做了**系統化支援**。外部修改 `config.toml` 後（後台 watcher 每 5 秒檢測一次），或程式碼呼叫 `setConfig()` 後，各組件自動回應：
+從 2.7.0 起，框架對配置熱更新做了**系統化支援**。外部修改 `config.toml` 後（背景 watcher 每 5 秒偵測一次），或程式碼呼叫 `setConfig()` 後，各元件自動回應：
 
-| 組件 | 支援熱更新的配置 | 行為 |
+| 元件 | 支援熱更新的配置 | 行為 |
 |------|----------------|------|
-| **日誌 Logger** | `logger.level` / `log_files` / `log_dir`（含分段參數）/ `memory_limit` / `format` / `exclude_levels` | 自動重新應用（帶變更檢測） |
+| **日誌 Logger** | `logger.level` / `log_files` / `log_dir`（含分段參數）/ `memory_limit` / `total_memory_limit` / `format` / `exclude_levels` | 自動重新應用（帶變更檢測） |
 | **命令系統 CommandHandler** | `event.command.prefix` / `case_sensitive` / `allow_space_prefix` / `must_at_bot` | 下一條訊息即生效 |
 | **適配器併發** | `framework.handler_max_concurrency` | 失效快取信號量，按新值重建 |
-| **主動 GC** | `framework.proactive_gc_*` | 配置變更即時重啟 GC 任務，支援運行時調整/禁用/重新啟用 |
-| **主人系統 Master** | `master.users` | 每次 `is_master()` 檢查實時讀取，無需重啟 |
-| **模組/適配器配置** | 各自的配置項 | 觸發 `on_config_update(old, new)` 回調 |
+| **主動 GC** | `framework.proactive_gc_*` | 配置變更即時重啟 GC 任務，支援執行時調整/停用/重新啟用 |
+| **事件去重/跨帳戶** | `framework.event_dedupe` / `cross_account_policy` | 慣性快取失效，下一次事件按新值重讀 |
+| **會話帳戶綁定** | `framework.session_accounts` | 每事件即時讀取，變更即時生效 |
+| **記憶體追蹤** | `framework.memory_tracing` | 下一次主動 GC 輪生效（tracemalloc 無法安全熱重置幀數） |
+| **主人系統 Master** | `master.users` | 每次 `is_master()` 檢查即時讀取，無需重啟 |
+| **模組/適配器配置** | 各自的配置項 | 觸發 `on_config_update(old, new)` 回呼 |
 
-**需重啟的配置**（無法安全熱切換，變更時會輸出告警「需重啟進程後生效」）：
+**需重啟的配置**（無法安全熱切換，變更時會輸出告警「需重啟程序後生效」）：
 
 | 配置 | 原因 |
 |------|------|
-| `router.cors.*` / `router.security.*` | 中間件在服務啟動時寫入 FastAPI，運行時無法安全熱切換 |
-| `storage.use_global_db` | SQLite 檔案句柄已在運行時打開，切換路徑不安全 |
+| `router.cors.*` / `router.security.*` | 中間件在服務啟動時寫入 FastAPI，執行時無法安全熱切換 |
+| `storage.use_global_db` | SQLite 檔案句柄已在執行時開啟，切換路徑不安全 |
+| `storage.sqlite.busy_timeout` | busy_timeout 經 PRAGMA 應用於連線建立時，已開啟的連線不隨配置刷新 |
 
-> **中途編輯保存出錯？** 若編輯 `config.toml` 時出現瞬時語法錯誤，框架會**保留上次有效配置**並輸出診斷日誌，不會把空配置廣播給各組件（避免 `on_config_update` 收到空值誤回退預設）。
+> **中途編輯儲存出錯？** 若編輯 `config.toml` 時出現瞬時語法錯誤，框架會**保留上次有效配置**並輸出診斷日誌，不會把空配置廣播給各元件（避免 `on_config_update` 收到空值誤回退預設）。
 
 ### 熱更新鏈路內部拆解
 
-「改了配置，各組件怎麼知道的？」——背後是一條檢測 → 重載 → 廣播的鏈路：
+「改了配置，各元件怎麼知道的？」——背後是一條偵測 → 重載 → 廣播的鏈路：
 
 ```mermaid
 flowchart TD
     A["外部編輯 config.toml"] --> B{"誰先發現？"}
-    B -->|"後台 watcher 線程<br/>每 5 秒輪詢 mtime"| C["_check_file_change 判定變更"]
-    B -->|"程式碼讀取配置時<br/>快取超 60 秒"| C
+    B -->|"背景 watcher 線程<br/>每 5 秒輪詢 mtime"| C["_check_file_change 判定變更"]
+    B -->|"程式碼讀取配置時<br/>快取超過 60 秒"| C
     C --> D["_load_config 重新解析 TOML"]
     D --> E{"解析成功？"}
     E -->|"否（語法錯誤）"| F["保留上次有效配置<br/>不廣播，打診斷日誌"]
     E -->|"是"| G["lifecycle.emit config.updated<br/>攜帶 old_config / new_config"]
-    G --> H["各組件監聽者回應<br/>（logger / scope / 命令 / GC ...）"]
+    G --> H["各元件監聽者回應<br/>（logger / scope / 命令 / GC ...）"]
 ```
 
-**兩條檢測路徑**（取其一即可，均能兜底）：
+**兩條偵測路徑**（取其一即可，均能兜底）：
 
 | 路徑 | 機制 | 觸發時機 |
 |------|------|---------|
-| 後台 watcher | daemon 線程 `config-watcher` 每 **5 秒** `wait` 輪詢檔案 `mtime` | 外部改檔案後最多 5 秒內 |
-| 慢性檢測 | 任何 `getConfig()` 讀取時，若快取超過 **60 秒**則先查檔案 | 下次讀配置時 |
+| 背景 watcher | daemon 線程 `config-watcher` 每 **5 秒** `wait` 輪詢檔案 `mtime` | 外部改檔案後最多 5 秒內 |
+| 慣性偵測 | 任何 `getConfig()` 讀取時，若快取超過 **60 秒**則先查檔案 | 下次讀取配置時 |
 
 > **框架不會誤傷自己**：`setConfig()` 寫盤時會記錄「自身寫入的 mtime」，watcher 對比時把它排除，只把**外部編輯**視為變更。
 
@@ -178,22 +182,22 @@ flowchart TD
 
 | 事件 | 觸發者 | 數據 | 典型場景 |
 |------|--------|------|---------|
-| `config.set` | 程式碼 / Dashboard 調 `setConfig()` | `{key, old_value, new_value}` | 單鍵寫入（範本生成、狀態記錄、運行時改配置） |
-| `config.updated` | 外部編輯後 watcher/慢性檢測捕獲 | `{old_config, new_config, config_file}` | 手改 `config.toml` |
+| `config.set` | 程式碼 / Dashboard 調 `setConfig()` | `{key, old_value, new_value}` | 單鍵寫入（模板產生、狀態記錄、執行時改配置） |
+| `config.updated` | 外部編輯後 watcher/慣性偵測捕獲 | `{old_config, new_config, config_file}` | 手改 `config.toml` |
 
-> `setConfig()` 預設**延遲 5 秒落盤**（合併多次寫入），`immediate=True` 立即寫。watcher 檢測到外部修改後只更新記憶體快取，**不會**把外部變更回寫檔案。
+> `setConfig()` 預設**延遲 5 秒落盤**（合併多次寫入），`immediate=True` 立即寫。watcher 檢測到外部修改後只更新記憶體快取，**不會**把外部變動回寫檔案。
 
 **自動回應方清單**（兩類事件通常會都訂閱，回應內容一致）：
 
-| 組件 | 監聽 | 回應 |
+| 元件 | 監聽 | 回應 |
 |------|------|------|
-| Logger | `config.set` + `config.updated` | 級別/檔案/目錄分段/記憶體上限/格式/屏蔽等級重新應用（帶變更檢測，無變化不動） |
+| Logger | `config.set` + `config.updated` | 級別/檔案/目錄分段/記憶體上限/格式/屏蔽等級重新應用（帶變更檢測，無變更不動） |
 | Scope | `config.updated` | 作用域綁定快取重建 |
 | 命令系統 | `config.updated` | 前綴/大小寫/空格前綴/must_at_bot 解析參數刷新，下一條訊息生效 |
 | 適配器併發 | `config.set` + `config.updated` | `handler_max_concurrency` 失效重建信號量 |
 | 主動 GC | `config.set` + `config.updated` | `proactive_gc_*` 即時重啟 GC 後台任務 |
-| 適配器 | 路由到 `on_config_update` | 各適配器 `on_config_update(old, new)` 回調 |
-| 模組 | 路由到 `on_config_update` | 各模組 `on_config_update(old, new)` 回調 |
+| 適配器 | 路由到 `on_config_update` | 各適配器 `on_config_update(old, new)` 回呼 |
+| 模組 | 路由到 `on_config_update` | 各模組 `on_config_update(old, new)` 回呼 |
 | 存儲 | `config.updated` | `use_global_db` 變更**僅告警**（需重啟） |
 | 路由 | `config.updated` | `cors.*` / `security.*` 變更**僅告警**（需重啟） |
 
@@ -225,7 +229,7 @@ sdk.config.delConfig("OneBot.deprecated_key", immediate=True)         # 立即�
 - 複用 `config.set` 事件廣播（`new_value=None`）：適配器 / 模組的
   `on_config_update` 等現有監聽方零改動即可感知刪除
 
-## 完整配置範例
+## 完整配置示例
 
 ```toml
 [ErisPulse.server]
@@ -236,7 +240,7 @@ ssl_certfile = ""
 ssl_keyfile = ""
 
 [ErisPulse.master]
-# users 支援兩種寫法（二選一）：
+# users 支持兩種寫法（二選一）：
 #   全局主人（所有平台生效）：users = ["123456", "789012"]
 #   按平台指定主人：users = { yunhu = ["123456"], telegram = ["789012"] }
 users = {}
@@ -245,7 +249,7 @@ users = {}
 level = "INFO"
 format = "rich"
 log_files = []
-log_dir = ""
+log_dir = "logs"
 log_rotation = "size"
 log_max_size_mb = 10
 log_backup_count = 5
@@ -390,42 +394,42 @@ fn.unregister()
 `ErisPulse.event.overrides.command.<module>.<cmd>.master = true/false`
 覆寫收緊或放寬（見[統一事件覆寫設定](#統一事件覆寫設定eventoverrides)，使用者明確設定即生效）。
 
-## 日誌設定
+## 日誌配置
 
 ```toml
 [ErisPulse.logger]
 level = "INFO"
-log_files = []                # 明確日誌檔案清單（與 log_dir 互斥，優先級更高）
-log_dir = ""                  # 日誌目錄（設定後自動分段輪轉）
+log_files = []                # 明確的日誌文件列表（與 log_dir 互斥，優先級更高）
+log_dir = "logs"                  # 日誌目錄（設定後自動分段輪轉）
 log_rotation = "size"         # 分段方式: "size" / "date" / "none"
-log_max_size_mb = 10          # size 模式單檔案上限（MB）
-log_backup_count = 5          # 保留的歷史日誌檔案數
+log_max_size_mb = 10          # size 模式單文件上限（MB）
+log_backup_count = 5          # 保留的歷史日誌文件數
 log_rotation_when = "midnight"  # date 模式輪轉週期: S/M/H/D/midnight
 memory_limit = 1000             # 單模組記憶體日誌條數上限（0 = 關閉記憶體日誌副本）
 total_memory_limit = 5000       # 全部模組記憶體日誌總條數上限（0 = 不限）
 exclude_levels = ["EVENT"]
 ```
 
-| 設定項 | 類型 | 預設值 | 說明 |
+| 配置項 | 類型 | 默認值 | 說明 |
 |---------|------|---------|------|
-| level | string | INFO | 日誌級別：TRACE, DEBUG, INFO, WARNING, ERROR, CRITICAL（TRACE 為最低級別，輸出框架內部詳細除錯資訊） |
-| format | string | rich | 日誌輸出格式：`rich`（彩色，預設）、`plain`（純文字無顏色，適合日誌擷取/管道重新導向）、`json`（JSON 結構化，適合 ELK 等） |
-| log_files | array | 空 | 日誌輸出檔案清單（明確路徑，不分段） |
-| log_dir | string | 空 | 日誌輸出目錄（自動建立）。設定後寫入目錄內 `erispulse.log` 並按 `log_rotation` 自動分段；與 `log_files` 互斥，`log_files` 優先 |
+| level | string | INFO | 日誌等級：TRACE, DEBUG, INFO, WARNING, ERROR, CRITICAL（TRACE 為最低等級，輸出框架內部詳細除錯資訊） |
+| format | string | rich | 日誌輸出格式：`rich`（彩色，預設）、`plain`（純文字無顏色，適合日誌收集/管道重定向）、`json`（JSON 標準化，適合 ELK 等） |
+| log_files | array | 空 | 日誌輸出文件列表（明確路徑，不分段） |
+| log_dir | string | "logs" | 日誌輸出目錄（自動建立）。設定後寫入目錄內 `erispulse.log` 並按 `log_rotation` 自動分段；與 `log_files` 互斥，`log_files` 優先 |
 | log_rotation | string | size | 分段方式：`size`（按大小）/ `date`（按時間）/ `none`（不分段） |
-| log_max_size_mb | float | 10 | size 模式單檔案大小上限（MB），超過後輪轉為 `.1`/`.2` 備份 |
-| log_backup_count | integer | 5 | 保留的歷史日誌檔案數，超出的最舊備份自動刪除 |
+| log_max_size_mb | float | 10 | size 模式單文件大小上限（MB），超過後輪轉為 `.1`/`.2` 備份 |
+| log_backup_count | integer | 5 | 保留的歷史日誌文件數，超出的最舊備份自動刪除 |
 | log_rotation_when | string | midnight | date 模式輪轉週期：`S`/`M`/`H`/`D`/`midnight`（預設每天零點） |
 | memory_limit | integer | 1000 | 單模組記憶體中保存的日誌條數；`0` 表示關閉記憶體日誌副本（不再寫入記憶體，已有記錄保留） |
 | total_memory_limit | integer | 5000 | 全部模組記憶體日誌總條數上限；`0` 表示不限。超限時按輪轉策略淘汰最舊記錄（優先削減條數最多的模組佇列），與單模組 `memory_limit` 獨立生效 |
-| exclude_levels | array | 空 | 屏蔽指定日誌等級。被屏蔽等級的日誌**完全丟棄**（不寫記憶體、不推送給 Dashboard 等訂閱器、不列印、不寫檔案）。支援熱更新 |
+| exclude_levels | array | 空 | 屏蔽指定日誌等級。被屏蔽等級的日誌**完全丟棄**（不寫記憶體、不推送到 Dashboard 等訂閱器、不列印、不寫文件）。支援熱更新 |
 
 也可在程式碼中動態切換：
 
 ```python
 from ErisPulse.Core import logger
 
-# 按大小分段：單檔案 10MB，保留 5 份
+# 按大小分段：單文件 10MB，保留 5 份
 logger.set_output_dir("logs", rotation="size", max_size_mb=10, backup_count=5)
 
 # 按時間分段：每天零點輪轉，保留 7 份
@@ -433,26 +437,26 @@ logger.set_output_dir("logs", rotation="date", backup_count=7)
 ```
 
 > [!NOTE]
-> `log_dir` 及分段相關設定需要 ErisPulse **2.8.0+**。
+> `log_dir` 及分段相關配置需要 ErisPulse **2.8.0+**。
 
 > **隱私保護**：訊息收發內容以 **EVENT 等級**（數值 21）記錄。設定 `exclude_levels = ["EVENT"]` 即可讓後台（如 Dashboard 日誌面板）無法看到各群/私聊的訊息內容，同時不影響其它等級日誌。
 
-除設定檔（支援熱更新）外，也可在執行時以程式碼切換同等能力——做
-`/privacy on|off` 類管理命令時不必寫設定：
+除配置文件（支援熱更新）外，也可在執行時以程式碼切換同等能力——做
+`/privacy on|off` 類管理命令時不必寫配置：
 
 ```python
 from ErisPulse import logger
 
-logger.exclude_level("EVENT")        # 執行時屏蔽某等級（同 exclude_levels 設定語義）
+logger.exclude_level("EVENT")        # 執行時屏蔽某等級（同 exclude_levels 配置語意）
 logger.allow_level("EVENT")          # 恢復該等級
-logger.list_excluded_levels()        # 檢視目前被屏蔽的等級
-logger.set_format("json")            # 輸出切 JSON 行協定（與 format 設定鍵同效）
+logger.list_excluded_levels()        # 查看目前被屏蔽的等級
+logger.set_format("json")            # 輸出切 JSON 行協定（與 format 配置鍵同效）
 ```
 
 > [!NOTE]
 > `exclude_levels` 本特性需要 ErisPulse **2.8.0+**。
 
-## 框架設定
+## 框架配置
 
 ```toml
 [ErisPulse.framework]
@@ -465,55 +469,64 @@ modules = []
 adapters = []
 ```
 
-| 設定項 | 類型 | 預設值 | 說明 |
+| 配置項 | 類型 | 默認值 | 說明 |
 |---------|------|---------|------|
-| enable_lazy_loading | boolean | true | 是否啟用模組懶載入 |
-| uninit_timeout | integer | 30 | 優雅關閉的總逾時時間（秒），超過後強制終止。0 表示不設逾時 |
+| enable_lazy_loading | boolean | true | 是否啟用模組懶加載 |
+| uninit_timeout | integer | 30 | 優雅關閉的總超時時間（秒），超過後強制終止。0 表示不設超時 |
 | strict_mode | integer | 0 | 嚴格模式級別，見下方「嚴格模式」說明 |
-| handler_max_concurrency | integer | 64 | 事件處理器最大並行 Task 數，設大提高吞吐但增加記憶體佔用 |
-| handler_queue_max_pending | integer | 4096 | 事件洪峰入列背壓：單平台待處理 handler Task 數上限，超限時新事件的處理器 Task 直接丟棄並記 WARNING（丟棄計數可在 troubleshoot 疑難排解中查看）；`0` 表示不限 |
+| handler_max_concurrency | integer | 64 | 事件處理器最大併發 Task 數，設大提高吞吐但增加記憶體佔用 |
+| handler_queue_max_pending | integer | 4096 | 事件洪峰入隊背壓：單平台待處理 handler Task 數上限，超限時新事件的處理器 Task 直接丟棄並記 WARNING（丟棄計數可在 troubleshoot 排查中查看）；`0` 表示不限 |
 | offline_bot_expiry | integer | 3600 | 離線 Bot 記錄自動過期時間（秒），0 表示不過期 |
-| plugins_dir | string / list | "plugins" | 本機外掛資料夾（相對專案根目錄）；新增/刪除/修改外掛檔案會被熱重載 watcher 自動發現 |
-| watch_ignore_dirs | list | 內建清單 | 熱重載檔案監控忽略的目錄名（`.venv`/`.git`/`__pycache__` 等）；非空列表**整體替換**內建清單，`[]` 表示不忽略任何目錄 |
-| watch_include_plugin_dirs | boolean | true | `epsdk run --reload` 是否把外掛目錄交給外掛熱重載 watcher 精確處理（單模組重載），並從全量監控中排除 |
-| event_dedupe | boolean | true | 事件冪等去重：相同事件 id 的重複投遞（連線層重推 / 閘道重發）只分發一次 |
-| cross_account_policy | string | "off" | 跨帳戶重複受理策略：同一實體訊息經多個帳戶先後到達時的處理——`off` 不關聯（事件照常逐一分發）；`mark` 副本注入頂層 `multi_receipt` 欄位（指向首個受理事件）後照常分發，模組讀取該欄位自行裁決；`drop` 副本在分發入口直接丟棄（框架層去重，模組無感） |
+| plugins_dir | string / list | "plugins" | 本地插件文件夾（相對項目根目錄）；新增/刪除/修改插件文件會被熱重載 watcher 自動發現 |
+| watch_ignore_dirs | list | 內建清單 | 熱重載文件監控忽略的目錄名（`.venv`/`.git`/`__pycache__` 等）；非空列表**整體替換**內建清單，`[]` 表示不忽略任何目錄 |
+| watch_include_plugin_dirs | boolean | true | `epsdk run --reload` 是否把插件目錄交給插件熱重載 watcher 精確處理（單模組重載），並從全量監控中排除 |
+| event_dedupe | boolean | true | 事件冪等去重：相同事件 id 的重複投遞（連接層重推 / 網關重發）只分發一次 |
+| cross_account_policy | string | "off" | 跨帳戶重複受理策略：同一物理訊息經多個帳戶先後到達時的處理——`off` 不關聯（事件照常逐一分發，預設）；`mark` 副本注入頂層 `multi_receipt` 字段（指向首個受理事件）後照常分發，模組讀取該字段自行裁決；`drop` 副本在分發入口直接丟棄（框架層去重，模組無感）。mention 目標命中接收帳戶自身（`user_id` / `account_id`）的副本不參與關聯（at 點名優待）；策略支援熱更新，變更即時生效 |
+| session_accounts | table | {} | 會話帳戶綁定：`{"平台名": {"會話ID": "帳戶bot_id"}}`，把會話精確綁定到唯一歸屬帳戶——綁定會話僅歸屬帳戶分發，其他帳戶副本丟棄（獨立於 `cross_account_policy` 生效，配置即開啟；at 點名優待保留）。會話 ID 推薦 `"group:123"` 前綴格式（隔離同數值的私聊會話），裸鍵 `"123"` 兼容寫法匹配全部會話類型；實時讀配置，熱更新生效 |
+| memory_tracing | boolean | false | 記憶體追蹤（tracemalloc）：開啟後 `/metrics` 與記憶體快照可輸出 traced 記憶體與 top 分配點，增長門限不再誤用 RSS；約 2 倍分配路徑 CPU 開銷——排障時開啟，常態關閉；熱更新，下一次主動 GC 輪生效 |
 
-### 主動 GC 設定
+會話帳戶綁定示例（推薦前綴鍵格式）：
 
-SDK 初始化完成後啟動主動 GC 背景任務，週期性執行 Python GC 與內部資源回收（離線 Bot 清理等）。全部參數均支援熱更新，變更時即時重啟任務。
+```toml
+[ErisPulse.framework.session_accounts.snowluma]
+"group:643319481" = "1325859446"
+```
 
-| 設定項 | 類型 | 預設值 | 說明 |
+### 主動 GC 配置
+
+SDK 初始化完成後啟動主動 GC 後台任務，周期性執行 Python GC 與內部資源回收（離線 Bot 清理等）。全部參數均支援熱更新，變更時即時重啟任務。
+
+| 配置項 | 類型 | 默認值 | 說明 |
 |---------|------|---------|------|
-| proactive_gc_interval | number | 300 | 回收間隔（秒），支援小數。0 表示停用主動 GC |
-| proactive_gc_generation | integer | 0 | 常規輪次回收分代（0/1/2，鉗制到 0..2）。注意 `gc.collect(2)` 等同於全量回收，預設 0 保持輕量；深度回收由 `proactive_gc_full_every` 週期性觸發 |
-| proactive_gc_full_every | integer | 20 | 每 N 輪做一次全量回收，0 表示停用週期性全量。全量回收受 `proactive_gc_memory_growth_mb` 門檻約束 |
-| proactive_gc_memory_growth_mb | integer | 32 | 全量回收的記憶體成長門檻（MB）：對比上次全量後的記憶體基線（優先 tracemalloc，其次 RSS），僅當成長達到此值才執行全量回收。0 表示不設門檻 |
-| proactive_gc_idle_only | boolean | false | 開啟後，事件洪峰（存在未完成的 pending handler）時本輪跳過 Python GC，避免停頓與訊息處理競爭；內部資源回收不受影響 |
+| proactive_gc_interval | number | 300 | 回收間隔（秒），支援小數。0 表示禁用主動 GC |
+| proactive_gc_generation | integer | 0 | 常規輪次回收分代（0/1/2，钳制到 0..2）。注意 `gc.collect(2)` 等價於全量回收，預設 0 保持輕量；深度回收由 `proactive_gc_full_every` 周期性觸發 |
+| proactive_gc_full_every | integer | 20 | 每 N 輪做一次全量回收，0 表示禁用周期性全量。全量回收受 `proactive_gc_memory_growth_mb` 門限約束 |
+| proactive_gc_memory_growth_mb | integer | 32 | 全量回收的記憶體增長門限（MB）：對比上次全量後的記憶體基線（優先 tracemalloc，其次 RSS），僅當增長達到此值才執行全量回收。0 表示不設門限 |
+| proactive_gc_idle_only | boolean | false | 開啟後，事件洪峰（存在未完成的 pending handler）時本轮跳過 Python GC，避免停頓與訊息處理競爭；內部資源回收不受影響 |
 | proactive_gc_gen0_min | integer | 500 | 常規輪次觸發回收的 gen0 垃圾量下限：`gc.get_count()[0]` 低於此值直接跳過（空轉輪次近乎零開銷）。0 表示始終回收 |
 
-> **2.7.1 變更**：預設 `proactive_gc_generation` 由 `2` 調整為 `0`，預設 `proactive_gc_full_every` 由 `0` 調整為 `20`。此前 `generation=2` 意味著每輪都做最重的全量回收；新預設在保持回收覆蓋的同時顯著降低空轉開銷。明確設定的舊值仍按字面語義生效。
+> **2.7.1 變更**：預設 `proactive_gc_generation` 由 `2` 調整為 `0`，預設 `proactive_gc_full_every` 由 `0` 調整為 `20`。此前 `generation=2` 意味著每輪都做最重的全量回收；新預設在保持回收覆蓋的同時顯著降低空轉開銷。顯式配置的舊值仍按字面語義生效。
 
 ### 嚴格模式
 
-嚴格模式控制模組/配接器在載入階段不合規或失敗時的處理策略。現代模組/配接器都應繼承對應的基底類別（`BaseModule`/`BaseAdapter`），未繼承基底類別的元件會影響框架的上下文系統與兜底清理，可能導致資源洩漏。
+嚴格模式控制模組/適配器在加載階段不合規或失敗時的處理策略。現代模組/適配器都應繼承對應的基類（`BaseModule`/`BaseAdapter`），未繼承基類的組件會影響框架的上下文系統與兜底清理，可能導致資源洩漏。
 
-> **2.5.2 變更**：預設級別從 `1`（跳過）調整為 `0`（寬鬆），以減少新使用者初次使用時遇到的載入問題。未繼承基底類別的元件將以 WARNING 提示並嘗試載入，而非直接拒絕。如需恢復舊行為，請明確設定 `strict_mode = 1`。
+> **2.5.2 變更**：預設級別從 `1`（跳過）調整為 `0`（寬鬆），以減少新用戶初次使用時遇到的加載問題。未繼承基類的組件將以 WARNING 提示並嘗試加載，而非直接拒絕。如需恢復旧行為，請顯式設定 `strict_mode = 1`。
 
 | 級別 | 名稱 | 行為 |
 |------|------|------|
-| 0 | 寬鬆（預設） | 違規僅警告，未繼承基底類別的元件仍會嘗試載入（相容舊元件） |
-| 1 | 嚴格-跳過 | 拒絕未繼承基底類別的元件並跳過，其餘正常啟動 |
+| 0 | 寬鬆（預設） | 違規僅警告，未繼承基類的組件仍會嘗試加載（相容舊組件） |
+| 1 | 嚴格-跳過 | 拒絕未繼承基類的組件並跳過，其餘正常啟動 |
 | 2 | 嚴格-致命 | 收集所有違規後統一報告並中止整個啟動 |
 
-各級別下，「載入/註冊/初始化階段報錯」這類元件自身崩潰始終會被跳過；區別在於：
+各級別下，「加載/註冊/初始化階段報錯」這類組件自身崩潰始終會被跳過；區別在於：
 
-- **0 → 1**：唯一行為變化是「未繼承基底類別」從「仍載入」變為「跳過」。
-- **1 → 2**：所有違規（未繼承基底類別、載入失敗、註冊失敗、初始化失敗等）升級為致命，會在啟動檢查點收集後一次性輸出違規清單並中止。
+- **0 → 1**：唯一行為變化是「未繼承基類」從「仍加載」變為「跳過」。
+- **1 → 2**：所有違規（未繼承基類、加載失敗、註冊失敗、初始化失敗等）升級為致命，會在啟動檢查點收集後一次性輸出違規清單並中止。
 
 #### 豁免清單
 
-如果某些元件確實暫時無法遷移（例如依賴的舊模組），可以將其加入豁免清單，被列名的元件即使不合規也會按寬鬆模式對待，繼續載入：
+如果某些組件確實暫時無法遷移（例如依賴的舊模組），可以將其加入豁免清單，被列名的組件即使不合規也會按寬鬆模式對待，繼續加載：
 
 ```toml
 [ErisPulse.framework.strict_mode_exceptions]
@@ -521,26 +534,29 @@ modules = ["SeTu", "SomeLegacyModule"]
 adapters = ["OldAdapter"]
 ```
 
-> 當某個元件被嚴格模式拒絕時，日誌會明確提示如何恢復載入（加入豁免清單或調低級別）。
+> 當某個組件被嚴格模式拒絕時，日誌會明確提示如何恢復加載（加入豁免清單或調低級別）。
 
 #### 與 CLI 的聯動
 
-`epsdk run` 的啟動前自檢（設定檔可解析性、元件必填設定完整性）預設跟隨本設定：非 0 時檢查失敗即拒絕啟動，0 時僅警告繼續。也可以不改設定臨時切換：`epsdk run --strict` 本次將自檢與嚴格級別同時開啟（級別只升不降，經 `ERISPULSE_FRAMEWORK_STRICT_MODE` 環境變數傳導至執行中的處理程序），`--no-strict` 本次臨時壓到寬鬆並僅警告。
+`epsdk run` 的啟動前自檢（配置文件可解析性、組件必填配置完整性）預設跟隨本配置：非 0 時檢查失敗即拒絕啟動，0 時僅警告繼續。也可以不改配置臨時切換：`epsdk run --strict` 本次將自檢與嚴格級別同時開啟（級別只升不降，經 `ERISPULSE_FRAMEWORK_STRICT_MODE` 環境變數傳導到運行進程），`--no-strict` 本次臨時壓到寬鬆並僅警告。
 
-## 存儲配置
+## 儲存配置
 
-2.8.0 起存儲引擎支援三種異步後端，**API 完全一致、配置一鍵切換**：
+2.8.0 起儲存引擎支援三種非同步後端，**API 完全一致、配置一鍵切換**：
 
 | 後端 | 驅動 | 安裝 | 特點 |
 |------|------|------|------|
-| SQLite（預設） | aiosqlite | 開箱即用 | 零配置、單檔案、WAL 併發 |
+| SQLite（預設） | aiosqlite | 開箱即用 | 零配置、單檔案、WAL 並發 |
 | MySQL / MariaDB | aiomysql | `pip install ErisPulse[mysql]` | 已有 MySQL 基礎設施、多實例共享 |
-| PostgreSQL | asyncpg | `pip install ErisPulse[postgres]` | 事務能力強、高併發 |
+| PostgreSQL | asyncpg | `pip install ErisPulse[postgres]` | 交易能力強、高並發 |
 
 ```toml
 [ErisPulse.storage]
 backend = "sqlite"        # "sqlite"（預設）/ "mysql" / "postgres"
-use_global_db = false     # 僅 SQLite：使用包內全局資料庫 data/config.db
+use_global_db = false     # 僅 SQLite：使用套件內全域資料庫 data/config.db
+
+[ErisPulse.storage.sqlite]     # 僅 backend = "sqlite" 時生效
+busy_timeout = 5000       # 寫鎖等待上限（毫秒，PRAGMA busy_timeout）
 
 [ErisPulse.storage.mysql]      # backend = "mysql" 時生效
 host = "127.0.0.1"
@@ -564,17 +580,26 @@ database = "erispulse"
 
 | 配置項 | 類型 | 預設值 | 說明 |
 |---------|------|---------|------|
-| backend | string | sqlite | 存儲後端：`sqlite` / `mysql` / `postgres`，切換零程式碼改動 |
-| use_global_db | boolean | false | 僅 SQLite：是否使用包內全局資料庫而非專案獨立資料庫 |
+| backend | string | sqlite | 儲存後端：`sqlite` / `mysql` / `postgres`，切換零程式碼改動 |
+| use_global_db | boolean | false | 僅 SQLite：是否使用套件內全域資料庫而非專案獨立資料庫 |
+| storage.sqlite.busy_timeout | int | 5000 | 僅 SQLite：寫鎖等待上限（毫秒，PRAGMA busy_timeout）；調大延長寫鎖排隊耐心，改動需重啟生效 |
 | storage.mysql.* | table | 見上 | MySQL 連線參數（host / port / user / password / database / charset / pool） |
 | storage.postgres.* | table | 見上 | PostgreSQL 連線參數（host / port / user / password / database / pool） |
 
-也支援環境變數覆蓋（Docker / 12-factor）：`ErisPulse.storage.postgres.host` → `ERISPULSE_STORAGE_POSTGRES_HOST`。
+也支援環境變數覆寫（Docker / 12-factor）：`ErisPulse.storage.postgres.host` → `ERISPULSE_STORAGE_POSTGRES_HOST`。
 
 > [!TIP]
 > - 連線參數變更後需重啟框架生效；連線池建立瞬時失敗會自動指數退避重試
 > - 切換後端前可用驗證腳本自檢：`python tests/devs/test_storage_backend_verify.py --backend mysql`
-> - 事務 / 方言差異 / 自訂後端等完整說明見[存儲後端](../advanced/storage-backends.md)
+> - 交易 / 方言差異 / 自訂後端等完整說明見[儲存後端](../advanced/storage-backends.md)
+
+## Web 服務與路由配置
+
+Web 伺服器與路由（`[ErisPulse.server]` / `[ErisPulse.router]`）的完整設定項目——host / port / auto_start / ssl、CORS 與安全標頭（`router.cors.*` / `router.security.*`，變更需重啟）、介面限流（`router.rate_limit.*`，`rate_limit_trust_proxy` 決定限流以代理標頭還是對端位址為限流鍵，反向代理部署時務必核對）——詳見[路由系統](../advanced/router.md)與[部署指南](deployment.md)。
+
+## 互動會話配置
+
+互動等待 / 會話互斥租約的參數（`[ErisPulse.interaction]`，包含 `checkpoint_ttl` 對話檢查點過期時長）請參閱 [Conversation 多輪對話](../advanced/conversation.md) 與 [互動會話系統](../advanced/interaction.md)。
 
 ## 事件配置
 

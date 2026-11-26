@@ -86,14 +86,7 @@ PostgreSQL 方言实现
 
 ### `class PostgresStorage(_SingletonMixin, SQLStorageBase)`
 
-PostgreSQL 存储管理器（asyncpg 异步原生实现）
-
-单例模式实现，接口与 SQLite / MySQL 后端完全一致，可通过
-``ErisPulse.storage.backend`` 配置项无感切换。
-
-> **提示**
-> 1. 连接参数见 ``ErisPulse.storage.postgres`` 配置节
-> 2. 缺少驱动时提示安装 ``pip install ErisPulse[postgres]``
+PostgresStorage 类提供相关功能。
 
 
 #### 方法列表
@@ -109,13 +102,6 @@ PostgreSQL 存储管理器（asyncpg 异步原生实现）
 ##### `_init_db() -> None`
 
 **内部方法** 初始化数据库（创建默认 config 键值表）
-
----
-
-
-##### `_require_driver() -> Any`
-
-**内部方法** 惰性导入 asyncpg，缺失时给出安装指引
 
 ---
 
@@ -157,7 +143,7 @@ PostgreSQL 存储管理器（asyncpg 异步原生实现）
 
 ##### `async _close_txn_conn(conn: Any) -> None`
 
-**内部方法** 归还事务专用连接
+**内部方法** 归还事务专用连接到其所属池（不重解析当前池）
 
 ---
 

@@ -32,6 +32,8 @@ from tomlclass import InlineTable, Table, TOMLParseError
 from .constants import (
     CONFIG_CACHE_TIMEOUT_SECS,
     CONFIG_LOCK_FILE_NAME,
+    CONFIG_MALFORMED_WARN_COOLDOWN_SECS,
+    CONFIG_WATCH_INTERVAL_SECS,
     CONFIG_WRITE_DELAY_SECS,
     CONFIG_WRITE_RETRY_DELAY_SECS,
     DEFAULT_CONFIG_FILE_PATH,
@@ -116,8 +118,8 @@ class ConfigManager:
         self._start_config_watcher()  # 启动后台文件变化监听
         self._register_atexit()
 
-    _CONFIG_WATCH_INTERVAL: float = 5.0  # 配置文件监听轮询间隔（秒）
-    _MALFORMED_WARN_COOLDOWN: float = 30.0  # flush 阶段语法错误告警冷却（秒）
+      # 配置文件监听轮询间隔（秒）
+      # flush 阶段语法错误告警冷却（秒）
 
     def _start_config_watcher(self) -> None:
         """
@@ -151,7 +153,7 @@ class ConfigManager:
                     # 等待：刷盘 deadline 与轮询间隔取较小者；新写入会提前唤醒
                     with self._lock:
                         deadline = self._flush_deadline
-                    wait = self._CONFIG_WATCH_INTERVAL
+                    wait = CONFIG_WATCH_INTERVAL_SECS
                     if deadline is not None:
                         wait = min(wait, max(0.0, deadline - time.monotonic()))
                     if self._flush_wakeup.wait(timeout=wait):
@@ -802,7 +804,7 @@ class ConfigManager:
                     sentinel = self._malformed_sentinel_path
                     try:
                         if sentinel.exists():
-                            if time.time() - sentinel.stat().st_mtime <= self._MALFORMED_WARN_COOLDOWN:
+                            if time.time() - sentinel.stat().st_mtime <= CONFIG_MALFORMED_WARN_COOLDOWN_SECS:
                                 should_warn = False
                     except Exception:
                         pass
@@ -970,7 +972,8 @@ class ConfigManager:
                 "config.updated",
                 {
                     "old_config": old_config,
-                    "new_config": self._cache,
+                    # 副本：载荷为活动引用时第三方存留会钉住整棵配置树
+                    "new_config": copy.deepcopy(self._cache),
                     "config_file": self.CONFIG_FILE,
                 },
             )

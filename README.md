@@ -2,8 +2,6 @@
 
 [English](README.md) | [简体中文](README.zh-CN.md) | [繁體中文](README.zh-TW.md) | [日本語](README.ja.md) | [Русский](README.ru.md)
 
-> ✦ **Hello everyone, I'm Xiaoeris!** The mascot and guide in ErisPulse documentation. Don't panic if there's an error in the demo, I'm probably just trying the error for you～
-
 # ErisPulse
 
 **Write once, deploy to QQ / Telegram / Kook / Yunhu / WeChat Official Account / OneBot12 / ... multiple platforms.**
@@ -319,7 +317,7 @@ For more detailed instructions, see:
 
 ## The Same Code. Multiple Platforms.
 
-*Identical command handlers. Different platforms. No changes to business logic required.*
+*Identical command handlers. Different platforms. No business logic modification required.*
 
 <table>
 <tr>
@@ -346,6 +344,38 @@ For more detailed instructions, see:
 </td>
 </tr>
 </table>
+
+## Ecosystem Modules
+
+The official and community-maintained module ecosystem includes the [Dashboard](https://github.com/ErisPulse/ErisPulse-Dashboard) management panel, [MyServer](https://github.com/wsu2059q/ErisPulse-MyServer) AI-native server room in chat, [QvQChat](https://github.com/wsu2059q/ErisPulse-QvQChat) AI agent module, and dozens of feature modules contributed by the community:
+
+<table>
+<tr>
+<td align="center" width="33%">
+
+**Dashboard** — Web management panel
+
+<img src="https://raw.githubusercontent.com/ErisPulse/ErisPulse-Dashboard/main/.github/assets/overview.png" alt="Dashboard" />
+
+</td>
+<td align="center" width="33%">
+
+**MyServer** — AI-native server room in chat
+
+<img src="https://raw.githubusercontent.com/wsu2059q/ErisPulse-MyServer/main/.github/assets/console.png" alt="MyServer" />
+
+</td>
+<td align="center" width="33%">
+
+**QvQChat** — AI agent module
+
+<img src="https://raw.githubusercontent.com/wsu2059q/ErisPulse-QvQChat/main/.github/assets/fleet-demo.png" alt="QvQChat" />
+
+</td>
+</tr>
+</table>
+
+Module marketplace: https://www.erisdev.com/#market
 
 ---
 
@@ -558,21 +588,31 @@ Welcome to contribute adapters! Not sure where to start? Check out the [Contribu
 
 | Adapter | Description |
 |---------|-------------|
-| <img src=".github/assets/adapter_logo/kook.svg" height="20" alt="Kook" /> [Kook](https://github.com/shanfishapp/ErisPulse-KookAdapter) | Instant messaging platform Kook (Kaihei La) |
+| <img src=".github/assets/adapter_logo/kook.svg" height="20" alt="Kook" /> [Kook](https://github.com/shanfishapp/ErisPulse-KookAdapter) | Instant messaging platform Kook (KaiHeLa) |
 | <img src=".github/assets/adapter_logo/matrix.svg" height="20" alt="Matrix" /> [Matrix](https://github.com/ErisPulse/ErisPulse-MatrixAdapter) | Decentralized communication protocol Matrix |
 | <img src=".github/assets/adapter_logo/onebot.png" height="20" alt="OneBot" /> [OneBot11](https://github.com/ErisPulse/ErisPulse-OneBot11Adapter) | General robot protocol OneBot v11 |
 | <img src=".github/assets/adapter_logo/onebot.png" height="20" alt="OneBot" /> [OneBot12](https://github.com/ErisPulse/ErisPulse-OneBot12Adapter) | OneBot v12 standard protocol |
+| <img src=".github/assets/adapter_logo/onebot.png" height="20" alt="OneBot" /> [SnowLuma](https://github.com/ErisPulse/ErisPulse-SnowLumaAdapter) | OneBot v11 adapter based on SnowLuma backend (NTQQ hook) |
 | <img src=".github/assets/adapter_logo/qqbot.svg" height="20" alt="QQ" /> [QQ](https://github.com/ErisPulse/ErisPulse-QQBotAdapter) | Official QQ robot platform |
 | <img src=".github/assets/adapter_logo/sandbox.png" height="20" alt="Sandbox" /> [Sandbox](https://github.com/ErisPulse/ErisPulse-SandboxAdapter) | Web-based debugging, no real platform integration required |
 | <img src=".github/assets/adapter_logo/terminal.svg" height="20" alt="Terminal" /> [Terminal](https://github.com/ErisPulse/ErisPulse-TerminalAdapter) | Command-line chat, zero-configuration development and debugging |
-| <img src=".github/assets/adapter_logo/telegram.svg" height="20" alt="Telegram" /> [Telegram](https://github.com/ErisPulse/ErisPulse-TelegramAdapter) | Global instant messaging platform |
-| <img src=".github/assets/adapter_logo/email.svg" height="20" alt="Email" /> [Email](https://github.com/ErisPulse/ErisPulse-EmailAdapter) | Adapter for sending and receiving email protocol |
+| <img src=".github/assets/adapter_logo/telegram.svg" height="20" alt="Telegram" /> [Telegram](https://github.com/ErisPulse/ErisPulse-TelegramAdapter) | Global instant messaging platform Telegram |
+| [Bilibili](https://github.com/ErisPulse/ErisPulse-BilibiliAdapter) | Bilibili private messages, supports Cookie / QR code dual login |
+| <img src=".github/assets/adapter_logo/email.svg" height="20" alt="Email" /> [Email](https://github.com/ErisPulse/ErisPulse-EmailAdapter) | Email protocol adapter for receiving and sending messages |
 | <img src=".github/assets/adapter_logo/yunhu.png" height="20" alt="Yunhu" /> [Yunhu](https://github.com/ErisPulse/ErisPulse-YunhuAdapter) | Enterprise-level instant messaging platform (robot integration) |
-| <img src=".github/assets/adapter_logo/yunhu.png" height="20" alt="Yunhu" /> [Yunhu User](https://github.com/wsu2059q/ErisPulse-YunhuUserAdapter) | Adapter based on the Yunhu user protocol |
-| [Ideaura Café](https://github.com/ErisPulse/ErisPulse-Ideaura/) | Allons! \(・ω・) / |
+| <img src=".github/assets/adapter_logo/yunhu.png" height="20" alt="Yunhu" /> [Yunhu User](https://github.com/wsu2059q/ErisPulse-YunhuUserAdapter) | Adapter based on Yunhu user protocol |
+| [Oopz](https://github.com/ErisPulse/ErisPulse-OopzAdapter) | Oopz voice community (community protocol, user account access, small account recommended) |
+| [Flower Maple Café](https://github.com/ErisPulse/ErisPulse-Ideaura/) | Allons! \(・ω・) / |
 | <img src=".github/assets/adapter_logo/discord.svg" height="20" alt="Discord" /> [Discord](https://github.com/ErisPulse/ErisPulse-DiscordAdapter) | Global community communication platform, supports servers, channels, and private messages |
-| <img src=".github/assets/adapter_logo/webhook.svg" height="20" alt="Webhook" /> [Webhook](https://github.com/ErisPulse/ErisPulse-WebhookAdapter) | General HTTP bridge adapter, connects to any system |
+| [Minecraft](https://github.com/ErisPulse/ErisPulse-MinecraftAdapter) | Minecraft Java Edition server (RCON), command execution and log monitoring |
+| <img src=".github/assets/adapter_logo/webhook.svg" height="20" alt="Webhook" /> [Webhook](https://github.com/ErisPulse/ErisPulse-WebhookAdapter) | Universal HTTP bridge adapter, connects to any system |
 | <img src=".github/assets/adapter_logo/wechatmp.svg" height="20" alt="WechatMp" /> [WeChat Official Account](https://github.com/ErisPulse/ErisPulse-WechatMpAdapter) | Official WeChat Official Account platform |
+| [WeCom](https://github.com/ErisPulse/ErisPulse-WeComAdapter) | WeCom self-built application robot, callback reception and active messages |
+| [WeChat ClawBot](https://github.com/ErisPulse/ErisPulse-WechatClaw) | Official WeChat ClawBot channel (iLink Bot API), binds personal account via QR code |
+
+View [Adapter Details](docs/en/platform-guide/README.md)
+
+---
 
 ## Community
 
@@ -588,7 +628,7 @@ Found the project useful? Consider supporting us on [Ifdian](https://ifdian.net/
 
 ## Star History
 
-If ErisPulse has helped you, feel free to give it a Star ⭐—this is the most direct way to help more developers discover the project.
+If ErisPulse has helped you, please give it a Star ⭐—it's the most direct way to help more developers discover the project.
 
 [![Star History Chart](https://api.star-history.com/svg?repos=ErisPulse/ErisPulse&type=Date)](https://star-history.com/#ErisPulse/ErisPulse&Date)
 
@@ -596,11 +636,11 @@ If ErisPulse has helped you, feel free to give it a Star ⭐—this is the most 
 
 ### Contribution Guide
 
-The health of the ErisPulse project still needs your contribution! We welcome all forms of contributions:
+The health of the ErisPulse project still needs your help! We welcome contributions in various forms:
 
-1. **Report Issues** — Submit bug reports on [GitHub Issues](https://github.com/ErisPulse/ErisPulse/issues)
-2. **Feature Requests** — Propose new ideas through [Community Discussions](https://github.com/ErisPulse/ErisPulse/discussions)
-3. **Code Contributions** — Before submitting a PR, please read the [Code Style](docs/en/styleguide/) and [Contribution Guide](CONTRIBUTING.md)
+1. **Report Issues** — Submit bug reports via [GitHub Issues](https://github.com/ErisPulse/ErisPulse/issues)
+2. **Feature Requests** — Suggest new ideas through [Community Discussions](https://github.com/ErisPulse/ErisPulse/discussions)
+3. **Code Contributions** — Before submitting a PR, please read the [Code Style Guide](docs/en/styleguide/) and [Contribution Guidelines](CONTRIBUTING.md)
 4. **Documentation Improvements** — Help improve documentation and example code
 
 **First-time contributor?** Start here 👉 [First Contribution Guide](docs/en/contributing/first-contribution.md)
@@ -615,9 +655,9 @@ The health of the ErisPulse project still needs your contribution! We welcome al
 
 <img src=".github/assets/thanks.png" width="200" alt="Thanks" />
 
-Part of the code in this project is based on [sdkFrame](https://github.com/runoneall/sdkFrame), and the core adapter standardization layer references and benefits from the [OneBot12 Specification](https://12.onebot.dev/).
+The core adapter standardization layer draws inspiration and benefits from the [OneBot12 specification](https://12.onebot.dev/).
 
-The early exploration and growth of ErisPulse would not have been possible without the support of the Yunhu developer community, where many ideas, adapters, and practical experiences originated.
+The early exploration and growth of ErisPulse would not have been possible without the support of the Yunhu developer community. Many ideas, adapters, and practical experiences originated here.
 
 We also thank all developers and project authors who have contributed to ErisPulse, the OneBot ecosystem, and the open-source community.
 

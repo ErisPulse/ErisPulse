@@ -71,7 +71,7 @@ HTTP 状态码
 ---
 
 
-##### `headers -> Any`（property）
+##### `headers -> CIMultiDictProxy[str]`（property）
 
 响应头
 
@@ -98,7 +98,7 @@ Content-Type 值
 ---
 
 
-##### `url -> Any`（property）
+##### `url -> URL`（property）
 
 响应 URL (可能因重定向而与请求 URL 不同)
 

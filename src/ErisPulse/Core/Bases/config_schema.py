@@ -18,6 +18,9 @@ ErisPulse 通用配置 Schema 模块
 9. 使用 dict_to_dataclass() 从 TOML 字典填充 dataclass（含环境变量覆盖）
 10. 使用 validate_config() 校验配置实例
 11. 使用 get_config_schema() 生成 WebUI JSON Schema（含 i18n 支持）
+12. 容器类型 ``list[T]`` / ``dict[str, T]`` 的成员类型进入 schema 的 ``item``；
+    dict_to_dataclass() 加载时按成员类型规范化（标量转换 / dataclass 实例化），
+    validate_config() 校验成员类型与嵌套约束
 {!--< /tips >!--}
 """
 
@@ -33,6 +36,7 @@ from functools import cache
 from types import NoneType, UnionType
 from typing import Any, ClassVar, Optional, Union, get_args, get_origin
 
+from ..constants import CONFIG_TEMPLATE_NESTED_TABLE_MAX_DEPTH
 from ..i18n import i18n
 
 # ---------------------------------------------------------------------------
@@ -185,29 +189,125 @@ def _resolve_nested_dataclass(config_class: type, f) -> type | None:
     if isinstance(t, str):
         name = t.strip()
         resolved = None
-        module_name = getattr(config_class, "__module__", None)
-        module = sys.modules.get(module_name) if isinstance(module_name, str) else None
-
-        # 解析命名空间链：类所在模块全局 → 沿 __qualname__ 逐级外层的类命名空间
-        # （支持子配置类与 ConfigClass 同级声明在外层类中的写法）
-        namespaces = []
-        if module is not None:
-            namespaces.append(vars(module))
-            obj = module
-            for part in getattr(config_class, "__qualname__", "").split(".")[:-1]:
-                obj = vars(obj).get(part) if hasattr(obj, "__dict__") else None
-                if obj is None:
-                    break
-                namespaces.append(vars(obj))
-        namespaces.append(vars(config_class))
-
-        for ns in namespaces:
+        for ns in _annotation_namespaces(config_class):
             candidate = ns.get(name)
             if isinstance(candidate, type) and is_dataclass(candidate):
                 resolved = candidate
                 break
         t = resolved
     return t if (isinstance(t, type) and is_dataclass(t)) else None
+
+
+def _annotation_namespaces(config_class: type) -> "list[Mapping]":
+    """
+    字符串注解的解析命名空间链
+
+    顺序：类所在模块全局 → 沿 ``__qualname__`` 逐级外层的类命名空间 → 类自身
+    （子配置类与 ConfigClass 同级声明在外层类中时，短名经由该链解析）。
+
+    :param config_class: 配置 dataclass 类
+    :return: 命名空间映射列表（按解析优先级排列）
+    """
+    namespaces: list[Mapping] = []
+    module_name = getattr(config_class, "__module__", None)
+    module = sys.modules.get(module_name) if isinstance(module_name, str) else None
+    if module is not None:
+        namespaces.append(vars(module))
+        obj = module
+        for part in getattr(config_class, "__qualname__", "").split(".")[:-1]:
+            obj = vars(obj).get(part) if hasattr(obj, "__dict__") else None
+            if obj is None:
+                break
+            namespaces.append(vars(obj))
+    namespaces.append(vars(config_class))
+    return namespaces
+
+
+def _eval_hint(type_hint, config_class: type):
+    """
+    求值 PEP 563 字符串注解为类型对象（非字符串注解原样返回）
+
+    内置仅开放基础类型构造（:data:`_HINT_EVAL_GLOBALS`），其余名字取字段
+    声明处的命名空间链（:func:`_annotation_namespaces`）。
+
+    :param type_hint: 类型注解（类型对象或字符串）
+    :param config_class: 字段所属配置类（字符串注解解析用）
+    :return: 类型对象；求值失败返回 None
+    """
+    if not isinstance(type_hint, str):
+        return type_hint
+    namespace = dict(_HINT_EVAL_GLOBALS)
+    for ns in _annotation_namespaces(config_class):
+        namespace.update({key: value for key, value in ns.items() if key != "__builtins__"})
+    try:
+        return eval(type_hint, namespace)
+    except Exception:
+        return None
+
+
+def _field_hint(config_class: type, f):
+    """
+    字段类型注解的类型对象形态（字符串注解求值，失败时返回原字符串）
+
+    :param config_class: 字段所属配置类
+    :param f: dataclass Field 对象
+    :return: 类型对象或原字符串注解
+    """
+    evaluated = _eval_hint(f.type, config_class)
+    return f.type if evaluated is None else evaluated
+
+
+def _is_dataclass_type(obj) -> bool:
+    """obj 是否为 dataclass 类（非实例）"""
+    return isinstance(obj, type) and is_dataclass(obj)
+
+
+def _container_spec(type_hint, config_class: type) -> tuple[str, Any] | None:
+    """
+    解析容器类型注解的成员类型
+
+    联合类型（含 ``Optional``）取首个非 ``None`` 分支，与
+    :func:`python_type_category` 同序。返回值：数组为 ``("array", 元素类型)``，
+    动态键表为 ``("table", 值类型)``；未带类型参数的裸容器成员类型为 ``None``。
+
+    :param type_hint: 类型注解（类型对象或字符串）
+    :param config_class: 字段所属配置类（字符串注解解析用）
+    :return: ``(容器类别, 成员类型)``；非容器或注解无法求值返回 None
+    """
+    hint = _eval_hint(type_hint, config_class)
+    if hint is None:
+        return None
+    origin = get_origin(hint)
+    if origin in (Union, UnionType):
+        args = [arg for arg in get_args(hint) if arg is not NoneType]
+        return _container_spec(args[0], config_class) if args else None
+    if origin is list or hint is list:
+        args = get_args(hint)
+        return ("array", args[0] if args else None)
+    if origin is dict or hint is dict:
+        args = get_args(hint)
+        return ("table", args[1] if len(args) == 2 else None)
+    return None
+
+
+def _plain(value) -> Any:
+    """
+    值的纯数据形态（dataclass 实例递归转字典）
+
+    :param value: 任意值
+    :return: 仅含 dict / list / 标量的等价值
+    """
+    if is_dataclass(value) and not isinstance(value, type):
+        return {
+            f.name: _plain(getattr(value, f.name))
+            for f in fields(value)
+            if not f.name.startswith("_")
+        }
+    if isinstance(value, list):
+        return [_plain(item) for item in value]
+    if isinstance(value, dict):
+        return {key: _plain(item) for key, item in value.items()}
+    return value
 
 
 def _type_default(type_hint) -> object:
@@ -319,6 +419,17 @@ def _python_type_to_toml_type(type_hint) -> str:
         "dict": "table",
         "str": "string",
     }[python_type_category(type_hint)]
+
+
+# None 默认值的 TOML 占位表（键 = python_type_category 类别）
+_TOML_NULL_PLACEHOLDERS = {
+    "int": "0",
+    "float": "0.0",
+    "bool": "false",
+    "str": '""',
+    "list": "[]",
+    "dict": "{}",
+}
 
 
 def _format_toml_value(value) -> str:
@@ -516,32 +627,111 @@ class I18nConfig:
 # ---------------------------------------------------------------------------
 
 
-def dataclass_to_defaults_dict(config_class: type) -> dict:
+def dataclass_to_defaults_dict(config_class: type, _seen: tuple[type, ...] = ()) -> dict:
     """
     从 dataclass 类生成默认值字典
 
     ``example`` 字段不落盘，故默认值字典同样排除；
-    嵌套 dataclass 字段递归展开为普通字典。
+    嵌套 dataclass 字段递归展开为普通字典；容器默认值中的 dataclass 实例转为字典。
 
     :param config_class: dataclass 类
-    :return: 默认值字典
+    :param _seen: 递归用：当前路径上已展开的 dataclass 类（自引用类型不重复展开）
+    :return: 默认值字典（仅含 dict / list / 标量）
     """
+    if config_class in _seen:
+        return {}
     result = {}
     for f in fields(config_class):
         if f.name.startswith("_") or (f.metadata or {}).get("example", False):
             continue
         nested = _resolve_nested_dataclass(config_class, f)
         if nested is not None:
-            result[f.name] = dataclass_to_defaults_dict(nested)
+            result[f.name] = dataclass_to_defaults_dict(nested, _seen + (config_class,))
             continue
         if f.default is not MISSING:
             result[f.name] = f.default
         elif f.default_factory is not MISSING:
             result[f.name] = f.default_factory()
         else:
-            type_default = _type_default(f.type)
-            result[f.name] = type_default
-    return result
+            result[f.name] = _type_default(f.type)
+    return _plain(result)
+
+
+def _toml_key(key) -> str:
+    """
+    键名的 TOML 字面形式（含 ``[A-Za-z0-9_-]`` 之外字符时加双引号）
+
+    :param key: 键名
+    :return: TOML 键字面量
+    """
+    text = str(key)
+    return text if re.fullmatch(r"[A-Za-z0-9_-]+", text) else json.dumps(text)
+
+
+def _toml_table_blocks(
+    name: str,
+    kind: str,
+    item_type: type,
+    value,
+    include_example: bool,
+    prefix: str,
+    depth: int,
+) -> "list[str]":
+    """
+    元素 / 值类型为 dataclass 的容器字段的 TOML 行
+
+    有元素时每个元素输出一个 ``[[表数组]]``（数组）或 ``[表.键]``（动态键表）
+    块；无元素或嵌套层数达上限时输出注释骨架。空值不落 ``键 = []``——静态
+    数组与后续 ``[[键]]`` 追加互斥，落盘后用户无法再以表数组形式追加元素。
+
+    :param name: 字段名
+    :param kind: 容器类别（``"array"`` / ``"table"``）
+    :param item_type: 元素 / 值的 dataclass 类
+    :param value: 字段当前值（元素为字典或 dataclass 实例）
+    :param include_example: 是否包含 ``example`` 字段
+    :param prefix: 当前嵌套路径前缀
+    :param depth: 当前嵌套表层数
+    :return: 行列表（以空行结尾）
+    """
+    base = f"{prefix}{name}"
+    items = []
+    if kind == "array" and isinstance(value, (list, tuple)):
+        items = [(f"[[{base}]]", f"{base}.", item) for item in value]
+    elif kind == "table" and isinstance(value, dict):
+        items = [
+            (f"[{base}.{_toml_key(key)}]", f"{base}.{_toml_key(key)}.", item)
+            for key, item in value.items()
+        ]
+
+    if depth >= CONFIG_TEMPLATE_NESTED_TABLE_MAX_DEPTH:
+        header = f"[[{base}]]" if kind == "array" else f"[{base}.<key>]"
+        return [f"# {header}", ""]
+    if items:
+        lines = []
+        for header, item_prefix, item in items:
+            lines.append(header)
+            item_value = _plain(item)
+            lines.append(
+                dataclass_to_toml_with_comments(
+                    item_type,
+                    item_value if isinstance(item_value, dict) else None,
+                    include_example=include_example,
+                    _prefix=item_prefix,
+                    _depth=depth + 1,
+                )
+            )
+        return lines
+
+    header = f"[[{base}]]" if kind == "array" else f"[{base}.<key>]"
+    body = dataclass_to_toml_with_comments(
+        item_type,
+        None,
+        include_example=include_example,
+        _prefix=f"{base}.",
+        _depth=depth + 1,
+    )
+    raw = [header, *body.rstrip("\n").split("\n")]
+    return [f"# {line}" if line else "#" for line in raw] + [""]
 
 
 def dataclass_to_toml_with_comments(
@@ -549,6 +739,7 @@ def dataclass_to_toml_with_comments(
     existing_values: dict | None = None,
     include_example: bool = False,
     _prefix: str = "",
+    _depth: int = 0,
 ) -> str:
     """
     将 dataclass class 转为带注释的 TOML 文本
@@ -556,19 +747,26 @@ def dataclass_to_toml_with_comments(
     用于首次写入配置文件时生成可读的配置模板。
     description 若为 i18n 字典，则使用其 default/fallback 文本；
     未声明 description 时自动回退到类 docstring 中的字段说明。
-    嵌套 dataclass 字段渲染为 ``[子表]`` 节（递归，注释同样保留）。
+    嵌套 dataclass 字段渲染为 ``[子表]`` 节（递归，注释同样保留）；
+    元素 / 值类型为 dataclass 的容器（``list[T]`` / ``dict[str, T]``）渲染为
+    ``[[表数组]]`` / ``[表.键]`` 块，无元素时输出注释骨架。
 
     :param config_class: dataclass 类
     :param existing_values: 已有的配置值（覆盖默认值）
     :param include_example: 是否包含 ``example`` 字段（默认排除，
         example 字段仅进 config.full.example，不写入 config.toml）
     :param _prefix: 递归用：当前嵌套路径前缀（如 ``"stalker_mode."``）
+    :param _depth: 递归用：当前嵌套表层数（上限
+        ``CONFIG_TEMPLATE_NESTED_TABLE_MAX_DEPTH``）
     :return: TOML 文本字符串
     """
     if existing_values is None:
         existing_values = {}
 
-    lines = []
+    # 两段式渲染：裸键（key = value）先行、表块（[子表] / [[表数组]]）殿后——
+    # TOML 语义中表头之后的所有裸键归属该表，同级标量必须先于表头输出
+    bare_lines: list[str] = []
+    table_lines: list[str] = []
     docstrings = get_field_docstrings(config_class)
 
     for f in fields(config_class):
@@ -578,20 +776,6 @@ def dataclass_to_toml_with_comments(
         if f.name.startswith("_"):
             continue
         if not include_example and meta.get("example", False):
-            continue
-
-        nested = _resolve_nested_dataclass(config_class, f)
-        if nested is not None:
-            nested_existing = existing_values.get(f.name)
-            body = dataclass_to_toml_with_comments(
-                nested,
-                nested_existing if isinstance(nested_existing, dict) else None,
-                include_example=include_example,
-                _prefix=f"{_prefix}{f.name}.",
-            )
-            if body.strip():
-                lines.append(f"[{_prefix}{f.name}]")
-                lines.append(body)
             continue
 
         value = existing_values.get(f.name)
@@ -607,29 +791,79 @@ def dataclass_to_toml_with_comments(
         description = _resolve_description_text(meta, docstrings.get(f.name, ""))
         required = meta.get("required", False)
 
+        # 字段头注释（描述 + 环境变量提示）随所属渲染段走：
+        # 标量段入裸键区，容器/嵌套表段入表块区（TOML 表头语义）
+        header_lines: list[str] = []
         if description:
             suffix = i18n.t("core.config.required_suffix") if required else ""
-            lines.append(f"# {description}{suffix}")
-
-        # 环境变量绑定提示（仅提示，不把 env 值写入模板）
+            header_lines.append(f"# {description}{suffix}")
         env_name = meta.get("env")
         if isinstance(env_name, str) and env_name:
-            lines.append(f"# {i18n.t('core.config.env_hint', env=env_name)}")
+            header_lines.append(f"# {i18n.t('core.config.env_hint', env=env_name)}")
+
+        nested = _resolve_nested_dataclass(config_class, f)
+        if nested is not None:
+            if _depth >= CONFIG_TEMPLATE_NESTED_TABLE_MAX_DEPTH:
+                table_lines.extend(header_lines)
+                table_lines.append(f"# [{_prefix}{f.name}]")
+                table_lines.append("")
+                continue
+            nested_existing = existing_values.get(f.name)
+            body = dataclass_to_toml_with_comments(
+                nested,
+                nested_existing if isinstance(nested_existing, dict) else None,
+                include_example=include_example,
+                _prefix=f"{_prefix}{f.name}.",
+                _depth=_depth + 1,
+            )
+            if body.strip():
+                table_lines.extend(header_lines)
+                table_lines.append(f"[{_prefix}{f.name}]")
+                table_lines.append(body)
+            continue
+
+        # 元素 / 值类型为 dataclass 的容器：[[表数组]] / [表.键] 块
+        container = _container_spec(f.type, config_class)
+        if container is not None and _is_dataclass_type(container[1]):
+            table_lines.extend(header_lines)
+            table_lines.extend(
+                _toml_table_blocks(
+                    f.name,
+                    container[0],
+                    container[1],
+                    value,
+                    include_example,
+                    _prefix,
+                    _depth,
+                )
+            )
+            continue
+
+        bare_lines.extend(header_lines)
 
         # secret 字段不把真实值写入模板文件，避免配置文件泄露敏感信息
-        effective_value = (
-            "" if (is_secret and value not in ("", None, [], {})) else value
-        )
-        toml_value = _format_toml_value(effective_value)
-
-        if required and effective_value in ("", 0, 0.0, False, None, [], {}):
-            lines.append(f"# {f.name} = {toml_value}")
+        effective_value = _plain(value)
+        if is_secret and effective_value not in ("", None, [], {}):
+            effective_value = ""
+        if effective_value is None:
+            # None 默认值的 TOML 渲染：TOML 无 null，按字段类别取占位——
+            # 字符串/容器渲染空值（即未设置语义），标量注释占位（赋值后生效）
+            category = python_type_category(_field_hint(config_class, f))
+            placeholder = _TOML_NULL_PLACEHOLDERS[category]
+            if category in ("int", "float", "bool"):
+                bare_lines.append(f"# {f.name} = {placeholder}")
+            else:
+                bare_lines.append(f"{f.name} = {placeholder}")
         else:
-            lines.append(f"{f.name} = {toml_value}")
+            toml_value = _format_toml_value(effective_value)
+            if required and effective_value in ("", 0, 0.0, False, [], {}):
+                bare_lines.append(f"# {f.name} = {toml_value}")
+            else:
+                bare_lines.append(f"{f.name} = {toml_value}")
 
-        lines.append("")
+        bare_lines.append("")
 
-    return "\n".join(lines)
+    return "\n".join(bare_lines + table_lines)
 
 
 def _env_override_value(f):
@@ -683,6 +917,92 @@ def _get_config_logger():
     return logger
 
 
+def _normalize_scalar(value, type_hint):
+    """
+    标量成员的类型规范化（str→int/float/bool）
+
+    :param value: 原始值
+    :param type_hint: 目标类型
+    :return: 转换后的值（转换失败时返回原值）
+    """
+    if is_dataclass(type_hint) and isinstance(type_hint, type):
+        return value
+    if isinstance(value, str):
+        return _coerce_value(value, type_hint)
+    if value is None:
+        return None
+    hint = str(type_hint).lower()
+    if "bool" in hint and isinstance(value, (int, float)):
+        return bool(value)
+    if "int" in hint and "bool" not in hint and isinstance(value, float) and value.is_integer():
+        return int(value)
+    if "float" in hint and isinstance(value, int) and not isinstance(value, bool):
+        return float(value)
+    return value
+
+
+def _normalize_container_members(value, kind: str, member_hint, config_class: type):
+    """
+    容器成员的声明类型规范化
+
+    数组元素 / 动态键表值按成员类型转换：标量做类型转换（含标量包装——
+    面板布尔控件等输入 ``"true"`` 字符串时按注解还原），dataclass 成员实例化
+    （非 dict 元素包装为首个字段，与 Dashboard 列表编辑器的标量行形态对齐）。
+    字符串整体值为 JSON 容器文本时先解析。未带成员类型的容器原样返回。
+
+    :param value: 容器值（list / dict；其他原样返回）
+    :param kind: 容器类别（``"array"`` / ``"table"``）
+    :param member_hint: 成员类型注解（None = 未声明）
+    :param config_class: 字段所属配置类（字符串注解解析用）
+    :return: 规范化后的值（dataclass 成员为实例）
+    """
+    if member_hint is None:
+        return value
+    hint = _eval_hint(member_hint, config_class)
+
+    if isinstance(value, str):
+        # 字符串整体值为 JSON 容器文本时先解析（面板 JSON 编辑态 / env 覆盖）
+        try:
+            parsed = json.loads(value)
+        except (ValueError, TypeError):
+            return value
+        if not isinstance(parsed, (list, dict)):
+            return value
+        value = parsed
+    if not isinstance(value, (list, dict)):
+        return value
+
+    if is_dataclass(hint) and isinstance(hint, type):
+        if kind == "array":
+            if not isinstance(value, list):
+                return value
+            items = []
+            for item in value:
+                if isinstance(item, dict):
+                    items.append(dict_to_dataclass(hint, item))
+                elif item is None:
+                    continue
+                else:
+                    fields_list = [f for f in fields(hint) if not f.name.startswith("_")]
+                    if fields_list:
+                        items.append(dict_to_dataclass(hint, {fields_list[0].name: item}))
+            return items
+        if not isinstance(value, dict):
+            return value
+        return {
+            key: dict_to_dataclass(hint, item) if isinstance(item, dict) else item
+            for key, item in value.items()
+        }
+
+    if kind == "array":
+        if not isinstance(value, list):
+            return value
+        return [_normalize_scalar(item, hint) for item in value]
+    if not isinstance(value, dict):
+        return value
+    return {key: _normalize_scalar(item, hint) for key, item in value.items()}
+
+
 def dict_to_dataclass(config_class: type, data: dict):
     """
     从 TOML dict 填充 dataclass 实例
@@ -691,6 +1011,8 @@ def dict_to_dataclass(config_class: type, data: dict):
     - 忽略 dataclass 中不存在的字段
     - 使用 default/default_factory 填充缺失字段
     - 嵌套 dataclass 字段递归填充（dict → 嵌套实例）
+    - 容器字段（``list[T]`` / ``dict[str, T]``）按成员类型规范化
+      （标量转换 / dataclass 实例化 / JSON 字符串解析）
     - 环境变量覆盖（``metadata: {"env": "NAME"}``）：优先级 环境变量 > data > default
 
     :param config_class: dataclass 类
@@ -730,7 +1052,13 @@ def dict_to_dataclass(config_class: type, data: dict):
             else:
                 kwargs[f.name] = _type_default(f.type)
         else:
-            kwargs[f.name] = _coerce_value(raw_value, f.type)
+            container = _container_spec(f.type, config_class)
+            if container is not None:
+                kwargs[f.name] = _normalize_container_members(
+                    raw_value, container[0], container[1], config_class
+                )
+            else:
+                kwargs[f.name] = _coerce_value(raw_value, f.type)
 
     return config_class(**kwargs)
 
@@ -933,6 +1261,74 @@ def _validate_config(instance, section_key: "str | None", prefix: str) -> list[s
         ui_meta = _get_ui_meta(meta) if meta else {}
         comment_suffix = _file_comment_suffix(section_key, f"{prefix}{f.name}")
 
+        # 容器字段（list[T] / dict[str, T]）：成员类型与 dataclass 成员约束
+        container = _container_spec(f.type, type(instance))
+        if container is not None:
+            kind, member_hint = container
+            if isinstance(value, (list, dict)) and member_hint is not None:
+                member_evaluated = _eval_hint(member_hint, type(instance))
+                if member_evaluated is None:
+                    continue
+                if _is_dataclass_type(member_evaluated):
+                    members = (
+                        list(enumerate(value))
+                        if kind == "array" and isinstance(value, list)
+                        else list(value.items())
+                        if isinstance(value, dict)
+                        else []
+                    )
+                    for key, item in members:
+                        label = f"{f.name}[{key}]" if kind == "array" else f"{f.name}.{key}"
+                        if isinstance(item, member_evaluated):
+                            errors.extend(
+                                f"{label}: {sub_error}"
+                                for sub_error in _validate_config(
+                                    item, section_key, f"{prefix}{label}."
+                                )
+                            )
+                        elif isinstance(item, dict):
+                            errors.extend(
+                                f"{label}: {sub_error}"
+                                for sub_error in _validate_config(
+                                    dict_to_dataclass(member_evaluated, item),
+                                    section_key,
+                                    f"{prefix}{label}.",
+                                )
+                            )
+                        else:
+                            errors.append(
+                                i18n.t(
+                                    "core.config.field_type_mismatch",
+                                    field=label,
+                                    expected=member_evaluated.__name__,
+                                    actual=type(item).__name__,
+                                )
+                                + comment_suffix
+                            )
+                else:
+                    member_name = getattr(member_evaluated, "__name__", str(member_evaluated))
+                    expected = _type_map.get(member_name.lower().strip("'"))
+                    if expected is not None and kind == "array" and isinstance(value, list):
+                        for idx, item in enumerate(value):
+                            ok = isinstance(item, expected) and not (
+                                expected is int and isinstance(item, bool)
+                            )
+                            if not ok:
+                                errors.append(
+                                    i18n.t(
+                                        "core.config.field_type_mismatch",
+                                        field=f"{f.name}[{idx}]",
+                                        expected=member_name,
+                                        actual=type(item).__name__,
+                                    )
+                                    + comment_suffix
+                                )
+            continue
+        meta = f.metadata or {}
+        value = getattr(instance, f.name)
+        ui_meta = _get_ui_meta(meta) if meta else {}
+        comment_suffix = _file_comment_suffix(section_key, f"{prefix}{f.name}")
+
         # 1. required 非空（需要 metadata 声明）
         if meta.get("required", False) and _is_empty(value):
             desc_text = _resolve_description_text(meta) or f.name
@@ -991,6 +1387,57 @@ def _validate_config(instance, section_key: "str | None", prefix: str) -> list[s
     return errors
 
 
+def _item_schema(member_hint, config_class: type) -> dict | None:
+    """
+    容器成员的 schema 形态（Dashboard list 控件的 ``item`` 契约）
+
+    dataclass 成员 → ``{"type": "object", "fields": {...}}``（行内多字段对象行）；
+    标量成员 → 该标量的单字段 schema（标量行）；无成员类型声明返回 None。
+
+    :param member_hint: 成员类型注解（可为 None）
+    :param config_class: 字段所属配置类（字符串注解解析用）
+    :return: 成员 schema 字典；无成员类型返回 None
+    """
+    hint = _eval_hint(member_hint, config_class) if member_hint is not None else None
+    if hint is None:
+        return None
+    if _is_dataclass_type(hint):
+        return {"type": "object", "fields": _schema_fields(hint)}
+    # 标量成员：单字段形态（复用字段 schema 的构造路径）
+    fake_field = _ItemField(hint)
+    return _scalar_schema_fields(fake_field, fake_field.metadata or {})
+
+
+class _ItemField:
+    """list 控件标量成员的伪 Field（schema 渲染用）"""
+
+    def __init__(self, type_hint):
+        self.name = "item"
+        self.type = type_hint
+        self.metadata = {}
+        self.default = MISSING
+        self.default_factory = MISSING
+
+
+def _scalar_schema_fields(f, meta: Mapping) -> dict:
+    """
+    单字段的非嵌套 schema 构造（:func:`_schema_fields` 的标量分支复用体）
+
+    :param f: dataclass Field 对象
+    :param meta: 字段 metadata
+    :return: 字段 schema 字典
+    """
+    field_schema = {
+        "type": _python_type_to_toml_type(f.type),
+        "description": _resolve_description_schema(meta, ""),
+        "required": meta.get("required", False),
+        "secret": meta.get("secret", False),
+        "default": _get_field_default(f),
+    }
+    _apply_ui_meta(field_schema, _get_ui_meta(meta))
+    return field_schema
+
+
 def _schema_fields(config_class: type) -> dict:
     """
     递归生成配置类的字段 schema（嵌套 dataclass 字段以 ``fields`` 子树承载）
@@ -1029,7 +1476,7 @@ def _schema_fields(config_class: type) -> dict:
             continue
 
         field_schema = {
-            "type": _python_type_to_toml_type(f.type),
+            "type": _python_type_to_toml_type(_field_hint(config_class, f)),
             "description": _resolve_description_schema(meta, docstrings.get(f.name, "")),
             "required": meta.get("required", False),
             "secret": meta.get("secret", False),
@@ -1043,6 +1490,20 @@ def _schema_fields(config_class: type) -> dict:
         env_name = meta.get("env")
         if isinstance(env_name, str) and env_name:
             field_schema["env"] = env_name
+
+        # 类型化容器：成员类型进入 item（Dashboard list 控件的行内 schema）；
+        # 未显式声明 widget 的数组缺省 list 控件（行内按 item schema 渲染）
+        container = _container_spec(f.type, config_class)
+        if container is not None:
+            item_schema = _item_schema(container[1], config_class)
+            if item_schema is not None and "item" not in ui_meta:
+                field_schema["item"] = item_schema
+            if (
+                container[0] == "array"
+                and item_schema is not None
+                and not ui_meta.get("widget")
+            ):
+                field_schema["widget"] = "list"
 
         _apply_ui_meta(field_schema, ui_meta)
 
@@ -1060,9 +1521,9 @@ def _apply_ui_meta(field_schema: dict, ui_meta: dict) -> None:
 
     键集合以框架规范《配置与 UI 元数据》为准
     （docs/zh-CN/developer-guide/configuration.md）：widget / group / order /
-    options / placeholder / min / max / step / rows / show_if / disabled_if /
-    value_type / item。框架原样透传，语义（控件行为、值形态、条件算子、
-    兼容性契约）由规范定义，消费方（Dashboard 等）实现。
+    options / placeholder / min / max / step / rows / presets / show_if /
+    disabled_if / value_type / item。框架原样透传，语义（控件行为、值形态、
+    条件算子、兼容性契约）由规范定义，消费方（Dashboard 等）实现。
     """
     _UI_META_PASSTHROUGH_KEYS = (
         "widget",
@@ -1075,6 +1536,7 @@ def _apply_ui_meta(field_schema: dict, ui_meta: dict) -> None:
         "max",
         "step",
         "rows",
+        "presets",
         "show_if",
         "disabled_if",
         "value_type",
@@ -1228,6 +1690,29 @@ def _resolve_fields_i18n(fields_dict: dict) -> None:
                 else:
                     resolved_options.append(opt)
             field_schema["options"] = resolved_options
+
+        # 容器成员子树（list 控件行内 schema）递归解析
+        item_schema = field_schema.get("item")
+        if isinstance(item_schema, dict):
+            item_fields = item_schema.get("fields")
+            if isinstance(item_fields, dict):
+                _resolve_fields_i18n(item_fields)
+            else:
+                item_schema["description"] = _resolve_i18n_text(
+                    item_schema.get("description", ""), i18n
+                )
+                if "placeholder" in item_schema:
+                    item_schema["placeholder"] = _resolve_i18n_text(
+                        item_schema["placeholder"], i18n
+                    )
+                item_options = item_schema.get("options")
+                if isinstance(item_options, list):
+                    item_schema["options"] = [
+                        dict(o, label=_resolve_i18n_text(o["label"], i18n))
+                        if isinstance(o, dict) and "label" in o
+                        else o
+                        for o in item_options
+                    ]
 
         # 嵌套 dataclass 子树递归解析
         nested_fields = field_schema.get("fields")

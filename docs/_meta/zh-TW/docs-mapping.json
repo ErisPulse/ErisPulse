@@ -113,7 +113,7 @@
     "使用者指南": {
       "description": "ErisPulse 配置和命令參考",
       "icon": "fa-book-open",
-      "count": 5,
+      "count": 7,
       "documents": [
         {
           "title": "用戶使用指南",
@@ -144,6 +144,18 @@
           "path": "user-guide/deployment.md",
           "level": 1,
           "icon": "fa-cloud-arrow-up"
+        },
+        {
+          "title": "升級遷移指南",
+          "path": "user-guide/migration.md",
+          "level": 1,
+          "icon": "fa-right-left"
+        },
+        {
+          "title": "常見問題（FAQ）",
+          "path": "user-guide/faq.md",
+          "level": 1,
+          "icon": "fa-circle-question"
         }
       ],
       "subgroups": {}
@@ -172,7 +184,7 @@
           "icon": "fa-code"
         },
         {
-          "title": "數據模型層（ORM）",
+          "title": "資料模型層（ORM）",
           "path": "developer-guide/orm.md",
           "level": 1,
           "icon": "fa-code"
@@ -202,7 +214,7 @@
               "icon": "fa-cubes-stacked"
             },
             {
-              "title": "Event 包裝類別詳解",
+              "title": "Event 包裝類詳解",
               "path": "developer-guide/modules/event-wrapper.md",
               "level": 1,
               "icon": "fa-bolt-lightning"
@@ -256,7 +268,7 @@
     "平台特性指南": {
       "description": "各平台特性和適配器說明",
       "icon": "fa-plug",
-      "count": 22,
+      "count": 23,
       "documents": [
         {
           "title": "ErisPulse PlatformFeatures 文件",
@@ -381,6 +393,12 @@
         {
           "title": "Terminal 平台特性文件",
           "path": "platform-guide/terminal.md",
+          "level": 1,
+          "icon": "fa-plug"
+        },
+        {
+          "title": "微信 ClawBot（WechatClaw）適配器 - 平台特性文件",
+          "path": "platform-guide/wechatclaw.md",
           "level": 1,
           "icon": "fa-plug"
         },

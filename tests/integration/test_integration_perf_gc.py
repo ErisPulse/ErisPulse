@@ -22,6 +22,7 @@ from ErisPulse.Core.adapter import adapter
 from ErisPulse.Core.Event import _clear_all_handlers, message
 from ErisPulse.Core.lifecycle import lifecycle
 from ErisPulse.runtime.context import current_owner
+from tests.integration.conftest import restore_global_lifecycle, snapshot_global_lifecycle
 
 # ==================== 辅助函数 ====================
 
@@ -45,7 +46,8 @@ def _make_msg(text="/hello", platform="perf_test", **kwargs):
 
 @pytest.fixture
 def clean_state():
-    """清理全局状态"""
+    """清理全局状态（生命周期表快照/恢复：装配级订阅不被抹除）"""
+    lifecycle_snap = snapshot_global_lifecycle()
     _clear_all_handlers()
     lifecycle._hooks.clear()
     lifecycle._timers.clear()
@@ -58,12 +60,11 @@ def clean_state():
     adapter._handler_max_concurrency = 0
     yield
     _clear_all_handlers()
-    lifecycle._hooks.clear()
-    lifecycle._timers.clear()
     adapter._onebot_handlers.clear()
     adapter._raw_handlers.clear()
     adapter._onebot_middlewares.clear()
     adapter._bots.clear()
+    restore_global_lifecycle(lifecycle_snap)
     adapter._pending_handler_tasks.clear()
     adapter._handler_semaphore = None
     adapter._handler_max_concurrency = 0
@@ -624,8 +625,15 @@ class TestProactiveGCIntegration:
             "ErisPulse.runtime.memory.get_rss_mb", return_value=None
         ), patch("gc.collect", return_value=0) as mock_collect:
             sdk._start_proactive_gc()
-            await asyncio.sleep(0.06)
-            sdk._stop_proactive_gc()
+            try:
+                # 条件轮询替代固定睡眠：CI 满载下事件循环调度慢，固定窗口
+                # 可能只跑 1 轮（基线）而漏掉增长轮
+                loop = asyncio.get_running_loop()
+                deadline = loop.time() + 5.0
+                while mock_collect.call_count < 2 and loop.time() < deadline:
+                    await asyncio.sleep(0.02)
+            finally:
+                sdk._stop_proactive_gc()
 
             # 首轮建立基线 + 后续内存增长触发，回收至少两次
             assert mock_collect.call_count >= 2

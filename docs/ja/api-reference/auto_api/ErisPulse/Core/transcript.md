@@ -34,7 +34,7 @@ ErisPulse 会话收件箱（transcript）
 >
 > 持久性说明：追加先进内存缓冲，由后台任务批量落盘（延迟至多
 > ``TRANSCRIPT_FLUSH_INTERVAL_SECS`` 秒）；正常退出（``sdk.uninit`` / 进程
-> atexit）会强制刷盘。进程被硬崩溃 / 强杀时，最近一批未落盘记录（约 1 秒内）
+> 退出阶段）会强制刷盘。进程被硬崩溃 / 强杀时，最近一批未落盘记录（约 1 秒内）
 > 可能丢失。
 > 使用方式:
 > ```
@@ -94,7 +94,7 @@ ErisPulse 会话收件箱（transcript）
 进程退出兜底：同步刷掉未落盘缓冲（镜像 config._flush_on_exit）
 
 以看门狗线程限时执行——解释器收尾阶段存储同步桥的后台线程可能已
-无法调度（自由线程构建下尤其如此），在 atexit 里直接走同步桥会
+无法调度（自由线程构建下尤其如此），直接在主线程走同步桥可能
 永久阻塞、令进程退出挂死；超时即放弃（至多丢一批缓冲），保证
 退出必然完成。缓冲为空时刷盘立即返回，无任何开销。
 
@@ -250,9 +250,11 @@ ALTER 失败上抛（同步版语义见 ``_migrate_add_sender``）。
 ---
 
 
-##### `_retention(session_key: str, max_per_session: int, ttl_hours: float) -> None`
+##### `async _retention(session_key: str, max_per_session: int, ttl_hours: float) -> None`
 
 **内部方法** 保留策略：每会话条数上限 + 全局 TTL（惰性触发，覆盖库与内存缓冲）
+
+异步执行（刷盘协程内调用）——同步桥接路径会阻塞主事件循环。
 
 ---
 

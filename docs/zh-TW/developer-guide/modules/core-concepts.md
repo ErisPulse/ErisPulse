@@ -150,22 +150,22 @@ flowchart TD
 
 > 這些自動清理就是「你只需寫 `on_load`/`on_unload`，不用手動 unregister」的底氣——框架用 owner 歸屬把「誰註冊的誰清理」做成了一鍵式。
 
-## SDK 物件
+## SDK 對象
 
-### 存取核心模組
+### 訪問核心模組
 
 ```python
 from ErisPulse import sdk
 
-# 透過 sdk 物件存取所有核心模組
+# 透過 sdk 對象存取所有核心模組
 sdk.logger.info("日誌")
-sdk.storage.set("key", "value")
+await sdk.storage.aset("key", "value")
 
-# 模組自有小狀態（計數器/開關/上次執行時間）優先用 self.state——
+# 模組自有小狀態（計數器/開關/上次執行時間）優先使用 self.state——
 # 鍵自動帶 module.state.<模組名>. 前綴，模組卸載重載後仍在：
 count = self.state.get("runs", 0) + 1
 self.state.set("runs", count)            # 同步（任意上下文）
-await self.state.aset("runs", count)     # 非同步路徑
+await self.state.aset("runs", count)     # 異步路徑
 await self.state.aget("runs", 0)
 config = sdk.config.getConfig("MyModule")
 ```
@@ -173,7 +173,7 @@ config = sdk.config.getConfig("MyModule")
 ### 模組間通訊
 
 ```python
-# 存取其他模組
+# 訪問其他模組
 other_module = sdk.OtherModule
 result = await other_module.some_method()
 ```
@@ -355,16 +355,16 @@ class MyModule(BaseModule):
         return config
 ```
 
-## 儲存系統
+## 存儲系統
 
 ### 基本使用
 
 ```python
 # 儲存資料
-sdk.storage.set("user:123", {"name": "張三"})
+await sdk.storage.aset("user:123", {"name": "張三"})
 
-# 取得資料
-user = sdk.storage.get("user:123", {})
+# 獲取資料
+user = await sdk.storage.aget("user:123", {})
 
 # 刪除資料
 sdk.storage.delete("user:123")
@@ -374,9 +374,9 @@ sdk.storage.delete("user:123")
 
 ```python
 # 使用事務確保資料一致性
-with sdk.storage.transaction():
-    sdk.storage.set("key1", "value1")
-    sdk.storage.set("key2", "value2")
+async with sdk.storage.atransaction():
+    await sdk.storage.aset("key1", "value1")
+    await sdk.storage.aset("key2", "value2")
     # 如果任何操作失敗，所有變更都會回滾
 ```
 

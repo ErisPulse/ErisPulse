@@ -73,6 +73,107 @@
 
 ---
 
+## [2.12.1] - 2026/11/26
+> 正式发布
+
+**版本摘要**
+本版本以「存储与并发治理」为主题：修复两个严重缺陷——存储并发首取死锁（整循环冻结、web 全站挂起、持续 database is locked）与进程退出挂死，落地 sync-in-async 双闸门、真并发后端线程桥接与存储后端可插拔（注册表 + entry-points）；声明式配置完成 framework 节单源化与类型化容器字段。
+
+**升级建议**
+- **是否建议升级**：建议升级（两个严重缺陷均在本版本修复）
+- API 无破坏性变更；生态模块在异步 handler 内调用同步存储 API 的，按限频告警给出的调用点迁移为 a 前缀方法
+
+**注意事项**
+- 存储同步调用桥接等待默认上限 10s：超时后调用方 fail-soft 拿 `None`，写不丢（后台完成、事后失败告警）、事务收尾必达；开发期可开 `framework.strict.sync_in_async` 当场抛错
+- 第三方存储后端经 entry-points 组 `erispulse.storage.backends` 注册，装包即出现；驱动依赖由后端包自身 pyproject 声明，框架不在运行时安装任何依赖
+- 日志文件输出默认开启（`log_dir = "logs"`，轮转有界），不需要的部署设为空串
+- 事务超时 / 慢事务阈值 / 告警冷却 / `busy_timeout` 等调优参数移入 `ErisPulse.framework.*` 配置（默认值不变，热生效）
+- 事件幂等去重键加入平台维度、Conversation 检查点键加入 bot 维度（多账户部署不再互吞 / 互覆）
+
+> 完整变更明细见下方 [2.12.1-dev.0] / [2.12.1-dev.1] 开发条目。
+
+---
+
+## [2.12.1-dev.1] - 2026/11/21
+> 开发版
+
+**版本摘要**
+本版本为全面健壮性审查的修复与补全批次：修复存储事务泄漏、事件去重误吞与多账户检查点覆盖等缺陷，落地内存优化与观测埋点（配置快照缓存、tracemalloc 诊断、gc.freeze 盲区、metrics 指标扩充），补齐 5 个缺失翻译键，并新增迁移指南 / FAQ 文档与 `ep logs` 命令。
+
+**升级建议**
+- **是否建议升级**：建议升级
+- 修复均为缺陷收口与内存改善，API 无破坏性变更；新增 `ErisPulse.framework.memory_tracing` 配置（默认关闭，排障时开启）与 `ep logs` 命令
+
+**注意事项**
+- 事件幂等去重的判定键加入平台维度（跨平台原生数值 id 碰撞不再互吞）；`event_dedupe` / `memory_tracing` 配置支持热更新
+- 事务提交/回滚新增 30s 兜底超时（连接半死时不再无限占用池连接）；存储后端 `storage.backend` 变更现在会输出重启告警
+- handler 匹配收口：声明了 `detail_type` 条件的处理器在事件缺失该维度时不再穿透（原生事件路径维持放行）
+- 弃用关键字参数告警现并发标准 `DeprecationWarning`（下游可用 `-W error::DeprecationWarning` 建立兼容性回归）
+- **日志文件输出默认开启**（`log_dir` 默认 `"logs"`，轮转有界）——`ep logs` 即开即用；不需要文件日志的部署设 `log_dir = ""`，显式关闭会自动清理文件 handler
+
+### 修复
+
+- @wsu2059q
+  - `存储` 事务开启失败（BEGIN 超时 / database is locked）时就地释放已获取的连接，不再永久泄漏池容量
+  - `适配器` 会话账户绑定归属判定改双口径（user_id / account_id 任一命中即归属）并补 detail_type 键维度（群号/私聊号碰撞隔离）
+  - `适配器` 事件幂等去重键加入平台维度；`event_dedupe` 开关配置变更热生效并在框架默认配置中声明
+  - `事件` Conversation 检查点键加入 bot 维度（多账户对话不再互覆，旧格式键恢复时回退兼容）
+  - `存储` MySQL/PG 事务连接归还到其所属池（池失效重建时不再错发脏连接）；提交/回滚加兜底超时
+  - `运行时` 任务归属登记表加锁（并发登记丢条目 = 卸载兜底取消失效）；存储单例并发首次构造不再双重初始化；模块异步初始化等待加超时兜底
+  - `事件` `"self": null` 事件的分发链不再因 AttributeError 中断；并行处理器副本对嵌套 message 段定向拷贝（改写不再互相污染）；处理器 detail_type 匹配收口；广播不再吞掉取消传播
+  - `i18n` 补齐 5 个缺失翻译键（handler 调度失败 / 影子检查不可用 / services 解析失败 / 路由鉴权标签 / 自更新版本表头）
+  - `运行时` 框架 uninitialize 不再全表清空生命周期钩子：装配级订阅（配置快照失效 / i18n 语言失效 / 收件箱挂接）在 init→uninit→init 循环后保持有效（此前热重载后配置与语言变更不再生效，直至重启）
+  - `配置` framework 节调优参数配置化第一批：事务开启/提交超时、慢事务告警阈值、sync-in-async 告警冷却、跨账户受理窗口改为 `ErisPulse.framework.*` 配置项（写后立即生效，无需重启；默认值与原常量一致）
+  - `配置` 声明式配置支持类型化容器字段（`list[T]` / `dict[str, T]`）：成员类型自动进入面板 schema（列表/键值控件免手写 `ui.item`）、加载期按成员类型规范化（标量转换 / dataclass 实例化 / JSON 字符串解析）、校验递归检查成员并带路径报错；TOML 模板为 dataclass 容器渲染 `[[表数组]]` / `[表.键]` 骨架，并修复嵌套表之后的同级标量字段被并入表内的既有缺陷（模板现为裸键先行、表块殿后两段式）
+  - `存储` 修复并发首次取用连接资源的死锁：特定窗口（冷启动 / 连接失效重建后的并发首取）会冻结整个事件循环——web（含错误页）无响应、该循环事务永不提交、其他连接每条写精确等 5s 后报 database is locked，持续到重启（kv / ORM / transcript 共用基座全命中；详见 bug-tracker BUG-052）
+  - `存储` sync-in-async 双闸门（治理"生态在异步处理器内调同步存储 API"导致的循环冻结放大）：新增 `framework.strict.sync_in_async`（开发期开关，开启后阻塞式调用直接抛 StrictModeError 并附调用点与迁移指引）与 `framework.sync_in_async_bridge_wait`（运行期止损，异步上下文下的桥接等待默认上限 10s：超时后调用方 fail-soft 返回 None，写操作不取消——仍在后台完成，事后失败另行告警；事务收尾（提交 / 归还连接）同样必达，事务开启超时则抛 StorageOperationError；纯同步线程不受限）；同步事务入口 `transaction()` 一并纳入同款检测
+  - `存储` 真并发后端（MySQL / PostgreSQL）的 sync-in-async 调用自动路由到有界线程池（每 worker 独立事件循环，互不排队）——此前全部同步调用经单桥接循环串行，高负载下主循环阻塞被队列放大；SQLite 与自定义单写引擎维持串行路径（能力由后端声明 `_SUPPORTS_THREAD_BRIDGE`）
+  - `存储` 后端可插拔：新增注册表 `register_storage_backend()` / `get_registered_backends()` 与 entry-points 组 `erispulse.storage.backends`——外部包导入即注册后端（`storage.backend` 填注册名启用，驱动缺失报错指引与线程桥接等行为整套继承）；方言新增 `driver_module` 驱动声明，驱动依赖由后端包自身的 pyproject 声明随包安装（框架不在运行时安装依赖）；未知后端报错附可用后端列表
+  - `存储` 修复进程退出挂死：aiosqlite 0.22 起连接线程不再是 daemon 线程，未显式关闭存储就结束的进程（独立脚本、Ctrl+C 收尾、测试进程）会永久停在解释器退出阶段——存储关闭与收件箱退出刷盘改在先于线程回收的阶段执行（详见 bug-tracker BUG-053）
+
+### 优化
+
+- @wsu2059q
+  - `内存` 配置快照缓存（高频热点不再每条回复深拷贝整棵配置树）+ `memory_tracing` 配置开关（tracemalloc 诊断与 top 分配点归因）+ 热重载后 gc.freeze 三连（卸载残留环状引用可回收）+ 影子副本定向拷贝 + 会话收件箱保留策略异步化并建索引；影子覆盖层/墓碑改有界 LRU、离线 Bot 按活跃时间兜底淘汰、交互过期条目纳入主动 GC 清扫、配置变更载荷改传副本
+  - `观测` `/metrics` 指标扩充（出站 API / 跨模块调用 / 存储操作计数）+ trace_id 注入 JSON 日志字段 + Prometheus 输出补 HELP/TYPE；sync-in-async 告警表加锁修复竞态；同步事务慢事务告警补齐调用点
+  - `运维` 新增 `ep logs` 命令（查看日志文件尾部，支持 --lines / --file）
+  - `兼容性` 弃用关键字参数告警并发标准 `DeprecationWarning` 双通道
+  - `类型` HTTP/WS 抽象层与响应对象标注具体类型（starlette / multidict）；`once()` 注册恢复原函数签名（Depends 依赖注入不再静默失效）；行为参数收编至 constants
+  - `文档` 新增升级迁移指南与常见问题（FAQ）页
+
+---
+
+## [2.12.1-dev.0] - 2026/11/19
+> 开发版
+
+**版本摘要**
+本版本修复多账户部署下 `cross_account_policy` 误伤 at 点名消息的严重缺陷，完成 ORM 条件查询的类型检查边界收口（`where(Field == value)` 在 mypy / pyright / ty 下不再误报），并为 SQLite 写锁竞争提供可观测性与配置逃生口。
+
+**升级建议**
+- **是否建议升级**：建议升级
+- 多账户 @ 驱动模块恢复正响应；ORM 条件查询处生态侧的 `type: ignore` 注释可整体摘除；事件 handler 内使用同步存储 API 的模块按运行期限频告警的调用点迁移为 a 前缀异步方法
+
+**注意事项**
+- ORM 条件入口（`where` / `count` / `delete_all` / `update_all`）签名纳入 `bool`（检查器视角的虚拟类型），运行时真布尔入参会被显式拒绝并给出指引；IN 条件新增 `Model.where_in()`，`in_()` 运行时行为不变（值注解声明风格下静态不可达）
+- `cross_account_policy` 支持热更新（此前策略变更需重启或重注册才生效）
+- 存储同步 API 在异步上下文调用的告警由「进程级一次性」改为「按调用点限频」（附调用点位置，60s 冷却）；事务持锁超过 1s 输出慢事务告警（附开启位置）
+- 新增 `ErisPulse.storage.sqlite.busy_timeout` 配置（毫秒，默认 5000），改动需重启生效
+- `Model.__storage__` 契约收窄为 SQL 存储后端（`SQLStorageBase`；ORM 依赖方言与参数化查询漏斗，非 SQL 后端本就无法工作）
+
+### 修复
+
+- @wsu2059q
+  - `适配器` 跨账户重复受理（mark / drop）不再误伤 at 点名消息：mention 命中本账户身份（user_id / account_id）的副本豁免关联，被 @ 的账户必定收到事件；新增 `ErisPulse.framework.session_accounts` 会话账户绑定（会话精确归属唯一账户，独立于策略生效，热更新）
+
+### 优化
+
+- @wsu2059q
+  - `ORM` 条件查询类型边界收口与查询返回值静态类型化（`first()` / `all()` / `get()` / `create()` 等返回模型实例类型），新增 `where_in`
+  - `存储` SQLite 写锁竞争可观测：长事务持锁告警（附开启位置）+ 同步 API 异步上下文调用按调用点限频告警（附调用点）；`busy_timeout` 开放为配置项
+  - `存储` 查询构建器基类泛型化（KV / SQL 各自参数化），消除内部 `_storage` 二次收窄与 5 处 type: ignore
+
+---
+
 ## [2.12.0] - 2026/11/14
 > 正式发布
 

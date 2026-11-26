@@ -25,7 +25,7 @@ ErisPulse 数据模型层（ORM）—— 声明式模型与 Active Record CRUD
 > （``save`` 主键缺失退化为插入时同样回填）
 > 3. ``list`` / ``dict`` 类型字段（含 ``list[int]`` 等参数化泛型）以 JSON
 > 文本列存储，读写自动序列化
-> 4. 环境无关：``Model.__storage__`` 可覆写为自定义 ``BaseStorage`` 实例
+> 4. 环境无关：``Model.__storage__`` 可覆写为自定义 SQL 存储后端实例
 > （默认使用全局 ``ErisPulse.Core.storage`` 单例）
 > 5. 处于 ``storage.atransaction()`` 环境事务内时，读写自动复用事务连接，
 > 随事务统一提交/回滚
@@ -37,6 +37,13 @@ ErisPulse 数据模型层（ORM）—— 声明式模型与 Active Record CRUD
 > 8. 惯用快捷：``get_or_create`` / ``update_or_create``、
 > ``save(update_fields=[...])`` 部分列更新、``Field(auto_now_add=True /
 > auto_now=True)`` 时间戳列、``Field(on_delete="CASCADE")`` 外键删除动作
+> 9. 类型检查友好：条件入口（``where`` / ``count`` / ``delete_all`` /
+> ``update_all`` 等）同时接受 ``Condition`` 与 ``bool``——字段按值类型注解
+> （``age: int = Field(...)``）声明时，类访问比较（``User.age > 18``）在
+> 类型检查器视角为 ``bool``（注解类型屏蔽描述符协议，SQLModel 同款的
+> "虚拟类型"现象），运行时实际产物是 :class:`Condition`；框架拒绝真
+> ``bool`` 入参（无法编译为 SQL 条件）。IN 条件用 :meth:`Model.where_in`
+> （``Field.in_`` 挂在运行时列表达式上，值注解风格下静态不可达）
 
 **示例**:
 
@@ -98,7 +105,14 @@ msgs = await user.messages.all()
 ---
 
 
-### `_combine(conditions: tuple) -> Condition | None`
+### `_condition_arg(cond: Condition | bool) -> Condition`
+
+条件入参校验收窄（bool 为静态虚拟类型，运行时拒绝）
+
+---
+
+
+### `_combine(conditions: tuple[Condition | bool, ...]) -> Condition | None`
 
 多条件 AND 组合（类级 CRUD 快捷入口用）
 
@@ -241,7 +255,13 @@ user_id: int = Field(foreign_key="users.id", on_delete="CASCADE")
 
 ### `class ColumnExpr`
 
-ColumnExpr 类提供相关功能。
+列查询表达式（模型类属性访问的返回值）
+
+支持比较运算符生成条件节点与 ``&`` / ``|`` 组合：
+``(User.age > 18) & (User.name == "Alice")``
+
+**内部方法**
+由 Field.__get__ 在类访问时创建，模块作者无需直接实例化
 
 
 #### 方法列表
@@ -278,11 +298,14 @@ IN 条件（``User.id.in_([1, 2, 3])``）
 ---
 
 
-### `class QuerySet`
+### `class QuerySet(Generic[ModelT])`
 
 链式查询集（惰性构建，await 终结符执行）
 
 ``User.where(...).order_by("-age").limit(10).all()``
+
+终结符返回值静态类型化：``all() -> list[User]`` / ``first() -> User | None``
+（模型实例可类型安全地访问声明字段）。
 
 注意：链式方法（where / order_by / limit / offset）**就地修改**当前实例
 并返回自身——复用中间 QuerySet 对象会让条件互相串染；需要分支查询时，
@@ -295,21 +318,21 @@ IN 条件（``User.id.in_([1, 2, 3])``）
 #### 方法列表
 
 
-##### `order_by(*fields: str) -> QuerySet`
+##### `order_by(*fields: str) -> Self`
 
 排序（``"age"`` 升序 / ``"-age"`` 降序）
 
 ---
 
 
-##### `async all() -> list[Any]`
+##### `async all() -> list[ModelT]`
 
 执行查询，返回模型实例列表
 
 ---
 
 
-##### `async first() -> Any | None`
+##### `async first() -> ModelT | None`
 
 执行查询，返回首个实例（无结果为 None）
 
@@ -347,7 +370,7 @@ IN 条件（``User.id.in_([1, 2, 3])``）
 ---
 
 
-### `class _RelatedMany(QuerySet)`
+### `class _RelatedMany(QuerySet[ModelT])`
 
 **内部方法**
 has-many 关系查询集：在 :class:`QuerySet` 全部链式能力之上，
@@ -357,9 +380,12 @@ has-many 关系查询集：在 :class:`QuerySet` 全部链式能力之上，
 #### 方法列表
 
 
-##### `where(*conditions: Condition) -> _RelatedMany`
+##### `where(*conditions: Condition | bool) -> _RelatedMany[ModelT]`
 
 追加对方表字段的条件过滤（与关系外键条件 AND 组合）
+
+条件同时接受 ``bool`` 注解形态（静态虚拟类型，见 :meth:`Model.where`）；
+运行时真 ``bool`` 入参抛 :exc:`TypeError`。
 
 **示例**:
 
@@ -370,7 +396,7 @@ await user.posts.where(Post.title == "hi").all()
 ---
 
 
-##### `async create(**kwargs: Any) -> Any`
+##### `async create(**kwargs: Any) -> ModelT`
 
 创建对方表的一行并自动填入本实例主键
 
@@ -383,7 +409,7 @@ await user.messages.create(content="hi")   # user_id 自动 = user.id
 ---
 
 
-### `class _RelatedOne`
+### `class _RelatedOne(Generic[ModelT])`
 
 **内部方法**
 belongs-to 单条等待器：``author = await msg.author`` 即解析为对方实例或 None。
@@ -489,7 +515,8 @@ __unique_together__ 归一化为分组元组：字符串序列收单组，序列
 
 ##### `table_name() -> str`（classmethod）
 
-表名（snake_case 自动派生或 ``__tablename__`` 覆写）
+表名（snake_case 自动派生或 ``__tablename__`` 覆写；基类空串仅为占位，
+子类在 ``__init_subclass__`` 固化为具体表名）
 
 ---
 
@@ -508,7 +535,7 @@ __unique_together__ 归一化为分组元组：字符串序列收单组，序列
 ---
 
 
-##### `_row_to_instance(row: dict) -> Model`（classmethod）
+##### `_row_to_instance(row: dict) -> Self`（classmethod）
 
 行 dict → 实例（JSON 列反序列化；bool 类别跨后端归一化为 bool）
 
@@ -598,23 +625,43 @@ __unique_together__ 归一化为分组元组：字符串序列收单组，序列
 ---
 
 
-##### `where(*conditions: Condition) -> QuerySet`（classmethod）
+##### `where(*conditions: Condition | bool) -> QuerySet[Self]`（classmethod）
 
 条件查询入口（``User.where(User.age > 18)`` → :class:`QuerySet`）
 
 多条件以 AND 连接；OR 用 ``(cond1) | (cond2)`` 组合。
 
+条件同时接受 ``bool`` 注解形态：字段按值类型注解（``age: int =
+Field(...)``）声明时，类访问比较（``User.age > 18``）在类型检查器视角
+为 ``bool``，运行时实际产物是 :class:`Condition`（SQLModel 同款"虚拟
+类型"边界）；运行时收到真 ``bool``（携带不了列信息、无法编译为 SQL）
+时抛出 :exc:`TypeError`。IN 条件请用 :meth:`where_in`。
+
 ---
 
 
-##### `all() -> QuerySet`（classmethod）
+##### `where_in(field: str, values: list[Any] | tuple[Any, ...]) -> QuerySet[Self]`（classmethod）
+
+IN 条件查询（``User.where_in("id", [1, 2, 3])`` → :class:`QuerySet`）
+
+值注解声明风格下 :meth:`Field.in_`（挂在运行时列表达式对象上）静态
+不可达（``int`` / ``str`` 上无此方法），本入口为类型检查友好的等价物；
+空集合编译为恒假片段（``1=0``）。
+
+- **field**: 字段名（未声明时抛 :exc:`ValueError`）
+- **values**: 取值集合
+
+---
+
+
+##### `all() -> QuerySet[Self]`（classmethod）
 
 无条件查询集（等价 ``cls.where()``）
 
 ---
 
 
-##### `async get(**eq_kwargs: Any) -> Any | None`（classmethod）
+##### `async get(**eq_kwargs: Any) -> Self | None`（classmethod）
 
 等值查询首条（``User.get(id=1)``）；无结果返回 None
 
@@ -623,7 +670,7 @@ __unique_together__ 归一化为分组元组：字符串序列收单组，序列
 ---
 
 
-##### `async create(**kwargs: Any) -> Any`（classmethod）
+##### `async create(**kwargs: Any) -> Self`（classmethod）
 
 插入一行并返回实例（自增主键自动回填）
 
@@ -649,28 +696,28 @@ INSERT 一行并按需回填自增主键到实例（:meth:`create` 与 :meth:`sa
 ---
 
 
-##### `async count(*conditions: Condition) -> int`（classmethod）
+##### `async count(*conditions: Condition | bool) -> int`（classmethod）
 
-行数统计（``await User.count(User.age > 18)``）
+行数统计（``await User.count(User.age > 18)``；bool 注解形态见 :meth:`where`）
 
 ---
 
 
-##### `async delete_all(*conditions: Condition) -> int`（classmethod）
+##### `async delete_all(*conditions: Condition | bool) -> int`（classmethod）
 
 批量删除（``await User.delete_all(User.age > 18)``；无条件则全表删除）
 
 ---
 
 
-##### `async update_all(*conditions: Condition, **values: Any) -> int`（classmethod）
+##### `async update_all(*conditions: Condition | bool, **values: Any) -> int`（classmethod）
 
 批量更新（``await User.update_all(User.age > 18, name="adult")``）
 
 ---
 
 
-##### `async get_or_create(defaults: dict[str, Any] | None = None, **kwargs: Any) -> tuple[Any, bool]`（classmethod）
+##### `async get_or_create(defaults: dict[str, Any] | None = None, **kwargs: Any) -> tuple[Self, bool]`（classmethod）
 
 查得即返回（ ``(实例, False)`` ）；无则以 ``kwargs + defaults`` 创建（ ``(实例, True)`` ）
 
@@ -688,7 +735,7 @@ INSERT 一行并按需回填自增主键到实例（:meth:`create` 与 :meth:`sa
 ---
 
 
-##### `async update_or_create(defaults: dict[str, Any] | None = None, **kwargs: Any) -> tuple[Any, bool]`（classmethod）
+##### `async update_or_create(defaults: dict[str, Any] | None = None, **kwargs: Any) -> tuple[Self, bool]`（classmethod）
 
 查得则更新 ``defaults`` 字段并保存；无则创建
 

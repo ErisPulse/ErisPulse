@@ -144,7 +144,7 @@
 ---
 
 
-### `spawn_background(coro: Awaitable[_T] | Coroutine[_T, Any, Any], *, owner: str | None = None) -> Any`
+### `spawn_background(coro: Awaitable[_T] | Coroutine[Any, Any, _T], *, owner: str | None = None) -> asyncio.Task[_T] | concurrent.futures.Future[_T] | None`
 
 调度一个 fire-and-forget 后台任务
 

@@ -113,7 +113,7 @@
     "用户使用指南": {
       "description": "ErisPulse 配置和命令参考",
       "icon": "fa-book-open",
-      "count": 5,
+      "count": 7,
       "documents": [
         {
           "title": "用户使用指南",
@@ -144,6 +144,18 @@
           "path": "user-guide/deployment.md",
           "level": 1,
           "icon": "fa-cloud-arrow-up"
+        },
+        {
+          "title": "升级迁移指南",
+          "path": "user-guide/migration.md",
+          "level": 1,
+          "icon": "fa-right-left"
+        },
+        {
+          "title": "常见问题（FAQ）",
+          "path": "user-guide/faq.md",
+          "level": 1,
+          "icon": "fa-circle-question"
         }
       ],
       "subgroups": {}
@@ -256,7 +268,7 @@
     "平台特性指南": {
       "description": "各平台特性和适配器说明",
       "icon": "fa-plug",
-      "count": 22,
+      "count": 23,
       "documents": [
         {
           "title": "ErisPulse PlatformFeatures 文档",
@@ -381,6 +393,12 @@
         {
           "title": "Terminal 平台特性文档",
           "path": "platform-guide/terminal.md",
+          "level": 1,
+          "icon": "fa-plug"
+        },
+        {
+          "title": "微信 ClawBot（WechatClaw）适配器 - 平台特性文档",
+          "path": "platform-guide/wechatclaw.md",
           "level": 1,
           "icon": "fa-plug"
         },

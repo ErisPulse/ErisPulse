@@ -62,6 +62,16 @@ SERVER_SHUTDOWN_TIMEOUT_SECS: Final[float] = 5.0
 # 超时视为启动失败并回退旧配置（修改影响：过大延长失败感知，过小误判慢启动）
 ROUTER_RELOAD_STARTUP_TIMEOUT_SECS: Final[float] = 10.0
 
+# 等待新 uvicorn 实例进入 started 状态的轮询间隔（秒）。
+# 使用位置: Core/router.py -> _wait_server_started()（reload 启动就绪轮询）
+# 修改影响: 调小缩短启动感知延迟但增加空转 CPU，调大则最长多等一个间隔才判就绪。
+ROUTER_STARTUP_POLL_INTERVAL_SECS: Final[float] = 0.05
+
+# 端口占用探测的连接超时（秒）。
+# 使用位置: Core/router.py -> 端口探测（启动前/重启前判断端口是否可绑定）
+# 修改影响: 调小在负载高的机器上会把"端口空闲"误判为超时，调大拖慢每次探测。
+ROUTER_PORT_PROBE_TIMEOUT_SECS: Final[float] = 0.5
+
 # 内嵌 uvicorn 所依赖的已验证版本范围（与 pyproject.toml 的依赖约束保持一致）。
 # 使用位置: Core/router.py -> _create_uvicorn_server() 接口缺失告警的文案。
 # 修改影响: 内嵌启动走私有接口 Server._serve()（0.34.0 引入），兼容性按能力
@@ -143,6 +153,12 @@ CONFIG_WRITE_DELAY_SECS: Final[int] = 5
 # 使用位置: Core/config.py -> watcher 调度（_watch_loop）
 # 修改影响: watcher 发现脏键仍在（刷盘失败被吞异常保留）时按此间隔补写；调小重试更频繁。
 CONFIG_WRITE_RETRY_DELAY_SECS: Final[float] = 1.0
+
+# 声明式配置模板中嵌套表（含表数组元素）的最大展开层数。
+# 使用位置: Core/Bases/config_schema.py（dataclass_to_toml_with_comments）
+# 修改影响: 嵌套 dataclass / 表数组按层递归渲染模板，达到该层数后不再向下
+#           展开；自引用类型（如树形配置）据此终止递归。
+CONFIG_TEMPLATE_NESTED_TABLE_MAX_DEPTH: Final[int] = 3
 
 # 运行状态目录名（项目根下）：存放机器本地运行状态——配置目录实例锁、CLI
 # 运行状态文件（runtime.json）等；不入版本库（项目模板 .gitignore 忽略本目录）。
@@ -249,6 +265,13 @@ SQLITE_JOURNAL_MODE: Final[str] = "PRAGMA journal_mode=WAL"
 # 同步模式。NORMAL 在 WAL 模式下安全且更快。
 # 修改影响: 设为 FULL 更安全（断电不丢数据），但写入更慢。
 SQLITE_SYNCHRONOUS_MODE: Final[str] = "PRAGMA synchronous=NORMAL"
+
+# SQLite 写锁等待上限（毫秒，PRAGMA busy_timeout）。
+# 使用位置: Core/storage/sqlite.py -> _apply_pragmas()（每个连接应用）。
+# 配置项: ErisPulse.storage.sqlite.busy_timeout。
+# 修改影响: 调大延长写锁排队耐心（长事务并发下减少 database is locked，
+# 单次写等待上限变长）；改动需重启生效（已打开连接的 PRAGMA 不随配置刷新）。
+SQLITE_BUSY_TIMEOUT_MS: Final[int] = 5000
 
 # KV 存储的默认表名。
 # 修改影响: 数据库中的表名。已有数据库不会自动重命名。
@@ -745,6 +768,11 @@ DEFAULT_MODULE_CALL_TIMEOUT_SECS: Final[float] = 30.0
 # 修改影响: 平台重连重推同 id 事件的去重窗口——容量越大可回溯越久，内存占用略增。
 DEFAULT_EVENT_DEDUPE_CAPACITY: Final[int] = 4096
 
+# 事件幂等去重开关默认值（ErisPulse.framework.event_dedupe）。
+# 使用位置: Core/adapter.py -> _dedupe_enabled()；runtime/frame_config.py 声明默认。
+# 修改影响: 关闭后连接重推的重复事件会重复分发（模块需自行处理重放）。
+DEFAULT_EVENT_DEDUPE_ENABLED: Final[bool] = True
+
 # 跨账户重复受理关联（cross-account receipt）的判定窗口（秒）：
 # 同平台 + 同会话 + 同发送者 + 同 alt_message 内容在窗口内再次到达（无论经哪个
 # self_id）视为同一物理消息的重复受理。
@@ -1102,6 +1130,108 @@ DEFAULT_HTTP_CLIENT_TIMEOUT_SECS: Final[float] = 30.0
 # 修改影响: 超过此时长仍拿不到事务连接/写锁则抛 StorageOperationError——
 # 兜底双层保险（内层为 SQLite busy_timeout 5s），防止事务无限死等。
 STORAGE_TXN_BEGIN_TIMEOUT_SECS: Final[float] = 30.0
+
+# 事务提交/回滚兜底超时（秒）。
+# 使用位置: Core/Bases/storage.py -> _AsyncTransaction.finish()。
+# 修改影响: 连接半死（TCP 未断无读超时）时 commit 挂起的上限；超时转
+# StorageOperationError 并释放连接，不再无限占用池连接。
+STORAGE_TXN_COMMIT_TIMEOUT_SECS: Final[float] = 30.0
+
+# 模块异步初始化后台线程的等待兜底（秒）。
+# 使用位置: loaders/module.py -> LazyModule._init_in_background_thread()。
+# 修改影响: 模块 _initialize() 卡死时调用方线程（可能是主事件循环线程）
+# 阻塞的上限；超时后调用方继续（初始化仍在后台进行，完成前模块不可用），
+# 防止无界等待死锁整个事件循环。
+# 配置文件监听轮询间隔（秒）。
+# 使用位置: Core/config.py -> watcher 循环。
+# 日志文件目录默认值（ErisPulse.logger.log_dir）。
+# 使用位置: runtime/frame_config.py 默认声明；Core/logger.py -> _setup_config。
+# 修改影响: "logs" = 默认开启文件日志（ep logs 可用、排障有据可查）；
+# 设为 "" 关闭文件输出（仅控制台）。
+DEFAULT_LOG_DIR: Final[str] = "logs"
+
+CONFIG_WATCH_INTERVAL_SECS: Final[float] = 5.0
+
+# 配置 flush 语法错误告警冷却期（秒）。
+# 使用位置: Core/config.py -> malformed sentinel 判定。
+CONFIG_MALFORMED_WARN_COOLDOWN_SECS: Final[float] = 30.0
+
+# 插件目录默认名（ErisPulse.framework.plugins_dir）。
+# 使用位置: loaders/plugin_folder.py / runtime/{frame_config,plugin_reload,dev_watch}.py。
+DEFAULT_PLUGINS_DIR_NAME: Final[str] = "plugins"
+
+# collect 多字段收集的每字段默认等待超时（秒）。
+# 使用位置: Core/Event/wrapper.py -> _builtin_collect。
+DEFAULT_COLLECT_TIMEOUT_PER_FIELD_SECS: Final[float] = 60.0
+
+# 影子覆盖层单实例的最大条目数（_data + 墓碑合计，LRU 淘汰最旧）。
+# 使用位置: Core/shadow.py -> ShadowOverlay。修改影响: 影子试运行高频写时
+# 覆盖层内存上限；超出后最旧的覆盖值/墓碑回退真库语义。
+SHADOW_OVERLAY_MAX_ENTRIES: Final[int] = 1024
+
+# 影子账本每个 owner 的最大保留条数（内存环形，超出丢弃最旧）。
+# 使用位置: Core/shadow.py -> ShadowLedger.record。
+SHADOW_LEDGER_MAX_PER_OWNER: Final[int] = 500
+
+# 会话收件箱单条文本的最大保留字符数（超出截断）。
+# 使用位置: Core/transcript.py -> append。
+TRANSCRIPT_TEXT_MAX_CHARS: Final[int] = 2000
+
+# 会话收件箱保留策略的触发间隔（每 N 行追加执行一次裁剪）。
+# 使用位置: Core/transcript.py -> _flush_async。
+TRANSCRIPT_RETENTION_INTERVAL: Final[int] = 32
+
+# 内存快照标签缓存上限（防动态 label 无界增长）。
+# 使用位置: runtime/memory.py -> snapshot。
+MEMORY_SNAPSHOT_LABELS_MAX: Final[int] = 128
+
+MODULE_ASYNC_INIT_WAIT_TIMEOUT_SECS: Final[float] = 60.0
+
+# 内存追踪（tracemalloc）默认开关（ErisPulse.framework.memory_tracing）。
+# 使用位置: runtime/memory.py -> ensure_tracing()（proactive_gc 每轮惰性启用）。
+# 修改影响: 开启后 tracemalloc 追踪 Python 分配（traced_mb 有值、增长门限不再
+# 误用 RSS），带来约 2 倍分配路径 CPU 开销——排障时开启，常态关闭。
+DEFAULT_MEMORY_TRACING: Final[bool] = False
+
+# 内存快照 top 分配点数量（tracemalloc statistics('lineno') 的归因条数）。
+# 使用位置: runtime/memory.py -> snapshot(detail=True)。
+MEMORY_SNAPSHOT_TOP_SITES: Final[int] = 10
+
+# 长事务持锁观测阈值（秒）。
+# 使用位置: Core/Bases/storage.py -> _AsyncTransaction.finish()（提交/回滚后统计持锁时长）。
+# 修改影响: 调小更早暴露慢事务（日志噪声增多），调大减少噪声；仅观测不阻断。
+STORAGE_TXN_SLOW_WARN_SECS: Final[float] = 1.0
+
+# 存储同步 API 在异步上下文调用的按调用点限频警告冷却期（秒）。
+# 使用位置: Core/Bases/storage.py -> _warn_sync_in_async()。
+# 修改影响: 调小同一调用点警告更频繁（噪声增多），调大更安静。
+STORAGE_SYNC_IN_ASYNC_WARN_COOLDOWN_SECS: Final[float] = 60.0
+
+# sync-in-async 严格模式默认关闭（False = 仅告警）。
+# 使用位置: Core/Bases/storage.py -> _warn_sync_in_async（运行时经
+# framework.strict_sync_in_async 配置覆盖，热更新生效）
+# 修改影响: 开启后异步上下文调用同步存储 API 直接抛 StrictModeError
+# （消息含调用点与 a 前缀方法指引）——开发期开启可当场暴露新增的阻塞式调用。
+STRICT_SYNC_IN_ASYNC_DEFAULT: Final[bool] = False
+
+# sync-in-async 桥接等待上限（秒；仅异步上下文调用生效，纯同步线程不受限）。
+# 使用位置: Core/Bases/storage.py -> _bridge_run（运行时经
+# framework.sync_in_async_bridge_wait 配置覆盖，热更新生效）
+# 修改影响: 超过上限即取消桥接任务并按 fail-soft 语义返回（None/False）——
+# 把"无限冻结事件循环"收敛为有界等待；0 = 不设限（旧行为）。
+SYNC_IN_ASYNC_BRIDGE_WAIT_SECS: Final[float] = 10.0
+
+# sync-in-async 线程桥接池大小（仅 _SUPPORTS_THREAD_BRIDGE=True 的后端使用，
+# 当前为 MySQL / PostgreSQL——服务端 MVCC 支持真并发连接；SQLite 单写锁不走此路径）。
+# 使用位置: Core/Bases/storage.py -> _THREAD_BRIDGE_POOL（线程池容量）
+# 修改影响: 调大提升异步上下文同步调用的并发吞吐，代价是每 worker 线程各自
+#           持有一条后端连接（连接数 = 池大小 × 每循环连接池）。
+STORAGE_THREAD_BRIDGE_POOL_SIZE: Final[int] = 4
+
+# sync-in-async 调用点登记表容量上限（防止动态拼接调用点导致的登记表无界增长）。
+# 使用位置: Core/Bases/storage.py -> _warn_sync_in_async()。
+# 修改影响: 仅影响同时跟踪的调用点数量，超出后最旧条目淘汰（其再次触发会重新警告一次）。
+STORAGE_SYNC_WARN_SITES_CAPACITY: Final[int] = 64
 
 # HTTP 客户端连接超时（秒）。
 # 修改影响: 建立 TCP 连接的最大等待时间。
@@ -1503,6 +1633,7 @@ __all__ = [
     "CONFIG_ROOT_KEY",
     "CONFIG_WRITE_DELAY_SECS",
     "CONFIG_WRITE_RETRY_DELAY_SECS",
+    "CONFIG_TEMPLATE_NESTED_TABLE_MAX_DEPTH",
     "RUNTIME_STATE_DIR_NAME",
     "CONFIRM_HINT_WORDS",
     "CONFIRM_NO_WORDS",
@@ -1629,6 +1760,7 @@ __all__ = [
     "UNLOAD_LOCK_WAIT_TIMEOUT_SECS",
     "DEFAULT_MODULE_CALL_TIMEOUT_SECS",
     "DEFAULT_EVENT_DEDUPE_CAPACITY",
+    "DEFAULT_EVENT_DEDUPE_ENABLED",
     "DEFAULT_CROSS_RECEIPT_WINDOW_SECS",
     "DEFAULT_CROSS_RECEIPT_CAPACITY",
     "DEFAULT_CROSS_RECEIPT_POLICY",
@@ -1683,8 +1815,31 @@ __all__ = [
     "RETCODE_SDK_FAILURE",
     "SERVER_SHUTDOWN_TIMEOUT_SECS",
     "ROUTER_RELOAD_STARTUP_TIMEOUT_SECS",
+    "ROUTER_STARTUP_POLL_INTERVAL_SECS",
+    "ROUTER_PORT_PROBE_TIMEOUT_SECS",
+    "SQLITE_BUSY_TIMEOUT_MS",
     "SQLITE_JOURNAL_MODE",
     "SQLITE_SYNCHRONOUS_MODE",
+    "STORAGE_SYNC_IN_ASYNC_WARN_COOLDOWN_SECS",
+    "STRICT_SYNC_IN_ASYNC_DEFAULT",
+    "SYNC_IN_ASYNC_BRIDGE_WAIT_SECS",
+    "STORAGE_THREAD_BRIDGE_POOL_SIZE",
+    "STORAGE_SYNC_WARN_SITES_CAPACITY",
+    "STORAGE_TXN_SLOW_WARN_SECS",
+    "STORAGE_TXN_COMMIT_TIMEOUT_SECS",
+    "MODULE_ASYNC_INIT_WAIT_TIMEOUT_SECS",
+    "CONFIG_WATCH_INTERVAL_SECS",
+    "DEFAULT_LOG_DIR",
+    "CONFIG_MALFORMED_WARN_COOLDOWN_SECS",
+    "DEFAULT_PLUGINS_DIR_NAME",
+    "DEFAULT_COLLECT_TIMEOUT_PER_FIELD_SECS",
+    "DEFAULT_MEMORY_TRACING",
+    "SHADOW_OVERLAY_MAX_ENTRIES",
+    "SHADOW_LEDGER_MAX_PER_OWNER",
+    "TRANSCRIPT_TEXT_MAX_CHARS",
+    "TRANSCRIPT_RETENTION_INTERVAL",
+    "MEMORY_SNAPSHOT_LABELS_MAX",
+    "MEMORY_SNAPSHOT_TOP_SITES",
     "STATUS_FAILED",
     "STATUS_OK",
     "STORAGE_MAX_LIST_INDEX",

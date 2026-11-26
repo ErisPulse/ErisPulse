@@ -95,7 +95,7 @@ HTTP 方法
 ---
 
 
-##### `url -> Any`（property）
+##### `url -> URL`（property）
 
 完整请求 URL
 
@@ -104,7 +104,7 @@ HTTP 方法
 ---
 
 
-##### `base_url -> Any`（property）
+##### `base_url -> URL`（property）
 
 基础 URL
 
@@ -113,7 +113,7 @@ HTTP 方法
 ---
 
 
-##### `headers -> Any`（property）
+##### `headers -> Headers`（property）
 
 请求头 (大小写不敏感)
 
@@ -122,7 +122,7 @@ HTTP 方法
 ---
 
 
-##### `query_params -> Any`（property）
+##### `query_params -> QueryParams`（property）
 
 查询参数
 
@@ -149,7 +149,7 @@ Cookie 字典
 ---
 
 
-##### `client -> Any`（property）
+##### `client -> Address`（property）
 
 客户端地址
 
@@ -158,7 +158,7 @@ Cookie 字典
 ---
 
 
-##### `state -> Any`（property）
+##### `state -> State`（property）
 
 请求级状态存储
 
@@ -167,7 +167,7 @@ Cookie 字典
 ---
 
 
-##### `app -> Any`（property）
+##### `app -> Starlette`（property）
 
 ASGI 应用实例
 
@@ -209,7 +209,7 @@ ASGI 应用实例
 ---
 
 
-##### `raw -> Any`（property）
+##### `raw -> Request`（property）
 
 底层框架原生 Request 对象
 
@@ -236,7 +236,7 @@ ASGI 应用实例
 ---
 
 
-##### `async form(**kwargs) -> Any`
+##### `async form(**kwargs) -> FormData`
 
 解析表单数据
 
@@ -248,7 +248,7 @@ ASGI 应用实例
 ---
 
 
-##### `async stream() -> Any`
+##### `async stream() -> AsyncIterator[bytes]`
 
 流式读取请求体
 
@@ -273,7 +273,7 @@ ASGI 应用实例
 ---
 
 
-##### `url_for(name: str, /, **path_params: Any) -> Any`
+##### `url_for(name: str, /, **path_params: Any) -> str`
 
 根据路由名反向生成 URL
 
@@ -327,7 +327,7 @@ async def chat(ws: WebSocketConnection):
 ---
 
 
-##### `base_url -> Any`（property）
+##### `base_url -> URL`（property）
 
 基础 URL
 
@@ -336,7 +336,7 @@ async def chat(ws: WebSocketConnection):
 ---
 
 
-##### `query_params -> Any`（property）
+##### `query_params -> QueryParams`（property）
 
 查询参数
 
@@ -363,7 +363,7 @@ Cookie 字典
 ---
 
 
-##### `client -> Any`（property）
+##### `client -> Address`（property）
 
 客户端地址
 
@@ -372,7 +372,7 @@ Cookie 字典
 ---
 
 
-##### `state -> Any`（property）
+##### `state -> State`（property）
 
 连接级状态存储
 
@@ -381,7 +381,7 @@ Cookie 字典
 ---
 
 
-##### `app -> Any`（property）
+##### `app -> Starlette`（property）
 
 ASGI 应用实例
 

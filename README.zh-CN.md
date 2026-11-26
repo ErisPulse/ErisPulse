@@ -2,7 +2,6 @@
 
 [English](README.md) | [简体中文](README.zh-CN.md) | [繁體中文](README.zh-TW.md) | [日本語](README.ja.md) | [Русский](README.ru.md)
 
-> ✦ **大家好，我是小eris！** ErisPulse 的看板娘，也是文档里的向导。演示里出报错别慌，多半是我在替你试错～
 
 # ErisPulse
 
@@ -346,6 +345,41 @@ epsdk run main.py --reload
 </tr>
 </table>
 
+## 生态模块
+
+官方与社区共同维护的模块生态——[Dashboard](https://github.com/ErisPulse/ErisPulse-Dashboard) 管理面板、[MyServer](https://github.com/wsu2059q/ErisPulse-MyServer) 聊天里的 AI 原生机房、[QvQChat](https://github.com/wsu2059q/ErisPulse-QvQChat) AI 智能体模块，以及几十个社区贡献的功能模块：
+
+<table>
+<tr>
+<td align="center" width="33%">
+
+**Dashboard** — Web 管理面板
+
+<img src="https://raw.githubusercontent.com/ErisPulse/ErisPulse-Dashboard/main/.github/assets/overview.png" alt="Dashboard" />
+
+</td>
+<td align="center" width="33%">
+
+**MyServer** — 聊天里的 AI 原生机房
+
+<img src="https://raw.githubusercontent.com/wsu2059q/ErisPulse-MyServer/main/.github/assets/console.png" alt="MyServer" />
+
+</td>
+<td align="center" width="33%">
+
+**QvQChat** — AI 智能体模块
+
+<img src="https://raw.githubusercontent.com/wsu2059q/ErisPulse-QvQChat/main/.github/assets/fleet-demo.png" alt="QvQChat" />
+
+</td>
+</tr>
+</table>
+
+模块市场：https://www.erisdev.com/#market
+
+---
+
+
 ---
 
 ## 链式发送 DSL
@@ -561,17 +595,23 @@ ErisPulse 不仅仅是框架。装上就能开始，不需要从零造轮子。
 | <img src=".github/assets/adapter_logo/matrix.svg" height="20" alt="Matrix" /> [Matrix](https://github.com/ErisPulse/ErisPulse-MatrixAdapter) | Matrix 去中心化通讯协议 |
 | <img src=".github/assets/adapter_logo/onebot.png" height="20" alt="OneBot" /> [OneBot11](https://github.com/ErisPulse/ErisPulse-OneBot11Adapter) | OneBot v11 通用机器人协议 |
 | <img src=".github/assets/adapter_logo/onebot.png" height="20" alt="OneBot" /> [OneBot12](https://github.com/ErisPulse/ErisPulse-OneBot12Adapter) | OneBot v12 标准协议 |
+| <img src=".github/assets/adapter_logo/onebot.png" height="20" alt="OneBot" /> [SnowLuma](https://github.com/ErisPulse/ErisPulse-SnowLumaAdapter) | 基于 SnowLuma 后端（NTQQ hook）的 OneBot v11 适配器 |
 | <img src=".github/assets/adapter_logo/qqbot.svg" height="20" alt="QQ" /> [QQ](https://github.com/ErisPulse/ErisPulse-QQBotAdapter) | QQ 官方机器人平台 |
 | <img src=".github/assets/adapter_logo/sandbox.png" height="20" alt="Sandbox" /> [沙箱](https://github.com/ErisPulse/ErisPulse-SandboxAdapter) | 网页端调试，无需接入真实平台 |
 | <img src=".github/assets/adapter_logo/terminal.svg" height="20" alt="Terminal" /> [终端](https://github.com/ErisPulse/ErisPulse-TerminalAdapter) | 命令行即聊天，零配置开发调试 |
 | <img src=".github/assets/adapter_logo/telegram.svg" height="20" alt="Telegram" /> [Telegram](https://github.com/ErisPulse/ErisPulse-TelegramAdapter) | 全球性即时通讯平台 |
+| [Bilibili](https://github.com/ErisPulse/ErisPulse-BilibiliAdapter) | B 站私信，支持 Cookie / 扫码双登录 |
 | <img src=".github/assets/adapter_logo/email.svg" height="20" alt="Email" /> [邮件](https://github.com/ErisPulse/ErisPulse-EmailAdapter) | 邮件协议收发适配器 |
 | <img src=".github/assets/adapter_logo/yunhu.png" height="20" alt="Yunhu" /> [云湖](https://github.com/ErisPulse/ErisPulse-YunhuAdapter) | 企业级即时通讯平台（机器人接入） |
 | <img src=".github/assets/adapter_logo/yunhu.png" height="20" alt="Yunhu" /> [云湖用户](https://github.com/wsu2059q/ErisPulse-YunhuUserAdapter) | 基于云湖用户协议的接入适配器 |
+| [Oopz](https://github.com/ErisPulse/ErisPulse-OopzAdapter) | Oopz 语音社区（社区协议，用户账号接入，建议使用小号） |
 | [花枫咖啡馆](https://github.com/ErisPulse/ErisPulse-Ideaura/) | Allons! \(・ω・) / |
 | <img src=".github/assets/adapter_logo/discord.svg" height="20" alt="Discord" /> [Discord](https://github.com/ErisPulse/ErisPulse-DiscordAdapter) | 全球性社区通讯平台，支持服务器、频道、私信 |
+| [Minecraft](https://github.com/ErisPulse/ErisPulse-MinecraftAdapter) | Minecraft Java 版服务器（RCON），命令执行与日志监听 |
 | <img src=".github/assets/adapter_logo/webhook.svg" height="20" alt="Webhook" /> [Webhook](https://github.com/ErisPulse/ErisPulse-WebhookAdapter) | 通用 HTTP 桥接适配器，对接任意系统 |
 | <img src=".github/assets/adapter_logo/wechatmp.svg" height="20" alt="WechatMp" /> [微信公众号](https://github.com/ErisPulse/ErisPulse-WechatMpAdapter) | 微信官方公众号平台 |
+| [企业微信](https://github.com/ErisPulse/ErisPulse-WeComAdapter) | 企业微信自建应用机器人，回调接收与主动消息 |
+| [微信 ClawBot](https://github.com/ErisPulse/ErisPulse-WechatClaw) | 微信官方 ClawBot 通道（iLink Bot API），扫码绑定个人号 |
 
 查看 [适配器详情介绍](docs/zh-CN/platform-guide/README.md)
 
@@ -618,7 +658,7 @@ ErisPulse 项目的健全性还需要您的一份力！我们欢迎各种形式�
 
 <img src=".github/assets/thanks.png" width="200" alt="感谢" />
 
-本项目部分代码基于 [sdkFrame](https://github.com/runoneall/sdkFrame)，核心适配器标准化层参考并受益于 [OneBot12 规范](https://12.onebot.dev/)。
+核心适配器标准化层参考并受益于 [OneBot12 规范](https://12.onebot.dev/)。
 
 ErisPulse 的早期探索与成长离不开云湖开发者社区的支持，许多想法、适配器和实践经验都诞生于此。
 

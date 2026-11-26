@@ -45,26 +45,61 @@ class MyAccountConfig(BotAccountConfig):
 
 `ui` 為標準鍵；`webui` 為舊別名（等價，消費方須同時支援）。
 
+### 容器類型（`list[T]` / `dict[str, T]`）
+
+字段註解為**類型化容器**時，成員類型自動進入 schema：
+
+- `list[int]` / `list[str]` 等標量陣列：schema 帶 `item`（成員的標量 schema），
+  且未聲明 `widget` 時自動推斷為 `list` 控件（面板渲染為動態行列表）
+- `list[SomeDataclass]`：`item` 為 `{"type": "object", "fields": {...}}`，
+  面板渲染為**行內多字段**的物件行（行內字段遞歸支援全部控件與綁定）
+- `dict[str, T]`：動態鍵表，`item` 承載值類型；面板渲染為鍵值編輯器
+- 手寫 `ui.item` 優先於自生成（顯式聲明覆蓋推斷）
+
+載入（`dict_to_dataclass`）時成員按聲明類型規範化：標量做類型轉換
+（`["1", 2.0]` → `[1, 2]`）、dataclass 成員實例化（非 dict 標量包裝為首個
+字段）、整體 JSON 字符串先解析（面板 JSON 編輯態 / env 覆蓋）。
+校驗（`validate_config`）遞歸檢查成員類型與 dataclass 成員的嵌套約束，
+錯誤訊息帶成員路徑（`rules[0]` / `quotas.q`）。
+
+TOML 模板中元素 / 值為 dataclass 的容器渲染為 `[[表陣列]]` / `[表.鍵]` 塊
+（有元素時逐元素展開，無元素時輸出註釋骨架；空容器**不落** `鍵 = []`——
+靜態空陣列與後續 `[[鍵]]` 追加互斥，會導致使用者無法再以表陣列形式新增）。
+
+```python
+@dataclass
+class RetryRule(BaseConfig):
+    host: str = field(default="", metadata={"description": "目標主機"})
+    port: int = field(default=0, metadata={"description": "端口", "required": True})
+
+@dataclass
+class MyConfig(BaseConfig):
+    rules: list[RetryRule] = field(default_factory=list)   # 面板：物件行列表
+    quotas: dict[str, RetryRule] = field(default_factory=dict)  # 面板：鍵值表
+    nums: list[int] = field(default_factory=list)          # 面板：標量行列表
+```
+
 ### 通用鍵
 
 | 鍵 | 語義 |
 |---|---|
-| `widget` | 控件類型（見 widget 名錄）；缺省時按欄位類型推斷 |
+| `widget` | 控件類型（見 widget 名錄）；缺省時按字段類型推斷 |
 | `group` | 分組名；同名分組由 `_schema_meta["group_labels"]` 提供顯示名（同樣支援 i18n 字典） |
 | `order` | 組內排序權重（小者在前，缺省 100） |
 | `options` | 枚舉選項 `[{label, value}]`（`label` 支援 i18n 字典；用於 select/multiselect） |
-| `placeholder` | 輸入占位文字（支援 i18n 字典） |
+| `placeholder` | 輸入佔位文本（支援 i18n 字典） |
 | `min` / `max` / `step` | 數值範圍與步長（number/slider） |
-| `rows` | 多行文字行數（textarea） |
+| `rows` | 多行文本行數（textarea） |
+| `presets` | 預設色板（color；`["#rrggbb", ...]`，缺省用消費方內建） |
 
-### 條件顯示/禁用（欄位聯動）
+### 條件顯隱/禁用（字段聯動）
 
 | 鍵 | 語義 |
 |---|---|
-| `show_if` | 條件不滿足時**隱藏**該欄位（值保留，不刪除） |
-| `disabled_if` | 條件滿足時**禁用**該欄位（置灰鎖定，值保留） |
+| `show_if` | 條件不滿足時**隱藏**該字段（值保留，不刪除） |
+| `disabled_if` | 條件滿足時**禁用**該字段（置灰鎖定，值保留） |
 
-條件物件：`{"field": <同作用域欄位名或完整配置鍵>, "op": <算子>, "value": <比較值>}`。算子集合：
+條件物件：`{"field": <同作用域字段名或完整配置鍵>, "op": <算子>, "value": <比較值>}`。算子集合：
 
 | op | 語義 |
 |---|---|
@@ -73,36 +108,36 @@ class MyAccountConfig(BotAccountConfig):
 | `gt` / `gte` / `lt` / `lte` | 數值比較 |
 | `truthy` | 真值（非空、非 `"false"`、非 `"0"`） |
 
-`op` 缺省為 `eq`。欄位解析：先按**同配置作用域短名**，再按完整鍵（如 `accounts.default.mode`）。
+`op` 缺省為 `eq`。字段解析：先按**同配置作用域短名**，再按完整鍵（如 `accounts.default.mode`）。
 
 ### 值形態（`value_type`，用於 `multiselect`）
 
 | 值 | 存儲形態 | 適用 |
 |---|---|---|
-| `json`（預設） | JSON 陣列**字串**（如 `"[0, 25]"`） | 欄位類型為 `str`、以 JSON 文本存陣列 |
-| `array` | 原生陣列 | 欄位類型為 `list` |
-| `mask` | 位遮罩**整數**（勾選值按 `2^v` 求和） | 欄位類型為 `int` 的位標誌，`options[].value` 為位序號 |
+| `json`（預設） | JSON 陣列**字串**（如 `"[0, 25]"`） | 字段類型為 `str`、以 JSON 文本存陣列 |
+| `array` | 原生陣列 | 字段類型為 `list` |
+| `mask` | 位掩碼**整數**（勾選值按 `2^v` 求和） | 字段類型為 `int` 的位標誌，`options[].value` 為位序號 |
 
-**消費方義務**：`value_type` 缺省時必須按欄位類型推斷（`int` + 數字選項 → `mask`；`list` → `array`；否則 `json`），保證只聲明 `widget: multiselect` 也能寫入正確類型。
+**消費方義務**：`value_type` 缺省時必須按字段類型推斷（`int` + 數字選項 → `mask`；`list` → `array`；否則 `json`），保證只聲明 `widget: multiselect` 也能寫入正確類型。
 
 ## widget 名錄
 
-消費方需實現以下語義；**未識別的 widget 必須回退為單行文本**，不得報錯。
+消費方應實現以下語義；**未識別的 widget 必須回退為單行文本**，不得報錯。
 
 | widget | 值類型 | 語義 |
 |---|---|---|
-| `text` | str | 單行文本（預設回退目標） |
+| `text` | str | 單行文本（缺省回退目標） |
 | `textarea` | str | 多行文本（`rows`） |
 | `password` | str | 密碼（`secret: True` 時自動推斷） |
 | `number` | int/float | 數字輸入（`min`/`max`/`step`；數值類型字段自動推斷） |
 | `switch` | bool | 開關（bool 字段自動推斷） |
 | `select` | str | 單選下拉（`options`；有 options 的字串字段自動推斷） |
 | `multiselect` | 見值形態 | 多選（複選組；`options` + `value_type`） |
-| `slider` | int/float | 滑杆（`min`/`max`/`step`） |
+| `slider` | int/float | 滑桿（`min`/`max`/`step`） |
 | `color` | str | 顏色（`#rrggbb`） |
 | `date` / `time` / `datetime` | str | 日期 / 時間 / 日期時間（ISO 字符串） |
 | `kv` | dict | 鍵值對編輯器（`dict[str, str]`） |
-| `list` | list | 列表編輯器（`item` 聲明行內字段：`{"widget": ...}` 或 `{"fields": {...}}` 支持行內嵌套） |
+| `list` | list | 列表編輯器（`item` 聲明行內字段：`{"widget": ...}` 或 `{"fields": {...}}` 支持行內嵌套；類型化陣列字段自動推斷） |
 
 ## 兼容性契約（消費方必須遵守）
 

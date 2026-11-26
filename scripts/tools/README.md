@@ -38,6 +38,7 @@ scripts/tools/
 | `check i18n-locales` | i18n 五语言键集合一致性（自动发现 Core / CLI 两套 locales） | code-quality-check `i18n-consistency` job |
 | `check docs-links` | docs/zh-CN 内部相对链接死链检查（自动排除生成目录） | code-quality-check `docs-links` job |
 | `check import-layers` | 导入分层禁区 + 懒导入总数棘轮（基线 `baselines/import_layers_baseline.json`） | code-quality-check `Check import layers` 步骤 |
+| `check import-cycles` | 顶层导入环边归零检查（SCC 扫描，与 basedpyright 语义对齐） | code-quality-check `Check import cycles` 步骤 |
 | `check bare-params` | 裸数字行为参数棘轮（基线 `baselines/check_bare_params_baseline.json`） | code-quality-check `Check bare numeric params` 步骤 |
 | `check silent-except` | 静默吞异常总数棘轮（基线 `baselines/check_silent_except_baseline.json`） | code-quality-check `Check silent except ratchet` 步骤 |
 | `check translation` | 翻译产物质检（提示词残留 / 围栏 / 长度比；`--fix` 剥离） | auto-update-docs 翻译前置与后置 |

@@ -183,76 +183,76 @@ ErisPulse は 5 種類のイベントをサポートしています：
 
 > 各イベントタイプの詳細な使い方とコード例については、[イベント処理入門](event-handling.md) を参照してください。
 
-## コアモジュールの説明
+## 核心モジュールの説明
 
 ### Storage（ストレージ）
 
-SQLite ベースのキーバリューストアシステムで、データの永続化に使用されます。
+SQLite に基づくキー/値ストレージシステムで、永続化されたデータを管理します。
 
 ```python
 # 値の設定
-sdk.storage.set("key", "value")
+await sdk.storage.aset("key", "value")
 
 # 値の取得
-value = sdk.storage.get("key", "default_value")
+value = await sdk.storage.aget("key", "default_value")
 
-# 一括操作
-sdk.storage.set_multi({
+# バッチ操作
+await sdk.storage.aset_multi({
     "key1": "value1",
     "key2": "value2"
 })
 
 # トランザクション
-with sdk.storage.transaction():
-    sdk.storage.set("key1", "value1")
-    sdk.storage.set("key2", "value2")
+async with sdk.storage.atransaction():
+    await sdk.storage.aset("key1", "value1")
+    await sdk.storage.aset("key2", "value2")
 ```
 
-### Config（設定）
+### Config（構成）
 
-TOML 形式の設定ファイル管理。
+TOML 形式の構成ファイルを管理します。
 
 ```python
-# 設定の取得
+# 構成の取得
 config = sdk.config.getConfig("MyModule", {})
 
-# 設定の保存
+# 構成の設定
 sdk.config.setConfig("MyModule", {"key": "value"})
 
-# ネストされた設定の読み取り
+# 嵌套された構成の読み取り
 value = sdk.config.getConfig("MyModule.subkey", "default")
 ```
 
-### Logger（ログ）
+### Logger（ロガー）
 
-モジュール化されたログシステム。
+モジュール化されたログシステムです。
 
 ```python
 # ログの記録
-sdk.logger.info("これは情報メッセージです")
-sdk.logger.warning("これは警告メッセージです")
-sdk.logger.error("これはエラーメッセージです")
+sdk.logger.info("これは情報です")
+sdk.logger.warning("これは警告です")
+sdk.logger.error("これはエラーです")
 
 # 子ロガーの取得
 child_logger = sdk.logger.get_child("submodule")
 child_logger.info("サブモジュールのログ")
 ```
 
-**属性アクセスのシンタックスシュガー**
+**属性アクセスの糖衣構文**
 
-`get_child()` メソッドを使用するほかに、**属性アクセス**の方法で子ロガーを作成することもできます。これはより簡潔な**シンタックスシュガー**の書き方です：
+`get_child()` メソッドの代わりに、**属性アクセス**によって子ロガーを作成することもできます。これは、より簡潔な**糖衣構文**です。
 
 ```python
 # 属性アクセスで子ロガーを作成
 sdk.logger.mymodule.info("モジュールメッセージ")
 
-# ネストされたアクセスをサポート
+# 嵌套されたアクセスもサポート
 sdk.logger.mymodule.database.info("データベースメッセージ")
 ```
 
-### Router（ルーティング）
+### Router（ルーター）
 
-HTTP と WebSocket のルーティング管理。FastAPI + Uvicorn ベース。デコレータールーティング、ミドルウェア、グループ化、レート制限、CORS をサポートします。
+HTTP および WebSocket のルート管理を提供します。FastAPI + Uvicorn に基づいており、デコレータルート、ミドルウェア、グループ化、リクエスト制限、CORS をサポートします。
 
 ```python
 from ErisPulse.Core import HttpRequest
@@ -263,11 +263,11 @@ async def handler(request: HttpRequest):
     return {"status": "ok"}
 ```
 
-> ルーティング API の全容（WebSocket、ミドルウェア、レート制限、CORS など）については、[ルーティングマネージャー](../advanced/router.md) を参照してください。
+> 完全なルート API（WebSocket、ミドルウェア、レート制限、CORS など）については、[ルートマネージャー](../advanced/router.md)を参照してください。
 
 ### Client（ネットワーククライアント）
 
-統一されたネットワーククライアントで、HTTP リクエスト、WebSocket 接続、コネクションプール管理、自動リトライ、タイムアウト制御、リクエスト統計、ライフサイクルイベント統合を集約しています。
+HTTP リクエスト、WebSocket 接続、接続プール管理、自動リトライ、タイムアウト制御、リクエスト統計、ライフサイクルイベントの統合を提供する統一されたネットワーククライアントです。
 
 ```python
 from ErisPulse.Core import client
@@ -285,7 +285,7 @@ async for text in ws.iter_text():
     await ws.send_text(f"Echo: {text}")
 ```
 
-> ネットワーククライアント API の全容については、[ネットワーククライアント](../advanced/client.md) を参照してください。
+> 完全なネットワーククライアント API については、[ネットワーククライアント](../advanced/client.md)を参照してください。
 
 ## SendDSL メッセージ送信
 

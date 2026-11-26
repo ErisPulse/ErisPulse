@@ -85,6 +85,20 @@ from .Event.message_builder import MessageBuilder
 # 收件箱出站自动记录（message.sent 钩子；内部幂等，未启用时跳过注册）
 transcript.attach()
 
+# i18n ⇄ config/lifecycle 的装配点：语言来源经 config 注入、语言缓存失效与
+# 语言变更事件经 config 代为订阅/转发——i18n 自身零 config/lifecycle 依赖
+# （断开 config ⇄ i18n 与 i18n ⇄ lifecycle 顶层互引环）
+i18n.set_language_source(lambda: config.getConfig("ErisPulse.i18n.language", None))
+try:
+    from .i18n import on_language_config_changed as _i18n_invalidate
+
+    lifecycle.on("config.set")(_i18n_invalidate)
+    lifecycle.on("config.updated")(_i18n_invalidate)
+    i18n.set_event_emitter(lifecycle.emit_sync)
+except Exception:
+    # 装配窗口内 lifecycle 未就绪：语言缓存改由指纹/下次读取兜底
+    pass
+
 env = storage
 
 client = Client()

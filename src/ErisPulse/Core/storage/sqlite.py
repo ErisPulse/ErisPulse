@@ -12,6 +12,7 @@ ErisPulse SQLite 存储后端（aiosqlite 异步原生实现）
 """
 
 import sqlite3
+import weakref
 from pathlib import Path
 from typing import Any
 
@@ -21,14 +22,12 @@ from ..Bases.errors import StorageUnreachableError
 from ..Bases.sql_base import SQLDialect, SQLStorageBase, _SingletonMixin
 from ..constants import (
     DEFAULT_USE_GLOBAL_DB,
+    SQLITE_BUSY_TIMEOUT_MS,
     SQLITE_JOURNAL_MODE,
     SQLITE_SYNCHRONOUS_MODE,
 )
 from ..i18n import i18n
 from ..logger import logger
-
-# 多循环并发（同步桥接 + 用户异步循环）时的写等待上限
-# （历史模块级常量，主体已收编为 SQLiteStorage._SQLITE_BUSY_TIMEOUT_MS）
 
 __all__ = ["SQLiteDialect", "SQLiteStorage"]
 
@@ -38,6 +37,7 @@ class SQLiteDialect(SQLDialect):
 
     name = "sqlite"
     extra_name = "sqlite"
+    # 驱动为零依赖内置 sqlite3（driver_module 为空，跳过安装路径）
 
     key_column_type = "TEXT"
     value_column_type = "TEXT"
@@ -76,8 +76,10 @@ class SQLiteStorage(_SingletonMixin, SQLStorageBase):
 
     dialect: SQLDialect = SQLiteDialect()
 
-    # 多循环并发（同步桥接 + 用户异步循环）时的写等待上限（毫秒）
-    _SQLITE_BUSY_TIMEOUT_MS = 5000
+    # 写锁等待上限（毫秒）——类属性为默认兜底（``__new__`` 绕过 ``__init__`` 的
+    # 测试/派生路径无实例属性可用）；正常初始化时由
+    # ``ErisPulse.storage.sqlite.busy_timeout`` 配置覆盖为实例属性
+    _busy_timeout_ms: int = SQLITE_BUSY_TIMEOUT_MS
 
     # 默认全局数据库放在包内的 data/config.db
     GLOBAL_DB_PATH = str(
@@ -105,6 +107,7 @@ class SQLiteStorage(_SingletonMixin, SQLStorageBase):
 
         storage_config = get_storage_config()
         use_global_db = bool(storage_config.get("use_global_db", DEFAULT_USE_GLOBAL_DB))
+        self._busy_timeout_ms = self._resolve_busy_timeout(storage_config)
 
         if use_global_db and Path(self.GLOBAL_DB_PATH).exists():
             self.db_path = self.GLOBAL_DB_PATH
@@ -123,8 +126,10 @@ class SQLiteStorage(_SingletonMixin, SQLStorageBase):
         self._last_use_global_db = use_global_db
         self._finish_init()
         # use_global_db 决定数据库文件路径，已打开的句柄无法运行时安全切换；
+        # busy_timeout 应用于每连接 PRAGMA，已打开连接同样不随配置刷新；
         # 订阅配置变更，变化时明确告警需重启
         self._watch_storage_config(self._check_use_global_db_changed)
+        self._watch_storage_config(self._check_busy_timeout_changed)
 
     def _check_use_global_db_changed(self) -> str | None:
         """{!--< internal-use >!--} use_global_db 配置变更检查"""
@@ -136,6 +141,41 @@ class SQLiteStorage(_SingletonMixin, SQLStorageBase):
         if new_use_global != self._last_use_global_db:
             self._last_use_global_db = new_use_global
             return i18n.t("core.config.restart_required", key="storage.use_global_db")
+        return None
+
+    @staticmethod
+    def _resolve_busy_timeout(storage_config: dict[str, Any]) -> int:
+        """
+        {!--< internal-use >!--}
+        解析 busy_timeout 配置（``ErisPulse.storage.sqlite.busy_timeout``，毫秒）
+
+        :param storage_config: ``ErisPulse.storage`` 配置节
+        :return: 校验后的毫秒数（非法值回落默认并告警）
+        """
+        sqlite_config = storage_config.get("sqlite") or {}
+        raw_busy = sqlite_config.get("busy_timeout", SQLITE_BUSY_TIMEOUT_MS)
+        try:
+            return max(1, int(raw_busy))
+        except (TypeError, ValueError):
+            logger.warning(
+                i18n.t(
+                    "core.storage.busy_timeout_invalid",
+                    value=raw_busy,
+                    fallback=str(SQLITE_BUSY_TIMEOUT_MS),
+                )
+            )
+            return SQLITE_BUSY_TIMEOUT_MS
+
+    def _check_busy_timeout_changed(self) -> str | None:
+        """{!--< internal-use >!--} busy_timeout 配置变更检查（新连接按新值应用，已打开连接需重启刷新）"""
+        from ...runtime import get_storage_config
+
+        new_busy = self._resolve_busy_timeout(get_storage_config())
+        if new_busy != self._busy_timeout_ms:
+            self._busy_timeout_ms = new_busy
+            return i18n.t(
+                "core.config.restart_required", key="storage.sqlite.busy_timeout"
+            )
         return None
 
     def _ensure_directories(self) -> None:
@@ -170,14 +210,11 @@ class SQLiteStorage(_SingletonMixin, SQLStorageBase):
 
     # 连接管理
 
-    @staticmethod
-    async def _apply_pragmas(conn: aiosqlite.Connection) -> None:
-        """{!--< internal-use >!--} 应用标准 PRAGMA（WAL/synchronous/busy_timeout）"""
+    async def _apply_pragmas(self, conn: aiosqlite.Connection) -> None:
+        """{!--< internal-use >!--} 应用标准 PRAGMA（WAL/synchronous/busy_timeout，后者来自配置）"""
         await conn.execute(SQLITE_JOURNAL_MODE)
         await conn.execute(SQLITE_SYNCHRONOUS_MODE)
-        await conn.execute(
-            f"PRAGMA busy_timeout={SQLiteStorage._SQLITE_BUSY_TIMEOUT_MS}"
-        )
+        await conn.execute(f"PRAGMA busy_timeout={self._busy_timeout_ms}")
 
     async def _create_loop_resource(self) -> aiosqlite.Connection:
         """{!--< internal-use >!--} 当前事件循环的共享连接（autocommit 模式）"""
@@ -187,6 +224,7 @@ class SQLiteStorage(_SingletonMixin, SQLStorageBase):
         except Exception:
             await conn.close()
             raise
+        self._track_connection(conn)
         return conn
 
     async def _destroy_loop_resource(self, resource: aiosqlite.Connection) -> None:
@@ -210,11 +248,26 @@ class SQLiteStorage(_SingletonMixin, SQLStorageBase):
         except Exception:
             await conn.close()
             raise
+        self._track_connection(conn)
         return conn
 
     async def _close_txn_conn(self, conn: aiosqlite.Connection) -> None:
         """{!--< internal-use >!--} 关闭事务专用连接"""
         await conn.close()
+
+    def _track_connection(self, conn: aiosqlite.Connection) -> None:
+        """{!--< internal-use >!--} 登记存活连接（弱引用），供退出阶段同步停止其工作线程"""
+        conns = getattr(self, "_live_connections", None)
+        if conns is None:
+            conns = weakref.WeakSet()
+            self._live_connections = conns
+        conns.add(conn)
+        self._register_live()
+
+    def _stop_sync_resources(self) -> None:
+        """{!--< internal-use >!--} 退出阶段不经事件循环，直接停止全部存活连接的工作线程"""
+        for conn in list(getattr(self, "_live_connections", ())):
+            conn.stop()
 
     # 事务控制
 

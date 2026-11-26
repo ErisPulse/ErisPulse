@@ -94,11 +94,18 @@ await User.delete_all(User.age > 100)               # 批量删除
 > [!NOTE]
 > `get_or_create` / `update_or_create` 在并发竞争下两个协程可能同时走到创建分支——唯一约束（主键 / `unique` / `__unique_together__`）会让后到者收到 `StorageOperationError`；需要幂等语义时捕获后重查一次。
 
-查询表达式支持 `> >= < <= == !=`、`in_([...])`，以及 `&`（与）/ `|`（或）组合：
+查询表达式支持 `> >= < <= == !=`，以及 `&`（与）/ `|`（或）组合；IN 条件使用 `where_in`：
 
 ```python
-await User.where((User.age > 18) & User.name.in_(["Alice", "Bob"])).all()
+await User.where(User.age > 18).all()
+await User.where_in("name", ["Alice", "Bob"]).all()                       # IN 条件（类型检查友好）
+await User.where((User.age > 18) & User.name.in_(["Alice", "Bob"])).all() # IN 与其他条件组合（in_ 为运行时能力）
 ```
+
+> [!TIP]
+> **类型检查友好**：字段按值类型注解（`age: int = Field(...)`）声明时，类访问比较（`User.age > 18`）在 mypy / pyright / ty 视角是 `bool`，运行时实际产物是条件对象——条件入口（`where` / `count` / `delete_all` / `update_all`）已兼容该形态，调用点无需任何 `ignore` 注释；真正的布尔值入参（无法编译为 SQL）会在运行时被明确拒绝。查询返回值已静态类型化：`first()` / `all()` / `get()` / `create()` 的结果即为模型实例，字段访问有完整类型提示。
+>
+> 条件对象不可做真值判断（`if User.age > 18:` 抛错），多条件组合请用 `&` / `|` 而非 `and` / `or`。条件构建辅助函数的返回类型建议标注 `Condition | bool`。
 
 ## 事务
 
@@ -128,7 +135,7 @@ async with storage.atransaction():
 
 ## 边界与注意事项
 
-- 后端由全局存储配置决定；模型可用 `__storage__` 类属性覆写为自定义 `BaseStorage` 实例（测试注入用）
+- 后端由全局存储配置决定；模型可用 `__storage__` 类属性覆写为自定义 SQL 存储后端实例（`SQLStorageBase`，测试注入用）
 - `list` / `dict` 字段（含参数化泛型如 `list[int]`、`dict[str, int]`）按容器类别以 JSON 文本列存储，读写自动序列化
 - 写入（`create` / `save`）前自动执行约束校验，失败抛 `ValueError`（本地化消息）
 - 自动迁移已交付**新增列**场景（见下文）；列类型变更与删列需手工处理

@@ -20,7 +20,7 @@ from pathlib import Path
 FULL_EXAMPLE_FILENAME = "config.full.example"
 
 # 生成器版本：模板/静态段结构变化时递增，驱动带标记文件的一次性刷新
-_GEN = 6
+_GEN = 9
 
 # 首行标记前缀（语言无关，供自动刷新判定）
 _MARKER_PREFIX = "# ErisPulse full config reference (auto-maintained by framework, gen="
@@ -80,7 +80,7 @@ def render_full_example(adapter_list=None, st=None) -> str:
             "[ErisPulse.logger]",
             f'level = "INFO"                # {st.t("cfg.logger.level")}',
             f"log_files = []                # {st.t('cfg.logger.log_files')}",
-            f'log_dir = ""                  # {st.t("cfg.logger.log_dir")}',
+            f'log_dir = "logs"              # {st.t("cfg.logger.log_dir")}',
             f'log_rotation = "size"         # {st.t("cfg.logger.log_rotation")}',
             f"log_max_size_mb = 10          # {st.t('cfg.logger.log_max_size_mb')}",
             f"log_backup_count = 5          # {st.t('cfg.logger.log_backup_count')}",
@@ -93,6 +93,9 @@ def render_full_example(adapter_list=None, st=None) -> str:
             "[ErisPulse.storage]",
             f'backend = "sqlite"           # {st.t("cfg.storage.backend")}',
             f"use_global_db = false         # {st.t('cfg.storage.use_global_db')}",
+            "",
+            f"[ErisPulse.storage.sqlite]   # {st.t('cfg.storage.sqlite')}",
+            f"busy_timeout = 5000           # {st.t('cfg.storage.sqlite_busy_timeout')}",
             "",
             f"[ErisPulse.storage.mysql]     # {st.t('cfg.storage.mysql')}",
             'host = "127.0.0.1"',
@@ -127,22 +130,23 @@ def render_full_example(adapter_list=None, st=None) -> str:
             f"uninit_timeout = 30            # {st.t('cfg.framework.uninit_timeout')}",
             f"                                {st.t('cfg.framework.uninit_timeout_line1')}",
             f"                                {st.t('cfg.framework.uninit_timeout_line2')}",
-            f"strict_mode = false            # {st.t('cfg.framework.strict_mode')}",
+            f"strict_mode = 0                # {st.t('cfg.framework.strict_mode')}",
             f"strict_mode_exceptions = {{ modules = [], adapters = [] }}  # {st.t('cfg.framework.strict_mode_exceptions')}",
             f"handler_max_concurrency = 64   # {st.t('cfg.framework.handler_max_concurrency')}",
             f"handler_queue_max_pending = 4096  # {st.t('cfg.framework.handler_queue_max_pending')}",
             f"proactive_gc_interval = 300    # {st.t('cfg.framework.proactive_gc_interval')}",
-            f"proactive_gc_generation = 2    # {st.t('cfg.framework.proactive_gc_generation')}",
-            f"proactive_gc_full_every = 10   # {st.t('cfg.framework.proactive_gc_full_every')}",
-            f"proactive_gc_memory_growth_mb = 100  # {st.t('cfg.framework.proactive_gc_memory_growth_mb')}",
-            f"proactive_gc_idle_only = true  # {st.t('cfg.framework.proactive_gc_idle_only')}",
-            f"proactive_gc_gen0_min = 100    # {st.t('cfg.framework.proactive_gc_gen0_min')}",
+            f"proactive_gc_generation = 0    # {st.t('cfg.framework.proactive_gc_generation')}",
+            f"proactive_gc_full_every = 20   # {st.t('cfg.framework.proactive_gc_full_every')}",
+            f"proactive_gc_memory_growth_mb = 32   # {st.t('cfg.framework.proactive_gc_memory_growth_mb')}",
+            f"proactive_gc_idle_only = false # {st.t('cfg.framework.proactive_gc_idle_only')}",
+            f"proactive_gc_gen0_min = 500    # {st.t('cfg.framework.proactive_gc_gen0_min')}",
             f"offline_bot_expiry = 3600      # {st.t('cfg.framework.offline_bot_expiry')}",
             f"# {st.t('cfg.framework.watch_ignore_dirs')}",
             f"# {st.t('cfg.framework.watch_ignore_dirs_line1')}",
             f"# watch_ignore_dirs = [\".venv\", \".git\", \"node_modules\"]  # {st.t('cfg.framework.watch_ignore_dirs_line2')}",
             f"watch_include_plugin_dirs = true  # {st.t('cfg.framework.watch_include_plugin_dirs')}",
             f'cross_account_policy = "off"   # {st.t("cfg.framework.cross_account_policy")}',
+            '# session_accounts = { snowluma = { "643319481" = "1325859446" } }  # 会话账户绑定（平台 -> 会话ID -> bot_id）',
             "",
             st.t("cfg.section.transcript"),
             "",

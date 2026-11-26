@@ -16,6 +16,17 @@ import sys
 from collections.abc import AsyncGenerator, Generator
 from pathlib import Path
 
+# 测试隔离：默认开启的文件日志（log_dir="logs"）不在测试进程落盘——
+# 必须先于 ErisPulse logger 单例构造重置默认值
+from ErisPulse.runtime import frame_config as _frame_config
+
+_frame_config.DEFAULT_ERISPULSE_CONFIG["logger"]["log_dir"] = ""
+# 兜底：维护者本地 config.toml 可能显式配置了 log_dir——logger 单例在
+# import 期已开启文件输出，直接清掉文件 handler（测试进程不落盘）
+from ErisPulse.Core.logger import logger as _ep_logger
+
+_ep_logger._clear_file_handlers()
+
 import pytest
 
 # 添加 src 目录到 Python 路径

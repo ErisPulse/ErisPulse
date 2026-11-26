@@ -31,7 +31,7 @@ from .constants import (
     MODULE_SOURCE_RUNTIME,
     UNLOAD_LOCK_WAIT_TIMEOUT_SECS,
 )
-from .di import call_with_depends, call_with_depends_sync
+from .di import call_with_depends, call_with_depends_sync, set_module_caller
 from .i18n import i18n
 from .lifecycle import lifecycle
 from .logger import logger
@@ -475,8 +475,11 @@ class ModuleManager(ManagerBase):
                     from ..runtime.tasks import spawn_background
 
                     spawn_background(self._replay_events(module_name, replay))
-            except Exception:
-                pass
+            except Exception as e:
+                # 派发失败即重放不发生（模块错过加载窗口内的事件）：必须可见
+                logger.warning(
+                    i18n.t("core.module.replay_spawn_failed", name=module_name, error=e)
+                )
 
             await lifecycle.submit_event(
                 "module.load",
@@ -1514,6 +1517,16 @@ class ModuleManager(ManagerBase):
         """
         import gc
 
+        # freeze 三连：启动期 gc.freeze() 把全部已跟踪对象移入永久代后，
+        # gc.collect 对冻结代无效——卸载残留的环状引用（实例 ↔ bound method
+        # ↔ 注册表）能被泄漏普查告警却无法回收。三连把幸存的运行期对象重新
+        # 冻结，仅本次卸载真正死亡的对象进入待回收集
+        try:
+            gc.unfreeze()
+            gc.collect()
+            gc.freeze()
+        except Exception:
+            pass
         gc.collect()
         for name, class_ref, instance_ref in refs:
             leaked_class = class_ref is not None and class_ref() is not None
@@ -2845,6 +2858,15 @@ class ModuleManager(ManagerBase):
 
             timeout = DEFAULT_MODULE_CALL_TIMEOUT_SECS
 
+        # 调用量观测（跨模块 RPC 频次与目标分布）
+        try:
+            from ..runtime.metrics import metrics
+
+            metrics.inc("modules.call.total")
+            metrics.inc(f"modules.call.{module_name}")
+        except Exception as e:
+            logger.debug(f"module call metrics inc failed: {e!r}")
+
         # scope 出站审计（调用方维度：actions.<caller>.call，name=<module>.<method>）
         caller = current_owner.get()
         if caller:
@@ -2954,5 +2976,11 @@ class ModuleManager(ManagerBase):
 
 
 module: ModuleManager = ModuleManager()
+
+# 反向注入模块调用器：Depends.module 语法糖经此执行跨模块调用
+# （di 不回看 module，断开 di ⇄ module 互引环）
+set_module_caller(lambda module_name, method, call_args, call_kwargs: module.call(
+    module_name, method, *call_args, **call_kwargs
+))
 
 __all__ = ["module"]

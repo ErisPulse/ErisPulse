@@ -221,6 +221,17 @@ class _JsonFormatter(logging.Formatter):
             "logger": record.name,
             "message": message,
         }
+        # 链路追踪字段：事件分发的 trace_id 贯穿到 JSON 日志（惰性取，避免
+        # logger 早期加载链引 runtime）
+        try:
+            from ..runtime.context import current_trace_id
+
+            _trace_id = current_trace_id.get()
+            if _trace_id:
+                log_entry["trace_id"] = str(_trace_id)
+        except Exception:
+            # 日志器自身的异常隔离：此处不可再调 logger（递归）
+            pass
         if record.exc_info and record.exc_info[0] is not None:
             log_entry["exception"] = self.formatException(record.exc_info)
         return _json.dumps(log_entry, ensure_ascii=False)
@@ -1009,6 +1020,10 @@ class Logger:
                 ),
                 when=logger_config.get("log_rotation_when", DEFAULT_LOG_ROTATION_WHEN),
             )
+        else:
+            # 文件输出显式关闭（log_files / log_dir 均为空）：清理历史文件
+            # handler，避免"默认开启后用户关闭不生效"的残留写入
+            self._clear_file_handlers()
         if "memory_limit" in logger_config:
             self.set_memory_limit(logger_config["memory_limit"])
         if "total_memory_limit" in logger_config:

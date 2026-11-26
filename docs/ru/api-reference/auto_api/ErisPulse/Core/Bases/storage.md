@@ -20,6 +20,37 @@ ErisPulse 存储基类
 ## 函数列表
 
 
+### `_capture_user_frames(limit: int) -> list[str]`
+
+**内部方法**
+跳过框架与标准库内部帧，采集最近的用户层调用帧描述（``文件:行号 (函数名)``）
+
+供 sync-in-async 警告与慢事务观测定位调用来源；最多回溯 16 帧或采满
+limit 个即止，采集不足 limit 个时以实际数量返回。内部帧按模块名判定
+（``ErisPulse*`` / ``asyncio*`` / ``contextlib``），同步调用链上的用户帧
+必然可达；协程/异步生成器边界可能截断帧链（f_back 为 None），此时以
+实际采集结果为准（可能为空）。
+
+- **limit**: 最多采集的帧数
+
+**返回值**: 用户层调用帧描述列表（按调用链由近及远排序）
+
+---
+
+
+### `_warn_sync_in_async() -> None`
+
+**内部方法**
+同步存储 API 在异步上下文调用的聚合告警（防刷屏）
+
+不逐调用点即时告警——按「文件:行号 (函数名)」累计计数，每个冷却窗口
+（``framework.sync_warn_cooldown``，默认 60s）输出一条汇总：次数、调用
+点数与 Top 调用点。严格模式（``framework.strict.sync_in_async``）开启时
+不聚合，直接抛错。
+
+---
+
+
 ### `_has_running_loop() -> bool`
 
 **内部方法**
@@ -30,7 +61,67 @@ ErisPulse 存储基类
 ---
 
 
+### `_get_thread_bridge_pool() -> 'concurrent.futures.ThreadPoolExecutor'`
+
+**内部方法** 线程桥接池（进程级懒初始化，退出时随解释器回收）
+
+---
+
+
+### `_thread_bridge_worker(coro: Any) -> Any`
+
+**内部方法**
+线程桥接 worker：每线程一个独立事件循环（惰性创建、随线程存活）
+
+连接资源按循环对象缓存在 ``_loop_resources``（WeakKeyDictionary）——
+循环随线程持久存在，连接同样复用，不产生逐调用建连。
+
+---
+
+
 ## 类列表
+
+
+### `class _PreJoinExitHooks`
+
+**内部方法**
+解释器退出时先于线程 join 执行的钩子序列
+
+CPython 退出先执行 ``threading._shutdown()``——依次调用经
+``threading._register_atexit`` 登记的回调，再 join 全部非 daemon 线程——
+``atexit`` 回调排在其后。aiosqlite 0.22 起连接线程为非 daemon 线程，
+依赖 ``atexit`` 关闭连接的进程会永久停在 join 上。本序列在 join 之前
+按序执行：依赖存储的退出刷盘 → 停止全部存活后端的同步资源 → 停止桥接循环。
+
+
+#### 方法列表
+
+
+##### `register_flusher(flusher: Callable[[], None]) -> None`（classmethod）
+
+登记退出刷盘回调（须在后端连接停止之前完成的落盘）
+
+- **flusher**: 无参回调，在退出阶段的主线程内同步执行
+
+---
+
+
+##### `ensure_registered() -> None`（classmethod）
+
+**内部方法** 向 ``threading._register_atexit`` 登记本序列（幂等）
+
+---
+
+
+##### `_run() -> None`（classmethod）
+
+**内部方法**
+刷盘 → 停后端同步资源 → 停桥
+
+单步失败不阻断后续步骤与进程退出；留痕走标准库 logging（标准 logging
+的 shutdown 晚于本序列）。
+
+---
 
 
 ### `class AsyncBridge`
@@ -58,16 +149,34 @@ ErisPulse 存储基类
 ---
 
 
-##### `run(coro: Any, timeout: float | None = None) -> Any`
+##### `_watch_abandoned(future: 'concurrent.futures.Future[Any]') -> None`（staticmethod）
+
+**内部方法**
+跟进调用方已超时返回的桥接操作
+
+未取消的操作留在执行队列中继续完成，完成后在此留痕：失败 WARNING
+（调用方已拿到超时返回值，无从得知这次失败），成功 DEBUG。回调在完成
+该 future 的线程内执行——桥接循环线程内经 ``call_soon`` 投递，不占循环。
+
+- **future**: 调用方已放弃等待的 future
+
+---
+
+
+##### `run(coro: Any, timeout: float | None = None, *, cancel_on_timeout: bool = False) -> Any`
 
 在桥接事件循环上执行协程并阻塞等待结果
 
 - **coro**: 要执行的协程对象（所有权移交本方法）
 - **timeout**: 可选超时秒数（默认无限等待）
+- **cancel_on_timeout**: 等待超时后是否取消尚未完成的操作；False 时操作
 
+    留在桥接循环上继续完成（写不丢），结果经 :meth:`_watch_abandoned` 留痕
 **返回值**: 协程的返回值
 
 **异常**: `RuntimeError` - 桥接已关闭或在桥接线程内重入调用时
+
+**异常**: `concurrent.futures.TimeoutError` - 等待超时
 
 ---
 
@@ -101,6 +210,17 @@ ErisPulse 存储基类
 事务开启挂起超过阈值即抛 StorageOperationError——事务无限死等
 （如另一长事务持锁且调用方永不提交）属框架缺陷，必须可观测。
 
+开启失败（连接获取超时 / BEGIN 超时 / BEGIN 直接抛错如 database
+is locked）时就地释放已获取的连接——否则连接永久泄漏（SQLite 泄漏
+连接线程与 fd，池后端泄漏池容量，锁竞争越重泄漏越多）。
+
+---
+
+
+##### `async _release_failed_conn() -> None`
+
+**内部方法** 开启失败路径释放已获取的连接（无连接时为无操作）
+
 ---
 
 
@@ -109,6 +229,13 @@ ErisPulse 存储基类
 结束事务：无异常时提交，有异常时回滚，最后释放连接
 
 - **exc**: 触发回滚的异常（None 表示正常提交）
+
+---
+
+
+##### `_warn_slow_txn(started_at: float | None) -> None`
+
+**内部方法** 持锁时长超过 STORAGE_TXN_SLOW_WARN_SECS 时告警并附开启位置
 
 ---
 
@@ -132,7 +259,7 @@ ErisPulse 存储基类
 使事务块内的同步操作路由到事务连接。
 
 
-### `class BaseQueryBuilder(ABC)`
+### `class BaseQueryBuilder(ABC, Generic[_StorageT])`
 
 查询构建器抽象基类
 
@@ -151,7 +278,7 @@ ErisPulse 存储基类
 #### 方法列表
 
 
-##### `ToDict() -> 'BaseQueryBuilder'`
+##### `ToDict() -> 'BaseQueryBuilder[_StorageT]'`
 
 将 SELECT 结果以字典形式返回（链式修饰，返回 self）
 
@@ -171,7 +298,7 @@ rows = await storage.Table("users").Select("name", "age").ToDict().aExecute()
 ---
 
 
-##### `Select(*columns: str) -> 'BaseQueryBuilder'`
+##### `Select(*columns: str) -> 'BaseQueryBuilder[_StorageT]'`
 
 指定查询列
 
@@ -188,7 +315,7 @@ storage.Table("users").Select("name", "age").Execute()
 ---
 
 
-##### `Insert(data: dict[str, Any]) -> 'BaseQueryBuilder'`
+##### `Insert(data: dict[str, Any]) -> 'BaseQueryBuilder[_StorageT]'`
 
 插入一行数据
 
@@ -205,7 +332,7 @@ storage.Table("users").Insert({"name": "Alice", "age": 30}).Execute()
 ---
 
 
-##### `InsertMulti(data: list[dict[str, Any]]) -> 'BaseQueryBuilder'`
+##### `InsertMulti(data: list[dict[str, Any]]) -> 'BaseQueryBuilder[_StorageT]'`
 
 批量插入多行数据
 
@@ -225,7 +352,7 @@ storage.Table("users").InsertMulti([
 ---
 
 
-##### `Update(data: dict[str, Any]) -> 'BaseQueryBuilder'`
+##### `Update(data: dict[str, Any]) -> 'BaseQueryBuilder[_StorageT]'`
 
 更新数据
 
@@ -242,7 +369,7 @@ storage.Table("users").Update({"age": 31}).Where("name = ?", "Alice").Execute()
 ---
 
 
-##### `Delete() -> 'BaseQueryBuilder'`
+##### `Delete() -> 'BaseQueryBuilder[_StorageT]'`
 
 删除行
 
@@ -257,7 +384,7 @@ storage.Table("users").Delete().Where("name = ?", "Bob").Execute()
 ---
 
 
-##### `Where(condition: str, *params: Any) -> 'BaseQueryBuilder'`
+##### `Where(condition: str, *params: Any) -> 'BaseQueryBuilder[_StorageT]'`
 
 添加 WHERE 条件
 
@@ -277,7 +404,7 @@ storage.Table("users").Where("age > ?", 18).Where("name LIKE ?", "A%").Execute()
 ---
 
 
-##### `OrderBy(column: str, desc: bool = False) -> 'BaseQueryBuilder'`
+##### `OrderBy(column: str, desc: bool = False) -> 'BaseQueryBuilder[_StorageT]'`
 
 添加排序规则
 
@@ -297,7 +424,7 @@ storage.Table("users").OrderBy("age", desc=True).OrderBy("name").Execute()
 ---
 
 
-##### `Limit(count: int) -> 'BaseQueryBuilder'`
+##### `Limit(count: int) -> 'BaseQueryBuilder[_StorageT]'`
 
 限制返回条数
 
@@ -314,7 +441,7 @@ storage.Table("users").Limit(10).Execute()
 ---
 
 
-##### `Offset(count: int) -> 'BaseQueryBuilder'`
+##### `Offset(count: int) -> 'BaseQueryBuilder[_StorageT]'`
 
 设置偏移量
 
@@ -331,7 +458,7 @@ storage.Table("users").Limit(10).Offset(20).Execute()
 ---
 
 
-##### `copy() -> 'BaseQueryBuilder'`
+##### `copy() -> 'BaseQueryBuilder[_StorageT]'`
 
 深拷贝当前构建器状态
 
@@ -340,7 +467,7 @@ storage.Table("users").Limit(10).Offset(20).Execute()
 ---
 
 
-##### `clear() -> 'BaseQueryBuilder'`
+##### `clear() -> 'BaseQueryBuilder[_StorageT]'`
 
 重置构建器状态
 
@@ -463,6 +590,20 @@ rows = storage.Table("users").Select("name", "age").Execute()
 #### 方法列表
 
 
+##### `_register_live() -> None`
+
+**内部方法** 登记为存活后端，并确保退出钩子序列已登记
+
+---
+
+
+##### `_stop_sync_resources() -> None`
+
+**内部方法** 退出阶段不经事件循环同步停止后端资源；默认无需处理
+
+---
+
+
 ##### `_ensure_txn_state() -> None`
 
 **内部方法**
@@ -481,13 +622,38 @@ rows = storage.Table("users").Select("name", "age").Execute()
 ---
 
 
-##### `_bridge_run(coro: Any, timeout: float | None = None) -> Any`
+##### `_bridge_run(coro: Any, timeout: float | None = None, *, cancel_on_timeout: bool = False) -> Any`
 
 **内部方法**
 将协程提交到桥接事件循环并阻塞等待结果（同步兼容层的执行入口）
 
+调用方处于异步上下文时施加有界等待（``framework.sync_in_async_bridge_wait``，
+默认 10s）：超时后调用方拿到 None 返回（fail-soft）——把"无限冻结调用方
+事件循环"收敛为有界等待。默认不取消尚未完成的操作：写操作仍在桥接
+循环上完成（写最终落库），完成后的失败另行告警；只读调用方传入
+``cancel_on_timeout=True``，超时即取消排队中的操作。纯同步线程调用不受限
+（等待事务、迁移等长操作属合法场景）。
+
 - **coro**: 要执行的协程对象
-- **timeout**: 可选超时秒数
+- **timeout**: 可选超时秒数（显式传入时优先于配置上限）
+- **cancel_on_timeout**: 等待超时后是否取消尚未完成的操作
+
+**返回值**: 协程的返回值；异步上下文下桥接等待超时返回 None
+
+---
+
+
+##### `_thread_bridge_run(coro: Any, timeout: float | None, cancel_on_timeout: bool = False) -> Any`
+
+**内部方法**
+有界线程池桥接：真并发后端（``_SUPPORTS_THREAD_BRIDGE``）的同步调用
+执行路径——worker 线程各持独立事件循环（连接按循环缓存，随线程存活），
+调用间互不排队。超时语义与桥接循环一致：调用方拿到 None 返回（由
+:meth:`_bridge_run` 统一转换）；操作默认不取消，留在队列中继续完成。
+
+- **coro**: 要执行的协程对象
+- **timeout**: 等待上限秒数
+- **cancel_on_timeout**: 等待超时后是否取消尚未完成的操作
 
 **返回值**: 协程的返回值
 
@@ -664,7 +830,7 @@ await storage.aclear()
 ---
 
 
-##### `Table(table_name: str) -> BaseQueryBuilder`
+##### `Table(table_name: str) -> BaseQueryBuilder[Any]`
 
 获取指定表的查询构建器
 
@@ -715,7 +881,7 @@ rows = await storage.Table("users").Select("name").aExecute()
 ---
 
 
-##### `async atransaction() -> AsyncIterator[_AsyncTransaction | None]`
+##### `atransaction() -> 'AbstractAsyncContextManager[_AsyncTransaction | None]'`
 
 异步事务上下文管理器
 
@@ -732,6 +898,13 @@ async with storage.atransaction():
     await storage.aset("key1", "value1")
     await storage.aset("key2", "value2")
 ```
+
+---
+
+
+##### `async _atransaction_cm(txn: _AsyncTransaction) -> AsyncIterator[_AsyncTransaction | None]`
+
+**内部方法** :meth:`atransaction` 的上下文管道（事务生命周期）
 
 ---
 

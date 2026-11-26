@@ -472,7 +472,8 @@ class ConnectionManager:
                     else:
                         await asyncio.wait_for(conn.send_json(data), timeout=timeout)
                     result.sent.append(conn.id)
-                except BaseException as exc:  # 单条失败需明细而非中断广播
+                except Exception as exc:  # 单条失败需明细而非中断广播；
+                    # CancelledError（BaseException）不捕获，保持取消传播
                     result.failed[conn.id] = exc
 
         await asyncio.gather(*(_send(conn) for conn in targets))

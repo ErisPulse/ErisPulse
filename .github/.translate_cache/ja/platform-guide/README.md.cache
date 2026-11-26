@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "ab465e04bb2289169b2e7a301bd9ca81",
-  "file_hash": "ab465e04bb2289169b2e7a301bd9ca81",
-  "translated_at": "2026-11-11T15:22:42.316825",
+  "hash": "e0c84b3a095bfd4e73177fd41d3d4fd6",
+  "file_hash": "e0c84b3a095bfd4e73177fd41d3d4fd6",
+  "translated_at": "2026-11-19T16:15:46.760353",
   "target_lang": "ja",
   "chunks": [
     {
@@ -10,8 +10,8 @@
       "translation": "# ErisPulse PlatformFeatures ドキュメント\n\n> 基準プロトコル：[OneBot12](https://12.onebot.dev/) \n> \n> 本ドキュメントは**プラットフォーム固有機能ガイド**であり、以下の内容を含みます：\n> - 各アダプターが対応するSendメソッドの連鎖呼び出し（チェーン呼び出し）例\n> - プラットフォーム固有のイベント/メッセージ形式の説明\n> \n> 一般的な使用方法については以下を参照してください：\n> - [基本概念](../getting-started/basic-concepts.md)\n> - [イベント変換標準](../standards/event-conversion.md)  \n> - [APIレスポンス仕様](../standards/api-response.md)\n\n---"
     },
     {
-      "hash": "34a83d4d5a1733e380f1fd82cf33debf",
-      "translation": "## プラットフォーム固有の機能\n\nこのセクションは、各アダプターの開発者が保守し、OneBot12 標準との差異と拡張機能を説明するためのものです。以下の各プラットフォームの詳細ドキュメントを参照してください：\n\n- [保守説明](maintain-notes.md)\n\n- [雲湖プラットフォームの特徴](yunhu.md)\n- [雲湖ユーザープラットフォームの特徴](yunhu_user.md)\n- [Oopzプラットフォームの特徴](oopz.md)\n- [Telegramプラットフォームの特徴](telegram.md)\n- [OneBot11プラットフォームの特徴](onebot11.md)\n- [OneBot12プラットフォームの特徴](onebot12.md)\n- [SnowLumaプラットフォームの特徴](snowluma.md)\n- [メールプラットフォームの特徴](email.md)\n- [Kook(開黒啦)プラットフォームの特徴](kook.md)\n- [Matrixプラットフォームの特徴](matrix.md)\n- [企業微信プラットフォームの特徴](wecom.md)\n- [Bilibiliプラットフォームの特徴](bilibili.md)\n- [Minecraftプラットフォームの特徴](minecraft.md)\n- [QQ公式ロボットプラットフォームの特徴](qqbot.md)\n- [花楓コーヒーハウス](ideaura.md)\n- [Discord](discord.md)\n- [Webhookプロトコルブリッジ](webhook.md)\n- [WeChat公式アカウント](wechatmp.md)\n\n> さらに `sandbox` アダプターもありますが、このアダプターにはプラットフォーム特有のドキュメントを保守する必要はありません。\n\n---"
+      "hash": "ce98719d0c725cf47a7d7ebe7e37e922",
+      "translation": "## プラットフォーム固有の機能\n\nこのセクションは、各アダプター開発者が維持管理しており、OneBot12 標準との差異および拡張機能について説明しています。以下の各プラットフォームの詳細ドキュメントを参照してください：\n\n- [維持管理ノート](maintain-notes.md)\n\n- [雲湖プラットフォームの特性](yunhu.md)\n- [雲湖ユーザープラットフォームの特性](yunhu_user.md)\n- [Oopzプラットフォームの特性](oopz.md)\n- [Telegramプラットフォームの特性](telegram.md)\n- [OneBot11プラットフォームの特性](onebot11.md)\n- [OneBot12プラットフォームの特性](onebot12.md)\n- [SnowLumaプラットフォームの特性](snowluma.md)\n- [メールプラットフォームの特性](email.md)\n- [Kook(開黒啦)プラットフォームの特性](kook.md)\n- [Matrixプラットフォームの特性](matrix.md)\n- [企業向けWeChatプラットフォームの特性](wecom.md)\n- [Bilibiliプラットフォームの特性](bilibili.md)\n- [Minecraftプラットフォームの特性](minecraft.md)\n- [QQ公式ロボットプラットフォームの特性](qqbot.md)\n- [花楓コーヒーショップ](ideaura.md)\n- [Discord](discord.md)\n- [Webhookプロトコルブリッジ](webhook.md)\n- [WeChat公式アカウント](wechatmp.md)\n- [WeChatClawBot](wechatclaw.md)\n- [Sandbox サンドボックス](sandbox.md)\n- [Terminal 終端](terminal.md)\n\n---"
     },
     {
       "hash": "98f6593d1e3961cc8fc3ee0945986047",

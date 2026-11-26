@@ -1,0 +1,45 @@
+{
+  "version": 2,
+  "hash": "532c9af4fe593b5a58fba01811940e7c",
+  "file_hash": "532c9af4fe593b5a58fba01811940e7c",
+  "translated_at": "2026-11-19T16:06:37.227456",
+  "target_lang": "en",
+  "chunks": [
+    {
+      "hash": "cec3baaa06e2f13f82f22aef187d299d",
+      "translation": "# WeChat ClawBot (WechatClaw) Adapter - Platform Features Documentation"
+    },
+    {
+      "hash": "1b32cc7f61325b0b6e3f55bc006473ad",
+      "translation": "## Basic Information\n- Module Name: `ErisPulse-WechatClaw`\n- Platform Identifier: `wechatclaw`\n- Module Version: 0.1.0\n- Maintainer: wsu2059q\n- Last Updated: 2026-11-17\n- Dependencies: `qrcode`, `pycryptodome`"
+    },
+    {
+      "hash": "bf92674f5e70a509a52d63a842bbc8eb",
+      "translation": "## Platform Positioning\n\nA WeChat personal account access adapter based on the **official Tencent iLink Bot API** (the WeChat ClawBot bot channel): QR code binding, automatic token write-back, and long-polling message reception. It uses an official compliant channel rather than a reverse-engineered protocol; the scope of capabilities is subject to what WeChat officially opens up."
+    },
+    {
+      "hash": "d3d629c661d19140a364184bd837ce5b",
+      "translation": "## Integration and Binding\n\n- When the `token` configuration is left empty, the adapter prints a login QR code upon startup (terminal ASCII art with a link as fallback); scanning and confirming with WeChat on your phone completes the binding\n- **Dashboard panel QR code scanning** (recommended): The adapter registers a \"Scan QR Code to Log In to WeChat\" extension section in the \"Add Account Wizard\", allowing direct QR code scanning and binding within the panel (aligned with the bilibili adapter's panel QR code scanning convention)\n- After successful binding, `token` / `bot_user_id` / `base_url` are automatically written back to `config.toml` via the framework's lossless TOML engine (preserving user comments), so no re-scan is needed after restarts\n- When the token becomes invalid (long polling returns 401/403), the log explicitly indicates \"clear the token and re-scan the QR code\"\n\n### QR Code Login Endpoints (Accessible to Third-Party Frontends)\n\nThe adapter registers `POST /wechatclaw/qr/start` and `POST /wechatclaw/qr/poll` at startup:\n\n- `qr/start`: Retrieves the QR code and returns `{success, task_id, poll_token, qr_img}` (`qr_img` is an SVG data URI)\n- `qr/poll`: The request carries `task_id` + `poll_token` (to prevent unauthorized polling; returns 403 if missing), and returns `{success, status}`, where status ∈ `pending` / `scan` / `done` / `timeout`\n- When the status is `done`, credentials have already been automatically written to the configuration, and the response includes `account`"
+    },
+    {
+      "hash": "00177651cc2890ffe7815cf8338b94ac",
+      "translation": "## Standardization Alignment\n\nEvents and responses follow the [Event Conversion Standard](../standards/event-conversion.md) and the [API Response Specification](../standards/api-response.md).\n\n- Message events carry the standard `message_id` at the top level (using the official message_id, falling back to client_id/seq when missing)\n- The event `id` includes the account dimension (`{bot_id}:{message_id}`), with idempotent deduplication and cross-account isolation handled by the framework\n- Sending returns a standard response: `status` / `retcode` / `data` / `message_id` / `message` + top-level `wechatclaw_raw`\n\n### Message Events\n\n- Event types: `message` / `private` (the official channel supports personal account direct messages only, with no group chat capability)\n- Inbound message segments: `text`, `image`, `voice`, `file`, `video`\n- Media segments do not store files locally: they carry `wechatclaw_cdn` (CDN descriptor + key), and are downloaded and decrypted on demand via `call_api(\"download_media\")`\n\n### Context Tokens and Replies\n\nThe protocol requires replies to carry a `context_token` (delivered along with received messages). The adapter caches the most recent context per user:\n\n- Replies within the event chain (`event.reply()` / `Send.To(\"user\", ...)`) automatically carry that user's context\n- **Proactive direct messages** are subject to protocol restrictions: users without conversation context may be rejected by the platform (reported via the response errcode)"
+    },
+    {
+      "hash": "47b837db8c61cc59f7983b432ddb8997",
+      "translation": "## Supported Message Sending Types\n\n| Method | Description | Official API |\n|------|------|---------|\n| `Text(text)` | Send text (Markdown is automatically downgraded to plain text) | `sendmessage` |\n| `Image(file)` | Send image (URL/path/base64:///bytes, automatic encrypted upload) | `getuploadurl` + CDN |\n| `Video(file)` | Send video | Same as above |\n| `File(file)` | Send file | Same as above |\n| `Voice(file)` | Send voice (SILK encoding only; other audio formats are downgraded to file messages) | Same as above |\n| `Reply(message_id)` | Quote reply (the quoted target is the most recent received message in the conversation) | `sendmessage` + ref_msg |\n\n> `mention` / `at` segments have no semantics in personal account direct messages and are silently ignored when sending."
+    },
+    {
+      "hash": "28f346ed5f101e3b66fcb4a0c8bc4b89",
+      "translation": "## Extended API (call_api)\n\n| Endpoint | Parameters | Description |\n|------|------|------|\n| `download_media` | `media` (the `wechatclaw_cdn` of an inbound media segment) | Downloads, decrypts, and saves to disk; `data.path` returns the local path |\n| `send_typing` | `user_id`, optional `status` (1=typing 2=cancel) | \"typing\" status (requires a valid session context) |"
+    },
+    {
+      "hash": "dc3ce796e739a3e117de2475b0413581",
+      "translation": "## Platform Limitations\n\n- Direct messages only (official channels do not support group chats)\n- Some video messages may be missing decryption keys (a known issue with official channels); such media cannot be downloaded\n- Voice messages require SILK encoding (encode_type=6, 24kHz)"
+    },
+    {
+      "hash": "4e09b8a7fa42a468bde4bfc9baf6add5",
+      "translation": "## Configuration Reference\n\n| Option | Default | Description |\n|---|---|---|\n| `token` | \"\" | Leave empty to log in via QR code; automatically written back after binding |\n| `bot_user_id` | \"\" | Official account ID; automatically written back after binding |\n| `base_url` | Official default | API base URL; may be updated automatically after binding |\n| `login_timeout` | 300 | QR code login wait duration (seconds) |\n| `poll_interval` | 1.0 | Long-polling batch interval (seconds; the server keeps a single request suspended for about 35 seconds) |"
+    }
+  ]
+}

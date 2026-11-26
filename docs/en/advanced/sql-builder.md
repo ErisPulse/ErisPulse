@@ -1,9 +1,9 @@
 # SQL Query Builder
 
 > [!TIP]
-> **When to read this**: When you need chain-style SQL queries or custom storage backends. If not needed, you can skip it without affecting the use of other features.
+> **When to read this**: When you need chainable SQL queries or want to customize the storage backend. Skip if not needed, as it won't affect other features.
 
-The Storage module of ErisPulse provides a general-purpose SQL query builder with a chain-call style, supporting creation, querying, updating, and deletion operations for custom tables.
+The Storage module of ErisPulse provides a chainable query builder for generic SQL operations, supporting the creation, querying, updating, and deletion of custom tables.
 
 ## Architecture Design
 
@@ -18,8 +18,8 @@ Bases/storage.py                    Core/storage.py
                                     └──────────────────────────┘
 ```
 
-- `BaseStorage` / `BaseQueryBuilder` are abstract base classes that define unified interfaces; the framework includes three built-in implementations: SQLite / MySQL / PostgreSQL (custom backends can also be extended following this pattern, see [Storage Backends](storage-backends.md))
-- `StorageManager` dispatches the specific backend according to the `ErisPulse.storage.backend` configuration, with SQLite as the default, ensuring full backward compatibility
+- `BaseStorage` / `BaseQueryBuilder` are abstract base classes that define unified interfaces; the framework includes built-in implementations for SQLite / MySQL / PostgreSQL (custom backends can be extended in the same way, see [Storage Backends](storage-backends.md)).
+- `StorageManager` dispatches specific backends based on the `ErisPulse.storage.backend` configuration, defaulting to SQLite, with full backward compatibility.
 
 ## Importing
 
@@ -28,7 +28,7 @@ from ErisPulse import sdk
 # or
 from ErisPulse.Core import storage
 
-# ABC base classes (for type annotation or custom implementation)
+# ABC base classes (for type hinting or custom implementations)
 from ErisPulse.Core.Bases.storage import BaseStorage, BaseQueryBuilder
 ```
 
@@ -79,10 +79,10 @@ sdk.storage.AlterTable("users") \
 ### Inserting Data
 
 ```python
-# Single row insertion (passing a dictionary)
+# Single row insertion (pass a dictionary)
 sdk.storage.Table("users").Insert({"name": "Alice", "age": 30}).Execute()
 
-# Batch insertion (passing a list of dictionaries)
+# Bulk insertion (pass a list of dictionaries)
 sdk.storage.Table("users").InsertMulti([
     {"name": "Bob", "age": 25},
     {"name": "Charlie", "age": 35},
@@ -95,11 +95,11 @@ sdk.storage.Table("users").InsertMulti([
 > **Important**: `Select()` returns a `list[tuple]` (list of tuples), not a dictionary. You need to access values by column index.
 
 ```python
-# Select all columns
+# Query all columns
 rows = sdk.storage.Table("users").Select().Execute()
 # rows: [(1, "Alice", 30), (2, "Bob", 25), ...]
 
-# Select specific columns
+# Query specific columns
 rows = sdk.storage.Table("users").Select("name", "age").Execute()
 # rows: [("Alice", 30), ("Bob", 25), ...]
 
@@ -111,7 +111,7 @@ for row in rows:
 
 #### Converting Tuples to Dictionaries
 
-It is recommended to call `ToDict()` directly on the chain; the SELECT result will automatically be returned as a dictionary (column name → value):
+It's recommended to use `ToDict()` directly in the chain; the SELECT result will automatically return as a list of dictionaries (column name → value):
 
 ```python
 # ToDict chain: result is list[dict], column names are automatically taken from query metadata (SELECT * is also supported)
@@ -129,7 +129,7 @@ row = sdk.storage.Table("users").Select("name", "age") \
 # row: {"name": "Alice", "age": 30} or None
 ```
 
-> `ToDict()` is a chainable marker (returns self): chains without calling it retain the original `list[tuple]` behavior, fully backward compatible; `copy()` will preserve this flag.
+> `ToDict()` is a chainable marker (returns self): chains without calling it maintain the original `list[tuple]` behavior, fully backward compatible; `copy()` preserves this marker.
 
 Manual zip method (equivalent to ToDict, suitable for scenarios where the chain cannot be modified):
 
@@ -137,12 +137,12 @@ Manual zip method (equivalent to ToDict, suitable for scenarios where the chain 
 columns = ["id", "name", "age"]
 rows = sdk.storage.Table("users").Select(*columns).Execute()
 
-# Method 1: zip in loop
+# Method 1: zip in a loop
 for row in rows:
     record = dict(zip(columns, row))
     print(record["name"], record["age"])
 
-# Method 2: convert to list of dictionaries at once
+# Method 2: convert to a list of dictionaries at once
 records = [dict(zip(columns, row)) for row in rows]
 ```
 
@@ -233,7 +233,7 @@ sdk.storage.Table("users").Delete().Execute()
 ### Counting and Existence Check
 
 ```python
-# Count
+# Counting
 count = sdk.storage.Table("users").Count()
 count = sdk.storage.Table("users").Where("age > ?", 18).Count()
 
@@ -275,13 +275,13 @@ Chainable operations fully support transactions:
 
 ```python
 # Commit transaction
-with sdk.storage.transaction():
+async with sdk.storage.atransaction():
     sdk.storage.Table("users").Insert({"name": "Eve", "age": 22}).Execute()
     sdk.storage.Table("users").Update({"age": 23}).Where("name = ?", "Eve").Execute()
 
 # Rollback example
 try:
-    with sdk.storage.transaction():
+    async with sdk.storage.atransaction():
         sdk.storage.Table("users").Delete().Where("name = ?", "Alice").Execute()
         raise Exception("force rollback")
 except Exception:
@@ -289,9 +289,9 @@ except Exception:
 # Alice's record still exists
 ```
 
-## Asynchronous Native API
+## Asynchronous Native APIs
 
-Starting from version 2.8.0, the storage layer uses asynchronous operations as the native primary interface. All terminating methods have corresponding asynchronous versions with an `a` prefix. It is recommended to use these in asynchronous handlers (to avoid temporary blocking of the event loop due to synchronous compatibility layers):
+Starting from version 2.8.0, the storage layer uses asynchronous operations as its native primary interface. All terminating methods have corresponding asynchronous versions with an `a` prefix. It is recommended to use asynchronous handlers (to avoid brief blocking of the event loop by the synchronous compatibility layer):
 
 ```python
 # Asynchronous transaction
@@ -299,13 +299,13 @@ async with sdk.storage.atransaction():
     await sdk.storage.aset("key1", "value1")
     await sdk.storage.aset("key2", {"nested": True})
 
-# Asynchronous chainable query
+# Asynchronous chainable queries
 rows = await sdk.storage.Table("users").Select("name", "age").ToDict().aExecute()
 row = await sdk.storage.Table("users").Select("*").Where("id = ?", 1).aExecuteOne()
 total = await sdk.storage.Table("users").Where("age > ?", 18).aCount()
 exists = await sdk.storage.Table("users").Where("name = ?", "Alice").aExists()
 
-# Asynchronous KV operations
+# Asynchronous Key-Value (KV)
 await sdk.storage.aset("app.name", "MyApp")
 value = await sdk.storage.aget("app.name")
 keys = await sdk.storage.aget_all_keys()
@@ -320,7 +320,7 @@ keys = await sdk.storage.aget_all_keys()
 | `CreateTable` / `DropTable` / `HasTable` | `aCreateTable` / `aDropTable` / `aHasTable` |
 | `Execute` / `ExecuteOne` / `Count` / `Exists` | `aExecute` / `aExecuteOne` / `aCount` / `aExists` |
 
-## Return Value Description
+## Return Value Explanation
 
 | Operation | Return Type | Description |
 |------|---------|------|
@@ -333,7 +333,7 @@ keys = await sdk.storage.aget_all_keys()
 | `Count()` | `int` | Number of matching rows |
 | `Exists()` | `bool` | Whether exists |
 
-### Example of Return Value Handling
+### Return Value Handling Examples
 
 ```python
 # Select returns tuples, access by index
@@ -341,7 +341,7 @@ rows = sdk.storage.Table("users").Select("name", "age").Execute()
 first_name = rows[0][0]  # First row, first column (name)
 first_age = rows[0][1]   # First row, second column (age)
 
-# Recommended: Use column name list + zip to convert to dictionary, code is more readable
+# Recommended: use a list of column names + zip to convert to dictionary, for more readable code
 cols = ["name", "age"]
 rows = sdk.storage.Table("users").Select(*cols).Execute()
 for row in rows:
@@ -352,14 +352,14 @@ for row in rows:
 row = sdk.storage.Table("users").Select("name").Where("id = ?", 1).ExecuteOne()
 name = row[0] if row else None
 
-# Insert/Update/Delete returns number of affected rows
+# Insert/Update/Delete return number of affected rows
 affected = sdk.storage.Table("users").Delete().Where("age < ?", 18).Execute()
 print(f"Deleted {affected} records")
 ```
 
 ## Parameterized Queries
 
-All WHERE parameters use `?` placeholders, and parameters are passed as subsequent arguments to `Where()` (not as a tuple or list):
+All WHERE parameters use the `?` placeholder, and parameters are passed as subsequent arguments to `Where()` (not as a tuple or list):
 
 ```python
 # Correct ✓ — multiple parameters passed individually
@@ -370,9 +370,9 @@ sdk.storage.Table("users").Where("age > ?", 18).Where("name = ?", "Alice").Execu
 
 # Incorrect ✗ — do not pass a tuple
 sdk.storage.Table("users").Where("age > ? AND name = ?", (18, "Alice")).Execute()
-# This will treat the entire tuple as the value for the first placeholder
+# This treats the entire tuple as the value for the first placeholder
 
-# Incorrect ✗ — SQL injection risk exists
+# Incorrect ✗ — SQL injection risk
 sdk.storage.Table("users").Where(f"name = '{user_input}'").Execute()
 ```
 
@@ -380,7 +380,7 @@ sdk.storage.Table("users").Where(f"name = '{user_input}'").Execute()
 
 ```python
 # Where(condition: str, *params: Any)
-# params are variable arguments, passed one by one
+# params are variable arguments, passed individually
 
 # Single parameter
 .Where("name = ?", "Alice")
@@ -397,7 +397,7 @@ sdk.storage.Table("users").Where(f"name = '{user_input}'").Execute()
 
 ## Custom Storage Backend
 
-Starting from version 2.8.0, the abstract layer uses **asynchronous methods as the native contract**: inherit `BaseStorage` and implement asynchronous abstract methods. Synchronous `get/set/Execute` and others are provided automatically by the base class bridge:
+Starting from version 2.8.0, the abstract layer uses **asynchronous methods as the native contract**: inherit `BaseStorage` and implement asynchronous abstract methods. Synchronous `get/set/Execute` etc. are automatically bridged by the base class:
 
 ```python
 from ErisPulse.Core.Bases.storage import BaseStorage, BaseQueryBuilder
@@ -424,21 +424,17 @@ class MyStorage(BaseStorage):
     async def aset(self, key, value):
         ...
 
-    # Implement other asynchronous abstract methods and transaction connection hook ...
+    # Implement other asynchronous abstract methods and transaction connection hooks ...
     def Table(self, table_name):
         return MyQueryBuilder(self, table_name)
 ```
 
 > [!TIP]
-> If you do not want to implement transaction connection routing (`conn` keyword argument), keep the class attribute
-> `_SUPPORTS_CONN_ROUTING = False` (default), and transaction functionality is still available (with limited isolation).
-> Pure SQL backends can directly inherit `Core/Bases/sql_base.py`'s `SQLStorageBase` +
-> `SQLQueryBuilder`, requiring only connection management and dialect execution funnel implementation, see
-> [Storage Backends](docs/en/storage-backends.md).
+> If you do not want to implement transaction connection routing (`conn` keyword argument), keep the class attribute `_SUPPORTS_CONN_ROUTING = False` (default), and transaction functionality will still be available (with limited isolation). Pure SQL backends can directly inherit `Core/Bases/sql_base.py`'s `SQLStorageBase` + `SQLQueryBuilder`, and only need to provide connection management and dialect execution funnel, see [Storage Backends](storage-backends.md).
 
-## Related Documents
+## Related Documentation
 
 - [Storage Backends](storage-backends.md) - sqlite / mysql / postgres backend selection and configuration
-- [Core Module API](../api-reference/core-modules.md) - Complete Storage module API
-- [Storage Base Class API](../api-reference/auto_api/ErisPulse/Core/Bases/storage.md) - BaseStorage/BaseQueryBuilder abstract interface
-- [Message Builder](message-builder.md) - MessageBuilder chain-call style reference
+- [Core Module API](../api-reference/core-modules.md) - Complete API for the Storage module
+- [Storage Base Class API](../api-reference/auto_api/ErisPulse/Core/Bases/storage.md) - Abstract interfaces for BaseStorage/BaseQueryBuilder
+- [Message Builder](message-builder.md) - Reference for MessageBuilder's chainable call style

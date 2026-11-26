@@ -1,10 +1,10 @@
 [build-system]
-requires = ["hatchling>=1.26"]
+requires = ["hatchling>=1.27"]
 build-backend = "hatchling.build"
 
 [project]
 name = "ErisPulse"
-version = "2.12.0"
+version = "2.12.1"
 description = "Event-driven modular async bot framework — write once, deploy to any platform | 事件驱动的模块化异步机器人框架，一次编写，多平台部署"
 readme = "README.pypi.md"
 requires-python = ">=3.10"
@@ -256,14 +256,15 @@ docstring-code-format = true
 
 [tool.basedpyright]
 # 基于 standard 模式，对项目质量影响最大的项设为 error
-include = ["src"]
+# tests/typing 为静态类型回归目录（条件查询虚拟 bool 边界、typed rows 等，
+# 一旦回退即在本目录产生类型错误被门禁拦截）
+include = ["src", "tests/typing"]
 exclude = [
     "**/__pycache__",
     "**/.venv",
     "**/node_modules",
     "build",
     "dist",
-    "tests",
 ]
 typeCheckingMode = "standard"
 pythonVersion = "3.10"
@@ -365,6 +366,8 @@ omit = [
 ]
 
 [tool.coverage.report]
+# 覆盖率门禁：锁住既有基线（71%），防止测试资产被静默稀释
+fail_under = 71
 exclude_lines = [
     "pragma: no cover",
     "def __repr__",

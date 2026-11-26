@@ -55,7 +55,7 @@ class TestMemorySnapshot:
 
     def test_prev_rss_bounded_by_max_labels(self):
         """动态标签快照不导致 _prev_rss 无界增长"""
-        cap = memory._MAX_SNAPSHOT_LABELS
+        cap = memory.MEMORY_SNAPSHOT_LABELS_MAX
         before = set(memory._prev_rss.keys())
         try:
             with patch("ErisPulse.runtime.memory.get_rss_mb", return_value=100.0):

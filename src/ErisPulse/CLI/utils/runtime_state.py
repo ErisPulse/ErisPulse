@@ -25,6 +25,8 @@ import sys
 import time
 from pathlib import Path
 
+from ..constants import CLI_PID_EXIT_POLL_INTERVAL_SECS
+
 # 状态文件位置（相对当前工作目录；epsdk run / stop / restart 须在同一项目下执行）
 STATE_DIR = Path(".erispulse")
 STATE_FILE = STATE_DIR / "runtime.json"
@@ -231,7 +233,7 @@ def wait_gone(pid: int, timeout: float) -> bool:
     while time.monotonic() < deadline:
         if not pid_alive(pid):
             return True
-        time.sleep(0.15)
+        time.sleep(CLI_PID_EXIT_POLL_INTERVAL_SECS)
     return not pid_alive(pid)
 
 

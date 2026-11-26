@@ -52,7 +52,7 @@
           "icon": "fa-door-open"
         },
         {
-          "title": "Basic Concepts",
+          "title": "Fundamentals",
           "path": "getting-started/basic-concepts.md",
           "level": 1,
           "icon": "fa-lightbulb"
@@ -113,7 +113,7 @@
     "User Guide": {
       "description": "ErisPulse configuration and command reference",
       "icon": "fa-book-open",
-      "count": 5,
+      "count": 7,
       "documents": [
         {
           "title": "User Guide",
@@ -128,7 +128,7 @@
           "icon": "fa-download"
         },
         {
-          "title": "Configuration File Documentation",
+          "title": "Configuration File Reference",
           "path": "user-guide/configuration.md",
           "level": 1,
           "icon": "fa-sliders"
@@ -144,6 +144,18 @@
           "path": "user-guide/deployment.md",
           "level": 1,
           "icon": "fa-cloud-arrow-up"
+        },
+        {
+          "title": "Upgrade Migration Guide",
+          "path": "user-guide/migration.md",
+          "level": 1,
+          "icon": "fa-right-left"
+        },
+        {
+          "title": "Frequently Asked Questions (FAQ)",
+          "path": "user-guide/faq.md",
+          "level": 1,
+          "icon": "fa-circle-question"
         }
       ],
       "subgroups": {}
@@ -256,7 +268,7 @@
     "Platform Guide": {
       "description": "Platform features and adapter documentation",
       "icon": "fa-plug",
-      "count": 22,
+      "count": 23,
       "documents": [
         {
           "title": "ErisPulse Platform Features Documentation",
@@ -381,6 +393,12 @@
         {
           "title": "Terminal Platform Features Documentation",
           "path": "platform-guide/terminal.md",
+          "level": 1,
+          "icon": "fa-plug"
+        },
+        {
+          "title": "WeChat ClawBot (WechatClaw) Adapter - Platform Features Documentation",
+          "path": "platform-guide/wechatclaw.md",
           "level": 1,
           "icon": "fa-plug"
         },

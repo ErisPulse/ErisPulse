@@ -1,0 +1,61 @@
+{
+  "version": 2,
+  "hash": "e83860b2d38b623c2bfbf8744154a5a2",
+  "file_hash": "e83860b2d38b623c2bfbf8744154a5a2",
+  "translated_at": "2026-11-22T11:22:55.797094",
+  "target_lang": "en",
+  "chunks": [
+    {
+      "hash": "d1133f1971fa3c3cf0842580de778fce",
+      "translation": "# Upgrade Migration Guide\n\n> [!TIP]\n> **When to read this**: Before upgrading from an older version, check **breaking changes** that require code modifications or deployment verification. Read the corresponding section based on your current version; patch-level updates (x.y.Z) do not contain migration actions. The complete change log for each version is available in the [CHANGELOG](https://github.com/ErisPulse/ErisPulse/blob/main/CHANGELOG.md).\n\nVersioning policy: **Patch versions (x.y.Z) do not include migration actions**; changes that require code modifications only appear in minor versions (x.Y.0). This page covers all breaking changes since version 2.0.0 (2.5.0 is the first production-ready version; migration from 1.x to 2.0.0 is documented in the 2.0.0 entry of the CHANGELOG)."
+    },
+    {
+      "hash": "b91c344f949e2813b0d9ef1857c34156",
+      "translation": "## 2.0.x → 2.5.0 (Production Readiness Threshold)\n\n- **⚠️ Strict mode enabled by default (Level 1)**: Old components that do not inherit from `BaseModule` / `BaseAdapter` are **rejected by default** during loading — exceptions are listed in `[ErisPulse.framework] strict_mode_exceptions.modules/adapters`, or use `strict_mode = 0` for relaxed mode.\n- **First launch language confirmation interaction** (i18n with five languages): For automated deployment, pre-set the language using the `ERISPULSE_LANG` environment variable or configuration.\n- Removed third-party dependencies containing C extensions (watchdog / packaging) — improved aarch64/ARM installation compatibility; deployments with locked requirements must also clean up these dependencies."
+    },
+    {
+      "hash": "32c2e0e1decef7be5eb080f6040ab07e",
+      "translation": "## Breaking Changes within the 2.5.x Series\n\n- **CLI Alias Governance (2.5.5)**: The `ini` alias has been removed (too close to `install`), and `lr` has been changed to `lsr`—deployment scripts need to be synchronized.\n- **Configuration Schema Refactoring (2.5.5)**: `BaseConfig` is now the general base class (`AdapterConfig` is an alias for compatibility), and `description` supports i18n format; **the `AccountConfig` alias has been removed**—custom configuration classes that inherit from it need to be reviewed.\n- **Adapter Configuration Access Refactoring (2.5.5)**: `self.cfg` now reads in real time (`self.config` is an alias for compatibility), and the `_load_config()` / `_load_accounts()` caching methods have been removed—adapters that directly call these private methods need to switch to using `self.cfg`.\n- **Component Discovery Enabled by Default (2.5.5)**: Newly installed components now default to `enabled=true`."
+    },
+    {
+      "hash": "636074181b5dde85bc963872aea974d4",
+      "translation": "## 2.6.x\n\n- **Removed the entire `Core/web_status/` package**, external mascot images, and the `/status-assets` static mount — deployments depending on these routes must migrate to Dashboard."
+    },
+    {
+      "hash": "52dbc4758b1615f36bd3fa7b2199d9c5",
+      "translation": "## 2.7.x\n\n- **Port in use is a fatal error (2.7.1)**: Pre-check is performed synchronously before startup. `sdk.init()` returns `False`, and port conflicts are no longer silently deferred—deployment scripts must ensure the port is free.\n- **Storage abstraction layer switched to asynchronous native contract (2.7.1)**: Asynchronous interfaces (`aget` / `aset` / `aExecute` / `atransaction`) become the native primary interfaces, while synchronous APIs are now a built-in compatibility layer—**existing synchronous calls require no modification**; **custom storage backends must migrate to the a-prefixed asynchronous methods** (synchronous abstract methods have been removed).\n- **`Core/storage` refactored into a package**: SQLite is moved to `Core/storage/sqlite.py`, with MySQL / PostgreSQL pre-configured; `StorageManager` retains a compatibility alias.\n- **2.8.0**: `sdk.reload_plugin` renamed to `sdk.reload_module`; independent event access system `Core/access.py` merged into `scope.identity` (configuration section `ErisPulse.access` removed, moved to `ErisPulse.scope.identity`); command ACL independent configuration section merged into `event.command.acl`; bind system scope APIs consolidated into dictionary-style configuration.\n- **Removed**: Root/administrator forced confirmation in installation scripts."
+    },
+    {
+      "hash": "4bbf917fa629d21481807c1ba09d1612",
+      "translation": "## 2.8.0 → 2.9.0\n\nThere are no breaking changes (all are declarative increments); code that catches `RuntimeError` / `ValueError` from shadow modules must be adjusted according to the 2.9.0 notes."
+    },
+    {
+      "hash": "6bdb2f9bd767c51a1f2cf286d9601af4",
+      "translation": "## 2.9.0 → 2.10.0\n\n- Configuration writing engine migration from tomlkit → **tomlclass** (zero-dependency, lossless TOML editing): Comments, key order, and blank lines are preserved with semantic integrity — external toolchains directly importing tomlkit to manipulate `config.toml` must be migrated.\n- `uvicorn` locked to `>=0.35.0,<1.0` (capability detection via `Server._serve()`, falling back to public `serve()` if missing).\n- **2.10.0**: `epsdk init` / `create` template removes the `enabled` configuration field — module enable/disable is now managed uniformly by the framework; `ConfigClass` only carries business parameters."
+    },
+    {
+      "hash": "d08deaf8d586eab0901a98c7f13b44df",
+      "translation": "## 2.10.x → 2.11.0\n\n- **`sdk.restart()` semantics upgraded** to component-level hot reload (module hot reload pipeline + adapter code-level reload); use `hard_restart()` for framework self-update and entry-point addition/removal scenarios\n- Instance lock migrated to `.erispulse/config.lock`—deployment with cleanup script for old lock (original `config/config.lock`) needs to synchronize the path"
+    },
+    {
+      "hash": "10620778d53bb87694443b0dde2ee380",
+      "translation": "## 2.11.0 → 2.11.2\n\n- **The adapter for `AccountConfigClass` no longer automatically generates the `default` account template**—Accounts are now created by users via the Dashboard account wizard. Deployments that rely on having a \"default\" account at startup must explicitly add it.\n- `reload()` / `restart()` behavior tightened (mutual exclusion and merging), transparent to normal usage"
+    },
+    {
+      "hash": "6e1a40d29b00c44d8736896a2e08c98d",
+      "translation": "## 2.11.x → 2.12.0\n\n**① Tightened semantics for storage write failures (breaking change):** Write operations that fail (write lock contention timeout / SQL error / constraint conflict) now raise `StorageOperationError` (`aset` / `adelete` / `aclear` / `set_multi` and their synchronous bridge `set` / `delete` on the same path), **no longer silently returning `False`**; rapid failure for connection-level unavailability (cooling period) remains unchanged (returning `False` / `None`).\n\n```python\n# Old: rely on return value to determine write failure\nif not storage.set(\"key\", \"value\"):\n    ...\n\n# New: use try/except\ntry:\n    storage.set(\"key\", \"value\")\nexcept StorageOperationError:\n    ...\n```\n\n**② When `run_main_loop` has no available main loop:** now enqueues and returns `None`, no longer creates a temporary event loop—callers relying on temporary loop behavior should switch to `spawn_background` (scheduling back to the registered main loop).\n\n**③ `epsdk restart` inside container:** now sends `SIGUSR1` to trigger an in-process soft restart, no longer terminates and relaunches—container deployments should verify restart policies (entire process restart is delegated to the container).\n\n**④ Dependency upgrade:** `tomlclass >=0.4.0,<0.5`.\n\n**⑤ Default behavior changes (2.12.0 / 2.12.1):**\n\n- Automatic reconnection self-healing: automatically rebuilds cached connections when connection-level damage is detected (2.12.0)\n- Component discovery is now enabled by default, and pre-checks for `reload()` / `restart()` are tightened (2.11 series)\n- 2.12.1: Event idempotency deduplication key includes platform dimension, handler matching is centralized (handlers declaring `detail_type` conditions no longer propagate when the event lacks that dimension; native event paths remain permissive), session binding supports `detail_type:` prefix key"
+    },
+    {
+      "hash": "4bb916d4031569d08f7129543f62c947",
+      "translation": "## 2.12.1 (Patch)\n\nNo migration actions. All changes are bug fixes and internal improvements. Default behavior change: **Log file output is now enabled by default** (`log_dir` defaults to `\"logs\"`, writing to `logs/erispulse.log`, with size/date rotation and bounded limits) — deployments that do not need file logging should set `[ErisPulse.logger] log_dir = \"\"`; explicitly disabling (switching from enabled to disabled) will automatically clean up the file handler, ensuring no residual writes remain.\n\n---"
+    },
+    {
+      "hash": "1997892d5db23f74b9671fb6647d01ed",
+      "translation": "## General Recommendations\n\n- Read the CHANGELOG's \"Notes\" section before upgrading to a specific version; patch versions (x.y.Z) can be safely upgraded.\n- Always use try/except for important storage writes (a good practice independent of semantics and version).\n- Custom backends / deeply integrated components should pay attention to the \"Changes/Removals\" section of minor versions."
+    },
+    {
+      "hash": "beb7e3d8e608a2898879cbb26923172c",
+      "translation": "## Next Steps\n\n- Details about a specific change's behavior → [Storage Backends](../advanced/storage-backends.md) · [Configuration File Reference](configuration.md)  \n- Behavior not as expected after an upgrade → [FAQ](faq.md) · `ep doctor`  \n- Complete details by version → [CHANGELOG](https://github.com/ErisPulse/ErisPulse/blob/main/CHANGELOG.md)"
+    }
+  ]
+}

@@ -19,7 +19,7 @@ from collections.abc import Callable
 from typing import TYPE_CHECKING, Any, Optional
 
 from ...runtime.tasks import spawn_background
-from .. import adapter, logger
+from ..adapter import adapter
 from ..constants import (
     CONVERSATION_CHECKPOINT_GC_INTERVAL_SECS,
     CONVERSATION_CHECKPOINT_GC_OWNER,
@@ -29,6 +29,7 @@ from ..constants import (
     DEFAULT_WAIT_TIMEOUT_SECS,
 )
 from ..i18n import i18n
+from ..logger import logger
 
 if TYPE_CHECKING:
     from .wrapper import Event
@@ -416,17 +417,33 @@ class Conversation:
     # ==================== 持久化（自动检查点） ====================
 
     @staticmethod
-    def _checkpoint_key(event: "Event") -> str:
+    def _checkpoint_key(event: "Event", *, legacy: bool = False) -> str:
         """
         {!--< internal-use >!--}
-        生成对话检查点存储键（含 target 维度，避免同一用户多会话互覆）
+        生成对话检查点存储键
+
+        含 bot 维度（account_id 优先 / user_id 口径）——多账户部署下同平台
+        多个 bot 与同一用户的检查点互相独立，不再互覆或错恢复；target 维度
+        隔离同一 bot 的多会话。``legacy=True`` 生成不含 bot 维度的旧格式键
+        （升级前写入的数据，恢复时回退读取一次，由检查点 TTL GC 收走）。
 
         :param event: 事件对象
-        :return: 存储键（conversation:{platform}:{user_id}:{target_id}）
+        :param legacy: 是否生成旧格式键（升级兼容回退）
+        :return: 存储键（conversation:{platform}:{bot}:{user_id}:{target_id}）
         """
         platform = event.get_platform() if hasattr(event, "get_platform") else event.get("platform", "")
         user_id = event.get_user_id() if hasattr(event, "get_user_id") else event.get("user_id", "")
-        key = f"{CONVERSATION_KEY_PREFIX}:{platform}:{user_id}"
+        key = f"{CONVERSATION_KEY_PREFIX}:{platform}"
+        if not legacy:
+            if hasattr(event, "get_self_account_id"):
+                bot_id = str(event.get_self_account_id() or "")
+            else:
+                self_info = event.get("self") or {}
+                bot_id = str(
+                    self_info.get("account_id") or self_info.get("user_id") or ""
+                )
+            key = f"{key}:{bot_id}"
+        key = f"{key}:{user_id}"
         target_id = event.get_target_id() if hasattr(event, "get_target_id") else event.get("target_id", "")
         if target_id:
             key = f"{key}:{target_id}"
@@ -667,6 +684,10 @@ class Conversation:
             from ..storage import storage
 
             data = storage.get(cls._checkpoint_key(event))
+            if not isinstance(data, dict):
+                # 升级兼容：新键（含 bot 维度）未命中时回退读旧格式键一次，
+                # 旧数据由检查点 TTL GC 收走
+                data = storage.get(cls._checkpoint_key(event, legacy=True))
         except Exception:
             return False
         if not isinstance(data, dict) or not data.get("alive", False):

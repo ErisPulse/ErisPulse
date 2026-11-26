@@ -7,15 +7,15 @@
 
 ## Storage 模組
 
-基於可設定後端（SQLite/MySQL/PostgreSQL）的鍵值儲存系統，支援通用 SQL 鏈式查詢，後端透過設定一鍵切換，詳見 [儲存後端](../advanced/storage-backends.md)。
+基於可配置後端（SQLite/MySQL/PostgreSQL）的鍵值儲存系統，支援通用 SQL 串接查詢，後端透過設定檔輕鬆切換，詳見 [儲存後端](../advanced/storage-backends.md)。
 
 ### 基本操作
 
 ```python
 from ErisPulse import sdk
 
-sdk.storage.set("key", "value")
-value = sdk.storage.get("key", default_value)
+await sdk.storage.aset("key", "value")
+value = await sdk.storage.aget("key", default_value)
 keys = sdk.storage.keys()
 sdk.storage.delete("key")
 ```
@@ -23,29 +23,29 @@ sdk.storage.delete("key")
 ### 批次操作
 
 ```python
-sdk.storage.set_multi({"key1": "val1", "key2": "val2"})
+await sdk.storage.aset_multi({"key1": "val1", "key2": "val2"})
 values = sdk.storage.get_multi(["key1", "key2"])
 sdk.storage.delete_multi(["key1", "key2"])
 ```
 
-### 交易操作
+### 事務操作
 
 ```python
-with sdk.storage.transaction():
-    sdk.storage.set("key1", "value1")
-    sdk.storage.set("key2", "value2")
+async with sdk.storage.atransaction():
+    await sdk.storage.aset("key1", "value1")
+    await sdk.storage.aset("key2", "value2")
 ```
 
 ### 屬性存取
 
 ```python
-sdk.storage.my_key          # 等價於 sdk.storage.get("my_key")
-sdk.storage.my_key = "val"  # 等價於 sdk.storage.set("my_key", "val")
+sdk.storage.my_key          # 等價於 await sdk.storage.aget("my_key")
+sdk.storage.my_key = "val"  # 等價於 await sdk.storage.aset("my_key", "val")
 ```
 
-### SQL 鏈式查詢
+### SQL 串接查詢
 
-Storage 模組提供鏈式呼叫風格的通用 SQL 查詢建構器，支援自訂資料表的 CRUD 操作。
+Storage 模組提供串接呼叫風格的通用 SQL 查詢建構器，支援自訂表的 CRUD 操作。
 
 ```python
 sdk.storage.CreateTable("users", {
@@ -57,34 +57,34 @@ sdk.storage.Table("users").Insert({"name": "Alice"}).Execute()
 rows = sdk.storage.Table("users").Select("name").Where("id > ?", 0).Execute()
 ```
 
-> 完整的鏈式查詢 API（Select/Insert/Update/Delete/Where/OrderBy/Limit、AlterTable、交易等）請參考 [SQL 查詢建構器](../advanced/sql-builder.md)。
+> 完整的串接查詢 API（Select/Insert/Update/Delete/Where/OrderBy/Limit、AlterTable、事務等）請參考 [SQL 查詢建構器](../advanced/sql-builder.md)。
 
 ### 儲存後端抽象
 
-`StorageManager` 繼承自 `BaseStorage` 抽象基底類別，支援擴充其他儲存媒體（Redis、MySQL 等）。
+`StorageManager` 繼承自 `BaseStorage` 抽象基類，支援擴展其他儲存介質（Redis、MySQL 等）。
 
 ```python
 from ErisPulse.Core.Bases.storage import BaseStorage, BaseQueryBuilder
 ```
 
-### 非同步介面
+### 異步介面
 
-Storage 與 Config 模組均提供非同步方法（前綴 `a`）：**非同步為原生主介面，同步方法為相容層**（內部橋接到背景事件迴圈執行）。現有同步程式碼無需修改；新程式碼在非同步處理器中請優先使用非同步方法。
+Storage 和 Config 模組均提供異步方法（前綴 `a`）：**異步為原生主介面，同步方法為相容層**（內部橋接到背景事件迴圈執行）。現有同步程式碼無需修改；新程式碼在異步處理器中請優先使用異步方法。
 
 ```python
-# 非同步儲存
+# 異步儲存
 value = await sdk.storage.aget("key")
 await sdk.storage.aset("key", "value")
 await sdk.storage.adelete("key")
 keys = await sdk.storage.aget_all_keys()
 await sdk.storage.aclear()
 
-# 非同步批次操作
+# 異步批次操作
 values = await sdk.storage.aget_multi(["k1", "k2"])
 await sdk.storage.aset_multi({"k1": "v1", "k2": "v2"})
 await sdk.storage.adelete_multi(["k1", "k2"])
 
-# 非同步設定
+# 異步設定
 value = await sdk.config.agetConfig("MyModule.key")
 await sdk.config.asetConfig("MyModule.key", "value")
 await sdk.config.aforce_save()

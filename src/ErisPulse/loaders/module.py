@@ -2368,7 +2368,18 @@ class LazyModule:
 
         t = threading.Thread(target=_run_init, daemon=True)
         t.start()
-        init_done.wait()
+        from ..Core.constants import MODULE_ASYNC_INIT_WAIT_TIMEOUT_SECS
+
+        if not init_done.wait(MODULE_ASYNC_INIT_WAIT_TIMEOUT_SECS):
+            # 初始化卡死的兜底：调用方线程（可能是主事件循环线程）无界等待
+            # 会死锁整个事件处理；后台线程继续运行，模块完成初始化前不可用
+            logger.warning(
+                i18n.t(
+                    "loader.module.background_init_timeout",
+                    name=object.__getattribute__(self, "_module_name"),
+                    timeout=f"{MODULE_ASYNC_INIT_WAIT_TIMEOUT_SECS:g}",
+                )
+            )
 
         if init_error[0] is not None:
             logger.warning(

@@ -22,7 +22,7 @@
     python scripts/tools/check_import_layers.py                # 检查
     python scripts/tools/check_import_layers.py --update-baseline  # 重算基线
 
-:note: TYPE_CHECKING 块与 ``__init__.py`` 的聚合重导不计数。
+:note: TYPE_CHECKING 块与模块顶层的直接导入语句不计数。
 """
 
 from __future__ import annotations
@@ -101,7 +101,11 @@ def _is_type_checking(test: ast.expr) -> bool:
 
 
 def _count_lazy_imports(tree: ast.Module) -> int:
-    """统计函数/方法体内的内部导入数量（含 async def、try、if 内；TYPE_CHECKING 块除外）"""
+    """统计函数/方法体内的内部导入数量（含 async def、try、if 内；TYPE_CHECKING 块除外）
+
+    模块顶层的直接导入语句不计数：入口从 Module 的非导入语句开始递归，
+    顶层 ``try`` / ``if`` / ``with`` / 类体内的导入仍计入。
+    """
 
     def visit(node) -> int:
         total = 0
@@ -111,7 +115,7 @@ def _count_lazy_imports(tree: ast.Module) -> int:
             if isinstance(child, (ast.FunctionDef, ast.AsyncFunctionDef)):
                 total += _count_in_function(child)
             elif isinstance(child, (ast.Import, ast.ImportFrom)):
-                if _import_target(child):
+                if node is not tree and _import_target(child):
                     total += 1
             else:
                 total += visit(child)

@@ -7,15 +7,15 @@ This document provides a quick API reference for the ErisPulse core modules, inc
 
 ## Storage Module
 
-A key-value storage system based on configurable backends (SQLite/MySQL/PostgreSQL) with generic SQL chained query support; backends can be switched with a single configuration change. See [Storage Backends](../advanced/storage-backends.md) for details.
+A key-value storage system based on configurable backends (SQLite/MySQL/PostgreSQL), supporting general SQL chainable queries. The backend can be switched with a single configuration change; see [Storage Backends](../advanced/storage-backends.md).
 
 ### Basic Operations
 
 ```python
 from ErisPulse import sdk
 
-sdk.storage.set("key", "value")
-value = sdk.storage.get("key", default_value)
+await sdk.storage.aset("key", "value")
+value = await sdk.storage.aget("key", default_value)
 keys = sdk.storage.keys()
 sdk.storage.delete("key")
 ```
@@ -23,7 +23,7 @@ sdk.storage.delete("key")
 ### Batch Operations
 
 ```python
-sdk.storage.set_multi({"key1": "val1", "key2": "val2"})
+await sdk.storage.aset_multi({"key1": "val1", "key2": "val2"})
 values = sdk.storage.get_multi(["key1", "key2"])
 sdk.storage.delete_multi(["key1", "key2"])
 ```
@@ -31,21 +31,21 @@ sdk.storage.delete_multi(["key1", "key2"])
 ### Transaction Operations
 
 ```python
-with sdk.storage.transaction():
-    sdk.storage.set("key1", "value1")
-    sdk.storage.set("key2", "value2")
+async with sdk.storage.atransaction():
+    await sdk.storage.aset("key1", "value1")
+    await sdk.storage.aset("key2", "value2")
 ```
 
 ### Attribute Access
 
 ```python
-sdk.storage.my_key          # Equivalent to sdk.storage.get("my_key")
-sdk.storage.my_key = "val"  # Equivalent to sdk.storage.set("my_key", "val")
+sdk.storage.my_key          # Equivalent to await sdk.storage.aget("my_key")
+sdk.storage.my_key = "val"  # Equivalent to await sdk.storage.aset("my_key", "val")
 ```
 
-### SQL Chained Queries
+### SQL Chainable Queries
 
-The Storage module provides a chainable generic SQL query builder supporting CRUD operations on custom tables.
+The Storage module provides a chainable query builder style for general SQL queries, supporting CRUD operations on custom tables.
 
 ```python
 sdk.storage.CreateTable("users", {
@@ -57,34 +57,34 @@ sdk.storage.Table("users").Insert({"name": "Alice"}).Execute()
 rows = sdk.storage.Table("users").Select("name").Where("id > ?", 0).Execute()
 ```
 
-> For the full chained query API (Select/Insert/Update/Delete/Where/OrderBy/Limit, AlterTable, transactions, etc.), see [SQL Query Builder](../advanced/sql-builder.md).
+> For the complete chainable query API (Select/Insert/Update/Delete/Where/OrderBy/Limit, AlterTable, transactions, etc.), refer to [SQL Query Builder](../advanced/sql-builder.md).
 
 ### Storage Backend Abstraction
 
-`StorageManager` inherits from the `BaseStorage` abstract base class and supports extension to other storage media (Redis, MySQL, etc.).
+`StorageManager` inherits from the `BaseStorage` abstract base class, supporting extensions to other storage media (Redis, MySQL, etc.).
 
 ```python
 from ErisPulse.Core.Bases.storage import BaseStorage, BaseQueryBuilder
 ```
 
-### Async Interfaces
+### Asynchronous Interfaces
 
-Both the Storage and Config modules provide async methods (prefixed with `a`): **async methods are the native primary interface, while sync methods are a compatibility layer** (internally bridged to run on a background event loop). Existing sync code requires no changes; for new code in async handlers, prefer the async methods.
+Both the Storage and Config modules provide asynchronous methods (prefixed with `a`): **asynchronous methods are the native primary interfaces, while synchronous methods serve as compatibility layers** (internally bridged to the background event loop). Existing synchronous code does not require modification; new code within asynchronous handlers should prioritize using asynchronous methods.
 
 ```python
-# Async storage
+# Asynchronous storage
 value = await sdk.storage.aget("key")
 await sdk.storage.aset("key", "value")
 await sdk.storage.adelete("key")
 keys = await sdk.storage.aget_all_keys()
 await sdk.storage.aclear()
 
-# Async batch operations
+# Asynchronous batch operations
 values = await sdk.storage.aget_multi(["k1", "k2"])
 await sdk.storage.aset_multi({"k1": "v1", "k2": "v2"})
 await sdk.storage.adelete_multi(["k1", "k2"])
 
-# Async configuration
+# Asynchronous configuration
 value = await sdk.config.agetConfig("MyModule.key")
 await sdk.config.asetConfig("MyModule.key", "value")
 await sdk.config.aforce_save()

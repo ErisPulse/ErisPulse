@@ -4,22 +4,36 @@
 测试StorageManager的键值存储和事务功能
 """
 
+import asyncio
 import importlib
 import os
 import sqlite3
 import tempfile
+import time
+from types import SimpleNamespace
 from unittest.mock import AsyncMock, patch
 
 import pytest
 
 from ErisPulse.Core import StorageOperationError
+from ErisPulse.Core.Bases.storage import AsyncBridge
+from ErisPulse.Core.constants import SYNC_IN_ASYNC_BRIDGE_WAIT_SECS
+from ErisPulse.Core.i18n import i18n
 from ErisPulse.Core.storage import StorageManager, storage
+
+
+def _i18n_prefix(key: str, **placeholders: str) -> str:
+    """取 i18n 文案首个占位符前的稳定前缀（语言无关断言，跟随测试语言钉子）"""
+    sentinel = "\x00"
+    filled = i18n.t(key, **dict.fromkeys(placeholders, sentinel))
+    return filled.split(sentinel)[0]
 
 # importlib.import_module 返回真实子模块（Core.storage / Core.logger 包属性被单例遮蔽）
 storage_module = importlib.import_module("ErisPulse.Core.storage")
 logger_module = importlib.import_module("ErisPulse.Core.logger")
 # 错误日志现由 SQL 共享基类产出
 sql_base_module = importlib.import_module("ErisPulse.Core.Bases.sql_base")
+base_storage_module = importlib.import_module("ErisPulse.Core.Bases.storage")
 
 # ==================== StorageManager 基础测试 ====================
 
@@ -774,3 +788,704 @@ class TestStorageErrorLogging:
             result = storage_manager.HasTable("nope")
         assert result is False
         mock_logger.error.assert_called_once()
+
+
+# ==================== 长事务观测与 sync-in-async 调用点限频 ====================
+
+
+class TestStoragePluggable:
+    """存储后端可插拔机制（注册表 / entry-points / 驱动声明化）"""
+
+    def test_registry_builtin_backends(self):
+        from ErisPulse.Core.storage import get_registered_backends
+
+        registered = get_registered_backends()
+        for name in ("sqlite", "mysql", "postgres"):
+            assert name in registered
+
+    def test_register_and_duplicate_override(self, tmp_path):
+        """外部注册 + 同名覆盖（后注册生效）"""
+        from ErisPulse.Core.Bases.storage import BaseStorage
+        from ErisPulse.Core.storage import (
+            _REGISTRY,
+            get_registered_backends,
+            register_storage_backend,
+        )
+
+        class FakeBackend(BaseStorage):
+            pass
+
+        register_storage_backend("testplug", FakeBackend)
+        try:
+            assert "testplug" in get_registered_backends()
+            register_storage_backend("testplug", FakeBackend)  # 覆盖不报错
+            assert _REGISTRY["testplug"] is FakeBackend
+        finally:
+            _REGISTRY.pop("testplug", None)
+
+    def test_unknown_backend_lists_available(self):
+        """未知后端报错附可用列表"""
+        import pytest
+
+        from ErisPulse.Core.storage import _REGISTRY, create_storage
+
+        saved = dict(_REGISTRY)
+        _REGISTRY.pop("sqlite", None)
+        try:
+            with pytest.raises(ValueError, match="mysql"):
+                create_storage()
+        finally:
+            _REGISTRY.clear()
+            _REGISTRY.update(saved)
+
+    def test_dialect_driver_declaration(self):
+        """三方言驱动声明：内置零依赖 / MySQL / PG 声明导入名（依赖归 pyproject extras）"""
+        from ErisPulse.Core.storage.mysql import MySQLDialect
+        from ErisPulse.Core.storage.postgres import PostgresDialect
+        from ErisPulse.Core.storage.sqlite import SQLiteDialect
+
+        assert SQLiteDialect.driver_module == ""
+        assert MySQLDialect.driver_module == "aiomysql"
+        assert MySQLDialect.extra_name == "mysql"
+        assert PostgresDialect.driver_module == "asyncpg"
+        assert PostgresDialect.extra_name == "postgres"
+
+    def test_require_driver_zero_dep_returns_none(self):
+        """driver_module 为空（零依赖内置驱动）→ 返回 None"""
+        from ErisPulse.Core.Bases.sql_base import SQLDialect, SQLStorageBase
+
+        class _D(SQLDialect):
+            name = "probe"
+
+        class _Fake:
+            dialect = _D()
+
+        assert SQLStorageBase._require_driver(_Fake()) is None
+
+    def test_require_driver_importable_module(self):
+        """已可导入的声明驱动 → 直接返回模块（鸭子 self：_require_driver 只用 dialect）"""
+        import sqlite3
+
+        from ErisPulse.Core.Bases.sql_base import SQLDialect, SQLStorageBase
+
+        class _D(SQLDialect):
+            name = "probe"
+            driver_module = "sqlite3"
+
+        class _Fake:
+            dialect = _D()
+
+        assert SQLStorageBase._require_driver(_Fake()) is sqlite3
+
+    def test_require_driver_missing_raises_with_extras_hint(self):
+        """驱动不可导入 → RuntimeError 附 extras 指引"""
+        from ErisPulse.Core.Bases.sql_base import SQLDialect, SQLStorageBase
+
+        class _D(SQLDialect):
+            name = "probe"
+            extra_name = "probe"
+            driver_module = "no_such_driver_xyz"
+
+        class _Fake:
+            dialect = _D()
+
+        with pytest.raises(RuntimeError, match="probe"):
+            SQLStorageBase._require_driver(_Fake())
+
+    def test_require_driver_never_installs_at_runtime(self, monkeypatch):
+        """框架不在运行时安装依赖：驱动缺失时不得调用任何包管理器"""
+        import subprocess
+
+        calls = []
+        monkeypatch.setattr(
+            subprocess, "run", lambda *a, **k: calls.append(a) or (_ for _ in ()).throw(AssertionError("runtime install"))
+        )
+        monkeypatch.setattr("shutil.which", lambda name: calls.append(name))
+
+        from ErisPulse.Core.Bases.sql_base import SQLDialect, SQLStorageBase
+
+        class _D(SQLDialect):
+            name = "probe"
+            extra_name = "probe"
+            driver_module = "no_such_driver_xyz"
+
+        with pytest.raises(RuntimeError):
+            SQLStorageBase._require_driver(type("_F", (), {"dialect": _D()})())
+        assert calls == []
+
+
+class TestThreadBridge:
+    """真并发后端的线程桥接通道（_SUPPORTS_THREAD_BRIDGE）"""
+
+    def test_capability_flags(self):
+        """内置后端能力声明：MySQL/PG 走线程池，SQLite 走单桥接循环"""
+        from ErisPulse.Core.storage.mysql import MySQLStorage
+        from ErisPulse.Core.storage.postgres import PostgresStorage
+        from ErisPulse.Core.storage.sqlite import SQLiteStorage
+
+        assert MySQLStorage._SUPPORTS_THREAD_BRIDGE is True
+        assert PostgresStorage._SUPPORTS_THREAD_BRIDGE is True
+        assert SQLiteStorage._SUPPORTS_THREAD_BRIDGE is False
+
+    @pytest.mark.asyncio
+    async def test_thread_bridge_returns_result(self, tmp_path):
+        """能力后端的同步调用经线程池执行并返回真实结果（worker 循环连接复用）"""
+        StorageManager._instance = None
+        manager = StorageManager.__new__(StorageManager)
+        manager.db_path = str(tmp_path / "tbridge.db")
+        manager._init_db()
+        manager._initialized = True
+        manager._SUPPORTS_THREAD_BRIDGE = True
+        try:
+            # 异步测试体内同步调用（sync-in-async）→ 线程桥接路径
+            assert manager.set("tb:key", {"v": 1}) is True
+            assert manager.get("tb:key") == {"v": 1}
+            # worker 循环的连接资源已按循环缓存
+            assert len(manager._loop_resources) >= 1
+        finally:
+            StorageManager._instance = None
+
+    @pytest.mark.asyncio
+    async def test_thread_bridge_bounded_timeout_fails_soft(self, tmp_path):
+        """线程桥接超上限 → 取消提交并 fail-soft 返回 None"""
+        import asyncio
+
+        StorageManager._instance = None
+        manager = StorageManager.__new__(StorageManager)
+        manager.db_path = str(tmp_path / "tbridge2.db")
+        manager._init_db()
+        manager._initialized = True
+        manager._SUPPORTS_THREAD_BRIDGE = True
+
+        from ErisPulse.Core.config import config as global_config
+
+        global_config.setConfig("ErisPulse.framework.sync_in_async_bridge_wait", 0.2)
+        try:
+            async def slow():
+                await asyncio.sleep(2)
+
+            loop = asyncio.get_running_loop()
+            t0 = loop.time()
+            result = manager._bridge_run(slow())
+            elapsed = loop.time() - t0
+            assert result is None
+            assert elapsed < 1.5
+        finally:
+            global_config.setConfig("ErisPulse.framework.sync_in_async_bridge_wait", 10.0)
+            StorageManager._instance = None
+
+    @pytest.mark.asyncio
+    async def test_unsupported_backend_keeps_bridge_loop(self, tmp_path):
+        """能力 False 的后端（SQLite/未知）不走线程池——仍经单桥接循环"""
+        StorageManager._instance = None
+        manager = StorageManager.__new__(StorageManager)
+        manager.db_path = str(tmp_path / "nobridge.db")
+        manager._init_db()
+        manager._initialized = True
+        try:
+            assert manager._SUPPORTS_THREAD_BRIDGE is False
+            assert manager.set("plain:key", 1) is True
+            assert manager.get("plain:key") == 1
+        finally:
+            StorageManager._instance = None
+
+
+class TestSyncInAsyncPolicy:
+    """sync-in-async 双闸门（严格抛错 + 桥接有界等待 fail-soft）"""
+
+    def _cleanup(self):
+        from ErisPulse.Core.config import config as global_config
+
+        global_config.setConfig("ErisPulse.framework.strict.sync_in_async", False)
+        global_config.setConfig("ErisPulse.framework.sync_in_async_bridge_wait", 10.0)
+
+    @pytest.mark.asyncio
+    async def test_strict_mode_raises_with_callsite(self, tmp_path):
+        """严格模式开启后，异步上下文内的同步存储调用直接抛 StrictModeError"""
+        from ErisPulse.Core.Bases.errors import StrictModeError
+        from ErisPulse.Core.config import config as global_config
+        from ErisPulse.Core.storage import StorageManager
+
+        StorageManager._instance = None
+        manager = StorageManager.__new__(StorageManager)
+        manager.db_path = str(tmp_path / "strict.db")
+        manager._init_db()
+        manager._initialized = True
+        global_config.setConfig("ErisPulse.framework.strict.sync_in_async", True)
+        try:
+            # 异步测试体内同步调用（生产 sync-in-async 同形态）→ 严格抛错
+            with pytest.raises(StrictModeError, match="test_unit_storage"):
+                manager.get("any_key")
+        finally:
+            self._cleanup()
+            StorageManager._instance = None
+
+    @pytest.mark.asyncio
+    async def test_bounded_bridge_wait_fails_soft(self, tmp_path):
+        """异步上下文下桥接等待超上限 → 取消并返回 None（fail-soft）"""
+        import asyncio
+
+        StorageManager._instance = None
+        manager = StorageManager.__new__(StorageManager)
+        manager.db_path = str(tmp_path / "bridge-wait.db")
+        manager._init_db()
+        manager._initialized = True
+
+        from ErisPulse.Core.config import config as global_config
+
+        global_config.setConfig("ErisPulse.framework.sync_in_async_bridge_wait", 0.2)
+        try:
+            async def slow():
+                await asyncio.sleep(2)
+
+            # 在带运行循环的上下文里直接调用（生产 sync-in-async 同形态）：
+            # 桥接等待被限制在 0.2s 内并 fail-soft 返回 None
+            loop = asyncio.get_running_loop()
+            t0 = loop.time()
+            result = manager._bridge_run(slow())
+            elapsed = loop.time() - t0
+            assert result is None
+            assert elapsed < 1.5
+        finally:
+            self._cleanup()
+            StorageManager._instance = None
+
+
+class TestConcurrentFirstAcquire:
+    """并发首次获取循环资源（回归：线程锁内 await 冻结事件循环的死锁）"""
+
+    @pytest.fixture
+    def temp_db_file(self, tmp_path):
+        return str(tmp_path / "race.db")
+
+    @pytest.mark.asyncio
+    async def test_concurrent_first_touch_completes(self, temp_db_file):
+        """同循环多协程并发首取：经每循环异步锁串行建连，全部完成不挂起"""
+        import asyncio
+
+        StorageManager._instance = None
+        manager = StorageManager.__new__(StorageManager)
+        manager.db_path = temp_db_file
+        manager._init_db()
+        manager._initialized = True
+        try:
+            await asyncio.wait_for(
+                asyncio.gather(*(manager.aset(f"race:key{i}", i) for i in range(8))),
+                timeout=15,
+            )
+            values = await asyncio.gather(*(manager.aget(f"race:key{i}") for i in range(8)))
+            assert values == list(range(8))
+        finally:
+            StorageManager._instance = None
+
+    @pytest.mark.asyncio
+    async def test_single_resource_per_loop(self, temp_db_file):
+        """并发首取后每循环仅一条连接资源（无重复建连残留）"""
+
+        StorageManager._instance = None
+        manager = StorageManager.__new__(StorageManager)
+        manager.db_path = temp_db_file
+        manager._init_db()
+        manager._initialized = True
+        try:
+            import asyncio as _a
+
+            loop = _a.get_running_loop()
+            # 桥接循环（_init_db）已占一条；并发首取后当前循环恰好新增一条，
+            # 多于该数即重复建连残留
+            before = len(manager._loop_resources)
+            await _a.gather(*(manager.aset(f"one:key{i}", i) for i in range(8)))
+            assert loop in manager._loop_resources
+            assert len(manager._loop_resources) == before + 1
+        finally:
+            StorageManager._instance = None
+
+
+class TestStorageObservability:
+    """长事务持锁观测、sync-in-async 按调用点限频警告与 busy_timeout 配置"""
+
+    @pytest.fixture
+    def temp_db_file(self):
+        """创建临时数据库文件"""
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".db", delete=False) as f:
+            temp_path = f.name
+
+        yield temp_path
+
+        for ext in ["", "-wal", "-shm"]:
+            file_path = temp_path + ext
+            if os.path.exists(file_path):
+                try:
+                    os.remove(file_path)
+                except PermissionError:
+                    pass
+
+    @pytest.fixture
+    def storage_manager(self, temp_db_file):
+        """创建存储管理器实例（绕过 __init__ 的既有口径）"""
+        StorageManager._instance = None
+
+        manager = StorageManager.__new__(StorageManager)
+        manager.db_path = temp_db_file
+        manager._init_db()
+        manager._initialized = True
+
+        yield manager
+
+        StorageManager._instance = None
+
+    @pytest.mark.asyncio
+    async def test_txn_start_failure_releases_conn(self, storage_manager):
+        """开启失败（BEGIN 抛 locked）时就地释放已获取的连接，不泄漏"""
+        async def failing_begin(conn):
+            raise RuntimeError("database is locked")
+
+        released: list = []
+
+        async def tracking_release(conn):
+            released.append(conn)
+
+        with (
+            patch.object(storage_manager, "_begin_txn", failing_begin),
+            patch.object(storage_manager, "_release_txn_conn", tracking_release),
+        ):
+            with pytest.raises(RuntimeError, match="database is locked"):
+                async with storage_manager.atransaction():
+                    pass
+
+        assert len(released) == 1
+
+    @pytest.mark.asyncio
+    async def test_txn_begin_timeout_releases_conn(self, storage_manager, monkeypatch):
+        """BEGIN 挂起超过兜底阈值时释放连接并抛 StorageOperationError"""
+        import asyncio
+
+        async def hanging_begin(conn):
+            await asyncio.sleep(999)
+
+        released: list = []
+
+        async def tracking_release(conn):
+            released.append(conn)
+
+        storage_bases = importlib.import_module("ErisPulse.Core.Bases.storage")
+        constants_module = importlib.import_module("ErisPulse.Core.constants")
+        monkeypatch.setattr(constants_module, "STORAGE_TXN_BEGIN_TIMEOUT_SECS", 0.05)
+        monkeypatch.setattr(storage_manager, "_begin_txn", hanging_begin)
+        monkeypatch.setattr(storage_manager, "_release_txn_conn", tracking_release)
+
+        from ErisPulse.Core import StorageOperationError as _SOE
+
+        with pytest.raises(_SOE, match="事务开启超时"):
+            async with storage_manager.atransaction():
+                pass
+
+        assert len(released) == 1
+
+    @pytest.mark.asyncio
+    async def test_slow_txn_warns_with_open_site(self, storage_manager, caplog, monkeypatch):
+        """持锁超过阈值的事务提交后告警，并附事务开启调用点"""
+        # 阈值已配置化：monkeypatch 配置读取器（确定性，不依赖全局配置实例状态）
+        monkeypatch.setattr(
+            "ErisPulse.runtime.frame_config.get_framework_value",
+            lambda key, default=None: 0.0 if key == "txn_slow_warn" else default,
+        )
+        prefix = _i18n_prefix("core.storage.txn_slow", duration="", threshold="", frames="")
+        with caplog.at_level("WARNING"):
+            async with storage_manager.atransaction():
+                await storage_manager.aset("slow_key", "v")
+                # 时钟 tick 粒度因平台而异（Windows 约 15.6ms）：短睡保证持锁时长 > 0
+                await asyncio.sleep(0.02)
+
+        slow_warnings = [r for r in caplog.records if prefix in r.getMessage()]
+        assert len(slow_warnings) == 1
+        assert "test_unit_storage.py" in slow_warnings[0].getMessage()
+
+    @pytest.mark.asyncio
+    async def test_fast_txn_no_warning(self, storage_manager, caplog):
+        """默认阈值（1s）下快速事务不触发慢事务告警"""
+        prefix = _i18n_prefix("core.storage.txn_slow", duration="", threshold="", frames="")
+        with caplog.at_level("WARNING"):
+            async with storage_manager.atransaction():
+                await storage_manager.aset("fast_key", "v")
+
+        assert not [r for r in caplog.records if prefix in r.getMessage()]
+
+    @pytest.mark.asyncio
+    async def test_rollback_path_also_observed(self, storage_manager, caplog, monkeypatch):
+        """回滚路径同样持锁：超阈值回滚事务同样告警"""
+        monkeypatch.setattr(
+            "ErisPulse.runtime.frame_config.get_framework_value",
+            lambda key, default=None: 0.0 if key == "txn_slow_warn" else default,
+        )
+        prefix = _i18n_prefix("core.storage.txn_slow", duration="", threshold="", frames="")
+        with caplog.at_level("WARNING"), pytest.raises(RuntimeError, match="boom"):
+            async with storage_manager.atransaction():
+                await storage_manager.aset("rollback_key", "v")
+                # 时钟 tick 粒度因平台而异（Windows 约 15.6ms）：短睡保证持锁时长 > 0
+                await asyncio.sleep(0.02)
+                raise RuntimeError("boom")
+
+        assert [r for r in caplog.records if prefix in r.getMessage()]
+
+    @pytest.mark.asyncio
+    async def test_sync_in_async_summary_window(self, storage_manager, caplog, monkeypatch):
+        """异步上下文调用同步 API：窗口内聚合，窗口满输出一条汇总（含调用点与次数）"""
+        from collections import OrderedDict
+
+        storage_bases = importlib.import_module("ErisPulse.Core.Bases.storage")
+        monkeypatch.setattr(storage_bases, "_sync_in_async_warn_sites", OrderedDict())
+        monkeypatch.setattr(storage_bases, "_sync_in_async_warn_counts", OrderedDict())
+        monkeypatch.setattr(storage_bases, "_warn_summary_at", 0.0)
+        monkeypatch.setattr(
+            storage_bases, "STORAGE_SYNC_IN_ASYNC_WARN_COOLDOWN_SECS", 60.0
+        )
+        prefix = _i18n_prefix(
+            "core.storage.sync_in_loop_summary",
+            total="", sites_n="", callsites="", window="",
+        )
+
+        def do_sync_set():
+            storage_manager.set("sync_key", "v")
+
+        with caplog.at_level("WARNING"):
+            do_sync_set()
+            do_sync_set()
+
+        summaries = [r for r in caplog.records if prefix in r.getMessage()]
+        assert len(summaries) == 1
+        msg = summaries[0].getMessage()
+        assert "（1 个调用点）" in msg and "test_unit_storage.py" in msg
+
+    def test_resolve_busy_timeout_config_variants(self):
+        """busy_timeout 配置解析：合法值/非法值回落/缺省"""
+        from ErisPulse.Core.constants import SQLITE_BUSY_TIMEOUT_MS
+
+        resolve = StorageManager._resolve_busy_timeout
+        assert resolve({"sqlite": {"busy_timeout": 2500}}) == 2500
+        assert resolve({"sqlite": {"busy_timeout": "1234"}}) == 1234
+        assert resolve({"sqlite": {"busy_timeout": "abc"}}) == SQLITE_BUSY_TIMEOUT_MS
+        assert resolve({"sqlite": {}}) == SQLITE_BUSY_TIMEOUT_MS
+        assert resolve({}) == SQLITE_BUSY_TIMEOUT_MS
+
+    def test_busy_timeout_pragma_uses_config(self, storage_manager):
+        """PRAGMA busy_timeout 按实例配置值应用"""
+
+        async def _probe():
+            conn = await storage_manager._create_loop_resource()
+            try:
+                cursor = await conn.execute("PRAGMA busy_timeout")
+                row = await cursor.fetchone()
+                return row[0]
+            finally:
+                await conn.close()
+
+        storage_manager._busy_timeout_ms = 1234
+        assert storage_manager._bridge_run(_probe()) == 1234
+
+    def test_busy_timeout_change_triggers_restart_warning(self, storage_manager, monkeypatch):
+        """busy_timeout 配置变更触发重启提示，并更新实例值（新连接按新值应用）"""
+        runtime_module = importlib.import_module("ErisPulse.runtime")
+        monkeypatch.setattr(
+            runtime_module,
+            "get_storage_config",
+            lambda: {"backend": "sqlite", "sqlite": {"busy_timeout": 999}},
+        )
+
+        message = storage_manager._check_busy_timeout_changed()
+        assert message is not None
+        assert storage_manager._busy_timeout_ms == 999
+
+
+# ==================== 桥接有界等待超时语义 ====================
+
+class TestSyncBridgeTimeoutSemantics:
+    """异步上下文下桥接等待超时后的语义：写不丢、事务收尾必达、开启超时报错明确"""
+
+    BRIDGE_WAIT_KEY = "ErisPulse.framework.sync_in_async_bridge_wait"
+
+    @pytest.fixture
+    def manager(self, tmp_path):
+        StorageManager._instance = None
+        m = StorageManager.__new__(StorageManager)
+        m.db_path = str(tmp_path / "timeout.db")
+        m._init_db()
+        m._initialized = True
+
+        from ErisPulse.Core.config import config as global_config
+
+        global_config.setConfig(self.BRIDGE_WAIT_KEY, 0.2)
+        yield m
+        global_config.setConfig(self.BRIDGE_WAIT_KEY, SYNC_IN_ASYNC_BRIDGE_WAIT_SECS)
+        StorageManager._instance = None
+
+    @staticmethod
+    async def _block_bridge(seconds: float = 1.0) -> None:
+        """占住桥接循环线程（协程内同步 sleep），使后续提交的操作排队"""
+        async def _sleeper() -> None:
+            time.sleep(seconds)
+
+        asyncio.run_coroutine_threadsafe(_sleeper(), AsyncBridge()._loop)
+        await asyncio.sleep(0.05)
+
+    @pytest.mark.asyncio
+    async def test_write_timeout_is_not_dropped(self, manager):
+        """写超时后调用方拿 None，但操作不取消——桥接循环消化后写入落库"""
+        await self._block_bridge()
+
+        assert manager.set("late", "v") is None
+
+        for _ in range(40):
+            await asyncio.sleep(0.1)
+            if await manager.aget("late") == "v":
+                break
+        assert await manager.aget("late") == "v"
+
+    @pytest.mark.asyncio
+    async def test_late_failure_is_logged(self, manager, monkeypatch):
+        """调用方超时后才失败的操作：warning 留痕（不得静默）"""
+        seen = []
+        monkeypatch.setattr(logger_module.logger, "warning", lambda msg, *args, **kwargs: seen.append(msg))
+        prefix = _i18n_prefix("core.storage.sync_bridge_late_failure", error="")
+
+        await self._block_bridge()
+        forced = patch.object(
+            type(manager),
+            "_exec_query_on",
+            new_callable=AsyncMock,
+            side_effect=sqlite3.OperationalError("forced failure"),
+        )
+        with forced:  # patch 须保持到排队中的操作真正执行
+            assert manager.set("bad", "v") is None  # 0.2s 超时返回，操作仍留在队列
+
+            for _ in range(40):
+                await asyncio.sleep(0.1)
+                if any(m.startswith(prefix) for m in seen):
+                    break
+            assert any(m.startswith(prefix) for m in seen)
+
+    @pytest.mark.asyncio
+    async def test_txn_enter_timeout_raises_clear_error(self, manager, monkeypatch):
+        """事务开启等待超时：抛 StorageOperationError，无残留登记与连接"""
+        opened = []
+        orig_close = type(manager)._close_txn_conn
+
+        async def _spy_close(self_, conn):
+            opened.append("closed")
+            return await orig_close(self_, conn)
+
+        monkeypatch.setattr(type(manager), "_close_txn_conn", _spy_close)
+        await self._block_bridge()
+
+        with pytest.raises(StorageOperationError):
+            with manager.transaction():
+                pass
+
+        assert manager._sync_txns == {}
+        await asyncio.sleep(1.5)
+        assert opened == []  # 超时的开启已取消：桥接循环消化后不留下连接
+
+    @pytest.mark.asyncio
+    async def test_txn_exit_timeout_still_commits_and_releases(self, manager, monkeypatch):
+        """事务收尾（提交 + 归还连接）超时后不取消：桥接循环消化后提交落库、连接归还"""
+        closed = []
+        orig_close = type(manager)._close_txn_conn
+
+        async def _spy_close(self_, conn):
+            closed.append(conn)
+            return await orig_close(self_, conn)
+
+        monkeypatch.setattr(type(manager), "_close_txn_conn", _spy_close)
+        ctx = manager.transaction()
+        txn = ctx.__enter__()
+        txn_conn = txn.conn  # finish() 后句柄的 conn 置空，先行取出
+        manager.set("txn:k", "v")
+        await self._block_bridge()
+
+        ctx.__exit__(None, None, None)  # 0.2s 超时返回
+
+        assert manager._sync_txns == {}
+        assert await manager.aget("txn:k") is None  # 尚未提交
+        for _ in range(40):
+            await asyncio.sleep(0.1)
+            if closed:
+                break
+        assert closed == [txn_conn]  # 事务专用连接已归还
+        assert await manager.aget("txn:k") == "v"  # 提交落库
+
+
+# ==================== 退出阶段钩子（先于线程 join） ====================
+
+class TestStorageExitHooks:
+    """存储退出钩子序列：刷盘 → 停后端同步资源 → 停桥，先于非 daemon 线程 join 执行"""
+
+    @staticmethod
+    def _wire(monkeypatch, flushers, backend, order):
+        bridge = SimpleNamespace(close=lambda: order.append("bridge.close"))
+        hooks = base_storage_module._PreJoinExitHooks
+        monkeypatch.setattr(hooks, "_flushers", flushers)
+        monkeypatch.setattr(base_storage_module.BaseStorage, "_LIVE_BACKENDS", [backend])
+        monkeypatch.setattr(base_storage_module, "AsyncBridge", lambda: bridge)
+        return hooks
+
+    def test_sequence_order(self, monkeypatch):
+        """刷盘先于连接停止，连接停止先于停桥"""
+        order = []
+        backend = SimpleNamespace(_stop_sync_resources=lambda: order.append("stop"))
+        hooks = self._wire(monkeypatch, [lambda: order.append("flush")], backend, order)
+
+        hooks._run()
+
+        assert order == ["flush", "stop", "bridge.close"]
+
+    def test_step_failure_does_not_block_exit(self, monkeypatch):
+        """刷盘与连接停止各自抛错时，后续步骤照常执行"""
+        order = []
+
+        def _boom(message):
+            def _fn():
+                raise RuntimeError(message)
+
+            return _fn
+
+        backend = SimpleNamespace(_stop_sync_resources=_boom("stop failed"))
+        hooks = self._wire(monkeypatch, [_boom("flush failed")], backend, order)
+
+        hooks._run()
+
+        assert order == ["bridge.close"]
+
+    def test_registered_via_threading_atexit(self, monkeypatch):
+        """钩子经 threading._register_atexit 登记且只登记一次——atexit 回调晚于线程 join，不可用"""
+        import threading
+
+        registered = []
+        monkeypatch.setattr(threading, "_register_atexit", registered.append)
+        monkeypatch.setattr(base_storage_module._PreJoinExitHooks, "_registered", False)
+
+        base_storage_module._PreJoinExitHooks.ensure_registered()
+        base_storage_module._PreJoinExitHooks.ensure_registered()
+
+        assert registered == [base_storage_module._PreJoinExitHooks._run]
+
+    @pytest.mark.asyncio
+    async def test_sqlite_connections_stopped_without_event_loop(self, tmp_path):
+        """SQLite 存活连接在退出阶段不经事件循环即停止工作线程"""
+        StorageManager._instance = None
+        manager = StorageManager.__new__(StorageManager)
+        manager.db_path = str(tmp_path / "exit.db")
+        manager._init_db()
+        manager._initialized = True
+        try:
+            conn = await manager._create_loop_resource()
+            tracked = list(manager._live_connections)
+            assert conn in tracked
+            assert manager in base_storage_module.BaseStorage._LIVE_BACKENDS
+
+            manager._stop_sync_resources()
+
+            for live in tracked:
+                live._thread.join(timeout=5)
+                assert not live._thread.is_alive()
+        finally:
+            StorageManager._instance = None

@@ -8,6 +8,7 @@ ErisPulse 管理器基类
 {!--< /tips >!--}
 """
 
+import warnings
 from abc import ABC, abstractmethod
 from typing import Any, ClassVar
 
@@ -74,13 +75,19 @@ class ManagerBase(ABC):
         from ..i18n import i18n
         from ..logger import logger
 
-        logger.warning(
-            i18n.t(
-                "core.deprecated.kwarg",
-                owner=owner,
-                old=old,
-                new=new,
-            )
+        message = i18n.t(
+            "core.deprecated.kwarg",
+            owner=owner,
+            old=old,
+            new=new,
+        )
+        logger.warning(message)
+        # 双通道：并发标准 DeprecationWarning——下游可用 ``-W error::
+        # DeprecationWarning`` 建立兼容性回归（仅 logger 时下游无法捕获）
+        warnings.warn(
+            message,
+            DeprecationWarning,
+            stacklevel=3,
         )
 
     @staticmethod

@@ -14,8 +14,8 @@
 ```python
 from ErisPulse import sdk
 
-sdk.storage.set("key", "value")
-value = sdk.storage.get("key", default_value)
+await sdk.storage.aset("key", "value")
+value = await sdk.storage.aget("key", default_value)
 keys = sdk.storage.keys()
 sdk.storage.delete("key")
 ```
@@ -23,7 +23,7 @@ sdk.storage.delete("key")
 ### 批量操作
 
 ```python
-sdk.storage.set_multi({"key1": "val1", "key2": "val2"})
+await sdk.storage.aset_multi({"key1": "val1", "key2": "val2"})
 values = sdk.storage.get_multi(["key1", "key2"])
 sdk.storage.delete_multi(["key1", "key2"])
 ```
@@ -31,16 +31,16 @@ sdk.storage.delete_multi(["key1", "key2"])
 ### 事务操作
 
 ```python
-with sdk.storage.transaction():
-    sdk.storage.set("key1", "value1")
-    sdk.storage.set("key2", "value2")
+async with sdk.storage.atransaction():
+    await sdk.storage.aset("key1", "value1")
+    await sdk.storage.aset("key2", "value2")
 ```
 
 ### 属性访问
 
 ```python
-sdk.storage.my_key          # 等价于 sdk.storage.get("my_key")
-sdk.storage.my_key = "val"  # 等价于 sdk.storage.set("my_key", "val")
+sdk.storage.my_key          # 等价于 await sdk.storage.aget("my_key")
+sdk.storage.my_key = "val"  # 等价于 await sdk.storage.aset("my_key", "val")
 ```
 
 ### SQL 链式查询

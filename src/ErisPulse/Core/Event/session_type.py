@@ -16,8 +16,8 @@ from __future__ import annotations
 from enum import Enum
 from typing import TypeAlias
 
-from .. import logger
 from ..i18n import i18n
+from ..logger import logger
 
 
 # Python 3.11+ 提供了 enum.StrEnum，3.10 需手动实现

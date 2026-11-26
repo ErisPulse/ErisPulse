@@ -41,6 +41,7 @@ from .constants import (
     DEFAULT_CROSS_RECEIPT_POLICY,
     DEFAULT_CROSS_RECEIPT_WINDOW_SECS,
     DEFAULT_EVENT_DEDUPE_CAPACITY,
+    DEFAULT_EVENT_DEDUPE_ENABLED,
     DEFAULT_HANDLER_DRAIN_TIMEOUT_SECS,
     DEFAULT_HANDLER_MAX_CONCURRENCY,
     DEFAULT_OFFLINE_BOT_EXPIRY_SECS,
@@ -146,8 +147,9 @@ class AdapterManager(ManagerBase):
         # Bot状态存储 - {platform: {bot_id: {"status": str, "last_active": float, "info": dict}}}
         self._bots: dict[str, dict[str, dict]] = {}
 
-        # 事件幂等去重：已分发事件 id 的 LRU 记录（平台重连重推同 id 事件只分发一次）
-        self._seen_event_ids: OrderedDict[str, None] = OrderedDict()
+        # 事件幂等去重：已分发 (platform, event_id) 的 LRU 记录（平台重连重推
+        # 同 id 事件只分发一次；键带平台维度——不同平台的原生数值 id 可能碰撞）
+        self._seen_event_ids: OrderedDict[tuple, None] = OrderedDict()
         self._event_dedupe_enabled: bool | None = None  # None = 惰性读配置
 
         # 跨账户重复受理关联：内容键 → (首个受理 self_id, 事件 id, 单调时间戳) 的
@@ -1815,7 +1817,7 @@ class AdapterManager(ManagerBase):
         data.setdefault("id", trace_id)
 
         # 事件幂等去重：平台 websocket 重连重推（同 event id）只分发一次
-        if self._is_duplicate_event(trace_id):
+        if self._is_duplicate_event(trace_id, platform):
             logger.trace(
                 i18n.t("core.adapter.event_duplicated", event_id=trace_id, platform=platform)
             )
@@ -1861,30 +1863,35 @@ class AdapterManager(ManagerBase):
                 from .config import parse_bool_config
 
                 self._event_dedupe_enabled = parse_bool_config(
-                    config.getConfig("ErisPulse.framework.event_dedupe", True)
+                    config.getConfig(
+                        "ErisPulse.framework.event_dedupe", DEFAULT_EVENT_DEDUPE_ENABLED
+                    )
                 )
             except Exception:
                 self._event_dedupe_enabled = True
         return self._event_dedupe_enabled
 
-    def _is_duplicate_event(self, event_id: str) -> bool:
+    def _is_duplicate_event(self, event_id: str, platform: str) -> bool:
         """
         {!--< internal-use >!--}
-        事件幂等去重判定（LRU 记录已分发的事件 id）
+        事件幂等去重判定（LRU 记录已分发的 (platform, event_id)）
 
         平台 websocket 重连后重推同一事件（相同 ``event["id"]``）时只分发一次；
+        键带平台维度——适配器可透传平台原生数值 id，不同平台间碰撞时不互吞。
         容量上限 ``DEFAULT_EVENT_DEDUPE_CAPACITY``，超出后淘汰最早记录。
 
         :param event_id: 事件 id
+        :param platform: 平台名
         :return: 是否为重复事件（True 时调用方应丢弃）
         """
         if not self._dedupe_enabled():
             return False
         seen = self._seen_event_ids
-        if event_id in seen:
-            seen.move_to_end(event_id)
+        key = (platform, event_id)
+        if key in seen:
+            seen.move_to_end(key)
             return True
-        seen[event_id] = None
+        seen[key] = None
         if len(seen) > DEFAULT_EVENT_DEDUPE_CAPACITY:
             seen.popitem(last=False)
         return False
@@ -1911,23 +1918,136 @@ class AdapterManager(ManagerBase):
                 self._cross_receipt_policy = "off"
         return self._cross_receipt_policy
 
+    @staticmethod
+    def _mention_exempt(data: dict[str, Any]) -> bool:
+        """
+        {!--< internal-use >!--}
+        at 点名优待判定：mention 目标命中本账户身份（user_id / account_id 双口径）
+
+        被 @ 的账户不参与跨账户去重（内容级关联与会话绑定均豁免）——
+        点名驱动的模块必须收到自己被 @ 的事件。
+
+        :param data: 事件数据
+        :return: 是否命中本账户的 at 点名（True 时调用方应放行）
+        """
+        from .scope import scope as _scope
+
+        self_info = data.get("self")
+        if not isinstance(self_info, dict):
+            return False
+        self_id = str(self_info.get("user_id") or "")
+        account_id = str(self_info.get("account_id") or "")
+        self_identifiers = {self_id, account_id} - {""}
+        if not self_identifiers:
+            return False
+        mention_ids = _scope.mention_ids_from_event(data)
+        return any(str(target) in self_identifiers for target in mention_ids)
+
+    def _session_bound_account(self, platform: str, data: dict[str, Any]) -> str:
+        """
+        {!--< internal-use >!--}
+        读取会话账户绑定（``ErisPulse.framework.session_accounts``）
+
+        绑定结构 ``{"平台名": {"会话ID": "账户标识"}}``，账户标识为 bot_id
+        （account_id 优先 / user_id 口径，与事件侧 :func:`scope.bot_id_from_event`
+        同源）。实时读配置（热更新生效）；未配置或会话未绑定返回空串。
+
+        :param platform: 平台名
+        :param data: 事件数据
+        :return: 绑定的账户标识（无绑定为空串）
+        """
+        try:
+            bindings = config.getConfig("ErisPulse.framework.session_accounts", None)
+        except Exception:
+            return ""
+        if not isinstance(bindings, dict) or not bindings:
+            return ""
+        platform_bindings = bindings.get(platform)
+        if not isinstance(platform_bindings, dict):
+            return ""
+        from .scope import scope as _scope
+
+        session_id = _scope.session_id_from_event(data)
+        if not session_id:
+            return ""
+        # 精确键优先（"group:123"）：并入 detail_type 防同数值异类型会话碰撞
+        # （如 user 123 与 group 123）；裸键（"123"）回退兼容既有配置，
+        # 语义为匹配该会话 ID 的全部会话类型
+        detail_type = str(data.get("detail_type") or "")
+        typed = platform_bindings.get(f"{detail_type}:{session_id}")
+        if typed is None:
+            typed = platform_bindings.get(session_id)
+        return str(typed or "")
+
     def _cross_receipt_check(self, data: dict, platform: str, trace_id: str) -> bool:
         """
         {!--< internal-use >!--}
-        跨账户重复受理关联判定（内容级，需策略 mark / drop）
+        跨账户去重判定（会话绑定优先，其次内容级关联）
 
-        同平台 + 同会话 + 同发送者 + 同 alt_message 在
-        ``DEFAULT_CROSS_RECEIPT_WINDOW_SECS`` 窗口内再次到达（无论经哪个 self_id）
-        视为同一物理消息的重复受理：mark 注入 ``multi_receipt`` 字段后放行，
-        drop 直接丢弃。alt_message 为空（无法安全比对内容）的事件不参与关联。
+        ① 会话账户绑定（``ErisPulse.framework.session_accounts``）：命中绑定
+        的会话仅归属账户照常分发，其他账户副本直接丢弃（独立于
+        ``cross_account_policy`` 生效，配置绑定即视为该会话开启去重）；
+        ② 内容级关联（需策略 mark / drop，默认 off 不关联）：同平台 +
+        同会话 + 同发送者 + 同 alt_message 在 ``DEFAULT_CROSS_RECEIPT_WINDOW_SECS``
+        窗口内再次到达（无论经哪个 self_id）视为同一物理消息的重复受理：
+        mark 注入 ``multi_receipt`` 字段后放行，drop 直接丢弃。
+
+        两条路径共同豁免：alt_message 为空（无法安全比对内容）的事件、
+        mention 目标命中本账户身份（user_id / account_id）的副本
+        （at 点名优待，避免误伤 @ 驱动的多账户模块）。
 
         :param data: 事件数据
         :param platform: 平台名
         :param trace_id: 事件 id
-        :return: 是否为重复受理且策略为 drop（True 时调用方应丢弃）
+        :return: 是否应丢弃（True 时调用方应丢弃）
         """
+        if data.get("type") != "message":
+            return False
+
+        from .scope import scope as _scope
+
+        # ① 会话账户绑定：精确声明会话归属，无内容启发式。
+        # 归属判定与 _mention_exempt 同款双口径（user_id / account_id 任一
+        # 命中即归属）——动态账户适配器同时填两者，绑定值写哪个口径都命中
+        bound_account = self._session_bound_account(platform, data)
+        if bound_account:
+            self_info = data.get("self")
+            current_identifiers = (
+                {
+                    str(self_info.get("user_id") or ""),
+                    str(self_info.get("account_id") or ""),
+                }
+                - {""}
+                if isinstance(self_info, dict)
+                else set()
+            )
+            if bound_account in current_identifiers:
+                return False
+            current_account = "/".join(sorted(current_identifiers))
+            if self._mention_exempt(data):
+                logger.trace(
+                    i18n.t(
+                        "core.adapter.cross_receipt_mention_exempt",
+                        platform=platform,
+                        event_id=trace_id,
+                        self_id=current_account,
+                    )
+                )
+                return False
+            logger.trace(
+                i18n.t(
+                    "core.adapter.session_bound_dropped",
+                    platform=platform,
+                    event_id=trace_id,
+                    self_id=current_account,
+                    bound_account=bound_account,
+                )
+            )
+            return True
+
+        # ② 内容级关联（需策略 mark / drop；默认 off 不关联）
         policy = self._cross_receipt_active_policy()
-        if policy == "off" or data.get("type") != "message":
+        if policy == "off":
             return False
 
         self_info = data.get("self")
@@ -1936,19 +2056,34 @@ class AdapterManager(ManagerBase):
         if not self_id or not alt_message:
             return False
 
-        from .scope import scope as _scope
+        # at 点名优待：被点名的账户不参与"谁先到谁赢"，
+        # 避免 drop 策略误伤 @ 驱动的多账户模块
+        if self._mention_exempt(data):
+            logger.trace(
+                i18n.t(
+                    "core.adapter.cross_receipt_mention_exempt",
+                    platform=platform,
+                    event_id=trace_id,
+                    self_id=self_id,
+                )
+            )
+            return False
 
         session_id = _scope.session_id_from_event(data)
         sender_id = str(data.get("user_id") or "")
         content_key = hashlib.md5(alt_message.encode("utf-8")).hexdigest()
         key = (platform, session_id, sender_id, content_key)
 
+        from ..runtime.frame_config import get_framework_value  # 惰性：Core 装配窗口内快照读取回环
+        receipt_window = get_framework_value(
+            "cross_receipt_window", DEFAULT_CROSS_RECEIPT_WINDOW_SECS
+        )
         now = time.monotonic()
         receipts = self._cross_receipts
         entry = receipts.get(key)
         if entry is not None:
             stored_self_id, stored_event_id, stored_ts = entry
-            if now - stored_ts > DEFAULT_CROSS_RECEIPT_WINDOW_SECS:
+            if now - stored_ts > receipt_window:
                 receipts.pop(key, None)
                 entry = None
 
@@ -2322,12 +2457,19 @@ class AdapterManager(ManagerBase):
         :return: 是否命中
         """
         wanted_type = handler_wrapper.get("detail_type")
-        if wanted_type and detail_type:
-            detail_matcher = handler_wrapper.get("_detail_matcher")
-            if detail_matcher is None:
-                detail_matcher = compile_entry_matcher(str(wanted_type))
-            if not detail_matcher(str(detail_type)):
-                return False
+        if wanted_type:
+            if not detail_type:
+                # fail-closed：声明了 detail_type 条件的处理器，事件侧缺失该
+                # 维度时按不匹配处理（畸形事件不再穿透全部条件过滤）；
+                # 原生事件不保证标准 detail_type 段，维持放行
+                if not raw:
+                    return False
+            else:
+                detail_matcher = handler_wrapper.get("_detail_matcher")
+                if detail_matcher is None:
+                    detail_matcher = compile_entry_matcher(str(wanted_type))
+                if not detail_matcher(str(detail_type)):
+                    return False
 
         pattern = handler_wrapper.get("pattern")
         regex = handler_wrapper.get("regex")
@@ -2435,6 +2577,10 @@ class AdapterManager(ManagerBase):
         变化时同样失效缓存待重读。
         """
         self._handler_queue_max_pending = None
+        # cross_account_policy 惰性缓存随配置变更失效，下一次事件按新值重读（热生效）
+        self._cross_receipt_policy = None
+        # event_dedupe 惰性缓存同样随配置变更失效（热更新开关去重）
+        self._event_dedupe_enabled = None
         try:
             from ..runtime import get_framework_config
 
@@ -2530,6 +2676,10 @@ class AdapterManager(ManagerBase):
                     current_owner.reset(_owner_token)
 
                 _wait_total = sum(w.get("duration", 0.0) for w in _task_waits)
+                from ..runtime.frame_config import get_framework_value  # 惰性：Core 装配窗口内快照读取回环
+                _slow_threshold = get_framework_value(
+                    "handler_slow_threshold", HANDLER_SLOW_THRESHOLD_SECS
+                )
                 _pure = max(0.0, elapsed - _wait_total)
                 # 收集所有者（去重），归因到具体业务模块
                 _owners = sorted(
@@ -2541,14 +2691,14 @@ class AdapterManager(ManagerBase):
 
                 if _task_waits:
                     # 调用过 wait_reply：纯等待属于交互白名单
-                    if _pure > HANDLER_SLOW_THRESHOLD_SECS:
+                    if _pure > _slow_threshold:
                         if _is_bridge:
                             # 桥接层总分慢：单个处理器的慢已由内层精确告警，此处仅 TRACE
                             logger.trace(
                                 i18n.t(
                                     "core.adapter.handler_slow_bridge",
                                     elapsed=f"{elapsed:.2f}",
-                                    threshold=HANDLER_SLOW_THRESHOLD_SECS,
+                                    threshold=_slow_threshold,
                                     type=event_type,
                                     platform=platform,
                                     tag=_owner_tag,
@@ -2560,7 +2710,7 @@ class AdapterManager(ManagerBase):
                                     "core.adapter.handler_slow",
                                     handler=_func_name,
                                     elapsed=f"{elapsed:.2f}",
-                                    threshold=HANDLER_SLOW_THRESHOLD_SECS,
+                                    threshold=_slow_threshold,
                                     type=event_type,
                                     platform=platform,
                                     tag=_owner_tag,
@@ -2579,14 +2729,14 @@ class AdapterManager(ManagerBase):
                                 tag=_owner_tag,
                             )
                         )
-                elif elapsed > HANDLER_SLOW_THRESHOLD_SECS:
+                elif elapsed > _slow_threshold:
                     if _is_bridge:
                         # 桥接层总分慢：单个处理器的慢已由内层精确告警，此处仅 TRACE
                         logger.trace(
                             i18n.t(
                                 "core.adapter.handler_slow_bridge",
                                 elapsed=f"{elapsed:.2f}",
-                                threshold=HANDLER_SLOW_THRESHOLD_SECS,
+                                threshold=_slow_threshold,
                                 type=event_type,
                                 platform=platform,
                                 tag=_owner_tag,
@@ -2598,7 +2748,7 @@ class AdapterManager(ManagerBase):
                                 "core.adapter.handler_slow",
                                 handler=_func_name,
                                 elapsed=f"{elapsed:.2f}",
-                                threshold=HANDLER_SLOW_THRESHOLD_SECS,
+                                threshold=_slow_threshold,
                                 type=event_type,
                                 platform=platform,
                                 tag=_owner_tag,
@@ -2784,7 +2934,9 @@ class AdapterManager(ManagerBase):
         {!--< internal-use >!--}
         清除过期的离线 Bot 记录
 
-        遍历 _bots，将状态为 offline 且 last_active 距今超过 expiry_secs 的条目移除。
+        遍历 _bots，将 last_active 距今超过 expiry_secs 的条目移除（offline
+        状态或连接异常中断未发 offline meta 的消失 Bot 一并按活跃时间兜底
+        淘汰——在线 Bot 的心跳/消息会持续刷新 last_active，不受影响）。
 
         :param expiry_secs: 过期时间（秒），None 时从框架配置读取
         :return: int 被清除的 Bot 记录数
@@ -2807,10 +2959,7 @@ class AdapterManager(ManagerBase):
         for platform in list(self._bots.keys()):
             for bot_id in list(self._bots[platform].keys()):
                 bot_info = self._bots[platform][bot_id]
-                if (
-                    bot_info.get("status") == BOT_STATUS_OFFLINE
-                    and (now - bot_info.get("last_active", 0)) > expiry_secs
-                ):
+                if (now - bot_info.get("last_active", 0)) > expiry_secs:
                     del self._bots[platform][bot_id]
                     evicted += 1
             if not self._bots[platform]:

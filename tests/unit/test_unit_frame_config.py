@@ -152,3 +152,67 @@ class TestSetErispulseSection:
             if p.startswith("ErisPulse.scope.commands")
         ]
         assert scope_paths == []
+
+
+class TestFrameworkDeclaration:
+    """framework 节声明折叠（B1-2：唯一真相源 + 立即生效型调优键）"""
+
+    EXPECTED_KEYS = {
+        "enable_lazy_loading", "plugins_dir", "uninit_timeout", "strict_mode",
+        "strict_mode_exceptions", "handler_max_concurrency", "handler_queue_max_pending",
+        "proactive_gc_interval", "proactive_gc_generation", "proactive_gc_full_every",
+        "proactive_gc_memory_growth_mb", "proactive_gc_idle_only", "proactive_gc_gen0_min",
+        "offline_bot_expiry", "watch_ignore_dirs", "event_dedupe", "memory_tracing",
+        "cross_account_policy", "session_accounts", "watch_include_plugin_dirs",
+        "txn_begin_timeout", "txn_commit_timeout", "txn_slow_warn", "sync_warn_cooldown",
+        "cross_receipt_window", "handler_slow_threshold",
+        "strict",
+        "sync_in_async_bridge_wait",
+    }
+
+    def test_declaration_covers_full_key_set(self):
+        """声明折叠键集合 == 手写字面量时代键集合（防漂移/防丢键）"""
+        from ErisPulse.runtime.frame_config import DEFAULT_ERISPULSE_CONFIG
+        from ErisPulse.runtime.frame_config_schema import framework_defaults
+
+        folded = framework_defaults()
+        assert set(folded) == self.EXPECTED_KEYS
+        # 导入期占位空表 + 快照/ensure 路径补填
+        assert DEFAULT_ERISPULSE_CONFIG["framework"] == {}
+
+    def test_nested_section_folded(self):
+        from ErisPulse.runtime.frame_config_schema import framework_defaults
+
+        nested = framework_defaults()["strict_mode_exceptions"]
+        assert nested == {"modules": [], "adapters": []}
+
+    def test_tuning_defaults_come_from_constants(self):
+        from ErisPulse.Core.constants import STORAGE_TXN_BEGIN_TIMEOUT_SECS
+        from ErisPulse.runtime.frame_config_schema import framework_defaults
+
+        assert framework_defaults()["txn_begin_timeout"] == STORAGE_TXN_BEGIN_TIMEOUT_SECS
+
+    def test_get_framework_value_reads_user_config_over_defaults(self, monkeypatch, tmp_path):
+        """用户配置 > 声明默认值；写后即时生效（合并快照失效链路）"""
+        from ErisPulse.runtime.frame_config import get_framework_value
+
+        assert get_framework_value("txn_slow_warn", 9.0) == 1.0
+        from ErisPulse.Core.config import config
+
+        config.setConfig("ErisPulse.framework.txn_slow_warn", 2.5)
+        try:
+            assert get_framework_value("txn_slow_warn", 9.0) == 2.5
+        finally:
+            config.setConfig("ErisPulse.framework.txn_slow_warn", 1.0)
+        assert get_framework_value("txn_slow_warn", 9.0) == 1.0
+
+    def test_storage_begin_timeout_uses_framework_value(self):
+        """事务开启超时消费点经 get_framework_value 惰性读取（接线冒烟）"""
+        import inspect
+
+        from ErisPulse.Core.Bases.storage import _AsyncTransaction
+
+        src = inspect.getsource(_AsyncTransaction.start)
+        assert "get_framework_value" in src
+        assert '"txn_begin_timeout"' in src
+        assert "begin_timeout" in src

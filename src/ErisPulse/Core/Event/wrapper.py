@@ -18,7 +18,7 @@ from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
 from typing import Any, Optional, TypedDict
 
-from .. import adapter, logger
+from ..adapter import adapter
 from ..constants import (
     CONFIRM_NO_WORDS,
     CONFIRM_YES_WORDS,
@@ -38,6 +38,7 @@ from ..constants import (
     TEXT_METHOD_INDICATORS,
 )
 from ..i18n import i18n
+from ..logger import logger
 
 # Conversation 对话原语 / 消息事务 / 检查点 GC 已拆分至独立模块，
 # 此处 re-export 保持既有导入路径不变
@@ -728,7 +729,7 @@ class Event(dict):
 
         :return: 机器人平台名称
         """
-        return self.get("self", {}).get("platform", "")
+        return (self.get("self") or {}).get("platform", "")
 
     def get_self_user_id(self) -> str:
         """
@@ -736,7 +737,7 @@ class Event(dict):
 
         :return: 机器人用户ID
         """
-        return self.get("self", {}).get("user_id", "")
+        return (self.get("self") or {}).get("user_id", "")
 
     def get_self_account_id(self) -> str:
         """
@@ -747,7 +748,7 @@ class Event(dict):
 
         :return: 机器人账户标识
         """
-        self_info = self.get("self", {})
+        self_info = (self.get("self") or {})
         return self_info.get("account_id", "") or self_info.get("user_id", "")
 
     def get_self_info(self) -> dict[str, Any]:
@@ -756,7 +757,7 @@ class Event(dict):
 
         :return: 机器人信息字典
         """
-        return self.get("self", {})
+        return (self.get("self") or {})
 
     # ==================== 消息事件专用方法 ====================
 
@@ -830,19 +831,9 @@ class Event(dict):
 
         :return: 被@的用户ID列表
         """
-        message_segments = self.get_message()
-        mentions = []
+        from ..scope import scope
 
-        for segment in message_segments:
-            if not isinstance(segment, dict):
-                continue
-            if segment.get("type") == "mention":
-                data = segment.get("data")
-                user_id = data.get("user_id") if isinstance(data, dict) else None
-                if user_id:
-                    mentions.append(user_id)
-
-        return mentions
+        return scope.mention_ids_from_event(self)
 
     def get_user_id(self) -> str:
         """
@@ -1171,7 +1162,7 @@ class Event(dict):
                 i18n.t("core.event.request_missing_id", action=action)
             )
 
-        bot_id = self.get("self", {}).get("account_id", "") or self.get("self", {}).get(
+        bot_id = (self.get("self") or {}).get("account_id", "") or (self.get("self") or {}).get(
             "user_id", ""
         )
 
@@ -1254,7 +1245,7 @@ class Event(dict):
                 )
             )
 
-        bot_id = self.get("self", {}).get("account_id", "") or self.get("self", {}).get(
+        bot_id = (self.get("self") or {}).get("account_id", "") or (self.get("self") or {}).get(
             "user_id", ""
         )
 

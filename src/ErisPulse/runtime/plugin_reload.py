@@ -23,6 +23,7 @@ from pathlib import Path
 from typing import Any
 
 from ..Core.constants import (
+    DEFAULT_PLUGINS_DIR_NAME,
     FILE_RELOAD_DEBOUNCE_SECS,
     FILE_WATCH_POLL_INTERVAL_SECS,
     PLUGIN_RELOAD_RETRY_DELAY_SECS,
@@ -190,7 +191,7 @@ def resolve_plugin_name(src_path: str, plugin_dirs: list[str] | None = None) -> 
             framework_config = get_framework_config()
         except Exception:
             framework_config = {}
-        raw = framework_config.get("plugins_dir", "plugins")
+        raw = framework_config.get("plugins_dir", DEFAULT_PLUGINS_DIR_NAME)
         if isinstance(raw, str):
             dirs = [raw]
         elif isinstance(raw, (list, tuple)):
@@ -264,7 +265,7 @@ class PluginReloadWatcher:
         except Exception:
             framework_config = {}
 
-        raw = framework_config.get("plugins_dir", "plugins")
+        raw = framework_config.get("plugins_dir", DEFAULT_PLUGINS_DIR_NAME)
         if isinstance(raw, str):
             return [raw]
         if isinstance(raw, (list, tuple)):

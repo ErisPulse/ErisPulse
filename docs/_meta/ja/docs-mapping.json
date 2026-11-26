@@ -113,7 +113,7 @@
     "ユーザーガイド": {
       "description": "ErisPulse の設定とコマンドリファレンス",
       "icon": "fa-book-open",
-      "count": 5,
+      "count": 7,
       "documents": [
         {
           "title": "ユーザー使用ガイド",
@@ -144,6 +144,18 @@
           "path": "user-guide/deployment.md",
           "level": 1,
           "icon": "fa-cloud-arrow-up"
+        },
+        {
+          "title": "バージョンアップと移行ガイド",
+          "path": "user-guide/migration.md",
+          "level": 1,
+          "icon": "fa-right-left"
+        },
+        {
+          "title": "常見問題（FAQ）",
+          "path": "user-guide/faq.md",
+          "level": 1,
+          "icon": "fa-circle-question"
         }
       ],
       "subgroups": {}
@@ -196,7 +208,7 @@
               "icon": "fa-puzzle-piece"
             },
             {
-              "title": "モジュールのコアコンセプト",
+              "title": "モジュールの基本概念",
               "path": "developer-guide/modules/core-concepts.md",
               "level": 1,
               "icon": "fa-cubes-stacked"
@@ -226,7 +238,7 @@
               "icon": "fa-network-wired"
             },
             {
-              "title": "アダプタのコア概念",
+              "title": "アダプタのコアコンセプト",
               "path": "developer-guide/adapters/core-concepts.md",
               "level": 1,
               "icon": "fa-microchip"
@@ -256,7 +268,7 @@
     "プラットフォームガイド": {
       "description": "各プラットフォームの機能とアダプターの説明",
       "icon": "fa-plug",
-      "count": 22,
+      "count": 23,
       "documents": [
         {
           "title": "ErisPulse PlatformFeatures ドキュメント",
@@ -381,6 +393,12 @@
         {
           "title": "Terminal プラットフォーム機能ドキュメント",
           "path": "platform-guide/terminal.md",
+          "level": 1,
+          "icon": "fa-plug"
+        },
+        {
+          "title": "WeChat ClawBot（WechatClaw）アダプター - プラットフォーム機能ドキュメント",
+          "path": "platform-guide/wechatclaw.md",
           "level": 1,
           "icon": "fa-plug"
         },
@@ -545,7 +563,7 @@
           "icon": "fa-fire"
         },
         {
-          "title": "起動フローと手動制御",
+          "title": "スタートアップフローと手動制御",
           "path": "advanced/startup.md",
           "level": 1,
           "icon": "fa-fire"

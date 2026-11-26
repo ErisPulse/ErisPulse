@@ -13,6 +13,7 @@ ErisPulse SQL 存储共享基类
 """
 
 import asyncio
+import importlib
 import json
 import re
 import threading
@@ -148,6 +149,9 @@ class SQLDialect:
     name: str = ""
     # pip 安装 extras 名（驱动缺失提示用）
     extra_name: str = ""
+    # 驱动声明（可插拔机制）：模块导入名与安装 spec（带版本范围；安装时取
+    # 范围内最新版）。空 = 零依赖内置驱动（如 sqlite3），跳过安装路径
+    driver_module: str = ""
 
     def translate_sql(self, sql: str) -> str:
         """
@@ -317,7 +321,7 @@ class SQLDialect:
         return False
 
 
-class SQLQueryBuilder(BaseQueryBuilder):
+class SQLQueryBuilder(BaseQueryBuilder["SQLStorageBase"]):
     """
     SQL 查询构建器（方言无关的共享实现）
 
@@ -366,7 +370,7 @@ class SQLQueryBuilder(BaseQueryBuilder):
             return await self._aexecute_insert_multi(conn=conn)
 
         sql, params = self._build_sql()
-        storage: SQLStorageBase = self._storage  # type: ignore[assignment]
+        storage: SQLStorageBase = self._storage
         target = conn if conn is not None else storage._routing_conn()
 
         if self._operation == "select":
@@ -393,7 +397,7 @@ class SQLQueryBuilder(BaseQueryBuilder):
         sql = f"INSERT INTO {self._table_sql()} ({cols}) VALUES ({placeholders})"
         rows_params = [tuple(row.get(col) for col in columns) for row in self._data]
 
-        storage: SQLStorageBase = self._storage  # type: ignore[assignment]
+        storage: SQLStorageBase = self._storage
         target = conn if conn is not None else storage._routing_conn()
         return await storage._execute_query(
             "dml_multi", sql, rows_params, conn=target
@@ -412,7 +416,7 @@ class SQLQueryBuilder(BaseQueryBuilder):
         >>> row = await storage.Table("users").Select("*").Where("id = ?", 1).aExecuteOne()
         """
         sql, params = self._build_sql()
-        storage: SQLStorageBase = self._storage  # type: ignore[assignment]
+        storage: SQLStorageBase = self._storage
         row, columns = await storage._execute_query(
             "one", sql, params, conn=conn if conn is not None else storage._routing_conn()
         )
@@ -432,7 +436,7 @@ class SQLQueryBuilder(BaseQueryBuilder):
         >>> total = await storage.Table("users").Where("age > ?", 18).aCount()
         """
         sql, params = self._build_count_sql()
-        storage: SQLStorageBase = self._storage  # type: ignore[assignment]
+        storage: SQLStorageBase = self._storage
         return await storage._execute_query(
             "count", sql, params, conn=conn if conn is not None else storage._routing_conn()
         )
@@ -602,7 +606,7 @@ class AlterTableBuilder:
         """
         if not self._operations:
             return True
-        storage: SQLStorageBase = self._storage  # type: ignore[assignment]
+        storage: SQLStorageBase = self._storage
         try:
             await storage._run_alter(
                 self._table_name, self._operations, conn=storage._routing_conn()
@@ -656,6 +660,10 @@ class SQLStorageBase(BaseStorage):
         self._loop_resources: weakref.WeakKeyDictionary[Any, Any] = (
             weakref.WeakKeyDictionary()
         )
+        # 每事件循环的惰性建连串行化锁（asyncio.Lock：协程让出而不冻结循环）
+        self._resource_create_locks: weakref.WeakKeyDictionary[Any, asyncio.Lock] = (
+            weakref.WeakKeyDictionary()
+        )
         # 建池失败冷却截止时间（monotonic）；0 表示未处于冷却
         self._resource_failed_until: float = 0.0
 
@@ -664,6 +672,10 @@ class SQLStorageBase(BaseStorage):
         if not hasattr(self, "_loop_resources"):
             object.__setattr__(
                 self, "_loop_resources", weakref.WeakKeyDictionary()
+            )
+        if not hasattr(self, "_resource_create_locks"):
+            object.__setattr__(
+                self, "_resource_create_locks", weakref.WeakKeyDictionary()
             )
         if not hasattr(self, "_resource_failed_until"):
             object.__setattr__(self, "_resource_failed_until", 0.0)
@@ -675,14 +687,40 @@ class SQLStorageBase(BaseStorage):
         return getattr(self, "_initialized", False)
 
     def _finish_init(self) -> None:
-        """{!--< internal-use >!--} 子类完成后调用：标记就绪并订阅配置热更新告警"""
+        """{!--< internal-use >!--} 子类完成后调用：标记就绪并订阅配置热更新告警
+
+        幂等（并发首次构造可能双重执行 ``__init__`` 主体——就绪标志与
+        配置订阅的重复注册由此处与 :meth:`_watch_storage_config` 兜底）。
+        """
+        if getattr(self, "_initialized", False):
+            return
         self._initialized = True
+        # storage.backend 切换不可热切换：统一在此订阅重启告警（各后端自身的
+        # 连接参数检查由其 __init__ 叠加订阅）
+        self._watch_storage_config(self._check_backend_changed)
+
+    def _check_backend_changed(self) -> str | None:
+        """{!--< internal-use >!--} storage.backend 配置变更检查（SQL 后端不支持的运行时切换）"""
+        from ...runtime import get_storage_config
+
+        backend = str(get_storage_config().get("backend", "sqlite")).strip().lower()
+        backend = {"postgresql": "postgres"}.get(backend, backend)
+        if backend != self.dialect.name:
+            return i18n.t("core.config.restart_required", key="storage.backend")
+        return None
 
     def _watch_storage_config(self, check: Callable[[], str | None]) -> None:
         """
         {!--< internal-use >!--}
         订阅存储配置热更新；check() 返回告警文案（None 表示无需告警）
+
+        幂等注册（按 check 的函数名去重，bound method 的 id 不可靠）——
+        并发首次构造双重执行 ``__init__`` 主体时防止 lifecycle 钩子重复登记。
         """
+        marker = f"_watch_registered_{getattr(check, '__name__', id(check))}"
+        if getattr(self, marker, False):
+            return
+        object.__setattr__(self, marker, True)
         def _on_storage_config_changed(_data: dict) -> None:
             try:
                 message = check()
@@ -738,6 +776,33 @@ class SQLStorageBase(BaseStorage):
         """{!--< internal-use >!--} 释放事务专用连接"""
         ...
 
+    # ==================== 驱动管理（可插拔机制） ====================
+
+    def _require_driver(self) -> Any:
+        """
+        {!--< internal-use >!--}
+        按方言声明的 ``driver_module`` 导入驱动（缺失时报错并附安装指引）
+
+        驱动依赖由后端包自身的 ``pyproject`` 声明、随包安装——框架不在运行时
+        安装任何东西。声明为空（零依赖内置驱动，如 sqlite3）返回 None。
+
+        :return: 驱动模块对象（零依赖驱动返回 None）
+        :raises RuntimeError: 驱动不可导入时
+        """
+        module_name = self.dialect.driver_module
+        if not module_name:
+            return None
+        try:
+            return importlib.import_module(module_name)
+        except ImportError as e:
+            raise RuntimeError(
+                i18n.t(
+                    "core.storage.driver_missing",
+                    backend=self.dialect.name,
+                    extra=self.dialect.extra_name,
+                )
+            ) from e
+
     # 连接资源创建的瞬时失败重试参数（网络抖动/对端限流/数据库重启），取值见 Core/constants.py
     _RESOURCE_CREATE_RETRIES: int = STORAGE_POOL_CREATE_RETRIES
     _RESOURCE_CREATE_BACKOFF_SECS: float = STORAGE_POOL_CREATE_BACKOFF_SECS
@@ -745,77 +810,90 @@ class SQLStorageBase(BaseStorage):
     _RESOURCE_FAIL_COOLDOWN_SECS: float = STORAGE_POOL_FAIL_COOLDOWN_SECS
 
     async def _get_loop_resource(self) -> Any:
-        """{!--< internal-use >!--} 获取当前事件循环的连接资源（惰性创建，幂等，瞬时失败自动重试）"""
+        """{!--< internal-use >!--} 获取当前事件循环的连接资源（惰性创建，幂等，瞬时失败自动重试）
+
+        同一事件循环内的并发首次获取经每循环异步锁串行化——建连含 ``await``，
+        协程竞争下重复建连的输家须销毁多余资源；销毁同样含 ``await``，一律在
+        资源表锁之外执行（线程锁内挂起协程会让同步等待该锁的协程冻结事件循环）。
+        """
         self._ensure_resource_state()
         loop = asyncio.get_running_loop()
-        with self._resources_lock:
-            resource = self._loop_resources.get(loop)
+        resource = self._loop_resources.get(loop)
         if resource is not None:
             return resource
 
-        # 冷却期内快速失败：连接不可达时不阻塞调用方（框架继续运行，仅存储暂不可用）
-        failed_until = getattr(self, "_resource_failed_until", 0.0)
-        was_cooling = failed_until > 0
-        if failed_until > time.monotonic():
-            logger.trace(
-                i18n.t("core.storage.cooldown_fast_fail", backend=self.dialect.name)
-            )
-            raise StorageUnreachableError(
-                i18n.t("core.storage.cooldown", backend=self.dialect.name),
-                backend=self.dialect.name,
-            )
-
-        # 指数退避重试，规避远端瞬时拒绝（连接数限流、数据库重启窗口等）
-        last_error: BaseException | None = None
-        for attempt in range(self._RESOURCE_CREATE_RETRIES):
-            try:
-                resource = await self._create_loop_resource()
-                break
-            except Exception as e:
-                last_error = e
-                if attempt < self._RESOURCE_CREATE_RETRIES - 1:
-                    logger.warning(
-                        i18n.t(
-                            "core.storage.pool_retry",
-                            backend=self.dialect.name,
-                            attempt=attempt + 1,
-                            error=e,
-                        )
-                    )
-                    await asyncio.sleep(
-                        self._RESOURCE_CREATE_BACKOFF_SECS * (attempt + 1)
-                    )
-        else:
-            # 重试耗尽：记录冷却期，期间后续操作快速失败（不再每次阻塞重试），
-            # 框架继续运行（仅存储暂不可用），冷却结束后自动重连试探
-            self._resource_failed_until = time.monotonic() + self._RESOURCE_FAIL_COOLDOWN_SECS
-            logger.warning(
-                i18n.t(
-                    "core.storage.pool_exhausted",
-                    backend=self.dialect.name,
-                    retries=self._RESOURCE_CREATE_RETRIES,
-                    cooldown=int(self._RESOURCE_FAIL_COOLDOWN_SECS),
-                    error=last_error,
-                )
-            )
-            await self._emit_storage_event(
-                EVENT_STORAGE_UNREACHABLE,
-                backend=self.dialect.name,
-                error=str(last_error),
-                cooldown=self._RESOURCE_FAIL_COOLDOWN_SECS,
-            )
-            raise StorageUnreachableError(
-                f"{self.dialect.name}: {last_error}",
-                backend=self.dialect.name,
-                cooldown=self._RESOURCE_FAIL_COOLDOWN_SECS,
-            ) from last_error
-
+        # 每循环异步锁：按循环取用，循环结束即弃（弱键表随循环回收）
         with self._resources_lock:
-            existing = self._loop_resources.get(loop)
-            if existing is not None:
-                await self._destroy_loop_resource(resource)
-                return existing
-            self._loop_resources[loop] = resource
+            create_lock = self._resource_create_locks.get(loop)
+            if create_lock is None:
+                create_lock = asyncio.Lock()
+                self._resource_create_locks[loop] = create_lock
+
+        async with create_lock:
+            resource = self._loop_resources.get(loop)
+            if resource is not None:
+                return resource
+
+            # 冷却期内快速失败：连接不可达时不阻塞调用方（框架继续运行，仅存储暂不可用）
+            failed_until = getattr(self, "_resource_failed_until", 0.0)
+            was_cooling = failed_until > 0
+            if failed_until > time.monotonic():
+                logger.trace(
+                    i18n.t("core.storage.cooldown_fast_fail", backend=self.dialect.name)
+                )
+                raise StorageUnreachableError(
+                    i18n.t("core.storage.cooldown", backend=self.dialect.name),
+                    backend=self.dialect.name,
+                )
+
+            # 指数退避重试，规避远端瞬时拒绝（连接数限流、数据库重启窗口等）
+            last_error: BaseException | None = None
+            for attempt in range(self._RESOURCE_CREATE_RETRIES):
+                try:
+                    resource = await self._create_loop_resource()
+                    break
+                except Exception as e:
+                    last_error = e
+                    if attempt < self._RESOURCE_CREATE_RETRIES - 1:
+                        logger.warning(
+                            i18n.t(
+                                "core.storage.pool_retry",
+                                backend=self.dialect.name,
+                                attempt=attempt + 1,
+                                error=e,
+                            )
+                        )
+                        await asyncio.sleep(
+                            self._RESOURCE_CREATE_BACKOFF_SECS * (attempt + 1)
+                        )
+            else:
+                # 重试耗尽：记录冷却期，期间后续操作快速失败（不再每次阻塞重试），
+                # 框架继续运行（仅存储暂不可用），冷却结束后自动重连试探
+                self._resource_failed_until = time.monotonic() + self._RESOURCE_FAIL_COOLDOWN_SECS
+                logger.warning(
+                    i18n.t(
+                        "core.storage.pool_exhausted",
+                        backend=self.dialect.name,
+                        retries=self._RESOURCE_CREATE_RETRIES,
+                        cooldown=int(self._RESOURCE_FAIL_COOLDOWN_SECS),
+                        error=last_error,
+                    )
+                )
+                await self._emit_storage_event(
+                    EVENT_STORAGE_UNREACHABLE,
+                    backend=self.dialect.name,
+                    error=str(last_error),
+                    cooldown=self._RESOURCE_FAIL_COOLDOWN_SECS,
+                )
+                raise StorageUnreachableError(
+                    f"{self.dialect.name}: {last_error}",
+                    backend=self.dialect.name,
+                    cooldown=self._RESOURCE_FAIL_COOLDOWN_SECS,
+                ) from last_error
+
+            with self._resources_lock:
+                self._loop_resources[loop] = resource
+
         # 建池成功：清除失败冷却（若曾进入冷却，此番重连试探成功即恢复）
         self._resource_failed_until = 0.0
         logger.debug(i18n.t("core.storage.pool_ready", backend=self.dialect.name))
@@ -1343,6 +1421,14 @@ class SQLStorageBase(BaseStorage):
 
     async def adelete(self, key: str, *, conn: Any = None) -> bool:
         """
+        if sql not in ("BEGIN", "COMMIT", "ROLLBACK"):  # 事务控制语句不计业务操作量
+            try:
+                from ...runtime.metrics import metrics
+
+                metrics.inc("storage.ops.total")
+                metrics.inc(f"storage.ops.{kind}")
+            except Exception:
+                pass
         异步删除存储项
 
         支持嵌套键删除，如 "user.settings.theme" 会删除嵌套对象中的对应字段

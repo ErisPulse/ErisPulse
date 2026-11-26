@@ -15,7 +15,23 @@ from ErisPulse.Core.adapter import AdapterManager
 from ErisPulse.Core.Bases import BaseAdapter, BaseModule
 from ErisPulse.Core.config import ConfigManager
 from ErisPulse.Core.Event import command, interaction, message, meta, notice, request
-from ErisPulse.Core.lifecycle import LifecycleManager
+from ErisPulse.Core.lifecycle import LifecycleManager, lifecycle
+
+_LifecycleSnapshot = tuple[dict, dict]
+
+
+def snapshot_global_lifecycle() -> _LifecycleSnapshot:
+    """快照全局生命周期单例的钩子表与计时器表"""
+    return lifecycle._hooks.copy(), lifecycle._timers.copy()
+
+
+def restore_global_lifecycle(snap: _LifecycleSnapshot) -> None:
+    """清空后按快照恢复全局生命周期单例（装配级订阅不被测试抹除）"""
+    hooks, timers = snap
+    lifecycle._hooks.clear()
+    lifecycle._timers.clear()
+    lifecycle._hooks.update(hooks)
+    lifecycle._timers.update(timers)
 from ErisPulse.Core.module import ModuleManager
 from ErisPulse.Core.router import RouterManager
 from ErisPulse.Core.storage import StorageManager

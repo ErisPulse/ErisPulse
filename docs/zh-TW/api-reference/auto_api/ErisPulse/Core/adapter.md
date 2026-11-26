@@ -654,15 +654,17 @@ await sdk.adapter.emit({
 ---
 
 
-##### `_is_duplicate_event(event_id: str) -> bool`
+##### `_is_duplicate_event(event_id: str, platform: str) -> bool`
 
 **内部方法**
-事件幂等去重判定（LRU 记录已分发的事件 id）
+事件幂等去重判定（LRU 记录已分发的 (platform, event_id)）
 
 平台 websocket 重连后重推同一事件（相同 ``event["id"]``）时只分发一次；
+键带平台维度——适配器可透传平台原生数值 id，不同平台间碰撞时不互吞。
 容量上限 ``DEFAULT_EVENT_DEDUPE_CAPACITY``，超出后淘汰最早记录。
 
 - **event_id**: 事件 id
+- **platform**: 平台名
 
 **返回值**: 是否为重复事件（True 时调用方应丢弃）
 
@@ -679,21 +681,60 @@ await sdk.adapter.emit({
 ---
 
 
+##### `_mention_exempt(data: dict[str, Any]) -> bool`（staticmethod）
+
+**内部方法**
+at 点名优待判定：mention 目标命中本账户身份（user_id / account_id 双口径）
+
+被 @ 的账户不参与跨账户去重（内容级关联与会话绑定均豁免）——
+点名驱动的模块必须收到自己被 @ 的事件。
+
+- **data**: 事件数据
+
+**返回值**: 是否命中本账户的 at 点名（True 时调用方应放行）
+
+---
+
+
+##### `_session_bound_account(platform: str, data: dict[str, Any]) -> str`
+
+**内部方法**
+读取会话账户绑定（``ErisPulse.framework.session_accounts``）
+
+绑定结构 ``{"平台名": {"会话ID": "账户标识"}}``，账户标识为 bot_id
+（account_id 优先 / user_id 口径，与事件侧 :func:`scope.bot_id_from_event`
+同源）。实时读配置（热更新生效）；未配置或会话未绑定返回空串。
+
+- **platform**: 平台名
+- **data**: 事件数据
+
+**返回值**: 绑定的账户标识（无绑定为空串）
+
+---
+
+
 ##### `_cross_receipt_check(data: dict, platform: str, trace_id: str) -> bool`
 
 **内部方法**
-跨账户重复受理关联判定（内容级，需策略 mark / drop）
+跨账户去重判定（会话绑定优先，其次内容级关联）
 
-同平台 + 同会话 + 同发送者 + 同 alt_message 在
-``DEFAULT_CROSS_RECEIPT_WINDOW_SECS`` 窗口内再次到达（无论经哪个 self_id）
-视为同一物理消息的重复受理：mark 注入 ``multi_receipt`` 字段后放行，
-drop 直接丢弃。alt_message 为空（无法安全比对内容）的事件不参与关联。
+① 会话账户绑定（``ErisPulse.framework.session_accounts``）：命中绑定
+的会话仅归属账户照常分发，其他账户副本直接丢弃（独立于
+``cross_account_policy`` 生效，配置绑定即视为该会话开启去重）；
+② 内容级关联（需策略 mark / drop，默认 off 不关联）：同平台 +
+同会话 + 同发送者 + 同 alt_message 在 ``DEFAULT_CROSS_RECEIPT_WINDOW_SECS``
+窗口内再次到达（无论经哪个 self_id）视为同一物理消息的重复受理：
+mark 注入 ``multi_receipt`` 字段后放行，drop 直接丢弃。
+
+两条路径共同豁免：alt_message 为空（无法安全比对内容）的事件、
+mention 目标命中本账户身份（user_id / account_id）的副本
+（at 点名优待，避免误伤 @ 驱动的多账户模块）。
 
 - **data**: 事件数据
 - **platform**: 平台名
 - **trace_id**: 事件 id
 
-**返回值**: 是否为重复受理且策略为 drop（True 时调用方应丢弃）
+**返回值**: 是否应丢弃（True 时调用方应丢弃）
 
 ---
 
@@ -863,7 +904,9 @@ self字段标准扩展：
 **内部方法**
 清除过期的离线 Bot 记录
 
-遍历 _bots，将状态为 offline 且 last_active 距今超过 expiry_secs 的条目移除。
+遍历 _bots，将 last_active 距今超过 expiry_secs 的条目移除（offline
+状态或连接异常中断未发 offline meta 的消失 Bot 一并按活跃时间兜底
+淘汰——在线 Bot 的心跳/消息会持续刷新 last_active，不受影响）。
 
 - **expiry_secs**: 过期时间（秒），None 时从框架配置读取
 

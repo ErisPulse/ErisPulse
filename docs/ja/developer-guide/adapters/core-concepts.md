@@ -1,33 +1,33 @@
-# アダプタのコア概念
+# アダプタのコアコンセプト
 
 > [!TIP]
-> **この記事を読むべきタイミング**：アダプタ開発経路内では必読（BaseAdapter / SendDSL / ライフサイクルなど、コアメカニズムの完全な説明）。開発の立ち上げだけなら [アダプタ開発入門](getting-started.md) を先に読むと良い。"なぜこう書くのか"という疑問が生じた際は、この記事に戻って確認する。
+> **この記事を読むべきタイミング**：アダプタ開発経路内では必読（BaseAdapter / SendDSL / ライフサイクル等のコアメカニズムの完全な説明）。開始するだけなら[アダプタ開発入門](getting-started.md)を先に読み、"なぜ"というレベルの疑問が生じたときに本記事を参照してください。
 
-この記事では、アダプタの実行メカニズムを説明します。AdapterManager がどのようにアダプタを登録・イベントを配信するか、`BaseAdapter` が初期化時に何をしてくれたか、設定と複数アカウントの宣言方法など——アダプタを開発する際に「なぜこう書くのか」という疑問が生じた場合、ここに確認してください。
+この記事では、アダプタの動作メカニズムを説明します：AdapterManager がどのようにアダプタを登録・イベントを配信するか、`BaseAdapter` が初期化時に何を代行するか、設定と複数アカウントをどのように宣言するか——アダプタを開発する際に「なぜこのように書くのか」という疑問が生じたときは、ここを参照してください。
 
 ## アダプタアーキテクチャ
 
-### コンポーネント関係
+### コンポーネントの関係
 
 ```
 正方向変換（受信方向）                           逆方向変換（送信方向）
 ─────────────────                           ─────────────────
                                              
 ┌──────────────────┐                        ┌──────────────────┐
-│ プラットフォーム固有イベント     │                        │ モジュールが構築するメッセージ     │
+│ プラットフォームの原生イベント     │                        │ モジュールが構築したメッセージ     │
 └────────┬─────────┘                        └────────┬─────────┘
          │                                           │
          ↓                                           ↓
 ┌──────────────────┐   ┌──────────────────┐   ┌──────────────────┐
 │                  │   │  アダプタ (MyAdapter) │   │                  │
 │  Converter       │   │ ┌──────────────┐ │   │ Send.Raw_ob12()  │
-│  (イベント変換器)    │──→│ │              │ │   │ (逆方向変換エントリポイント)   │
+│  (イベント変換器)    │──→│ │              │ │   │ (逆方向変換のエントリポイント)   │
 │                  │   │ │              │ │   │                  │
 └──────────────────┘   │ └──────────────┘ │   └────────┬─────────┘
                        └──────────────────┘            │
                                 │                      ↓
                                 ↓              ┌──────────────────┐
-                       ┌──────────────────┐    │ プラットフォーム API 調用    │
+                       ┌──────────────────┐    │ プラットフォーム API 呼び出し    │
                        │ OneBot12 標準イベント │    └────────┬─────────┘
                        └────────┬─────────┘             │
                                 │                      ↓
@@ -43,30 +43,30 @@
 ```
 
 **コアの対称性**：
-- **正方向変換**（Converter）：プラットフォーム固有イベント → OneBot12 標準イベント、元データは `{platform}_raw` に保持
-- **逆方向変換**（Raw_ob12）：OneBot12 メッセージセグメント → プラットフォーム API 調用、返却は標準レスポンス形式
+- **正方向変換**（Converter）：プラットフォームの原生イベント → OneBot12 標準イベント、元データは `{platform}_raw` に保持
+- **逆方向変換**（Raw_ob12）：OneBot12 メッセージセグメント → プラットフォーム API 呼び出し、返却は標準レスポンス形式
 
-## AdapterManager アダプタマネージャー
+## AdapterManager アダプタ管理者
 
-`AdapterManager` は ErisPulse アダプタシステムのコアコンポーネントであり、すべてのプラットフォームアダプタの登録、起動、停止、イベント配信を管理します。
+`AdapterManager` は ErisPulse アダプタシステムのコアコンポーネントで、すべてのプラットフォームアダプタの登録、起動、停止、イベント配信を管理します。
 
-### コア機能
+### 核心機能
 
-- **アダプタ登録**：複数のプラットフォームアダプタを登録・管理
+- **アダプタの登録**：複数のプラットフォームアダプタを登録・管理
 - **ライフサイクル管理**：アダプタの起動と停止を制御
-- **イベント配信**：OneBot12 標準イベントとプラットフォーム固有イベントを配信
+- **イベント配信**：OneBot12 標準イベントとプラットフォーム原生イベントを配信
 - **設定管理**：アダプタの有効/無効状態を管理
 - **ミドルウェアサポート**：OneBot12 イベントミドルウェアをサポート
 
-### 基本的な使用方法
+### 基本的な使用法
 
 ```python
 from ErisPulse import sdk
 
-# アダプタの登録（通常 Loader が自動で行う）
+# アダプタの登録（通常Loaderが自動的に実行）
 sdk.adapter.register("myplatform", MyPlatformAdapter)
 
-# すべてのアダプタを起動
+# すべてのアダプタの起動
 await sdk.adapter.startup()
 
 # 指定のアダプタを起動
@@ -95,13 +95,13 @@ await sdk.adapter.startup()
 await sdk.adapter.startup(["platform1", "platform2"])
 ```
 
-**起動フロー**：
+**起動プロセス**：
 
 1. `adapter.start` ライフサイクルイベントを送信
 2. `adapter.status.change` イベントを送信（starting）
-3. 各アダプタを並行起動
+3. 各アダプタを並列に起動
 4. 起動に失敗した場合は自動的に再試行（指数バックオフ戦略）
-5. 起動成功後 `adapter.status.change` イベントを送信（started）
+5. 起動成功後、`adapter.status.change` イベントを送信（started）
 
 **再試行メカニズム**：
 
@@ -115,10 +115,10 @@ await sdk.adapter.startup(["platform1", "platform2"])
 await sdk.adapter.shutdown()
 ```
 
-**停止フロー**：
+**停止プロセス**：
 
 1. `adapter.stop` ライフサイクルイベントを送信
-2. 各アダプタの `shutdown()` メソッドを呼び出す
+2. すべてのアダプタの `shutdown()` メソッドを呼び出す
 3. ルーティングサーバーを停止
 4. イベントハンドラをクリア
 5. `adapter.stopped` ライフサイクルイベントを送信
@@ -136,16 +136,16 @@ enabled = sdk.adapter.is_enabled("myplatform")
 
 # in 演算子を使用
 if "myplatform" in sdk.adapter:
-    print("プラットフォームが存在し、有効です")
+    print("プラットフォームは存在し、有効です")
 ```
 
 #### プラットフォームの一覧表示
 
 ```python
-# すべての登録済みプラットフォームを取得
+# すべての登録済みプラットフォームをリスト
 platforms = sdk.adapter.list_registered()
 
-# すべてのプラットフォームとその状態を取得
+# すべてのプラットフォームとその状態をリスト
 status_dict = sdk.adapter.list_items()
 # 戻り値: {"platform1": true, "platform2": false, ...}
 
@@ -153,7 +153,7 @@ status_dict = sdk.adapter.list_items()
 enabled_platforms = [p for p, enabled in status_dict.items() if enabled]
 ```
 
-### イベントのリスニング
+### イベントリスナー
 
 #### OneBot12 標準イベント
 
@@ -163,12 +163,12 @@ from ErisPulse import sdk
 # すべてのプラットフォームの標準メッセージイベントをリッスン
 @sdk.adapter.on("message")
 async def handle_message(data):
-    print(f"OneBot12 メッセージを受け取りました: {data}")
+    print(f"OneBot12メッセージを受け取りました: {data}")
 
 # 特定のプラットフォームの標準メッセージイベントをリッスン
 @sdk.adapter.on("message", platform="myplatform")
 async def handle_platform_message(data):
-    print(f"myplatform メッセージを受け取りました: {data}")
+    print(f"myplatformメッセージを受け取りました: {data}")
 
 # すべてのイベントをリッスン
 @sdk.adapter.on("*")
@@ -176,29 +176,29 @@ async def handle_any_event(data):
     print(f"イベントを受け取りました: {data.get('type')}")
 ```
 
-#### プラットフォーム固有イベント
+#### プラットフォーム原生イベント
 
 ```python
-# 特定のプラットフォームの固有イベントをリッスン
+# 特定のプラットフォームの原生イベントをリッスン
 @sdk.adapter.on("raw_event_type", raw=True, platform="myplatform")
 async def handle_raw_event(data):
-    print(f"固有イベントを受け取りました: {data}")
+    print(f"原生イベントを受け取りました: {data}")
 
-# すべてのプラットフォームの固有イベントをリッスン（ワイルドカード）
+# すべてのプラットフォームの原生イベントをリッスン（ワイルドカード）
 @sdk.adapter.on("*", raw=True)
 async def handle_all_raw_events(data):
-    print(f"固有イベントを受け取りました: {data}")
+    print(f"原生イベントを受け取りました: {data}")
 ```
 
 #### イベント配信メカニズム
 
-`adapter.emit(event_data)` を呼び出すとき：
+`adapter.emit(event_data)` を呼び出すと：
 
 1. **ミドルウェア処理**：まずすべての OneBot12 ミドルウェアを実行
 2. **標準イベント配信**：マッチする OneBot12 イベントハンドラに配信
-3. **固有イベント配信**：元データがあれば、固有イベントハンドラに配信
+3. **原生イベント配信**：元データがあれば、原生イベントハンドラに配信
 
-**マッチルール**：
+**マッチングルール**：
 
 - 精確マッチ：`@sdk.adapter.on("message")` は `message` イベントのみマッチ
 - ワイルドカード：`@sdk.adapter.on("*")` はすべてのイベントにマッチ
@@ -220,26 +220,26 @@ async def filter_middleware(data):
     """イベントフィルタミドルウェア"""
     # 不要なイベントをフィルタ
     if data.get("type") == "notice":
-        return None  # 戻り値が None の場合、ミドルウェアチェーンはその値を無視し、元のデータをそのまま伝播
-    return data  # 必須でデータを返して伝播を続ける
+        return None  # 戻り値が None の場合、ミドルウェアチェーンはその返り値を無視し、元のデータをそのまま次に渡す
+    return data  # 必須でデータを返して次に渡す
 ```
 
-#### ミドルウェアの戻り値の契約
+#### ミドルウェアの返り値契約
 
-| 戻り値 | 行動 |
+| 返り値 | 挙動 |
 |--------|------|
 | `dict` | イベントペイロードを上書き（後続のハンドラは変更後のイベントを受け取る） |
-| `None` | 通過、ペイロードは変更なし（WARNINGを出力するが、明示的に`return data`を推奨） |
-| `False` | **拒否**：イベントは破棄され、ハンドラには一切の副作用が発生しない |
+| `None` | ファイル：ペイロードを変更せず（出力 WARNING メッセージが推奨される、明示的に `return data` を返す） |
+| `False` | **拒否**：イベントは破棄され、どのハンドラにも渡らず、出力副作用も一切ない |
 
-拒否はファイアウォール、リクエスト制限、ブラックリストなど「イベントレベルで直接破棄」する場面に適しています（以前は高優先度のイベントハンドラで回避するしかありませんでした）。拒否された場合、フレームワークはTRACEログを出力し、`adapter.event.blocked` ライフサイクルフックをトリガーします（`middleware`ミドルウェア名、完全な`event`、`platform` / `event_type` / `detail_type`を含む）、イベントがなぜ反応しなかったのかを調査するのに便利です：
+拒否はイベントレベルで直接破棄するシナリオ（以前は高優先度のイベントハンドラで回避する必要があった）に適しています。拒否された場合、フレームワークは TRACE ログを出力し、`adapter.event.blocked` ライフサイクルフックをトリガーします（`middleware` ミドルウェア名、完全な `event`、`platform` / `event_type` / `detail_type` が含まれる）。これにより、"イベントがなぜ応答しないのか"のトラブルシューティングが容易になります：
 
 ```python
 @sdk.adapter.middleware
 async def rate_limit_middleware(data):
     """リクエスト制限ミドルウェア"""
     if _is_rate_limited(data):
-        return False  # 拒否：イベントは破棄
+        return False  # 拒否：イベントは破棄される
     data["rate_marked"] = True
     return data
 
@@ -250,9 +250,9 @@ async def on_event_blocked(data):
 
 #### ミドルウェアの実行順序
 
-ミドルウェアは登録順に実行され、後から登録されたミドルウェアが先に実行されます。
+ミドルウェアは登録順に実行され、後で登録されたミドルウェアが先に実行されます。
 
-> **注意**：ミドルウェアが `None` を返した場合（`return data` を忘れている場合）、フレームワークはその返り値を無視して元のデータをそのまま伝播し、warningレベルのログを出力します。これにより、個々のミドルウェアのミスがイベントチェーン全体の中断を引き起こすことはありません。
+> **注意**：ミドルウェアが `None` を返した場合（`return data` を忘れている場合）、フレームワークはその返り値を無視して元のデータをそのまま次に渡し、warning レベルのログを出力します。これにより、個々のミドルウェアのミスがイベントチェーン全体の中断を引き起こすことはありません。
 
 ```python
 # 登録順
@@ -260,7 +260,7 @@ sdk.adapter.middleware(middleware1)  # 最後に実行
 sdk.adapter.middleware(middleware2)  # 中間実行
 sdk.adapter.middleware(middleware3)  # 最初に実行
 
-# 実行順：middleware3 -> middleware2 -> middleware1
+# 実行順序：middleware3 -> middleware2 -> middleware1
 ```
 
 ### アダプタインスタンスの取得
@@ -292,7 +292,7 @@ from ErisPulse.Core.Bases import BaseConfig, BotAccountConfig
 
 @dataclass
 class MyConfig(BaseConfig):
-    """アダプター設定（宣言後はフレームワークが自動管理）"""
+    """アダプタの設定（宣言後、フレームワークが自動的に管理）"""
     token: str = field(
         default="",
         metadata={
@@ -306,30 +306,30 @@ class MyConfig(BaseConfig):
 class MyAdapter(BaseAdapter):
     ConfigClass = MyConfig  # 設定クラスを宣言
     
-    # __init__ のオーバーライドは不要。フレームワークが自動的に処理：
+    # __init__ をオーバーライドする必要はない、フレームワークが自動的に処理する：
     # - self.sdk, self.logger
     # - self.cfg（型安全な設定インスタンス、リアルタイム読み取り）
     # - self.Send, self.Request
     
     async def start(self):
-        """アダプターを起動する（実装必須）"""
-        cfg = self.cfg  # 自動的に読み込まれた型安全な設定
+        """アダプタの起動（必須実装）"""
+        cfg = self.cfg  # 自動的にロードされる型安全な設定
         pass
     
     async def shutdown(self):
-        """アダプターをシャットダウンする（実装必須）"""
+        """アダプタの停止（必須実装）"""
         pass
     
     async def call_api(self, endpoint: str, **params):
-        """プラットフォーム API を呼び出す（実装必須）"""
+        """プラットフォーム API を呼び出す（必須実装）"""
         pass
 ```
 
 ### 設定管理
 
-フレームワークは宣言的な設定管理を提供しています。dataclass で設定構造を定義すると、読み込み、検証、テンプレート生成が自動的に処理されます。
+フレームワークは宣言的設定管理を提供し、dataclass を使って設定構造を定義し、フレームワークが自動的にロード、検証、テンプレート生成を処理します。
 
-#### 単一アカウントの設定
+#### 単一アカウント設定
 
 ```python
 from dataclasses import dataclass, field
@@ -354,19 +354,19 @@ class TelegramAdapter(BaseAdapter):
     async def start(self):
         cfg = self.cfg  # 型安全、リアルタイム読み取り
         if not cfg.token:
-            raise ValueError("Token が設定されていません")
+            raise ValueError("Tokenが設定されていません")
         await self._connect(cfg.token, proxy=cfg.proxy)
 ```
 
-#### 複数アカウントの設定
+#### 複数アカウント設定
 
-`BotAccountConfig` 基底クラスは `enabled` と `name` フィールドを提供します。ほとんどのアダプターはプラットフォームのプロトコルやログインレスポンスから bot_id を自動取得でき、イベント変換時にアカウント設定へ注入します。
+`BotAccountConfig` 基底クラスは `enabled` と `name` フィールドを提供します。ほとんどのアダプタは、プラットフォームプロトコルやログイン応答から自動的に bot_id を取得できます。イベント変換時にアカウント設定に注入されます。：
 
 ```python
 from dataclasses import dataclass, field
 from ErisPulse.Core.Bases import BotAccountConfig
 
-# ほとんどのアダプター：bot_id は実行時に自動取得されるため設定は不要
+# 多くのアダプタ：bot_id は実行時に自動的に取得され、設定は不要
 @dataclass
 class MyBotConfig(BotAccountConfig):
     token: str = field(default="", metadata={
@@ -374,11 +374,11 @@ class MyBotConfig(BotAccountConfig):
         "required": True,
     })
 
-# ログイン時に bot_id を取得できない場合は、設定でユーザーに入力してもらうことができます
+# ログイン時に bot_id を取得できない場合、ユーザーに設定を入力させる
 @dataclass
 class YunhuBotConfig(BotAccountConfig):
     bot_id: str = field(default="", metadata={
-        "description": {"i18n": "yunhu.bot_id", "default": "ボットID"},
+        "description": {"i18n": "yunhu.bot_id", "default": "ロボットID"},
         "required": True,
     })
     token: str = field(default="", metadata={
@@ -395,40 +395,38 @@ class MyAdapter(BaseAdapter):
             await self.emit_meta("connect", user_id)
 ```
 
-#### metadata の規約
+#### metadata 約定
 
-フィールドの metadata は、TOML コメント生成と WebUI フォームレンダリングの両方に使用されます：
+フィールドの metadata は TOML コメント生成と WebUI フォームレンダリングの両方に役立ちます：
 
 ```python
 metadata = {
-    "description": str | dict,  # フィールドの説明（i18n 対応）
-    "required": bool,         # 必須かどうか（検証 + WebUI の必須マーク）
-    "secret": bool,           # 機密情報かどうか（WebUI では *** と表示、ログではマスキング）
-    "example": bool,          # 永続化しないフラグ：config.toml に書き込まない（デフォルト値/テンプレートとも除外）、
-                              # config.full.example にのみレンダリング；schema には "example": true のマークが付き、
-                              # CLI 設定ウィザードではデフォルトでスキップ；ユーザーが手動設定した後は通常どおり永続化
-    "min": number, "max": number,  # 数値範囲の検証
-    "ui": {                   # WebUI コントロール設定（旧名 "webui" も互換）
-        "widget": str,        # コントロールタイプ: "text" | "switch" | "select" | "number" | "password"
+    "description": str | dict,  # フィールドの説明（i18n をサポート）
+    "required": bool,         # 必須かどうか（検証 + WebUI 必須マーク）
+    "secret": bool,           # かどうか（WebUI では *** として表示、ログでは脱敏）
+    "example": bool,          # ファイルに書き込まないフラグ：config.toml には書き込まない（デフォルト値/テンプレートは除外）、config.full.example にのみレンダリング；schema に "example": true が付いていれば、CLI 設定ウィザードはデフォルトでスキップする；ユーザーが手動で設定した後は通常永続化される
+    "min": number, "max": number,  # 数値の範囲検証
+    "ui": {                   # WebUI コントロールの設定（旧名 "webui" は互換性あり）
+        "widget": str,        # コントロールの種類: "text" | "switch" | "select" | "number" | "password"
         "group": str,         # グループ: "basic" | "advanced" | "connection" など
-        "order": int,         # ソートの重み（小さいほど先に表示）
-        "options": list,      # select コントロールの選択肢 [{label, value}]、label は i18n 対応
-        "placeholder": str | dict,  # 入力フィールドのプレースホルダー（i18n 対応）
+        "order": int,         # ソートの重み（小さいほど前に表示）
+        "options": list,      # select コントロールの選択肢 [{label, value}]、label は i18n をサポート
+        "placeholder": str | dict,  # 入力欄のプレースホルダ（i18n をサポート）
     },
-    "extra": dict,            # 追加の拡張フィールド（schema へそのまま透過）
+    "extra": dict,            # 余分な拡張フィールド（schema に透かし渡す）
 }
 ```
 
-ユーザーに表示されるすべてのテキストフィールドは i18n に対応しており、統一して `{"i18n": "key", "default": "テキスト"}` 形式を使用します。純粋な文字列はそのまま透過されます（後方互換）。対応している i18n フィールド：
+すべてのユーザーが見られるテキストフィールドは i18n をサポートし、一貫して `{"i18n": "key", "default": "text"}` 形式を使用し、純粋な文字列はそのまま透かし渡す（後方互換性）。サポートされる i18n フィールド：
 
-| フィールド | 場所 | 説明 |
+| フィールド | 位置 | 説明 |
 |------|------|------|
 | `description` | field metadata | フィールドの説明 |
 | `options[].label` | `ui.options` | select コントロールの選択肢ラベル |
-| `placeholder` | `ui.placeholder` | 入力フィールドのプレースホルダー |
-| `group_labels` | `_schema_meta` | グループの表示名（Dashboard のセクションタイトル） |
+| `placeholder` | `ui.placeholder` | 入力欄のプレースホルダ |
+| `group_labels` | `_schema_meta` | 分グループの表示名（ダッシュボードのセクションタイトル） |
 
-i18n を使用する場合は、事前に翻訳キーを i18n システムへ登録しておく必要があります（詳細は [i18n ドキュメント](../../advanced/i18n.md#設定フィールドの多言語化) を参照）。
+i18n を使用する場合、翻訳キーを i18n システムに事前に登録する必要があります（[i18nドキュメント](../../advanced/i18n.md#設定フィールド多言語)を参照）。
 
 **description / placeholder / options label** の例：
 
@@ -439,7 +437,7 @@ token: str = field(
         "description": {"i18n": "my_adapter.token", "default": "Bot Token"},
         "ui": {
             "widget": "text",
-            "placeholder": {"i18n": "my_adapter.token.ph", "default": "Token を入力してください"},
+            "placeholder": {"i18n": "my_adapter.token.ph", "default": "Tokenを入力してください"},
         },
     },
 )
@@ -451,7 +449,7 @@ mode: str = field(
             "widget": "select",
             "options": [
                 {"label": {"i18n": "my_adapter.mode.a", "default": "オプションA"}, "value": "a"},
-                {"label": "純粋な文字列ラベル", "value": "b"},  # 純粋な文字列はそのまま透過
+                {"label": "純粋な文字列ラベル", "value": "b"},  # 純粋な文字列はそのまま透かし渡す
             ],
         },
     },
@@ -464,46 +462,47 @@ mode: str = field(
 MyConfig._schema_meta = {
     "group_labels": {
         "basic": {"i18n": "my_adapter.group.basic", "default": "基本設定"},
-        "advanced": {"i18n": "my_adapter.group.advanced", "default": "高度な設定"},
+        "advanced": {"i18n": "my_adapter.group.advanced", "default": "高度設定"},
     }
 }
 ```
 
-フレームワークの `resolve_config_schema()` は、現在の言語に応じて上記すべてのフィールドの i18n キーを自動解決します。`get_config_schema()` は i18n 辞書をそのまま透過し、フロントエンド側で解決します。
+フレームワークの `resolve_config_schema()` は現在の言語に応じて上記のすべてのフィールドの i18n キーを自動的に解析します；
+`get_config_schema()` は i18n ディクショナリをそのまま透かし渡し、フロントエンドが独自に解析します。
 
-#### docstring によるフィールド説明の自動生成（v2.8.0+）
+#### docstring からフィールド説明を自動生成（v2.8.0+）
 
-metadata で `description` が宣言されていないフィールドについては、フレームワークが設定クラスの docstring からフィールドの説明を自動抽出し、フォールバックとして使用します。一般的な 2 つのスタイルに対応しています（混用可）：
+metadata に `description` を宣言していないフィールドの場合、フレームワークは設定クラスの docstring からフィールド説明を自動的に抽出してバックアップとして使用します。2つの一般的なスタイルがサポートされています（混在可能）：
 
 ```python
 @dataclass
 class MyConfig(BaseConfig):
     """
-    MyAdapter の設定
+    MyAdapter 配置
 
-    :ivar endpoint: プラットフォーム API のアドレス        # reST スタイル
-    :ivar timeout: リクエストのタイムアウト秒数
+    :ivar endpoint: プラットフォーム API アドレス        # reST スタイル
+    :ivar timeout: リクエストタイムアウト秒数
     """
 
-    endpoint: str = "https://api.example.com"   # metadata description なし → コメント/説明は docstring から取得
+    endpoint: str = "https://api.example.com"   # metadata description がない → docstring から説明/説明を取得
     timeout: int = 30
 
-    # Google スタイルも同様にサポート（Attributes: セクション）：
+    # Google スタイルもサポート（Attributes: セグメント）：
     # Attributes:
-    #     endpoint: プラットフォーム API のアドレス
+    #     endpoint: プラットフォーム API アドレス
 ```
 
-優先順位：**metadata description > docstring のフィールド説明 > 空**。
-i18n 辞書形式の description は影響を受けません（常に優先されます）。
+優先順位：**metadata description > docstring フィールド説明 > 空**。
+i18n ディクショナリ形式の description は影響を受けません（常に優先されます）。
 
-#### ネストした設定（v2.8.0+）
+#### 嵌套設定（v2.8.0+）
 
-フィールドの型がネストした dataclass の場合、フレームワークは再帰的に処理します：schema は `"type": "table"` + `"fields"` のサブツリーとして表現され（WebUI では折りたたみ可能なネストグループとしてレンダリング）、TOML テンプレートでは `[サブテーブル]` セクションとしてレンダリングされます。デフォルト値 / 補完 / 検証 / i18n 解決はいずれも再帰的に適用されます。
+フィールドの型がネストされた dataclass の場合、フレームワークは再帰的に処理します：schema は `"type": "table"` + `"fields"` のサブツリーを保持します（WebUI では折りたたみ可能なネストされたグループとしてレンダリング）、TOML テンプレートは `[サブテーブル]` セクションとしてレンダリングされ、デフォルト値 / 埋め込み / 検証 / i18n 解析は再帰的に有効になります。
 
 ```python
 @dataclass
 class RetryConfig(BaseConfig):
-    """リトライポリシー
+    """リトライ戦略
 
     :ivar max_retries: 最大リトライ回数
     """
@@ -512,9 +511,9 @@ class RetryConfig(BaseConfig):
 
 @dataclass
 class MyConfig(BaseConfig):
-    """MyAdapter の設定"""
+    """MyAdapter 配置"""
     endpoint: str = "https://api.example.com"
-    retry: RetryConfig = field(default_factory=RetryConfig)   # ネストした設定セクション
+    retry: RetryConfig = field(default_factory=RetryConfig)   # 嵌套設定セグメント
 ```
 
 生成される TOML テンプレート：
@@ -528,28 +527,28 @@ max_retries = 3
 backoff = 0.5
 ```
 
-> ネストした型には直接の型アノテーションを推奨します。文字列アノテーション（遅延評価のシナリオなど）の場合は、型が設定クラスの所在モジュールのグローバル名前空間、`__qualname__` の外側クラスの名前空間、またはクラス属性から名前で解決できることを保証する必要があります。
+> 嵌套型は直接型注釈を使用することを推奨します；文字列注釈（遅延評価の場面など）は、タイプが設定クラスの所在モジュール全体、`__qualname__` 外側のクラス名前空間、またはクラス属性から名前で解決できることを保証する必要があります。
 
-#### 永続化されない example フィールド（v2.8.0+）
+#### ファイルに書き込まない example フィールド（v2.8.0+）
 
 ```python
 gc_interval: int = field(default=300, metadata={"example": True})
 ```
 
-`example: True` を持つフィールドは以下のとおりです：
+`example: True` を持つフィールド：
 
-- config.toml には書き込まれない（アダプター/モジュールの設定テンプレートとデフォルト値のいずれからも除外され、実行時はコード上のデフォルト値が使用される）
-- プロジェクト内の `config.full.example` にのみレンダリングされる（ユーザーの参考用。必要に応じて config.toml へ手動でコピー）
-- schema には `"example": true` のマークが付く（パネル側で表示ポリシーを自由に決定可能）。CLI 設定ウィザードではデフォルトでスキップ
-- ユーザーが手動でこのキーを設定した後は、通常どおり永続化・ホットアップデートされる（ユーザーの明示的な意図が優先）
+- `config.toml` に書き込まれない（アダプタ/モジュールの設定テンプレートとデフォルト値は除外）、実行時はコードのデフォルト値を使用
+- `config.full.example` にのみレンダリングされる（ユーザーが参考用に `config.toml` に手動でコピーする）
+- schema には `"example": true` がマークされる（パネルは独自に表示戦略を決定）、CLI 設定ウィザードはデフォルトでスキップ
+- ユーザーがこのキーを手動で設定した後は通常永続化され、通常のホットアップデート（ユーザーの明示的な意図が優先）
 
-「冗長でほとんど触れることのない」高度な設定項目に適しており、ユーザーの config.toml を最小限に保てます。
+`"冗長でほとんど触れない"` 高度な設定項目に適しており、ユーザーの `config.toml` を最小限に保つことができます。
 
-> ⚠️ `_schema_meta` はクラスレベルのメタデータです（設定フィールドではありません）。dataclass のクラス本体内で宣言する場合は、必ず `ClassVar` アノテーションを付ける必要があります（`_schema_meta: ClassVar[dict] = {...}`）。そうしないと、dataclass に通常のフィールドと見なされます。フレームワークはアンダースコア接頭辞のフィールドに対して防御的な除外を行っています（schema / テンプレート / デフォルト値 / 検証出力のいずれにも含まれません）が、それでも規約に従った宣言を推奨します。
+> ⚠️ `_schema_meta` はクラスレベルのメタデータ（設定フィールドではない）。dataclass のクラス本体内で宣言する場合、`ClassVar` 注釈を付ける必要があります（`_schema_meta: ClassVar[dict] = {...}`）、そうでなければ dataclass は普通のフィールドとして扱われます。フレームワークはアンダースコアで始まるフィールドを防御的に除外しています（どの schema / テンプレート / デフォルト値 / 検証出力にも含まれません）、ただし規範的な宣言をお勧めします。
 
-### 宣言的な翻訳キー（v2.7.0+）
+### 宣言式翻訳キー（v2.7.0+）
 
-アダプターは `ConfigClass` を宣言するのと同じように、ネストクラス `I18nClass` によって翻訳キーを一元的に宣言できます。フレームワークは `__init__` の段階（設定テンプレート生成の前）で、宣言されたすべての翻訳キーを自動登録するため、設定の説明で参照される i18n キーがテンプレート生成時に利用可能であることが保証されます。
+アダプタは `ConfigClass` を宣言するのと同じように、`I18nClass` というネストされたクラスを使って翻訳キーを一括宣言することができます。フレームワークは `__init__` 階段（設定テンプレート生成の前）に自動的に宣言されたすべての翻訳キーを登録し、設定説明で参照される i18n キーがテンプレート生成時に利用可能になるようにします。
 
 ```python
 from ErisPulse.Core.Bases import BaseAdapter, BaseI18n, I18nKey
@@ -559,7 +558,7 @@ class MyAdapter(BaseAdapter):
         endpoint: I18nKey = I18nKey(
             default="API Endpoint",
             zh_CN="API アドレス",
-            zh_TW="API アドレス",
+            zh_TW="API 位址",
             en="API Endpoint",
             ja="APIアドレス",
             ru="API адрес",
@@ -567,21 +566,20 @@ class MyAdapter(BaseAdapter):
         token: I18nKey = I18nKey(
             default="Platform Token",
             zh_CN="プラットフォーム Token",
-            zh_TW="プラットフォーム Token",
+            zh_TW="平台權杖",
             en="Platform Token",
             ja="プラットフォームトークン",
             ru="Токен платформы",
         )
 ```
 
-> ``I18nKey.default`` は**言語に依存しないフォールバックテキスト**であり、どの言語にも登録されません。
-> 翻訳を有効にするには、少なくとも 1 つの言語パラメータを明示的に渡す必要があります。
+> ``I18nKey.default`` は**言語に依存しないバックアップテキスト**であり、どの言語にも登録されません。翻訳を有効にするには、少なくとも1つの言語パラメータを明示的に渡す必要があります。
 
-詳細な使い方（キーのパス規則、明示的な key パラメータなど）については、[i18n ドキュメント](../../advanced/i18n.md#推奨される書き方i18nclassによる翻訳キーの宣言v270) を参照してください。
+詳細な使い方（キーのパスルール、明示的な key パラメータなど）は[翻訳ドキュメント](../../advanced/i18n.md#推奨書き方-i18nclass-を使って翻訳キーを宣言する-v270)を参照してください。
 
-### 宣言的なイベント拡張メソッド（v2.7.0+）
+### 宣言式イベント拡張メソッド（v2.7.0+）
 
-アダプターは `EventMixin` を通じて、プラットフォーム固有のイベント拡張メソッドを一元的に宣言できます。フレームワークが現在のプラットフォームへ自動登録します。
+アダプタは `EventMixin` を使ってプラットフォーム固有のイベント拡張メソッドを一括宣言し、フレームワークが自動的に現在のプラットフォームに登録します。
 
 ```python
 from ErisPulse.Core import BaseAdapter
@@ -589,16 +587,16 @@ from ErisPulse.Core import BaseAdapter
 class MyAdapter(BaseAdapter):
     class EventMixin:
         def get_chat_name(self):
-            """チャット名を取得する"""
+            """チャット名を取得"""
             return self.get("myplatform_raw", {}).get("chat", {}).get("name", "")
 
         def is_official_message(self):
-            """公式メッセージかどうかを判定する"""
+            """公式メッセージかどうかを判断"""
             raw = self.get("myplatform_raw", {})
             return raw.get("sender", {}).get("is_official", False)
 ```
 
-登録後は、イベントオブジェクトからこれらのメソッドを直接呼び出せます：
+登録後、イベントオブジェクトは直接これらのメソッドを呼び出します：
 
 ```python
 @message.on_group_message()
@@ -608,34 +606,34 @@ async def handler(event):
         await event.reply(f"[{chat_name}] 公式メッセージを受信しました")
 ```
 
-> アダプターのイベント拡張メソッドは、自身のプラットフォーム（``self._platform``）に登録されます。
-> モジュールでクロスプラットフォームのイベント拡張が必要な場合は、既存の ``register_event_mixin()`` API を使用してください。
+> アダプタのイベント拡張メソッドは自身のプラットフォーム（``self._platform``）に登録されます。
+> モジュールがプラットフォーム間のイベント拡張を使用する場合は、従来の ``register_event_mixin()`` API を使用してください。
 
-#### アカウントの解決
+#### アカウント解決
 
-アダプターが `call_api` を実装する際は、アカウント識別子を具体的なアカウント設定へ解決する必要があります。フレームワークはアカウントのバインディング（`Using()` またはイベントチェーンによる自動バインディングの結果）を標準フィールド `account_id` として `call_api` に渡し、アダプターの実際の消費方法に応じて自動的に適応させます。3 つの消費形態のいずれかを選択でき、フレームワークはシグネチャのパラメータ名と関数本体内の定数によって検出するため、パラメータの位置は問いません：
+アダプタが `call_api` を実装する際、アカウント識別子を具体的なアカウント設定に解決する必要があります。フレームワークはアカウントのバインディング（`Using()` またはイベントチェーンの自動バインディングの結果）を `account_id` として `call_api` に標準フィールドとして渡し、アダプタの実際の消費方法に応じて自動的に適応します——3つの消費形態から1つを選択できます。フレームワークはサインチャーム名と関数本体の定数を検証し、パラメータの位置に関係なく、アダプタの消費に応じて適応します。
 
 ```python
-# 形態 1（推奨）：シグネチャで標準名を宣言
+# 推奨の形態一：サインチャームに標準名を宣言
 async def call_api(self, endpoint: str, account_id: str | None = None, **params):
     name, account = self._resolve_account(account_id)
     # name: アカウント名, account: 設定インスタンス
 
-# 形態 2（既存互換）：旧名 _account_id。フレームワークが account_id を自動的に旧名へ書き換えて渡す
+# 形態二（従来互換）：旧名 _account_id、フレームワークが account_id を旧名に書き換え後、渡す
 async def call_api(self, endpoint: str, _account_id: str | None = None, **params):
     name, account = self._resolve_account(_account_id)
 
-# 形態 3：関数本体内で params から取得（定数検出により識別される）
+# 形態三：関数本体内から params から取得（定数検証で識別される）
 async def call_api(self, endpoint: str, **params):
     account_id = params.pop("account_id", None)
     name, account = self._resolve_account(account_id)
 ```
 
-> アダプターがアカウントフィールドを消費しない場合、フレームワークはそのフィールドを除去し（プラットフォームパラメータへの混入を防止）、WARNING を一度出力します。単一アカウントのアダプターでは消費しなくても構いません（解決は最初に有効化されているアカウントへフォールバックします）。
+> アダプタがアカウントフィールドを消費しない場合、フレームワークはそのフィールドを削除し（プラットフォームパラメータに漏洩しない）、1回 WARNING を出力します。単一アカウントアダプタは消費しなくてもよい（解析は最初の有効アカウントに回帰）。
 
-解決ポリシー：アカウント名の一致 → `bot_id` フィールドの一致 → その他の str フィールドの一致 → 最初に有効化されているアカウント。
+解決戦略：アカウント名マッチ → `bot_id` フィールドマッチ → 他の str フィールドマッチ → 最初の有効アカウント。
 
-**実行時の識別と永続化**（2.12+）：アダプターは接続の確立時 / イベントの到着時に `self.update_bot_id(account_name, bot_id)` を呼び出します。フレームワークは bot_id → アカウントのレジストリを維持し（解決チェーンの第一優先度）、値が変化した際に `accounts.<アカウント名>.bot_id` を設定ストレージへ書き込みます：再起動後はアカウントインスタンスの再構築時に bot_id が付与された状態になるため、第 2 アカウントなどのシナリオにおける解決がアカウントアクティビティによるバックフィルに依存しなくなります（再起動時のウィンドウ期間を解消）。
+**実行時識別と永続化**（2.12+）：アダプタが接続確立時 / イベント到着時に `self.update_bot_id(account_name, bot_id)` を呼び出すと、フレームワークは bot_id → アカウント登録表を維持し（解決チェーンの第一優先順位）、値が変化した際に `accounts.<アカウント名>.bot_id` を設定ストアに書き込む：再起動後にアカウントインスタンスが再構築され、bot_id が付与され、第二アカウントなどの解決はログイン後の再起動期間を必要としない（再起動ウィンドウ期間を削除）。
 
 #### 設定のホットアップデート
 
@@ -647,29 +645,29 @@ class MyAdapter(BaseAdapter):
     
     def on_config_update(self, old_config, new_config):
         if old_config.token != new_config.token:
-            self.logger.info("Token が更新されました。再接続します")
+            self.logger.info("Tokenが更新されたので、再接続します")
 ```
 
 ### 初期化プロセス
 
-フレームワークは `BaseAdapter.__init__(self, sdk=None)` 内で以下の処理を自動的に行います：
+フレームワークは `BaseAdapter.__init__(self, sdk=None)` で自動的に以下の作業を行います：
 
-1. **SDK 参照**：`self.sdk`、`self.logger` を設定
-2. **Send/Request ファクトリ**：`self.Send` と `self.Request` を作成
-3. **設定テンプレート**：`ConfigClass` が宣言されている場合、デフォルトの設定テンプレートを自動生成（初回のみ）
-4. **アカウントテンプレート**：`AccountConfigClass` が宣言されている場合、デフォルトのアカウントテンプレートを自動生成（初回のみ）
-5. **EventMixin の登録**：`EventMixin` が宣言されている場合、`AdapterManager` によるプラットフォーム名の注入後に自動登録
+1. **SDK参照**：`self.sdk`、`self.logger` を設定
+2. **Send/Requestファクトリー**：`self.Send` と `self.Request` を作成
+3. **設定テンプレート**：`ConfigClass` を宣言した場合、自動的にデフォルト設定テンプレートを生成（初回）
+4. **アカウントテンプレート**：`AccountConfigClass` を宣言した場合、自動的にデフォルトアカウントテンプレートを生成（初回）
+5. **EventMixin登録**：`EventMixin` を宣言した場合、`AdapterManager` がプラットフォーム名を注入した後に自動的に登録
 
-設定は `self.cfg` / `self.accounts` からリアルタイムに読み込まれます（アクセスのたびに設定ストレージから最新値が読み取られます）。`self.config` は `self.cfg` の互換エイリアスとして引き続き使用できます。
+設定は `self.cfg` / `self.accounts` でリアルタイムに読み取ります（各アクセスで設定ストアから最新値を読み取ります）。`self.config` は `self.cfg` の互換別名として使用できます。
 
-ほとんどのアダプターでは `__init__` のオーバーライドは不要です。カスタム初期化が必要な場合：
+ほとんどのアダプタは `__init__` をオーバーライドする必要はありません。独自の初期化が必要な場合：
 
 ```python
 class MyAdapter(BaseAdapter):
     ConfigClass = MyConfig
     
     def __init__(self, sdk=None):
-        super().__init__(sdk)  # sdk を渡す
+        super().__init__(sdk)  # sdkを渡す
         self.converter = self._setup_converter()
         self.convert = self.converter.convert
 ```
@@ -681,7 +679,7 @@ class MyAdapter(BaseAdapter):
 ```python
 class MyAdapter(BaseAdapter):
     class Send(BaseAdapter.Send):
-        """Send 嵌套クラス、BaseAdapter.Send から継承"""
+        """Sendのネストクラス、BaseAdapter.Sendから継承"""
         pass
 ```
 
@@ -693,21 +691,21 @@ class MyAdapter(BaseAdapter):
 |-----|------|---------|
 | `_target_id` | 目標ID | `To(id)` または `To(type, id)` |
 | `_target_type` | 目標タイプ | `To(type, id)` |
-| `_target_to` | 簡略化された目標ID | `To(id)` |
+| `_target_to` | 簡略化した目標ID | `To(id)` |
 | `_account_id` | 送信アカウントID | `Using(account_id)` |
 | `_adapter` | アダプタインスタンス | 自動設定 |
-| `_at_user_ids` | @ユーザーIDリスト | `At(user_id)` |
-| `_reply_message_id` | レスポンスするメッセージID | `Reply(message_id)` |
-| `_at_all` | @全員か | `AtAll()` |
+| `_at_user_ids` | @ユーザー一覧 | `At(user_id)` |
+| `_reply_message_id` | 返信するメッセージID | `Reply(message_id)` |
+| `_at_all` | @全員かどうか | `AtAll()` |
 
-> **推奨**：`self.send_context` 属性を使って `target_type`、`target_id`、`account_id` を一括で取得するようにしてください。個々のインスタンス変数にアクセスするよりも明確です。
+> **推奨**：`self.send_context` 属性を使って `target_type`、`target_id`、`account_id` を一括して取得するほうが、個々のインスタンス変数を直接アクセスするよりも明確です。
 
 ### フレームワーク補助メソッド
 
 | メソッド/属性 | 説明 |
 |-----------|------|
-| `self._apply_modifiers(message)` | At/AtAll/Reply 修飾子の状態をメッセージセグメントリストにマージする |
-| `self.send_context` | `target_type`、`target_id`、`account_id` の辞書を返す；`account_id` が明示的に指定されていない場合は、イベント配信チェーンのトリガーアカウントをデフォルトにする |
+| `self._apply_modifiers(message)` | At/AtAll/Reply モディファイアの状態をメッセージセグメントリストにマージする |
+| `self.send_context` | `{target_type, target_id, account_id}` ディクショナリを返す；`account_id` が明示的に指定されていない場合、現在のイベント配信チェーンのトリガーアカウントをデフォルトとする |
 
 ### 基本メソッド
 
@@ -727,13 +725,13 @@ class Send(BaseAdapter.Send):
             )
         return asyncio.create_task(_do_send())
 
-    # Text/Image/Voice/Video/File は基底クラスから継承され、Raw_ob12 にデフォルトで委譲されるため、再実装は不要
-    # プラットフォーム固有のロジックが必要な場合は、単一メソッドをオーバーライドすることができる：
+    # Text/Image/Voice/Video/File は基底クラスから継承され、Raw_ob12 にデフォルトで委譲されるため、実装は不要
+    # プラットフォーム固有のロジックが必要な場合、個々のメソッドをオーバーライドする：
     # def Text(self, text: str):
     #     return self.Raw_ob12([{"type": "text", "data": {"text": text}}])
 ```
 
-### チェーン修飾メソッド
+### チェーン式修飾メソッド
 
 ```python
 class Send(BaseAdapter.Send):
@@ -749,10 +747,10 @@ class Send(BaseAdapter.Send):
 
 ## イベント変換器
 
-### 変換フロー
+### 変換プロセス
 
 ```
-プラットフォーム固有イベント
+プラットフォームの原生イベント
     ↓
 Converter.convert()
     ↓
@@ -761,11 +759,11 @@ OneBot12 標準イベント
 
 ### 必須フィールド
 
-変換後のイベントはすべて以下のフィールドを含む必要があります：
+変換後のイベントはすべて以下のフィールドを含まなければなりません：
 
 ```python
 {
-    "id": "イベントの唯一識別子",          # 同一アカウントで同じイベントを再送信する際は同じ値にする必要がある（フレームワークが重複を防ぐ）
+    "id": "イベントのユニークな識別子",          # 同一アカウントで同一イベントを再送する場合、同じ id にする必要があります（フレームワークが重複を検出）
     "time": 1234567890,           # 10桁の Unix タイムスタンプ
     "type": "message/notice/request/meta",
     "detail_type": "イベントの詳細タイプ",
@@ -775,65 +773,83 @@ OneBot12 標準イベント
         "platform": "プラットフォーム名",
         "user_id": "ロボットID"     # bot_id と一致する必要がある
     },
-    "{platform}_raw": {...},       # 元データ（必須）
-    "{platform}_raw_type": "..."    # 元のタイプ（必須）
+    "{platform}_raw": {...},       # 原始データ（必須）
+    "{platform}_raw_type": "..."    # 原始タイプ（必須）
 }
 ```
 
-> イベント `id` にはアカウントの次元が必要です：同一アカウントで同じイベントを再送信する際は `id` を同じにする必要があります。異なるアカウントが同じグループ/会話で同じ物理メッセージを受け取る場合、`id` は異なる必要があります（たとえば `f"{self.user_id}:{post_type}:{message_id}"` のように）。
+> イベント id はアカウント次元で指定する必要があります：同一アカウントで同一イベントを再送する場合、id は同じでなければなりません。異なるアカウントが同じグループ/会話で同じ物理メッセージを受け取る場合、id は異なっていなければなりません（例：`f"{self.user_id}:{post_type}:{message_id}"`）。
 
-### 複数アカウントの重複受信（フレームワークが注入するフィールド）
+### 複数アカウント間の重複受理（フレームワークが注入するフィールド）
 
-複数アカウントアダプタの複数のアカウントが同じグループ/会話で、同一の物理メッセージが各アカウントに順次到達する場合、フレームワークは `ErisPulse.framework.cross_account_policy != "off"` の場合、内容ベースの関連付け（同じプラットフォーム + 同じ会話 + 同じ送信者 + 同じ `alt_message` が短い時間内に）を自動的に行い、アダプタは関与する必要はありません：
+複数アカウントアダプタの複数アカウントが同じグループ/会話で、同じ物理メッセージが各アカウントに到達する場合、フレームワークは `ErisPulse.framework.cross_account_policy != "off"` の場合、自動的に内容ベースの関連付け（同プラットフォーム + 同会話 + 同送信者 + 同 `alt_message` が短い時間内に）を行い、アダプタは関与する必要はありません：
 
-- `mark`：後続のコピーは `multi_receipt` というトップレベルのフィールド `{"event_id": 初回受理イベントのID, "self_id": 初回受理アカウント}` を注入して通常通り配信され、モジュールはこのフィールドを読んで裁決する
-- `drop`：後続のコピーは配信の入口で直接破棄される
+- `mark`：後続のコピーは `multi_receipt` フィールドを上層に注入して通常通り配信され、モジュールはこのフィールドを読んで独自に裁決
+- `drop`：後続のコピーは配信入口で直接破棄
+- **@メンション優遇**：`message` セグメントのメンションターゲットが受信アカウント自身のアイデンティティ（`self.user_id` / `self.account_id`）に一致するコピーは無条件で許容（`mark` / `drop` ともに免除）——メンションされたアカウントは必ず自分のイベントを受け取り、`drop` で誤って@駆動の多アカウントモジュールを破棄しない；@メッセージは複数アカウントで1回だけ配信される可能性があるため、@駆動モジュールは `on_at_message` 条件で1回だけ応答する
 
-`multi_receipt` はフレームワークが注入するオプションのフィールドであり、アダプタの変換器は生成も消費もしません。ポリシーはデフォルトで `off` で、イベントの構造は既存の契約と完全に一致します。
+#### 会話アカウントバインディング（正確な所有権宣言）
 
-#### 3層の重複防止メカニズムの役割分担
+内容ベースの関連付けは啓発的な判定（誰が先に到着したか）に依存しています。**正確な会話所有権を宣言する必要がある場合**、`ErisPulse.framework.session_accounts` 配置で会話を特定のアカウントにバインディングします：
 
-| メカニズム | 設定 | 拦截するもの | 判定依据 |
+```toml
+[ErisPulse.framework.session_accounts.snowluma]
+"group:643319481" = "1325859446"   # 推奨のプレフィックスキー：会話タイプ:会話ID → 所有アカウント bot_id
+"643319481" = "1325859446"         # 裸のキー互換書き方：この会話IDのすべての会話タイプにバインディング
+```
+
+> プレフィックスキーは同数値の異種会話（グループ `group:123` とプライベート `user:123`）を互いに影響させないように分離します；裸のキーは互換書き方で、バインディング後はその会話IDのグループチャットとプライベートチャットがすべてバインディングされます。
+
+- バインディングは `cross_account_policy` に依存せず有効になります（配置でバインディングすれば、この会話の重複を無効にします）：所有アカウントのイベントは通常通り配信され、他のアカウントのコピーは配信入口で破棄されます
+- **@メンション優遇**は同様に有効です：メンションされた非所有アカウントのコピーは許容されます
+- バインディングはリアルタイムに設定を読み込み、ホットアップデートが有効になります；バインディングされていない会話は影響を受けません
+- 「1つの会話に複数のアカウントが1つのアカウントに応答させたい」展開では、内容ベースの関連付けよりも正確で、3秒のウィンドウと内容比較の啓発的エラーがありません
+
+`multi_receipt` はフレームワークが注入するオプションフィールドで、アダプタの Converter は生成も消費もしません；ポリシーがデフォルト `off` の場合、イベント構造は既存の契約と完全に一致します。
+
+#### 3段階の重複防止メカニズムの役割
+
+| メカニズム | 配置 | 拦截するもの | 判定依据 |
 |------|------|----------|----------|
-| イベントの冪等性重複防止 | `ErisPulse.framework.event_dedupe`（デフォルト有効） | 同一イベント id の再接続再送信（同一接続） | イベント `id` |
-| 本アカウントの自己発言フィルタ | `ErisPulse.event.message.ignore_self`（デフォルト有効） | 受信アカウント自身のメッセージ（送信者 == 受信アカウント） | `self.user_id` vs `user_id` |
-| 複数アカウントの重複受信 | `ErisPulse.framework.cross_account_policy`（デフォルト `off`、`drop` 有効） | **同一物理メッセージが他のアカウントのコピー**——複数アカウントが同じグループで bot A が発言し、bot B も同様のメッセージを1つ受け取る | 内容ベースの関連付け（同プラットフォーム + 同会話 + 同送信者 + 同内容、短い時間内）、キーには self_id は含まれない |
+| イベントの冪等性重複防止 | `ErisPulse.framework.event_dedupe`（デフォルト有効） | 同一イベントの再接続再送信（同じ接続） | イベント `id` |
+| 本アカウントのエコー防止 | `ErisPulse.event.message.ignore_self`（デフォルト有効） | 自分のアカウントが送信したメッセージ（送信者 == 受信アカウント） | `self.user_id` vs `user_id` |
+| 複数アカウントの重複受理 | `ErisPulse.framework.cross_account_policy`（デフォルト `off`、`drop` 有効） | **同一物理メッセージが他のアカウントのコピー**——複数アカウントが同じグループで bot A が発言し、bot B も同じものを1つ受け取る（メンションが自分アカウントに命中するコピーは豁免） | 内容ベースの関連（同プラットフォーム + 同会話 + 同送信者 + 同内容、短い時間内）、キーには self_id が含まれない |
 
-**典型的なシナリオ——複数アカウントが同じグループで発言**：bot A が発言し、同じグループ内の他のアカウント（bot B）も同様のメッセージを1つ受け取る。`cross_account_policy = "drop"` を有効にすると、後続のアカウントのコピーは配信の入口で破棄され、どのモジュールも1回だけ表示されます。
+**典型的なシナリオ——複数アカウントが同じグループで繰り返し発言**：bot A が発言し、同じグループの他のアカウント（bot B）も1つ受け取る。繰り返しモジュールは bot A のメッセージが2回表示されるのを見る。`cross_account_policy = "drop"` を有効にすると、他のアカウントのコピーは配信入口で破棄され、どのモジュールでも1回しか表示されない。**例外：メンション発言**——メンションされたアカウントのコピーは常に許容される（@駆動モジュールは応答に依存し、他のアカウントのコピーは破棄される）。
 
-`ignore_self` と `cross_account_policy` の意味は直交しており、2つの組み合わせで表示回数が決まります：
+`ignore_self` との意味は直交し、両方を組み合わせて見える回数を決定します：
 
-| 組み合わせ | フォローミュールが bot A のメッセージを見る回数 |
+| 組み合わせ | 繰り返しモジュールが bot A のメッセージを見る |
 |------|--------------------------|
-| `drop` + `ignore_self = true`（デフォルト） | 0 または 1 回（先に到着したコピーが A 自身の接続から `ignore_self` でブロックされた場合）——**2回になることはない** |
-| `drop` + `ignore_self = false` | 恒定で1回（先に到着したコピーが A 自身の接続からブロックされない限り） |
+| `drop` + `ignore_self = true`（デフォルト） | 0 または 1 回（先に到着したコピーが A 自身の接続経由なら ignore_self でブロックされる）——**2回は決してない** |
+| `drop` + `ignore_self = false` | 恒定して丁度 1 回 |
 
-> `ignore_self` の意味を「自身の全アカウントを排除する」に拡張しないでください：この判定は受信イベントの `self.user_id`（バインドが確立していない期間に失敗する可能性がある、上記の実行時境界を参照）に依存しており、複数アカウントの関連付けは内容ベースの判定であり、`self` 情報に依存しません。また、「各アカウントの受信」は複数アカウントのログや同期系モジュールの既存の依存関係であり、その意味を狭めるのは暗黙の破壊です。複数アカウントの重複は `cross_account_policy` に任せてください。
+> `ignore_self` の意味を「自身の全アカウントを除外する」に拡張するのは推奨されません：この判定は受信イベントの `self.user_id` に依存するため（バインディングが確立されていないウィンドウ期間では失敗する）、複数アカウント間の関連は内容ベースの判定であり、`self` 情報に依存しない。また、「各アカウントで受信する」は複数アカウントのログ/同期モジュールの既存の依存であり、範囲を狭めるのは暗黙の破壊です。複数アカウントの重複は `cross_account_policy` に任せるべきです。
 
 ### 変換器の例
 
 ```python
 class MyPlatformConverter:
     def convert(self, raw_event):
-        """プラットフォーム固有イベントを OneBot12 標準形式に変換"""
+        """プラットフォーム原生イベントを OneBot12 標準形式に変換"""
         if not isinstance(raw_event, dict):
             return None
         
-        # イベント ID を生成
+        # イベントIDの生成
         event_id = raw_event.get("event_id") or str(uuid.uuid4())
         
-        # 時間スタンプを変換
+        # 時間スタンプの変換
         timestamp = raw_event.get("timestamp")
         if timestamp and timestamp > 10**12:
             timestamp = int(timestamp / 1000)
         else:
             timestamp = int(timestamp) if timestamp else int(time.time())
         
-        # イベントタイプを変換
+        # イベントタイプの変換
         event_type = self._convert_type(raw_event.get("type"))
         detail_type = self._convert_detail_type(raw_event)
         
-        # 標準イベントを構築
+        # 標準イベントの構築
         onebot_event = {
             "id": str(event_id),
             "time": timestamp,
@@ -855,7 +871,7 @@ class MyPlatformConverter:
 
 ### start() の2つの正しい書き方
 
-クライアントモードのアダプタ（WebSocketクライアント、HTTPポーリングなど）は `start()` で常駐接続ループを起動する必要があります。フレームワークは2つの書き方をサポートしていますが、**どちらか一方のみ使用できます**。
+クライアントモードのアダプタ（WebSocketクライアント、HTTPポーリングなど）は `start()` で永続的な接続ループを起動する必要があります。フレームワークは2つの書き方をサポートしていますが、**どちらか一方のみ選択してください**：
 
 **書き方1：spawn-返却式（推奨）**——`spawn_client_loop()` でループをプラットフォームに属するバックグラウンドタスクとしてスケジュールし、`start()` は即座に返ります：
 
@@ -864,79 +880,79 @@ class MyAdapter(BaseAdapter):
     async def start(self):
         # ループタスクは self._platform に属するため、shutdown でフレームワークが自動的にキャンセル
         self.spawn_client_loop(self._connect_loop())
-        # start はここで終了——"起動成功"と即座に返す。接続失敗はループ内で再試行
+        # start はここで終了——"起動成功"、接続失敗はループ内でリトライ
 
     async def _connect_loop(self):
         while True:
             try:
-                await self._connect_and_receive()   # 切断は例外 → 下方の退避
+                await self._connect_and_receive()   # 断線で例外 → 下方のリトライ
             except asyncio.CancelledError:
                 raise
             except Exception:
-                await asyncio.sleep(5)              # ループ内で再試行
+                await asyncio.sleep(5)              # ループ内でリトライ
 ```
 
-**書き方2：常駐式**——`start()` で接続ループを `await` し、決して返りません：
+**書き方2：常駐式**——`start()` でループを `await` し、返りません：
 
 ```python
 class MyAdapter(BaseAdapter):
     async def start(self):
-        await self._connect_loop()   # 常駐で返らない；ループが例外を投げた場合、フレームワークの再試行チェーンに渡される
+        await self._connect_loop()   # 常駐で返りません；ループが例外を投げた場合 = start 失敗
 ```
 
 2つの書き方の違いと共通点：
 
 | | spawn-返却式 | 常駐式 |
 |---|---|---|
-| `start()` の返り時点 | ループ起動後即座に返る | 接続ループが終了/失敗した時（フレームワークは退避戦略で再試行） |
-| 接続失敗の処理 | ループ内で例外を捕まえて退避 | 例外を上昇させ、フレームワークの再試行チェーンに渡す |
-| 適用場面 | 複数接続、ルーティング登録後に他のタスクを起動する必要がある場合 | "接続即起動"の意味を持つ単純な実装 |
+| `start()` の返り時間 | ループを起動した後即返り | ループが終了/失敗した時（フレームワークがリトライ戦略で再試行） |
+| 接続失敗処理 | ループ内で例外をキャッチしてリトライ | 例外を上昇させ、フレームワークの再試行チェーンに任せる |
+| 適用場面 | 複数接続、ルーティング登録後に他のタスクを起動したい場合 | "接続即起動"のシンプルな実装 |
 
-`spawn_client_loop(coro, *, name="client_loop")` は書き方1のスケジューラーの入り口です：タスクは `self._platform` に属して登録され、アダプタの `shutdown()` 時にフレームワークが自動的にキャンセルされます。ループ内で未捕獲の例外は自動的に記録されます（意図的な切断再接続はループ内で捕まえてください）。
+`spawn_client_loop(coro, *, name="client_loop")` は書き方1のスケジューラーの入り口です：タスクは `self._platform` に属する登録を行い、アダプタの `shutdown()` 時にフレームワークが属するタスクを自動的にキャンセルし、自分でタスクハンドルを管理する必要はありません；ループ内で未捕獲の例外は自動的に記録されます（意図的な切断再接続はループ内で自ら捕獲してください）。
 
-> **唯一の誤った書き方は混用すること**：spawn の後に `await` で同じループを実行すると、`start()` は即座に返る意味を失い、タスクのキャンセル経路が予測不可能になります。
+> **唯一の誤った書き方は混用すること**：spawn の後に同じループを `await` すると、`start()` が即返り意味を失い、タスクのキャンセル経路が予測不能になります。
 
 ### 接続モードの半完成基底クラス
 
-上記の2つの書き方のほか、最も一般的な2つの接続モードに対してフレームワークは「半完成」の基底クラスを提供しています（`ErisPulse.Core.Bases.adapter_patterns`、ルートパッケージから直接インポート可能）：`start` / `shutdown` のライフサイクルの編集はすべて基底クラスが行い、サブクラスは業務フックを実装するだけです。
+前節の2つの書き方の他に、最も一般的な2つの接続モードに対してフレームワークは「半完成」の基底クラス（`ErisPulse.Core.Bases.adapter_patterns`、ルートパッケージから直接インポート可能）を提供しています：`start` / `shutdown` のライフサイクルの編排はすべて基底クラスが完了し、サブクラスは業務フックのみ実装します。
 
 #### PollingAdapter（HTTPポーリング型）
 
-「クライアントが定期的にイベントを取得する」プラットフォーム（Telegram getUpdates型）に適しています。基底クラスはspawn-返却式で常駐ポーリングループを起動し、取得失敗は自動的に記録され指数退避されます（基数1秒、上限60秒、成功後はゼロに戻る；定数 `POLLING_ADAPTER_BACKOFF_BASE_SECS` / `POLLING_ADAPTER_BACKOFF_MAX_SECS` は `Core/constants.py` で調整可能）：
+「クライアントが定期的にイベントを取得する」プラットフォーム（Telegram getUpdates型）に適しています。基底クラスはspawn-返却式で常駐ポーリングループを起動し、取得失敗は自動的に記録され指標バックオフ（基数1秒、上限60秒、成功後は0に戻る；定数 `POLLING_ADAPTER_BACKOFF_BASE_SECS` / `POLLING_ADAPTER_BACKOFF_MAX_SECS` は `Core/constants.py` で調整可能）：
 
 ```python
 from ErisPulse import PollingAdapter
 
 class MyAdapter(PollingAdapter):
-    # ポーリング間隔はデフォルト5秒；ConfigClass で poll_interval フィールドを宣言した場合は設定値が優先される（ホットアップデート有効）
+    # ポーリング間隔はデフォルト5秒；ConfigClassでpoll_intervalフィールドを宣言すると設定値が優先される（ホットアップデート有効）
     poll_interval = 5.0
 
     async def fetch_events(self):
-        """プラットフォーム固有イベントを一括取得（例外は基底クラスが退避し、try/exceptは不要）"""
+        """1回のプラットフォーム原生イベントを取得（基底クラスが退避を統一して処理するため、try/exceptは不要）"""
         resp = await self.sdk.client.get(f"{self.cfg.endpoint}/getUpdates")
         data = await resp.json()
         return data.get("result", [])
 
     def convert_one(self, raw):
-        """1件の固有イベントをOneBot12に変換；Noneを返すとスキップ"""
+        """1つの原生イベントをOneBot12に変換；Noneを返すとスキップ"""
         return self.converter.convert(raw)
 
     async def call_api(self, endpoint: str, **params):
         ...  # 普通のアダプタと同じ
 ```
 
-最小実装面：`fetch_events` / `convert_one` / `call_api`。`start()` でループを起動して即座に返る；`shutdown()` はサブクラスで処理する必要がない（ポーリングループはownerに属して自動的にキャンセルされる）。
+最小実装面：`fetch_events` / `convert_one` / `call_api`。`start()` はループを起動した後即返り；`shutdown()` はサブクラスで処理する必要はない（ポーリングループはownerに属するため自動的にキャンセルされる）。
 
 #### WebhookAdapter（HTTPコールバック型）
 
-「プラットフォームがコールバックを送信する」プラットフォームに適しています。基底クラスの `start()` はフレームワークの router にコールバック受信ルートを登録します（最終パスは `/{プラットフォーム名}/webhook`、POSTメソッド）、登録は `owner_scope` で行われる——アダプタのアンロード時にownerに従って自動的にクリーンアップされるため、手動で登録解除する必要はない：
+「プラットフォームがコールバックをプッシュする」プラットフォームに適しています。基底クラスの `start()` はフレームワークのrouterにコールバック受信ルートを登録（最終的なパスは `/{プラットフォーム名}/webhook`、POSTメソード）、登録は `owner_scope` に含まれる——アダプタがアンロードされた時にownerに応じて自動的にクリーンアップされるため、手動でアンロードする必要はない：
 
 ```python
 from ErisPulse import WebhookAdapter
 
 class MyAdapter(WebhookAdapter):
     def verify_request(self, request) -> bool:
-        """オプションフック：コールバック検証（デフォルトで許可；Falseを返すと基底クラスが403で拒絶）"""
+        """オプションのフック：コールバックの検証（デフォルトで許可；Falseを返すと基底クラスが403で拒否）"""
         cfg = self.cfg
         if not cfg.token:
             return True
@@ -944,31 +960,31 @@ class MyAdapter(WebhookAdapter):
         return auth == f"Bearer {cfg.token}"
 
     def convert(self, payload):
-        """コールバックペイロードをOneBot12に変換；Noneを返すとスキップ"""
+        """コールバックのペイロードをOneBot12に変換；Noneを返すとスキップ"""
         return self.converter.convert(payload)
 
     async def call_api(self, endpoint: str, **params):
         ...  # 普通のアダプタと同じ
 ```
 
-最小実装面：`convert` / `call_api`（`verify_request` はオプション）。コールバックアドレスは `sdk.adapter.get_connection_info(platform)` で取得してプラットフォームのバックエンドに設定する。検証に失敗したリクエストは403、ペイロード解析に失敗したリクエストは400、正常なリクエストは `{"status": "ok"}` を返す。
+最小実装面：`convert` / `call_api`（`verify_request` はオプション）。コールバックアドレスは `sdk.adapter.get_connection_info(platform)` で取得してプラットフォームのバックエンドに設定する。検証に失敗したリクエストは403を返し、ペイロードの解析に失敗したリクエストは400を返し、正常なリクエストは `{"status": "ok"}` を返す。
 
 #### 3つのモードの使い分け
 
-| プラットフォームプロトコル | 継承 | フレームワーク |
+| プラットフォームプロトコル | 継承 | フットスターラー |
 |---|---|---|
 | プラットフォームが接続してくる（WebSocketサーバー） | `BaseAdapter` | `epsdk create adapter`（デフォルト ws-server） |
-| 自分がポーリングする（HTTPポーリング） | `PollingAdapter` | `epsdk create adapter --template polling` |
-| プラットフォームがコールバックしてくる（HTTPコールバック） | `WebhookAdapter` | `epsdk create adapter --template webhook` |
+| 自分が引きに行く（HTTPポーリング） | `PollingAdapter` | `epsdk create adapter --template polling` |
+| プラットフォームがプッシュしてくる（HTTPコールバック） | `WebhookAdapter` | `epsdk create adapter --template webhook` |
 
 実行可能な完全な例はリポジトリの `examples/example-adapter/`（ws-server）、`examples/example-adapter-polling/`、`examples/example-adapter-webhook/` を参照してください。
 
-### WebSocket 接続
+### WebSocket接続
 
 ```python
 class MyAdapter(BaseAdapter):
     async def start(self):
-        """WebSocketルートを登録"""
+        """WebSocketルートの登録"""
         router.register_websocket(
             module_name="myplatform",
             path="/ws",
@@ -997,12 +1013,12 @@ class MyAdapter(BaseAdapter):
         return token == "valid_token"
 ```
 
-### WebHook 接続
+### WebHook接続
 
 ```python
 class MyAdapter(BaseAdapter):
     async def start(self):
-        """WebHookルートを登録"""
+        """WebHookルートの登録"""
         router.register_http_route(
             module_name="myplatform",
             path="/webhook",
@@ -1019,13 +1035,13 @@ class MyAdapter(BaseAdapter):
         return {"status": "ok"}
 ```
 
-> コールバック型のプラットフォームでは、上記の登録/検証/クリーンアップの編集を手動で書く必要はありません——`[WebhookAdapter` 半完成基底クラス](#接続モード半完成基底クラス)を継承し、`convert`（`verify_request` をオーバーライドする場合も可）を実装するだけです。
+> 純粋なコールバック型のプラットフォームは、上記のルート登録/認証/クリーンアップの編排を手動で書く必要はありません——代わりに [`WebhookAdapter` 半成品基底クラス](#連接モード半成品基底クラス) を継承し、`convert`（`verify_request` はオプション覆写）を実装するだけです。
 
-> **ルート情報の取得**：アダプタが登録したルート（HTTP、WebSocket、SSE）は、`sdk.adapter.get_connection_info(platform)` と `sdk.router.get_module_urls(module_name)` を使って完全な接続アドレス（`base_url` + パス）を取得できます。[アダプタ開発入門 - 接続情報とルート発見](getting-started.md#9-接続情報とルート発見)と [SSE 支持](getting-started.md#10-sse-server-sent-events-サポート)を参照してください。
+> **ルート情報の照会**：アダプタが登録したルート（HTTP、WebSocket、SSE）は `sdk.adapter.get_connection_info(platform)` と `sdk.router.get_module_urls(module_name)` を使って完全な接続アドレス（`base_url` + パス）を照会できます。[アダプタ開発入門 - 接続情報とルート発見](getting-started.md#9-接続情報とルート発見) と [SSE 支持](getting-started.md#10-sse-server-sent-events-支持) を参照してください。
 
-## API レスポンス標準
+## APIレスポンス標準
 
-フレームワークは `make_response()` と `make_error()` メソッドを使って標準化されたレスポンスを構築し、手動でのレスポンス辞書の構築は不要です。
+フレームワークは `make_response()` と `make_error()` メソッドを使って標準化されたレスポンスを作成します。手動でレスポンス辞書を構築する必要はありません。
 
 ### 成功レスポンス
 
@@ -1061,7 +1077,7 @@ async def call_api(self, endpoint: str, **params):
 
 ### 宣言的設定（推奨）
 
-`AccountConfigClass` を宣言して設定クラスを定義した後、フレームワークは自動的に複数アカウントのロード、検証、テンプレート生成を管理します：
+`AccountConfigClass` を宣言して設定クラスを宣言した後、フレームワークは自動的に複数アカウントのロード、検証、テンプレート生成を管理します：
 
 ```python
 from dataclasses import dataclass, field
@@ -1077,7 +1093,7 @@ class MyAdapter(BaseAdapter):
     
     async def start(self):
         for name, account in self.enabled_accounts.items():
-            self.logger.info(f"アカウント {name}: {account.bot_id} を起動します")
+            self.logger.info(f"アカウント {name}: {account.bot_id} を起動")
             await self._connect(name, account)
     
     async def call_api(self, endpoint: str, account_id: str | None = None, **params):
@@ -1099,27 +1115,27 @@ token = "token2"
 enabled = true
 ```
 
-### アカウント指定での送信
+### アカウント指定による送信
 
 ```python
-# Using メソッドでアカウントを指定
+# Usingメソッドでアカウントを指定
 my_adapter = adapter.get("myplatform")
 
 # イベントの self.user_id を使用する（推奨、最も汎用的）
 await my_adapter.Send.Using(event["self"]["user_id"]).To("user", "123").Text("Hello")
 
-# アカウント名を指定
+# アカウント名で指定
 await my_adapter.Send.Using("account1").To("user", "123").Text("Hello")
 ```
 
 ### イベントのアカウント識別子と Using の関係
 
-フレームワークのイベント返信メカニズムは、イベントの `self` フィールドからアカウント識別子（`account_id` が優先され、`user_id` がバックアップ）を抽出し、`Using` に注入します。アダプタの開発者は、Converter が生成するアカウント識別子がアカウント設定（アカウント名や `bot_id` など）と一致することを保証する必要があります。
+フレームワークのイベント返信メカニズムは、イベントの `self` フィールドからアカウント識別子（`account_id` が優先、`user_id` をデフォルトとして）を抽出し、`Using` に注入します。アダプタ開発者は、Converter が生成するアカウント識別子がアカウント設定（アカウント名や `bot_id` など）と一致することを保証する必要があります。
 
-**フレームワークが注入する動作**：
+**フレームワークの注入動作**：
 
 ```python
-# フレームワークがアカウント識別子を抽出するロジック（account_id が優先され、user_id がバックアップ）
+# アカウント識別子を抽出するフレームワークのロジック（account_id が優先、user_id をデフォルトとして）
 account = self.get("self", {}).get("account_id", "") or self.get("self", {}).get("user_id", "")
 
 # アカウント識別子が空でない場合に Using を注入
@@ -1127,17 +1143,17 @@ if account:
     send_chain = send_chain.Using(account)
 ```
 
-> **重要な点**：アダプタが1つの Bot 設定しか使用しない場合でも、Converter がアカウント識別子を正しく設定している限り、フレームワークはそれを `Using` に注入します。アダプタは、この識別子が `AccountConfigClass` のアカウント名や `bot_id` などのフィールドと一致していることを保証する必要があります。識別子が空の場合、フレームワークは `Using` を注入せず、その場合、送信は未指定アカウントで処理されます——最初の有効なアカウントにフォールバックします。
+> **重要な点**：アダプタが1つの Bot 設定を使用している場合でも、Converter がアカウント識別子を正しく設定している限り、フレームワークはそれを `Using` に注入します。アダプタは、この識別子が `AccountConfigClass` に定義されたアカウント名や `bot_id` などと一致することを保証する必要があります。識別子が空の場合、フレームワークは `Using` を注入せず、代わりに最初に有効なアカウントにバックアップします。
 
-明示的に渡された `account_id` が解析できない場合、フレームワークは WARNING を記録し、最初の有効なアカウントにフォールバックします；WARNING に含まれる `platform` / `account_id` / `account` は、アカウントに属さないイベントの原因を特定するのに使用できます。
+明示的に指定された `account_id` が解釈できない場合、フレームワークは WARNING を出力し、最初に有効なアカウントにバックアップします。WARNING に含まれる `platform` / `account_id` / `account` は、アカウントに属さないイベントの出所を特定するのに使用できます。
 
-**イベント処理チェーン内の自動バインディング**：イベント処理チェーン内で送信メソッドを呼び出す際は**明示的に `Using()` を指定する必要はありません**——フレームワークはイベント処理の入口でトリガーイベントのアカウント識別子を注入し、`Send` / `Api` / `Request` チェーンが明示的に `Using()` を指定していない場合、その上下文に基づいてデフォルトでバインディングされます（明示的な `Using()` は常に優先されます；タイマー / スタートタスクなどのイベント上下文がない場面ではデフォルトアカウントの意味が維持されます）。イベントチェーンの自動バインディングは ErisPulse **2.12+** が必要です。
+**イベント配信チェーン内の自動バインディング**：イベントの処理チェーン内で送信メソッドを呼び出す場合、**明示的に `Using()` を指定する必要はありません**——フレームワークはイベント配信の入口でトリガーイベントのアカウント識別子を注入し、`Send` / `Api` / `Request` チェーンが明示的にアカウントを指定しない場合、このデフォルトアカウントにバックアップします（明示的な `Using()` は常に優先します；タイマーや起動タスクなどイベントコンテキストのない場面ではデフォルトアカウントの意味を維持します）。イベントチェーン内の自動バインディングは ErisPulse **2.12+** が必要です。
 
-> イベント `self.user_id` / `self.account_id` の代位の生成契約は[イベント変換標準](../../standards/event-conversion.md)を参照してください；このフィールドが恒常的に存在することがアカウント解析のフォールバック意味の前提です——存在しない場合、最初の有効なアカウントにフォールバックし、複数アカウントの場合は「デフォルトアカウントから送信される」ことになります。
+> 事件 `self.user_id` / `self.account_id` 代位の产出契约见[事件转换标准](../../standards/event-conversion.md)；该字段恒定存在是账户解析回退语义的前提——缺失时回退第一个启用账户，多账户下即「从默认账户发出」。
 
-## エラー処理
+## エラーハンドリング
 
-### 接続再試行
+### 接続リトライ
 
 ```python
 import asyncio
@@ -1155,18 +1171,18 @@ class MyAdapter(BaseAdapter):
                 retry_count += 1
                 if retry_count < max_retries:
                     wait_time = min(60 * (2 ** retry_count), 600)
-                    self.logger.warning(f"接続に失敗しました、{wait_time}秒後に再試行します")
+                    self.logger.warning(f"接続失敗、{wait_time}秒後に再試行")
                     await asyncio.sleep(wait_time)
                 else:
                     raise
 ```
 
-### API エラー処理
+### APIエラーハンドリング
 
 ```python
 async def call_api(self, endpoint: str, **params):
     try:
-        # 推奨は SDK 内部のクライアントを使用
+        # 推荐使用 SDK 内置客户端
         from ErisPulse.Core import client
         from ErisPulse.Core.Bases.errors import ClientError, ClientTimeoutError
         resp = await client.post(
@@ -1177,38 +1193,38 @@ async def call_api(self, endpoint: str, **params):
         response = await resp.json()
         return self._standardize_response(response)
     except ClientTimeoutError:
-        self.logger.error(f"リクエストがタイムアウトしました: {endpoint}")
-        return self._error_response("リクエストがタイムアウトしました", 32000)
+        self.logger.error(f"リクエストタイムアウト: {endpoint}")
+        return self._error_response("リクエストタイムアウト", 32000)
     except ClientError as e:
         self.logger.error(f"ネットワークエラー: {e}")
-        return self._error_response("ネットワークリクエストに失敗しました", 33000)
+        return self._error_response("ネットワークリクエスト失敗", 33000)
     except Exception as e:
-        self.logger.error(f"不明なエラー: {e}")
+        self.logger.error(f"未知のエラー: {e}")
         return self._error_response(str(e), 34000)
 ```
 
-> **互換性**：`aiohttp.ClientSession` を使用する古いアダプタコードは影響を受けません。`aiohttp.ClientError` を捕まえることができます。2つの方法は共存できます。新しいコードは `sdk.client` + ErisPulse の例外体系を使用することを推奨します。
+> **後方互換性**：`aiohttp.ClientSession` を使用する古いアダプタコードは影響を受けず、`aiohttp.ClientError` をキャッチできます。2つの方法は共存できます。新しいコードは `sdk.client` + ErisPulse の例外体系を使用することを推奨します。
 
 ## Bot 状態管理
 
-AdapterManager には Bot 状態の追跡システムが内蔵されており、すべての登録された Bot のオンライン状態、アクティブ時間、およびメタ情報を自動的に管理します。
+AdapterManager には Bot 状態の追跡システムが内蔵されており、すべての登録された Bot のオンライン状態、アクティブ時間、およびメタ情報を自動的に維持します。
 
 ### 自動発見メカニズム
 
-アダプタが `adapter.emit()` を使ってイベントを送信するとき、フレームワークはイベントの `self` フィールドを自動的にチェックします：
+アダプタが `adapter.emit()` を通じてイベントを送信する場合、フレームワークはイベント内の `self` フィールドを自動的にチェックします：
 
-- **meta イベント**：`detail_type` に応じて対応する操作を実行（connect で登録/ disconnect でオフラインをマーク/ heartbeat でアクティブ時間を更新）
-- **普通のイベント**（message/notice/request）：Bot の自動発見とアクティブ時間の更新
+- **meta イベント**：`detail_type` に応じて対応する操作（接続登録/切断でオフラインをマーク/ハートビートでアクティブ時間を更新）
+- **通常イベント**（message/notice/request）：Bot の自動発見とアクティブ時間の更新
 
 ```python
-# self フィールドを含むすべてのイベントは自動発見をトリガーします
+# self フィールドを含むすべてのイベントが自動発見をトリガーする
 await self.adapter.emit({
     "type": "message",
     "platform": "myplatform",
     "self": {"platform": "myplatform", "user_id": "bot123"},
     # ...
 })
-# Bot "bot123" は自動的に登録され（最初に出現した場合）、アクティブ時間を更新されます
+# Bot "bot123" が自動的に登録され、アクティブ時間を更新する（初めて出現した場合）
 ```
 
 ### Meta イベントタイプ
@@ -1216,31 +1232,31 @@ await self.adapter.emit({
 | `detail_type` | 説明 | フレームワークの動作 |
 |---|---|---|
 | `connect` | Bot が接続 | Bot を登録し、`adapter.bot.online` ライフサイクルイベントをトリガー |
-| `disconnect` | Bot が切断 | Bot のオフラインをマークし、`adapter.bot.offline` ライフサイクルイベントをトリガー |
+| `disconnect` | Bot が切断 | Bot をオフラインにマークし、`adapter.bot.offline` ライフサイクルイベントをトリガー |
 | `heartbeat` | Bot のハートビート | Bot のアクティブ時間とメタ情報を更新 |
 
-### アダプタが Meta イベントを送信
+### アダプタが Meta イベントを送信する
 
-送信方法（`emit_meta()` で1行送信、ハートビートイベントと手動構成形式）は [アダプタのベストプラクティス - Bot 状態管理と Meta イベント](best-practices.md#bot-状態管理と-meta-イベント) を参照してください。
+送信方法（`emit_meta()` で1行送信、ハートビートイベントと手動構造化形式）は[アダプタのベストプラクティス - Bot 状態管理と Meta イベント](best-practices.md#bot-状態管理と-meta-イベント)を参照してください。
 
 ### `self` フィールドの拡張情報
 
-`self` フィールドは必須の `platform` と `user_id` の他に、以下のオプションフィールドをサポートします：
+`self` フィールドには必須の `platform` と `user_id` の他に、以下のオプションフィールドがサポートされています：
 
 | フィールド | 説明 |
 |---|---|
 | `user_name` | Bot のユーザー名 |
 | `nickname` | Bot のニックネーム |
-| `avatar` | Bot のアイコン URL |
+| `avatar` | Bot のアバターの URL |
 | `account_id` | 複数アカウントの識別子 |
 
 ### Bot 状態の照会
 
-照会 API（`get_bot_info()` / `list_bots()` / `is_bot_online()` / `get_status_summary()`）は [アダプタシステム API - Bot 状態管理](../../api-reference/adapter-system.md#bot-状態管理) を参照してください。
+照会 API（`get_bot_info()` / `list_bots()` / `is_bot_online()` / `get_status_summary()`）は[アダプタシステム API - Bot 状態管理](../../api-reference/adapter-system.md#bot-状態管理)を参照してください。
 
 ### Bot ライフサイクルの監視
 
-`adapter.bot.online` / `adapter.bot.offline` ライフサイクルイベントの表と監視例は [アダプタシステム API - Bot 状態管理](../../api-reference/adapter-system.md#bot-状態管理) を参照してください。
+`adapter.bot.online` / `adapter.bot.offline` ライフサイクルイベントの表と監視の例は[アダプタシステム API - Bot 状態管理](../../api-reference/adapter-system.md#bot-状態管理)を参照してください。
 
 ## 関連ドキュメント
 

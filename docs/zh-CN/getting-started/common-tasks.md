@@ -26,11 +26,11 @@ from ErisPulse.Core.Event import command
 @command("count", help="查看命令调用次数")
 async def count_handler(event):
     # 获取计数
-    count = sdk.storage.get("command_count", 0)
+    count = await sdk.storage.aget("command_count", 0)
     
     # 增加计数
     count += 1
-    sdk.storage.set("command_count", count)
+    await sdk.storage.aset("command_count", count)
     
     await event.reply(f"这是第 {count} 次调用此命令")
 ```
@@ -43,7 +43,7 @@ async def profile_handler(event):
     user_id = event.get_user_id()
     
     # 获取用户数据
-    user_data = sdk.storage.get(f"user:{user_id}", {
+    user_data = await sdk.storage.aget(f"user:{user_id}", {
         "nickname": "",
         "join_date": None,
         "message_count": 0
@@ -67,9 +67,9 @@ async def setnick_handler(event):
         return
     
     # 更新用户数据
-    user_data = sdk.storage.get(f"user:{user_id}", {})
+    user_data = await sdk.storage.aget(f"user:{user_id}", {})
     user_data["nickname"] = " ".join(args)
-    sdk.storage.set(f"user:{user_id}", user_data)
+    await sdk.storage.aset(f"user:{user_id}", user_data)
     
     await event.reply(f"昵称已设置为: {' '.join(args)}")
 ```
@@ -171,7 +171,7 @@ async def filter_handler(event):
 
 ```python
 # 从配置或存储加载黑名单
-blacklist = sdk.storage.get("user_blacklist", [])
+blacklist = await sdk.storage.aget("user_blacklist", [])
 
 @message.on_message()
 async def blacklist_handler(event):
@@ -242,9 +242,10 @@ async def pay_handler(event):
     yunhu = sdk.adapter.get(event.get_platform())
     user_id = event.get_user_id()
     # 发送成功后才扣积分
-    await (yunhu.Send.To(event.get_detail_type(), event.get_target_id())
-           .Hook(lambda r: sdk.storage.set(f"points:{user_id}", -10))
-           .Text("支付成功，已扣除 10 积分"))
+    send_result = await (yunhu.Send.To(event.get_detail_type(), event.get_target_id())
+                         .Text("支付成功，已扣除 10 积分"))
+    if send_result:
+        await sdk.storage.aset(f"points:{user_id}", -10)
 ```
 
 ### 失败重试 + 超时取消
@@ -345,7 +346,7 @@ async def groupinfo_handler(event):
 @message.on_message()
 async def count_handler(event):
     # 获取统计
-    stats = sdk.storage.get("message_stats", {
+    stats = await sdk.storage.aget("message_stats", {
         "total": 0,
         "by_user": {},
         "by_day": {}
@@ -358,11 +359,11 @@ async def count_handler(event):
     stats["by_user"][user_id] = stats["by_user"].get(user_id, 0) + 1
     
     # 保存
-    sdk.storage.set("message_stats", stats)
+    await sdk.storage.aset("message_stats", stats)
 
 @command("stats", help="查看消息统计")
 async def stats_handler(event):
-    stats = sdk.storage.get("message_stats", {
+    stats = await sdk.storage.aget("message_stats", {
         "total": 0,
         "by_user": {},
         "by_day": {}

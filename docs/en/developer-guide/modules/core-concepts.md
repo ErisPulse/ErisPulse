@@ -154,15 +154,15 @@ flowchart TD
 ```python
 from ErisPulse import sdk
 
-# Access all core modules via the sdk object
-sdk.logger.info("log")
-sdk.storage.set("key", "value")
+# Access all core modules through the sdk object
+sdk.logger.info("Log")
+await sdk.storage.aset("key", "value")
 
-# For a module's own small state (counters/toggles/last run time), prefer self.state —
-# keys are automatically prefixed with module.state.<module name>. and survive module unload/reload:
+# Use self.state for module-specific small states (counters/switches/last run time) —
+# Keys are automatically prefixed with module.state.<module name>. The state persists after module unload/reload:
 count = self.state.get("runs", 0) + 1
 self.state.set("runs", count)            # Synchronous (any context)
-await self.state.aset("runs", count)     # Async path
+await self.state.aset("runs", count)     # Asynchronous path
 await self.state.aget("runs", 0)
 config = sdk.config.getConfig("MyModule")
 ```
@@ -354,10 +354,10 @@ class MyModule(BaseModule):
 
 ```python
 # Store data
-sdk.storage.set("user:123", {"name": "Zhang San"})
+await sdk.storage.aset("user:123", {"name": "Zhang San"})
 
-# Get data
-user = sdk.storage.get("user:123", {})
+# Retrieve data
+user = await sdk.storage.aget("user:123", {})
 
 # Delete data
 sdk.storage.delete("user:123")
@@ -367,10 +367,10 @@ sdk.storage.delete("user:123")
 
 ```python
 # Use a transaction to ensure data consistency
-with sdk.storage.transaction():
-    sdk.storage.set("key1", "value1")
-    sdk.storage.set("key2", "value2")
-    # If any operation fails, all changes are rolled back
+async with sdk.storage.atransaction():
+    await sdk.storage.aset("key1", "value1")
+    await sdk.storage.aset("key2", "value2")
+    # If any operation fails, all changes will be rolled back
 ```
 
 ## Event Handling

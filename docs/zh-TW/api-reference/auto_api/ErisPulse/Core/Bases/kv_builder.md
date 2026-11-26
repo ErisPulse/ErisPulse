@@ -34,7 +34,7 @@ qb.Insert({"name": "Alice", "age": 30}).Execute()
 ## 类列表
 
 
-### `class KVQueryBuilder(BaseQueryBuilder)`
+### `class KVQueryBuilder(BaseQueryBuilder['BaseStorage'])`
 
 基于 KV 存储的查询构建器
 

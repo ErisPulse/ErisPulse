@@ -29,6 +29,27 @@ ErisPulse 依赖注入模块
 ## 函数列表
 
 
+### `set_module_caller(caller: Callable[[str, str, tuple, dict], Any] | None) -> None`
+
+注册模块调用器回调（由 module 侧反向注入）
+
+``Depends.module(name, method)`` 声明的依赖在解析时经该回调执行跨模块
+调用；di 不直接 import module（避免 di ⇄ module 互引环）。
+
+- **caller**: ``caller(module_name, method, args, kwargs)`` 形式回调（None 卸载）
+
+**内部方法**
+由 module 模块初始化后调用；生态代码无需使用。
+
+**示例**:
+
+```python
+set_module_caller(lambda mn, m, a, kw: module.call(mn, m, *a, **kw))
+```
+
+---
+
+
 ### `_freeze_key(value: Any) -> Any`
 
 **内部方法**

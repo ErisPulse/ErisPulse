@@ -13,6 +13,7 @@ ErisPulse 生命周期管理模块
 """
 
 import asyncio
+import functools
 import inspect
 import time
 from collections.abc import Callable
@@ -217,18 +218,23 @@ class LifecycleManager:
             raise ValueError(i18n.t("core.lifecycle.event_name_required"))
 
         def decorator(func: Callable) -> Callable:
+            # wraps + kwargs 透传：注册的是 wrapper，但 depends 提取与
+            # 日志名都走 wrapper 的签名/qualname——不带 wraps 会丢失原函数
+            # 的 Depends 声明（静默不注入）与处理器名
             if inspect.iscoroutinefunction(func):
-                async def async_wrapper(data):
+                @functools.wraps(func)
+                async def async_wrapper(data, **kwargs):
                     try:
-                        return await func(data)
+                        return await func(data, **kwargs)
                     finally:
                         self.unregister(event, async_wrapper)
 
                 registered = async_wrapper
             else:
-                def sync_wrapper(data):
+                @functools.wraps(func)
+                def sync_wrapper(data, **kwargs):
                     try:
-                        return func(data)
+                        return func(data, **kwargs)
                     finally:
                         self.unregister(event, sync_wrapper)
 
@@ -646,8 +652,12 @@ class LifecycleManager:
                     result = await handler(data, **call_kwargs)
                 else:
                     result = handler(data, **call_kwargs)
+                from ..runtime.frame_config import get_framework_value  # 惰性：Core 装配窗口内快照读取回环
+                _slow_threshold = get_framework_value(
+                    "handler_slow_threshold", HANDLER_SLOW_THRESHOLD_SECS
+                )
                 _elapsed = time.monotonic() - _t
-                if _elapsed > HANDLER_SLOW_THRESHOLD_SECS:
+                if _elapsed > _slow_threshold:
                     self._get_logger().warning(
                         i18n.t(
                             "core.lifecycle.handler_slow",

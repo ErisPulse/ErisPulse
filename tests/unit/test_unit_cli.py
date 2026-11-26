@@ -38,6 +38,7 @@ EXPECTED_COMMANDS = {
     "i18n": ["language", "lang"],
     "types": ["t", "stub"],
     "doctor": ["diag"],
+    "logs": ["log", "tail"],
     "version": ["ver"],
 }
 
