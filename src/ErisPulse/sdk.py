@@ -36,6 +36,7 @@ from .Core.i18n import i18n
 # 导入加载器类
 # 导入懒加载模块类
 from .loaders.module import LazyModule
+from .runtime import package_reload as _prl
 from .runtime import proactive_gc as _pgc
 from .runtime import sdk_initializer as _sdk_initializer
 from .runtime.kernel import Kernel
@@ -216,6 +217,7 @@ class SDK:
         self._initialized: bool = False
         self._gc_task: asyncio.Task | None = None  # 主动 GC 后台任务
         self._gc_config_snapshot: tuple | None = None  # 主动 GC 配置快照（变更检测）
+        self._package_reload_watcher: Any = None  # 已安装发行版热重载监控（runtime/package_reload 创建）
         self._shutdown_event: asyncio.Event | None = None  # 优雅关闭事件
 
     @property
@@ -357,6 +359,22 @@ class SDK:
         读取并钳制主动 GC 框架配置（实现见 ``runtime/proactive_gc.read_gc_config``）
         """
         return _pgc.read_gc_config()
+
+    # 发行版热重载实现拆分至 runtime/package_reload；保留同名方法以兼容测试/子类对 SDK 的 patch
+    def _start_package_reload_watcher(self) -> None:
+        """
+        {!--< internal-use >!--}
+        按 ``framework.auto_reload`` 配置启动发行版热重载监控
+        （实现见 ``runtime/package_reload.start_package_reload``）
+        """
+        _prl.start_package_reload(self)
+
+    def _stop_package_reload_watcher(self) -> None:
+        """
+        {!--< internal-use >!--}
+        停止发行版热重载监控（实现见 ``runtime/package_reload.stop_package_reload``）
+        """
+        _prl.stop_package_reload(self)
 
     def _on_gc_config_event(self, _data: dict) -> None:
         """

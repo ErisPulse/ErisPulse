@@ -1497,6 +1497,16 @@ FILE_RELOAD_DEBOUNCE_SECS: Final[float] = 1.0
 # 修改影响: 半写文件触发预检拒绝后的自愈速度。
 PLUGIN_RELOAD_RETRY_DELAY_SECS: Final[float] = 0.5
 
+# 已安装发行版热重载的默认轮询间隔（秒）。
+# 使用位置: runtime/package_reload.py（framework.auto_reload.interval 的默认值）。
+# 修改影响: 升级生效延迟与轮询开销（mtime/size 快扫，仅在命中时计算 sha256）。
+AUTO_RELOAD_POLL_INTERVAL_SECS: Final[float] = 2.0
+
+# 同一发行版两次自动重载触发的最小间隔（秒）。
+# 使用位置: runtime/package_reload.py（PackageReloadWatcher._loop）。
+# 修改影响: pip 升级分批写入文件时的连环重载防护——冷却内不重复触发。
+AUTO_RELOAD_TRIGGER_COOLDOWN_SECS: Final[float] = 5.0
+
 # ==============================================================================
 # 进程 / 版本 / 日志展示常量
 #

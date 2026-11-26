@@ -23,6 +23,7 @@ from dataclasses import MISSING, dataclass, field, fields, is_dataclass
 from typing import Any
 
 from ..Core.constants import (
+    AUTO_RELOAD_POLL_INTERVAL_SECS,
     DEFAULT_CROSS_RECEIPT_POLICY,
     DEFAULT_CROSS_RECEIPT_WINDOW_SECS,
     DEFAULT_EVENT_DEDUPE_ENABLED,
@@ -70,6 +71,32 @@ class StrictConfig:
     sync_in_async: bool = field(
         default=False,
         metadata={"description": {"i18n": "core.config.framework.strict.sync_in_async", "default": "raise StrictModeError instead of warning when sync storage APIs are called from async context (development aid)"}},
+    )
+
+
+@dataclass
+class AutoReloadConfig:
+    """已安装发行版热重载：来源包文件变化后自动重载对应模块 / 适配器（升级即生效）
+
+    监控范围 ACL（与 strict_mode_exceptions / watch_ignore_dirs 同族）：
+    deny 优先于 allow；allow 为空表示"除 deny 外全部已加载组件"。
+    """
+
+    enabled: bool = field(
+        default=False,
+        metadata={"description": {"i18n": "core.config.framework.auto_reload.enabled", "default": "watch installed distributions of loaded modules/adapters and hot-reload them on file change (pip upgrade takes effect without restart)"}},
+    )
+    interval: float = field(
+        default=AUTO_RELOAD_POLL_INTERVAL_SECS,
+        metadata={"description": {"i18n": "core.config.framework.auto_reload.interval", "default": "polling interval in seconds (mtime/size scan; sha256 only computed on hit)"}},
+    )
+    allow: list[str] = field(
+        default_factory=list,
+        metadata={"description": {"i18n": "core.config.framework.auto_reload.allow", "default": "watchlist: component or distribution names (glob supported); empty = all loaded components"}},
+    )
+    deny: list[str] = field(
+        default_factory=list,
+        metadata={"description": {"i18n": "core.config.framework.auto_reload.deny", "default": "blocklist: never watch these component or distribution names (glob supported); takes precedence over allow"}},
     )
 
 
@@ -186,6 +213,10 @@ class FrameworkConfig:
         default_factory=StrictConfig,
         metadata={"description": {"i18n": "core.config.framework.strict", "default": "strict-mode scope switches"}},
     )
+    auto_reload: AutoReloadConfig = field(
+        default_factory=AutoReloadConfig,
+        metadata={"description": {"i18n": "core.config.framework.auto_reload", "default": "hot-reload loaded modules/adapters when their installed distribution changes"}},
+    )
     sync_in_async_bridge_wait: float = field(
         default=SYNC_IN_ASYNC_BRIDGE_WAIT_SECS,
         metadata={"description": {"i18n": "core.config.framework.sync_in_async_bridge_wait", "default": "max seconds a sync storage call from async context may wait on the bridge (0=unlimited); on timeout the call fails softly"}},
@@ -226,4 +257,4 @@ def framework_defaults() -> dict[str, Any]:
     return _FRAMEWORK_DEFAULTS_CACHE
 
 
-__all__ = ["FrameworkConfig", "StrictConfig", "StrictModeExceptionsConfig", "framework_defaults"]
+__all__ = ["AutoReloadConfig", "FrameworkConfig", "StrictConfig", "StrictModeExceptionsConfig", "framework_defaults"]

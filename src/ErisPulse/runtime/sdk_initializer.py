@@ -447,6 +447,9 @@ class Initializer:
             # 启动主动 GC 后台任务
             self._sdk._start_proactive_gc()
 
+            # 启动发行版热重载监控（framework.auto_reload.enabled 时生效）
+            self._sdk._start_package_reload_watcher()
+
             return True
 
         except Exception as e:
@@ -522,6 +525,9 @@ class Uninitializer:
             registered_adapters = adapter_manager.list_registered()
             if registered_adapters:
                 await adapter_manager.shutdown()
+
+            # 1.5 停止发行版热重载监控（监控线程持有 SDK 引用，先于组件卸载停止）
+            self._sdk._stop_package_reload_watcher()
 
             # 2. 卸载所有已加载模块
             loaded_modules = module_manager.list_loaded()
