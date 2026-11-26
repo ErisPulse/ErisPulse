@@ -625,8 +625,15 @@ class TestProactiveGCIntegration:
             "ErisPulse.runtime.memory.get_rss_mb", return_value=None
         ), patch("gc.collect", return_value=0) as mock_collect:
             sdk._start_proactive_gc()
-            await asyncio.sleep(0.06)
-            sdk._stop_proactive_gc()
+            try:
+                # 条件轮询替代固定睡眠：CI 满载下事件循环调度慢，固定窗口
+                # 可能只跑 1 轮（基线）而漏掉增长轮
+                loop = asyncio.get_running_loop()
+                deadline = loop.time() + 5.0
+                while mock_collect.call_count < 2 and loop.time() < deadline:
+                    await asyncio.sleep(0.02)
+            finally:
+                sdk._stop_proactive_gc()
 
             # 首轮建立基线 + 后续内存增长触发，回收至少两次
             assert mock_collect.call_count >= 2
