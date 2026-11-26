@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 2566,
+  "total_keywords": 2567,
   "keywords": {
     "ErisPulse API 文档": [
       {
@@ -4335,7 +4335,7 @@
     "`_collect_files(watch: _DistWatch) -> None`": [
       {
         "document": "api-reference/auto_api/ErisPulse/runtime/package_reload.md",
-        "line": 88,
+        "line": 95,
         "level": 5,
         "title": "`_collect_files(watch: _DistWatch) -> None`"
       }
@@ -5351,7 +5351,7 @@
     "`_file_hash(path: Path) -> str | None`（staticmethod）": [
       {
         "document": "api-reference/auto_api/ErisPulse/runtime/package_reload.md",
-        "line": 109,
+        "line": 116,
         "level": 5,
         "title": "`_file_hash(path: Path) -> str | None`（staticmethod）"
       }
@@ -5375,7 +5375,7 @@
     "`_find_dist(dist_name: str) -> Any`": [
       {
         "document": "api-reference/auto_api/ErisPulse/runtime/package_reload.md",
-        "line": 95,
+        "line": 102,
         "level": 5,
         "title": "`_find_dist(dist_name: str) -> Any`"
       }
@@ -5927,7 +5927,7 @@
     "`_hash_changed(watch: _DistWatch, path: Path) -> bool`": [
       {
         "document": "api-reference/auto_api/ErisPulse/runtime/package_reload.md",
-        "line": 123,
+        "line": 130,
         "level": 5,
         "title": "`_hash_changed(watch: _DistWatch, path: Path) -> bool`"
       }
@@ -7427,7 +7427,7 @@
       },
       {
         "document": "api-reference/auto_api/ErisPulse/runtime/package_reload.md",
-        "line": 133,
+        "line": 140,
         "level": 5,
         "title": "`_poll_once() -> None`"
       }
@@ -7775,7 +7775,7 @@
     "`_refresh_watches() -> None`": [
       {
         "document": "api-reference/auto_api/ErisPulse/runtime/package_reload.md",
-        "line": 102,
+        "line": 109,
         "level": 5,
         "title": "`_refresh_watches() -> None`"
       }
@@ -7896,6 +7896,14 @@
         "line": 811,
         "level": 5,
         "title": "`_register_ws_endpoint(full_path: str, module_name: str, handler: Callable[[WebSocket], Awaitable[Any]], auth_handler: Callable[[WebSocket], Awaitable[bool]] | None = None, auto_accept: bool = DEFAULT_WS_AUTO_ACCEPT, track: bool = True) -> None`"
+      }
+    ],
+    "`_registered_names(kind: str) -> set[str]`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/runtime/package_reload.md",
+        "line": 81,
+        "level": 5,
+        "title": "`_registered_names(kind: str) -> set[str]`"
       }
     ],
     "`_related_model(owner: type) -> type[Model]`": [
@@ -8271,7 +8279,7 @@
     "`_resolve_watches() -> dict[str, _DistWatch]`": [
       {
         "document": "api-reference/auto_api/ErisPulse/runtime/package_reload.md",
-        "line": 81,
+        "line": 88,
         "level": 5,
         "title": "`_resolve_watches() -> dict[str, _DistWatch]`"
       }
@@ -8535,7 +8543,7 @@
     "`_scan_once() -> list[tuple[_DistWatch, list[tuple[str, str]]]]`": [
       {
         "document": "api-reference/auto_api/ErisPulse/runtime/package_reload.md",
-        "line": 116,
+        "line": 123,
         "level": 5,
         "title": "`_scan_once() -> list[tuple[_DistWatch, list[tuple[str, str]]]]`"
       }
@@ -10717,7 +10725,7 @@
     "`async _reload(watch: _DistWatch, components: list[tuple[str, str]]) -> None`": [
       {
         "document": "api-reference/auto_api/ErisPulse/runtime/package_reload.md",
-        "line": 140,
+        "line": 147,
         "level": 5,
         "title": "`async _reload(watch: _DistWatch, components: list[tuple[str, str]]) -> None`"
       }

@@ -78,9 +78,16 @@ ErisPulse 已安装发行版热重载监控
 ---
 
 
+##### `_registered_names(kind: str) -> set[str]`
+
+已注册组件名（管理器注册表口径；管理器不可用时为空集）
+
+---
+
+
 ##### `_resolve_watches() -> dict[str, _DistWatch]`
 
-经 entry-points 反查当前已加载组件的来源发行版
+经 entry-points 反查当前已注册组件的来源发行版
 
 ---
 
