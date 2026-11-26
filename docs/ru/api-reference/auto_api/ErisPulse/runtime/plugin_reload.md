@@ -104,6 +104,13 @@ ErisPulse 本地插件热重载监控
 ---
 
 
+##### `_dispatch(paths: set[str]) -> None`
+
+调度重载协程回主事件循环（循环未就绪时留痕跳过）
+
+---
+
+
 ##### `async _drain(paths: set[str]) -> None`
 
 逐个触发重载回调；失败且文件仍在变化（半写窗口）时单次重试
@@ -111,11 +118,15 @@ ErisPulse 本地插件热重载监控
 ---
 
 
-### `class PluginReloadWatcher`
+### `class PluginReloadWatcher(HotReloadWatcherBase)`
 
 本地插件热重载监控器
 
 封装轮询文件监控器，监控插件文件夹变更并触发对应插件的重载回调。
+
+> **提示**
+> 无运行事件循环时仍可启动：事件循环经主循环注册表延迟解析
+> （``sdk.run()`` 启动后自动可用），此前触发的变更会记 warning 跳过。
 
 - **on_reload**: 重载回调（接收插件名，返回协程），在主事件循环中执行
 - **interval**: 轮询间隔（秒，默认 FILE_WATCH_POLL_INTERVAL_SECS）
@@ -133,15 +144,6 @@ watcher.stop()
 
 
 #### 方法列表
-
-
-##### `is_running -> bool`（property）
-
-监控器是否已启动
-
-**返回值**: 是否运行中
-
----
 
 
 ##### `_plugin_dirs() -> list[str]`
@@ -162,22 +164,26 @@ watcher.stop()
 ---
 
 
-##### `start() -> bool`
+##### `_prepare() -> bool`
 
-启动插件文件监控
+**内部方法**
+解析插件目录列表并捕获当前事件循环
 
-> **提示**
-> 无运行事件循环时仍返回 True：事件循环经主循环注册表延迟解析
-> （``sdk.run()`` 启动后自动可用），此前触发的变更会记 warning 跳过。
-
-**返回值**: 是否启动成功（无插件目录或已在运行返回 False）
+**返回值**: 是否存在插件目录（False 时 start 不启动）
 
 ---
 
 
-##### `stop() -> None`
+##### `_begin() -> None`
 
-停止插件文件监控
+**内部方法** 建立轮询监控器并订阅全部插件目录
+
+---
+
+
+##### `_shutdown() -> None`
+
+**内部方法** 停止监控器并释放补发定时器
 
 ---
 

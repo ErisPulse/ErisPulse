@@ -63,7 +63,7 @@ ErisPulse 已安装发行版热重载监控
 单个发行版的监控状态：组件清单与文件签名快照
 
 
-### `class PackageReloadWatcher`
+### `class PackageReloadWatcher(HotReloadWatcherBase)`
 
 已安装发行版热重载监控器
 
@@ -82,18 +82,23 @@ ErisPulse 已安装发行版热重载监控
 #### 方法列表
 
 
-##### `start() -> bool`
+##### `_prepare() -> bool`
 
-建立监控快照并启动后台线程
-
-**返回值**: 是否启动（已在运行或无可监控发行版时为 False）
+**内部方法** 解析监控对象并建立文件签名；无可监控发行版时返回 False
 
 ---
 
 
-##### `stop() -> None`
+##### `_begin() -> None`
 
-停止后台线程（幂等）
+**内部方法** 启动轮询守护线程
+
+---
+
+
+##### `_shutdown() -> None`
+
+**内部方法** 停止轮询守护线程
 
 ---
 
@@ -164,16 +169,9 @@ sha256 确认（mtime 抖动不算变化）；新哈希回写快照
 ---
 
 
-##### `_loop() -> None`
+##### `_poll_once() -> None`
 
-后台轮询入口：间隔扫描 → 冷却过滤 → 主循环调度重载
-
----
-
-
-##### `_schedule_reload(watch: _DistWatch, components: list[tuple[str, str]]) -> None`
-
-把重载协程调度回主事件循环（循环未就绪时留痕跳过）
+**内部方法** 单轮扫描：冷却过滤 → 刷新签名 → 主循环调度重载
 
 ---
 

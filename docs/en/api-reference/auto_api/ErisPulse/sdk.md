@@ -408,7 +408,8 @@ sdk.shutdown()  # 任意协程中调用，触发优雅退出
 
 > **提示**
 > 自动监控仅覆盖本地插件目录；PyPI 安装包模块可通过
-> :meth:`reload_module` 手动热重载（pip 升级后调用即可）。
+> :meth:`reload_module` 手动热重载（pip 升级后调用即可），或启用
+> :meth:`enable_package_hot_reload` 自动监控。
 
 - **interval**: 轮询间隔（秒，默认 1.0）
 
@@ -420,6 +421,56 @@ sdk.shutdown()  # 任意协程中调用，触发优雅退出
 await sdk.init()
 sdk.enable_plugin_hot_reload()
 await sdk.run()
+```
+
+---
+
+
+##### `enable_package_hot_reload(*, interval: float | None = None, allow: list[str] | None = None, deny: list[str] | None = None) -> bool`
+
+启用已安装发行版热重载（自动监控）
+
+监控已加载模块 / 适配器来源发行版的文件变化（pip 升级 / 直接修改包
+文件），变化时自动重载对应组件——升级即生效，无需重启或手动调用
+:meth:`reload_module`。初始化完成后可随时调用；
+``framework.auto_reload.enabled = true`` 时 :meth:`init` 亦会按配置
+自动启用。已在运行时返回 False（先 :meth:`stop_package_hot_reload`
+再启用可更换参数）。
+
+参数缺省读 ``framework.auto_reload`` 同名配置项，显式传参覆盖配置。
+
+> **提示**
+> 仅监控经 entry-points 安装的组件（带发行版信息）；本地插件与运行时
+> 注册组件不在监控面。监控范围 ACL：deny 优先于 allow，名单元素支持
+> glob（组件名 / 发行版名均可）。
+
+- **interval**: 轮询间隔秒数（缺省读 ``framework.auto_reload.interval``）
+- **allow**: 白名单（组件名或发行版名，glob 支持；空 = 全部；
+
+    缺省读 ``framework.auto_reload.allow``）
+- **deny**: 黑名单（优先于 allow；缺省读 ``framework.auto_reload.deny``）
+
+**返回值**: 是否启动成功（已在运行或无可监控发行版返回 False）
+
+**示例**:
+
+```python
+await sdk.init()
+sdk.enable_package_hot_reload()                            # 按配置启用
+sdk.enable_package_hot_reload(deny=["ErisPulse-Dashboard"])  # 显式参数覆盖配置
+```
+
+---
+
+
+##### `stop_package_hot_reload() -> None`
+
+停止已安装发行版热重载监控（幂等）
+
+**示例**:
+
+```python
+sdk.stop_package_hot_reload()
 ```
 
 ---
