@@ -23,34 +23,9 @@ ErisPulse 已安装发行版热重载监控
 ## 函数列表
 
 
-### `_normalize_dist_name(name: str) -> str`
-
-发行版名按 PEP 503 归一（``-`` / ``_`` / ``.`` 等价、小写）
-
----
-
-
 ### `_iter_entry_points(group: str) -> list[Any]`
 
 按组读取 entry-points（3.10 / 3.11+ 两种返回形态兼容）
-
----
-
-
-### `start_package_reload(sdk: SDK) -> None`
-
-**内部方法**
-按 ``framework.auto_reload`` 配置启动发行版热重载监控
-
-幂等：已有监控实例先停止再重建。
-
----
-
-
-### `stop_package_reload(sdk: SDK) -> None`
-
-**内部方法**
-停止发行版热重载监控（幂等）
 
 ---
 
@@ -99,20 +74,6 @@ ErisPulse 已安装发行版热重载监控
 ##### `_shutdown() -> None`
 
 **内部方法** 停止轮询守护线程
-
----
-
-
-##### `_list_hits(component: str, dist_name: str, patterns: tuple[str, ...]) -> bool`
-
-名单匹配：任一模式（归一后 fnmatch）命中组件名或发行版名
-
----
-
-
-##### `_target_matches(component: str, dist_name: str) -> bool`
-
-监控范围 ACL：deny 命中即排除；allow 空表示全部，非空则须命中
 
 ---
 

@@ -22,6 +22,16 @@
 
 ---
 
+## 函数列表
+
+
+### `_normalize_dist_name(name: str) -> str`
+
+名称按 PEP 503 归一（``-`` / ``_`` / ``.`` 等价、小写；glob 场景同样适用）
+
+---
+
+
 ## 类列表
 
 
@@ -29,10 +39,31 @@
 
 热重载监控器基类
 
+内置监控范围 ACL（与 strict_mode_exceptions / watch_ignore_dirs 同族）：
+deny 优先于 allow；allow 为空表示"除 deny 外全部"。名单元素支持 glob，
+按组件名（插件名 / entry-point 名）与来源名（发行版名）归一后匹配——
+子类在解析出组件名后经 :meth:`_target_matches` 过滤。
+
 - **interval**: 轮询间隔秒数（语义随子类检测机制）
+- **allow**: 白名单（组件名或来源名，glob 支持；空 = 全部）
+- **deny**: 黑名单（优先于 allow）
 
 
 #### 方法列表
+
+
+##### `_list_hits(*names: str, patterns: tuple[str, ...]) -> bool`
+
+名单匹配：任一模式（归一后 fnmatch）命中任一给定名字
+
+---
+
+
+##### `_target_matches(*names: str) -> bool`
+
+监控范围 ACL：deny 命中即排除；allow 空表示全部，非空则须命中
+
+---
 
 
 ##### `is_running -> bool`（property）

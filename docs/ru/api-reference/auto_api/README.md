@@ -21,8 +21,8 @@
 
 - **模块总数**: 147
 - **类总数**: 208（包括 5 个嵌套类）
-- **函数总数**: 452
-- **方法总数**: 1856
+- **函数总数**: 450
+- **方法总数**: 1857
 
 ---
 
@@ -681,7 +681,7 @@
 
 ### [ErisPulse.runtime.hot_reload](ErisPulse/runtime/hot_reload.md)
 
-1 个类 | 13 个方法
+1 个类 | 15 个方法 | 1 个函数
 
 
 ### [ErisPulse.runtime.kernel](ErisPulse/runtime/kernel.md)
@@ -706,7 +706,7 @@
 
 ### [ErisPulse.runtime.package_reload](ErisPulse/runtime/package_reload.md)
 
-2 个类 | 14 个方法 | 4 个函数
+2 个类 | 12 个方法 | 1 个函数
 
 
 ### [ErisPulse.runtime.plugin_reload](ErisPulse/runtime/plugin_reload.md)
@@ -761,5 +761,5 @@
 
 ### [ErisPulse.sdk](ErisPulse/sdk.md)
 
-1 个类 | 39 个方法 | 1 个函数
+1 个类 | 40 个方法 | 1 个函数
 
