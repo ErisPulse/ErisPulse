@@ -242,8 +242,11 @@ class PluginReloadWatcher(HotReloadWatcherBase):
         self,
         on_reload: Callable[[str], Coroutine[Any, Any, Any]],
         interval: float = FILE_WATCH_POLL_INTERVAL_SECS,
+        *,
+        allow: list[str] | None = None,
+        deny: list[str] | None = None,
     ):
-        super().__init__(interval=interval)
+        super().__init__(interval=interval, allow=allow, deny=deny)
         self._on_reload = on_reload
         self._observer: PollingObserver | None = None
         self._handler: _PluginChangeHandler | None = None
@@ -334,10 +337,13 @@ class PluginReloadWatcher(HotReloadWatcherBase):
     async def _handle_change(self, src_path: str) -> Any:
         """
         {!--< internal-use >!--}
-        将文件路径解析为插件名并触发重载回调（透传回调返回值）
+        将文件路径解析为插件名，经监控范围 ACL 过滤后触发重载回调
+        （透传回调返回值）
         """
         name = resolve_plugin_name(src_path, self._dirs)
         if name is None:
+            return None
+        if not self._target_matches(name):
             return None
         return await self._on_reload(name)
 

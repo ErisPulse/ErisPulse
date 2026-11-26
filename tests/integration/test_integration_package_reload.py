@@ -6,7 +6,6 @@
 """
 
 from pathlib import Path
-from types import SimpleNamespace
 
 import pytest
 
@@ -77,7 +76,7 @@ def sdk(tmp_path):
     os.chdir(workdir)
     instance = SDK()
     yield instance
-    instance.stop_package_hot_reload()
+    instance.disable_hot_reload()
     ConfigManager.stop_all_watchers()
     os.chdir(original_cwd)
 
@@ -88,7 +87,7 @@ class TestEnableStopRoundtrip:
         eps = _seed_dist(tmp_path)
         _patch_eps(monkeypatch, eps)
 
-        assert sdk.enable_package_hot_reload(interval=0.05) is True
+        assert sdk.enable_hot_reload(interval=0.05) is True
         watcher = sdk._package_reload_watcher
         assert watcher is not None and watcher.is_running
 
@@ -102,9 +101,9 @@ class TestEnableStopRoundtrip:
         eps = _seed_dist(tmp_path)
         _patch_eps(monkeypatch, eps)
 
-        assert sdk.enable_package_hot_reload(interval=0.05) is True
+        assert sdk.enable_hot_reload(interval=0.05) is True
         first = sdk._package_reload_watcher
-        assert sdk.enable_package_hot_reload(interval=0.05) is False
+        assert sdk.enable_hot_reload(interval=0.05) is False
         assert sdk._package_reload_watcher is first
 
     def test_stop_is_idempotent(self, sdk):
@@ -114,60 +113,63 @@ class TestEnableStopRoundtrip:
 
     def test_explicit_args_override_config(self, sdk, tmp_path, monkeypatch):
         """显式参数生效且未读取配置（配置读取器被替换为必抛桩）"""
+        import importlib
+
         eps = _seed_dist(tmp_path)
         _patch_eps(monkeypatch, eps)
 
-        import importlib
-
-        package_reload = importlib.import_module("ErisPulse.runtime.package_reload")
+        frame_config = importlib.import_module("ErisPulse.runtime.frame_config")
 
         def _no_config(key, default=None):
             raise AssertionError(f"显式参数齐全时不应读配置: {key}")
 
-        monkeypatch.setattr(package_reload, "get_framework_value", _no_config)
-        assert sdk.enable_package_hot_reload(interval=0.05, allow=["dice"], deny=[]) is True
+        monkeypatch.setattr(frame_config, "get_framework_value", _no_config)
+        assert sdk.enable_hot_reload(interval=0.05, allow=["dice"], deny=[]) is True
         watcher = sdk._package_reload_watcher
         assert watcher is not None
         assert watcher._allow == (_normalize_dist_name("dice"),)
         assert watcher._deny == ()
 
-    def test_targets_allowlist_filter_applied(self, sdk, tmp_path, monkeypatch):
-        """allow 白名单生效：未命中的发行版不进入监控集"""
+    def test_allowlist_filter_excludes_unlisted_dist(self, sdk, tmp_path, monkeypatch):
+        """allow 白名单生效：未命中的发行版不进入包监控集（插件面仍启用 → 统一返回 True）"""
         eps = _seed_dist(tmp_path, module_name="dice")
         _patch_eps(monkeypatch, eps)
 
-        assert sdk.enable_package_hot_reload(interval=0.05, allow=["ErisPulse-Other"]) is False
+        assert sdk.enable_hot_reload(interval=0.05, allow=["ErisPulse-Other"]) is True
         assert sdk._package_reload_watcher is None
+        assert sdk._plugin_watcher is not None and sdk._plugin_watcher.is_running
 
-    def test_no_matching_dist_returns_false(self, sdk):
-        """无可监控发行版（无 entry-points 命中）返回 False"""
-        assert sdk.enable_package_hot_reload(interval=0.05) is False
-        assert sdk._package_reload_watcher is None
+    def test_unified_flag_blocks_reenable(self, sdk, tmp_path, monkeypatch):
+        """统一开关置位后再次启用被拒（先 disable 再启用可换参数）"""
+        eps = _seed_dist(tmp_path)
+        _patch_eps(monkeypatch, eps)
+        assert sdk.enable_hot_reload(interval=0.05) is True
+        assert sdk.enable_hot_reload(interval=0.05) is False
+        sdk.disable_hot_reload()
+        assert sdk.enable_hot_reload(interval=0.05) is True
 
 
 class TestConfigDrivenStart:
-    @pytest.mark.asyncio
-    async def test_initializer_starts_by_config(self, tmp_path, monkeypatch):
-        """framework.auto_reload.enabled = true 时 init 装配尾部自动启用"""
+    def test_start_watcher_reads_config(self, sdk, tmp_path, monkeypatch):
+        """_start_hot_reload_watcher 按配置驱动：enabled=false 不启用，true 启用"""
+        import importlib
+
         eps = _seed_dist(tmp_path)
         _patch_eps(monkeypatch, eps)
 
-        from ErisPulse.runtime import package_reload as prl
+        frame_config = importlib.import_module("ErisPulse.runtime.frame_config")
+        values = {"auto_reload.enabled": True, "auto_reload.interval": 0.05}
 
-        started: list = []
-        monkeypatch.setattr(
-            prl,
-            "start_package_reload",
-            lambda sdk_obj: started.append(sdk_obj),
-        )
-        sentinel = SimpleNamespace()
-        monkeypatch.setattr(
-            SDK,
-            "_start_package_reload_watcher",
-            lambda self_obj: started.append(self_obj),
-        )
+        def fake_get(key, default=None):
+            return values.get(key, default)
 
-        sdk = SDK()
-        sdk._start_package_reload_watcher()
+        monkeypatch.setattr(frame_config, "get_framework_value", fake_get)
 
-        assert len(started) == 1
+        sdk._start_hot_reload_watcher()
+        assert sdk._package_reload_watcher is not None
+        sdk._stop_hot_reload_watcher()
+        assert sdk._package_reload_watcher is None
+
+        values["auto_reload.enabled"] = False
+        sdk._start_hot_reload_watcher()
+        assert sdk._package_reload_watcher is None

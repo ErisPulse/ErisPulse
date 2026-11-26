@@ -18,6 +18,7 @@
 from __future__ import annotations
 
 import asyncio
+import fnmatch
 import threading
 from abc import ABC, abstractmethod
 from typing import Any
@@ -27,19 +28,62 @@ from ..Core.logger import logger
 from .tasks import _get_main_loop
 
 
+def _normalize_dist_name(name: str) -> str:
+    """名称按 PEP 503 归一（``-`` / ``_`` / ``.`` 等价、小写；glob 场景同样适用）"""
+    import re
+
+    return re.sub(r"[-_.]+", "-", name).lower()
+
+
 class HotReloadWatcherBase(ABC):
     """
     热重载监控器基类
 
+    内置监控范围 ACL（与 strict_mode_exceptions / watch_ignore_dirs 同族）：
+    deny 优先于 allow；allow 为空表示"除 deny 外全部"。名单元素支持 glob，
+    按组件名（插件名 / entry-point 名）与来源名（发行版名）归一后匹配——
+    子类在解析出组件名后经 :meth:`_target_matches` 过滤。
+
     :param interval: 轮询间隔秒数（语义随子类检测机制）
+    :param allow: 白名单（组件名或来源名，glob 支持；空 = 全部）
+    :param deny: 黑名单（优先于 allow）
     """
 
-    def __init__(self, *, interval: float):
+    def __init__(
+        self,
+        *,
+        interval: float,
+        allow: list[str] | None = None,
+        deny: list[str] | None = None,
+    ):
         self._interval = interval
+        self._allow = tuple(allow or ())
+        self._deny = tuple(deny or ())
         self._running = False
         self._stop_event = threading.Event()
         self._thread: threading.Thread | None = None
         self._loop: asyncio.AbstractEventLoop | None = None
+
+    # ==================== 监控范围 ACL ====================
+
+    def _list_hits(self, *names: str, patterns: tuple[str, ...]) -> bool:
+        """名单匹配：任一模式（归一后 fnmatch）命中任一给定名字"""
+        candidates = tuple(_normalize_dist_name(name) for name in names)
+        for pattern in patterns:
+            normalized = _normalize_dist_name(pattern)
+            if any(fnmatch.fnmatchcase(candidate, normalized) for candidate in candidates):
+                return True
+        return False
+
+    def _target_matches(self, *names: str) -> bool:
+        """监控范围 ACL：deny 命中即排除；allow 空表示全部，非空则须命中"""
+        if self._allow or self._deny:
+            if self._list_hits(*names, patterns=self._deny):
+                return False
+            if not self._allow:
+                return True
+            return self._list_hits(*names, patterns=self._allow)
+        return True
 
     # ==================== 生命周期（模板） ====================
 

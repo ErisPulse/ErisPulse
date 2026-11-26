@@ -446,7 +446,7 @@ TRANSLATIONS = {
     "core.storage.txn_conn_release_failed": "transaction connection release/close failed (connection discarded as broken): {error}",
     "core.storage.sync_bridge_late_failure": "sync storage operation failed after its caller timed out (the caller already received a fail-soft result): {error}",
     "runtime.gc.hook_register_failed": "proactive GC config-change hook registration failed (GC task will not restart immediately on config change): {error}",
-    "core.sdk.package_hot_reload.enabled": "installed package hot-reload watcher enabled (watching {count} distributions)",
+    "core.sdk.package_hot_reload.enabled": "hot-reload auto watcher enabled ({count} faces)",
     "runtime.package_reload.triggered": "distribution {dist} files changed, auto-reloaded: {components}",
     "runtime.package_reload.failed": "auto-reload failed for distribution {dist} component {name} (signature refreshed; retried on next file change): {error}",
     "runtime.package_reload.no_loop": "main event loop not ready, skipping auto-reload of distribution {dist}",

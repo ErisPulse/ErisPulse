@@ -446,7 +446,7 @@ TRANSLATIONS = {
     "core.storage.txn_conn_release_failed": "トランザクション接続の返却/クローズに失敗（切断として破棄）: {error}",
     "core.storage.sync_bridge_late_failure": "呼び出し元がタイムアウトして返った後の同期ストレージ操作が失敗しました（呼び出し元は fail-soft の結果を既に受け取っています）: {error}",
     "runtime.gc.hook_register_failed": "能動 GC 設定変更フックの登録に失敗（設定変更後に GC タスクは即時に再起動しません）: {error}",
-    "core.sdk.package_hot_reload.enabled": "インストール済みパッケージのホットリロード監視を有効化しました（{count} ディストリビューションを監視）",
+    "core.sdk.package_hot_reload.enabled": "ホットリロード自動監視を有効化しました（監視面: {count}）",
     "runtime.package_reload.triggered": "ディストリビューション {dist} のファイルが変更され、自動リロードしました: {components}",
     "runtime.package_reload.failed": "ディストリビューション {dist} のコンポーネント {name} の自動リロードに失敗（署名は更新済み、次回のファイル変更時に再試行）: {error}",
     "runtime.package_reload.no_loop": "メインイベントループが未準備のため、ディストリビューション {dist} の自動リロードをスキップしました",

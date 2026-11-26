@@ -16,7 +16,6 @@ ErisPulse 已安装发行版热重载监控
 
 from __future__ import annotations
 
-import fnmatch
 import hashlib
 import time
 from dataclasses import dataclass, field
@@ -32,18 +31,10 @@ from ..Core.constants import (
 )
 from ..Core.i18n import i18n
 from ..Core.logger import logger
-from .frame_config import get_framework_value
-from .hot_reload import HotReloadWatcherBase
+from .hot_reload import HotReloadWatcherBase, _normalize_dist_name
 
 if TYPE_CHECKING:
     from ..sdk import SDK
-
-
-def _normalize_dist_name(name: str) -> str:
-    """发行版名按 PEP 503 归一（``-`` / ``_`` / ``.`` 等价、小写）"""
-    import re
-
-    return re.sub(r"[-_.]+", "-", name).lower()
 
 
 def _iter_entry_points(group: str) -> list[Any]:
@@ -88,10 +79,12 @@ class PackageReloadWatcher(HotReloadWatcherBase):
         allow: list[str] | None = None,
         deny: list[str] | None = None,
     ):
-        super().__init__(interval=interval if interval is not None else AUTO_RELOAD_POLL_INTERVAL_SECS)
+        super().__init__(
+            interval=interval if interval is not None else AUTO_RELOAD_POLL_INTERVAL_SECS,
+            allow=allow,
+            deny=deny,
+        )
         self._sdk = sdk
-        self._allow = tuple(allow or ())
-        self._deny = tuple(deny or ())
         self._watches: dict[str, _DistWatch] = {}  # 归一发行版名 → 监控状态
         self._last_trigger: dict[str, float] = {}
 
@@ -111,23 +104,6 @@ class PackageReloadWatcher(HotReloadWatcherBase):
         self._shutdown_polling_thread(AUTO_RELOAD_TRIGGER_COOLDOWN_SECS)
 
     # ==================== 监控对象解析 ====================
-
-    def _list_hits(self, component: str, dist_name: str, patterns: tuple[str, ...]) -> bool:
-        """名单匹配：任一模式（归一后 fnmatch）命中组件名或发行版名"""
-        candidates = (_normalize_dist_name(component), _normalize_dist_name(dist_name))
-        for pattern in patterns:
-            normalized = _normalize_dist_name(pattern)
-            if any(fnmatch.fnmatchcase(candidate, normalized) for candidate in candidates):
-                return True
-        return False
-
-    def _target_matches(self, component: str, dist_name: str) -> bool:
-        """监控范围 ACL：deny 命中即排除；allow 空表示全部，非空则须命中"""
-        if self._list_hits(component, dist_name, self._deny):
-            return False
-        if not self._allow:
-            return True
-        return self._list_hits(component, dist_name, self._allow)
 
     def _resolve_watches(self) -> dict[str, _DistWatch]:
         """经 entry-points 反查当前已加载组件的来源发行版"""
@@ -320,45 +296,4 @@ class PackageReloadWatcher(HotReloadWatcherBase):
             )
 
 
-def start_package_reload(sdk: SDK) -> None:
-    """
-    {!--< internal-use >!--}
-    按 ``framework.auto_reload`` 配置启动发行版热重载监控
-
-    幂等：已有监控实例先停止再重建。
-    """
-    stop_package_reload(sdk)
-
-    if not get_framework_value("auto_reload.enabled", False):
-        return
-    interval = get_framework_value("auto_reload.interval", AUTO_RELOAD_POLL_INTERVAL_SECS)
-    allow = get_framework_value("auto_reload.allow", [])
-    deny = get_framework_value("auto_reload.deny", [])
-    watcher = PackageReloadWatcher(
-        sdk,
-        interval=float(interval) if interval else None,
-        allow=list(allow) if allow else None,
-        deny=list(deny) if deny else None,
-    )
-    if watcher.start():
-        sdk._package_reload_watcher = watcher
-        logger.info(
-            i18n.t(
-                "core.sdk.package_hot_reload.enabled",
-                count=len(watcher._watches),
-            )
-        )
-
-
-def stop_package_reload(sdk: SDK) -> None:
-    """
-    {!--< internal-use >!--}
-    停止发行版热重载监控（幂等）
-    """
-    watcher = getattr(sdk, "_package_reload_watcher", None)
-    if watcher is not None:
-        watcher.stop()
-        sdk._package_reload_watcher = None
-
-
-__all__ = ["PackageReloadWatcher", "start_package_reload", "stop_package_reload"]
+__all__ = ["PackageReloadWatcher"]

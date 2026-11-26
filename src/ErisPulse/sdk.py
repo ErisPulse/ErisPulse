@@ -36,7 +36,6 @@ from .Core.i18n import i18n
 # 导入加载器类
 # 导入懒加载模块类
 from .loaders.module import LazyModule
-from .runtime import package_reload as _prl
 from .runtime import proactive_gc as _pgc
 from .runtime import sdk_initializer as _sdk_initializer
 from .runtime.kernel import Kernel
@@ -218,6 +217,7 @@ class SDK:
         self._gc_task: asyncio.Task | None = None  # 主动 GC 后台任务
         self._gc_config_snapshot: tuple | None = None  # 主动 GC 配置快照（变更检测）
         self._package_reload_watcher: Any = None  # 已安装发行版热重载监控（runtime/package_reload 创建）
+        self._hot_reload_enabled: bool = False  # 热重载自动监控统一开关（enable_hot_reload 置位）
         self._shutdown_event: asyncio.Event | None = None  # 优雅关闭事件
 
     @property
@@ -360,21 +360,24 @@ class SDK:
         """
         return _pgc.read_gc_config()
 
-    # 发行版热重载实现拆分至 runtime/package_reload；保留同名方法以兼容测试/子类对 SDK 的 patch
-    def _start_package_reload_watcher(self) -> None:
+    # 热重载自动监控：统一入口 enable_hot_reload / disable_hot_reload
+    def _start_hot_reload_watcher(self) -> None:
         """
         {!--< internal-use >!--}
-        按 ``framework.auto_reload`` 配置启动发行版热重载监控
-        （实现见 ``runtime/package_reload.start_package_reload``）
+        按 ``framework.auto_reload`` 配置启用热重载自动监控
         """
-        _prl.start_package_reload(self)
+        from .runtime.frame_config import get_framework_value
 
-    def _stop_package_reload_watcher(self) -> None:
+        if not get_framework_value("auto_reload.enabled", False):
+            return
+        self.enable_hot_reload()
+
+    def _stop_hot_reload_watcher(self) -> None:
         """
         {!--< internal-use >!--}
-        停止发行版热重载监控（实现见 ``runtime/package_reload.stop_package_reload``）
+        停止热重载自动监控（两个监控面一并停止）
         """
-        _prl.stop_package_reload(self)
+        self.disable_hot_reload()
 
     def _on_gc_config_event(self, _data: dict) -> None:
         """
@@ -931,7 +934,7 @@ class SDK:
             self.logger.info(i18n.t("core.sdk.hot_reload.enabled"))
         return ok
 
-    def enable_package_hot_reload(
+    def enable_hot_reload(
         self,
         *,
         interval: float | None = None,
@@ -939,61 +942,95 @@ class SDK:
         deny: list[str] | None = None,
     ) -> bool:
         """
-        启用已安装发行版热重载（自动监控）
+        启用热重载自动监控（本地插件目录 + 已安装发行版）
 
-        监控已加载模块 / 适配器来源发行版的文件变化（pip 升级 / 直接修改包
-        文件），变化时自动重载对应组件——升级即生效，无需重启或手动调用
-        :meth:`reload_module`。初始化完成后可随时调用；
-        ``framework.auto_reload.enabled = true`` 时 :meth:`init` 亦会按配置
-        自动启用。已在运行时返回 False（先 :meth:`stop_package_hot_reload`
-        再启用可更换参数）。
+        组件注册名在框架内互斥（插件目录优先），因此监控按组件维度统一：
+        本地插件的 ``plugins/`` 目录文件变化与已加载模块 / 适配器来源发行版
+        的包文件变化（pip 升级 / 直接修改包文件）都会触发对应组件的自动重载
+        ——升级即生效，无需重启或手动调用 :meth:`reload_module`。
+
+        初始化完成后可随时调用；``framework.auto_reload.enabled = true`` 时
+        :meth:`init` 亦会按配置自动启用。已在运行时返回 False（先
+        :meth:`disable_hot_reload` 再启用可更换参数）。
 
         参数缺省读 ``framework.auto_reload`` 同名配置项，显式传参覆盖配置。
 
         {!--< tips >!--}
-        仅监控经 entry-points 安装的组件（带发行版信息）；本地插件与运行时
-        注册组件不在监控面。监控范围 ACL：deny 优先于 allow，名单元素支持
-        glob（组件名 / 发行版名均可）。
+        发行版面仅覆盖经 entry-points 安装的组件；运行时注册组件不在监控面。
+        监控范围 ACL 对两个监控面同时生效：deny 优先于 allow，名单元素支持
+        glob（插件名 / 组件名 / 发行版名均可）。
         {!--< /tips >!--}
 
         :param interval: 轮询间隔秒数（缺省读 ``framework.auto_reload.interval``）
-        :param allow: 白名单（组件名或发行版名，glob 支持；空 = 全部；
-            缺省读 ``framework.auto_reload.allow``）
+        :param allow: 白名单（glob 支持；空 = 全部；缺省读 ``framework.auto_reload.allow``）
         :param deny: 黑名单（优先于 allow；缺省读 ``framework.auto_reload.deny``）
-        :return: 是否启动成功（已在运行或无可监控发行版返回 False）
+        :return: 是否至少启用了一个监控面（已在运行返回 False；仅部分面
+            可监控时返回 True 并记日志说明）
 
         :example:
         >>> await sdk.init()
-        >>> sdk.enable_package_hot_reload()                            # 按配置启用
-        >>> sdk.enable_package_hot_reload(deny=["ErisPulse-Dashboard"])  # 显式参数覆盖配置
+        >>> sdk.enable_hot_reload()                            # 按配置启用
+        >>> sdk.enable_hot_reload(deny=["ErisPulse-Dashboard"])  # 显式参数覆盖配置
         """
-        if getattr(self, "_package_reload_watcher", None) is not None:
+        if getattr(self, "_hot_reload_enabled", False):
             return False
 
-        from .Core.constants import AUTO_RELOAD_POLL_INTERVAL_SECS
-        from .runtime import PackageReloadWatcher
+        from .Core.constants import AUTO_RELOAD_POLL_INTERVAL_SECS, FILE_WATCH_POLL_INTERVAL_SECS
+        from .runtime import PackageReloadWatcher, PluginReloadWatcher
         from .runtime.frame_config import get_framework_value
 
         if interval is None:
-            interval = float(get_framework_value("auto_reload.interval", AUTO_RELOAD_POLL_INTERVAL_SECS))
+            interval = float(
+                get_framework_value("auto_reload.interval", AUTO_RELOAD_POLL_INTERVAL_SECS)
+            )
         if allow is None:
             allow = get_framework_value("auto_reload.allow", [])
         if deny is None:
             deny = get_framework_value("auto_reload.deny", [])
+        allow_list = list(allow) if allow else None
+        deny_list = list(deny) if deny else None
 
-        watcher = PackageReloadWatcher(
+        enabled_faces: list[str] = []
+        plugin_watcher = PluginReloadWatcher(
+            self._reload_module,
+            interval=interval or FILE_WATCH_POLL_INTERVAL_SECS,
+            allow=allow_list,
+            deny=deny_list,
+        )
+        if plugin_watcher.start():
+            self._plugin_watcher = plugin_watcher
+            enabled_faces.append("plugins")
+        package_watcher = PackageReloadWatcher(
             self,
             interval=interval or None,
-            allow=list(allow) if allow else None,
-            deny=list(deny) if deny else None,
+            allow=allow_list,
+            deny=deny_list,
         )
-        ok = watcher.start()
-        if ok:
-            self._package_reload_watcher = watcher
-            self.logger.info(
-                i18n.t("core.sdk.package_hot_reload.enabled", count=len(watcher._watches))
+        if package_watcher.start():
+            self._package_reload_watcher = package_watcher
+            enabled_faces.append("packages")
+
+        if not enabled_faces:
+            return False
+        self._hot_reload_enabled = True
+        self.logger.info(
+            i18n.t(
+                "core.sdk.package_hot_reload.enabled",
+                count=len(enabled_faces),
             )
-        return ok
+        )
+        return True
+
+    def disable_hot_reload(self) -> None:
+        """
+        停止热重载自动监控（两个监控面一并停止，幂等）
+
+        :example:
+        >>> sdk.disable_hot_reload()
+        """
+        self.stop_plugin_hot_reload()
+        self.stop_package_hot_reload()
+        self._hot_reload_enabled = False
 
     def stop_package_hot_reload(self) -> None:
         """

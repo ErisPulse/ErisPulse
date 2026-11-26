@@ -12,11 +12,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from ErisPulse.runtime.package_reload import (
-    PackageReloadWatcher,
-    start_package_reload,
-    stop_package_reload,
-)
+from ErisPulse.runtime.package_reload import PackageReloadWatcher
 
 base_storage_module = importlib.import_module("ErisPulse.Core.Bases.storage")
 logger_module = importlib.import_module("ErisPulse.Core.logger")
@@ -282,36 +278,34 @@ class TestReloadOrchestration:
 
 class TestStartStop:
     def test_disabled_by_config_does_not_start(self, monkeypatch):
-        package_reload = importlib.import_module("ErisPulse.runtime.package_reload")
-        monkeypatch.setattr(package_reload, "get_framework_value", lambda key, default=None: False if key == "auto_reload.enabled" else default)
-        sdk = SimpleNamespace()
-        start_package_reload(sdk)
+        sdk_module = importlib.import_module("ErisPulse.sdk")
+        monkeypatch.setattr(
+            sdk_module.SDK,
+            "enable_hot_reload",
+            lambda self_obj: False,
+        )
+        sdk = sdk_module.SDK()
+        sdk._start_hot_reload_watcher()
         assert getattr(sdk, "_package_reload_watcher", None) is None
 
-    def test_start_and_stop_roundtrip(self, tmp_path, monkeypatch):
+    def test_watcher_direct_roundtrip(self, tmp_path, monkeypatch):
+        """监控器直构往返：start 后线程就位、stop 后退出（不经 SDK 配置入口）"""
         eps, _root = _seed_dist(tmp_path)
         _fake_eps(monkeypatch, eps)
-        package_reload = importlib.import_module("ErisPulse.runtime.package_reload")
-
-        values = {"auto_reload.enabled": True, "auto_reload.interval": 0.05, "auto_reload.allow": [], "auto_reload.deny": []}
-
-        def fake_get(key, default=None):
-            return values.get(key, default)
-
-        monkeypatch.setattr(package_reload, "get_framework_value", fake_get)
         sdk, _calls = _make_sdk(module_names=("dice",))
-        start_package_reload(sdk)
-        watcher = getattr(sdk, "_package_reload_watcher", None)
+        watcher = PackageReloadWatcher(sdk, interval=0.05)
+        assert watcher.start() is True
         try:
-            assert watcher is not None and watcher._thread is not None
+            assert watcher.is_running and watcher._thread is not None
         finally:
-            stop_package_reload(sdk)
-        assert sdk._package_reload_watcher is None
+            watcher.stop()
         assert watcher._thread is None
+        assert watcher.is_running is False
 
     def test_stop_is_idempotent(self):
         sdk = SimpleNamespace()
-        stop_package_reload(sdk)  # 未启动时调用不抛错
+        sdk_module = importlib.import_module("ErisPulse.sdk")
+        sdk_module.SDK.stop_package_hot_reload(sdk)  # 未启动时调用不抛错
         assert getattr(sdk, "_package_reload_watcher", None) is None
 
 

@@ -446,7 +446,7 @@ TRANSLATIONS = {
     "core.storage.txn_conn_release_failed": "事務連線歸還/關閉失敗（連線按斷線丟棄）: {error}",
     "core.storage.sync_bridge_late_failure": "呼叫端已逾時返回的同步儲存操作執行失敗（呼叫端已按 fail-soft 拿到結果）: {error}",
     "runtime.gc.hook_register_failed": "主動 GC 配置變更鉤子註冊失敗（改配置後 GC 任務不會即時重啟）: {error}",
-    "core.sdk.package_hot_reload.enabled": "已安裝套件熱重載監控已啟用（監控 {count} 個發行版）",
+    "core.sdk.package_hot_reload.enabled": "熱重載自動監控已啟用（監控面: {count} 個）",
     "runtime.package_reload.triggered": "發行版 {dist} 檔案變化，已自動重載: {components}",
     "runtime.package_reload.failed": "發行版 {dist} 元件 {name} 自動重載失敗（簽章已刷新，檔案再次變化時重試）: {error}",
     "runtime.package_reload.no_loop": "主事件循環未就緒，跳過發行版 {dist} 的自動重載",
