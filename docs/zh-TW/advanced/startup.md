@@ -1,37 +1,37 @@
 # 啟動流程與手動控制
 
 > [!TIP]
-> **何時需要閱讀本文**：需要手動驅動啟動鏈路、自訂啟動順序或排查啟動失敗時。不需要則跳過，不會影響其他功能的使用。
+> **什麼時候需要閱讀本文**：需要手動驅動啟動鏈路、自訂啟動順序或排查啟動失敗時。若不需要則可跳過，不會影響其他功能的使用。
 
 
-ErisPulse 的 `await sdk.run()` / `await sdk.init()` 將一整條啟動鏈路封裝成了一行程式碼。但當你需要完全自訂啟動流程（例如部分載入、動態註冊、熱插拔、注入自訂載入策略）時，就需要了解這條鏈路內部到底發生了什麼、以及如何手動驅動每一步。
+ErisPulse 的 `await sdk.run()` / `await sdk.init()` 將一整條啟動鏈路封裝成「一行程式碼」。但當你需要完全自訂啟動流程（例如部分載入、動態註冊、熱插拔、注入自訂載入策略）時，就需要了解這條鏈路內部到底發生了什麼事，以及如何手動驅動每一步。
 
-本文將啟動鏈路拆解成獨立的環節，說明各自的職責、呼叫順序，並給出手動完整啟動的範例。
+本文將啟動鏈路拆解成獨立的環節，說明各自的職責、呼叫順序，並給出手動完整啟動的示例。
 
 > 本文假設你已經跑過 [第一個機器人](../getting-started/first-bot.md)，了解 `sdk.run(keep_running=True/False)` 兩種模式。本文聚焦於 `init()` **內部**的鏈路拆解，以及 `init()`/`init_task()`/`init_sync()` 等更底層的入口。
 
-## SDK 頂層入口一覽
+## SDK 頂層入口概覽
 
-除了 `run()` 的兩種 `keep_running` 模式，SDK 還提供幾個更底層的初始化入口，區別在於**異步性、回傳值、以及是否包裝例外**：
+除了 `run()` 的兩種 `keep_running` 模式，SDK 還提供幾個更底層的初始化入口，其區別在於**異步性、返回值、以及是否包裝異常**：
 
-| 入口 | 異步性 | 回傳值 | 例外處理 | 適用場景 |
+| 入口 | 異步性 | 返回值 | 異常處理 | 適用場景 |
 |------|--------|--------|----------|----------|
-| `await sdk.run(True)` | async，阻塞維持 | `None`（關閉時自動 `uninit`） | 模組/適配器錯誤被攔截，不拖垮進程 | 純 bot 應用 |
-| `await sdk.run(False)` | async，不阻塞 | `None`（不自動卸載） | 同上 | 初始化後執行自訂邏輯 |
-| `await sdk.init()` | async，需 await | `bool` | 內部捕獲元件例外，失敗回傳 `False` | 手動控制生命週期（配 `uninit()`） |
-| `sdk.init_task()` | async，回傳 Task 不阻塞 | `asyncio.Task` | 同 `init()` | 併發執行別的初始化、或事件迴圈尚未運行 |
-| `sdk.init_sync()` | **同步**，阻塞目前執行緒 | `bool` | 同 `init()` | 命令列腳本、無事件迴圈的同步入口 |
+| `await sdk.run(True)` | 異步，阻塞維持 | `None`（關閉時自動 `uninit`） | 模組/適配器錯誤被攔截，不拖垮進程 | 純 bot 應用 |
+| `await sdk.run(False)` | 異步，不阻塞 | `None`（不自動卸載） | 同上 | 初始化後執行自定義邏輯 |
+| `await sdk.init()` | 異步，需 await | `bool` | 內部捕獲元件異常，失敗返回 `False` | 手動控制生命週期（配 `uninit()`） |
+| `sdk.init_task()` | 異步，返回 Task 不阻塞 | `asyncio.Task` | 同 `init()` | 並發執行別的初始化、或事件迴圈尚未運行 |
+| `sdk.init_sync()` | **同步**，阻塞當前執行緒 | `bool` | 同 `init()` | 命令列腳本、無事件迴圈的同步入口 |
 
-> **常見誤區**：`await sdk.init()` **不等於** `await sdk.run(keep_running=False)`。兩點不同：① `init()` 回傳 `bool`（失敗時回傳 `False`），`run()` 回傳 `None`；② `init()` 只做初始化、**不自動卸載**，`run()` 在事件迴圈結束時自動 `uninit()`。因此需要手動配對卸載或自訂生命週期時，用 `init()` + `uninit()`。
+> **常見誤區**：`await sdk.init()` **不等於** `await sdk.run(keep_running=False)`。兩點不同：① `init()` 返回 `bool`（失敗時返回 `False`），`run()` 返回 `None`；② `init()` 只做初始化、**不自動卸載**，`run()` 在事件迴圈結束時自動 `uninit()`。因此需要手動搭配卸載或自定義生命週期時，用 `init()` + `uninit()`。
 
 ## 啟動鏈路總覽
 
-`sdk.init()`（準確說是其內部的 `Initializer.init()`）按以下順序拉起整個框架：
+`sdk.init()`（準確來說是其內部的 `Initializer.init()`）按以下順序拉起整個框架：
 
 ```mermaid
 flowchart TD
-    A[0. 準備環境<br/>配置載入 / 例外處理] --> B
-    B[1. 併行發現與載入<br/>AdapterLoader.load / ModuleLoader.load<br/>內部呼叫 Finder.find_all] --> C
+    A[0. 準備環境<br/>配置載入 / 異常處理] --> B
+    B[1. 並行發現與加載<br/>AdapterLoader.load / ModuleLoader.load<br/>內部調用 Finder.find_all] --> C
     C[2. 註冊適配器<br/>AdapterLoader.register_to_manager] --> D
     D[3. 啟動適配器<br/>adapter.startup] --> E
     E[4. 註冊模組<br/>ModuleLoader.register_to_manager] --> F
@@ -39,24 +39,24 @@ flowchart TD
     G[6. 啟動路由伺服器<br/>router.start]
 ```
 
-對應的核心元件：
+對應的核心組件：
 
-| 層 | 元件 | 職責 |
+| 層 | 組件 | 職責 |
 |----|------|------|
-| 發現 | `AdapterFinder` / `ModuleFinder` | 從已安裝套件的 entry-points 中**發現**適配器/模組 |
-| 載入 | `AdapterLoader` / `ModuleLoader` | 發現 + 導入 + 讀取元資料 + 判斷啟用/禁用，回傳物件清單 |
+| 發現 | `AdapterFinder` / `ModuleFinder` | 從已安裝包的 entry-points 中**發現**適配器/模組 |
+| 加載 | `AdapterLoader` / `ModuleLoader` | 發現 + 導入 + 讀取元數據 + 判斷啟用/禁用，返回物件清單 |
 | 註冊 | `*Loader.register_to_manager` | 把物件登記到對應管理器 |
-| 管理 | `sdk.adapter` / `sdk.module` | 維護適配器/模組實例，提供啟停介面 |
-| 初始化 | `ModuleLoader.initialize_modules` | 建立模組實例並掛載到 `sdk`（處理依賴拓撲排序） |
+| 管理 | `sdk.adapter` / `sdk.module` | 維護適配器/模組實例，提供啟停接口 |
+| 初始化 | `ModuleLoader.initialize_modules` | 創建模組實例並掛載到 `sdk`（處理依賴拓撲排序） |
 | 路由 | `sdk.router` | HTTP / WebSocket 伺服器 |
 
-> **重要**：`Finder` 和 `Loader` 是兩層。`Loader` 內部**已經持有**一個 `Finder`（`AdapterLoader` 自帶 `AdapterFinder`，`ModuleLoader` 自帶 `ModuleFinder`）。大多數場景你只需要用 `Loader`，只有需要"只列出不導入"時才會單獨用 `Finder`。
+> **重要**：`Finder` 和 `Loader` 是兩層。`Loader` 內部**已經持有**一個 `Finder`（`AdapterLoader` 自帶 `AdapterFinder`，`ModuleLoader` 自帶 `ModuleFinder`）。絕大多數場景你只需要用 `Loader`，只有需要"只列出不導入"時才會單獨用 `Finder`。
 
 ## 各環節詳解
 
 ### 1. 發現層：Finder
 
-Finder 只負責"找到有哪些套件提供了適配器/模組"，不導入、不實例化。
+Finder 僅負責「找到有哪些套件提供了適配器/模組」，不進行匯入或實例化。
 
 ```python
 from ErisPulse.finders import AdapterFinder, ModuleFinder
@@ -72,11 +72,46 @@ module_entries = module_finder.find_all()      # list[EntryPoint]
 entry = module_finder.find_by_name("MyModule")  # EntryPoint | None
 ```
 
-每個 `EntryPoint` 可以 `.load()` 得到對應的類，但通常不用你手動呼叫——Loader 會做。
+每個 `EntryPoint` 可以 `.load()` 得到對應的類，但通常不需要你手動調用——Loader 會處理。
 
-### 2. 載入層：Loader
+#### 可插拔擴展點：entry-points
 
-Loader 在 Finder 之上做了"導入 + 讀元資料 + 判斷啟用/禁用"。
+Finder 的發現協定就是 Python 的 entry-points：任何已安裝的套件在 `pyproject.toml` 中宣告對應分組，安裝即被發現、卸載即消失，框架無需修改。框架開放的分組：
+
+| 分組 | 發現方 | 登記內容 |
+|------|--------|----------|
+| `erispulse.adapter` | `AdapterFinder`（載入期讀取） | 適配器類 |
+| `erispulse.module` | `ModuleFinder`（載入期讀取） | 模組類 |
+| `erispulse.storage.backends` | `create_storage()`（建立儲存實例前掃描） | 儲存後端類 |
+
+以自訂儲存後端為例，套件只需宣告分組與匯入路徑：
+
+```toml
+[project.entry-points."erispulse.storage.backends"]
+mydb = "my_erispulse_backend:MyStorage"
+```
+
+```toml
+# 使用端：改一行配置即可啟用
+[ErisPulse.storage]
+backend = "mydb"
+```
+
+適配器 / 模組同樣只需宣告分組，語法請參閱 [發布指南](../developer-guide/publishing.md)。不使用 entry-points 的場景（執行時動態註冊）可在匯入後直接調用註冊函數：
+
+```python
+from ErisPulse.Core.storage import register_storage_backend
+
+from my_erispulse_backend import MyStorage
+
+register_storage_backend("mydb", MyStorage)
+```
+
+儲存後端的完整契約（基類、方言、能力宣告）請參閱 [儲存後端](storage-backends.md)。
+
+### 2. 加載層：Loader
+
+Loader 在 Finder 之上執行「匯入 + 讀取元數據 + 判斷啟用/禁用」。
 
 ```python
 from ErisPulse.loaders import AdapterLoader, ModuleLoader
@@ -85,32 +120,32 @@ from ErisPulse import sdk
 adapter_loader = AdapterLoader()
 module_loader = ModuleLoader()
 
-# load() 內部：呼叫 finder.find_all() → 逐個處理 entry-point → 回傳三元組
+# load() 內部：調用 finder.find_all() → 逐個處理 entry-point → 返回三元組
 adapter_objs, enabled_adapters, disabled_adapters = await adapter_loader.load(sdk.adapter)
 module_objs, enabled_modules, disabled_modules = await module_loader.load(sdk.module)
 ```
 
-`load()` 回傳的三元組：
+`load()` 返回的三元組：
 
-| 回傳值 | 含義 |
+| 返回值 | 含義 |
 |--------|------|
-| `objs` (`dict`) | 名稱 → 對象（適配器類 / 模組包裝物件） |
-| `enabled` (`list[str]`) | 被啟用的名稱（設定中未禁用） |
+| `objs` (`dict`) | 名稱 → 對象（適配器類 / 模組封裝物件） |
+| `enabled` (`list[str]`) | 被啟用的名稱（配置中未禁用） |
 | `disabled` (`list[str]`) | 被禁用的名稱 |
 
-#### 載入失敗時的診斷資訊
+#### 加載失敗時的診斷資訊
 
-當某個模組/適配器在載入或初始化階段拋出例外時，框架會跳過該元件並繼續載入其他元件，同時輸出**用戶程式碼幀摘要**，讓你在預設 INFO 級別下即可定位出錯位置，無需手動重開 DEBUG：
+當某個模組/適配器在加載或初始化階段拋出例外時，框架會跳過該元件並繼續加載其他元件，同時輸出**用戶程式碼框架摘要**，讓你在預設的 INFO 級別下即可定位出錯位置，無需手動重開 DEBUG：
 
 ```
 [ERROR] [ModuleLoader] 從 entry-point 加載模組 MyModule 失敗，已跳過: 'NoneType' object has no attribute 'platform'
   → MyModule/Core.py:42 in on_load
       adapter = sdk.platform
   → AttributeError: 'NoneType' object has no attribute 'platform'
-  → 提示: 將日誌級別提高到 DEBUG 可查看完整堆疊；檢查模組 MyModule 的實現程式碼
+  → 提示: 將日誌層級提高到 DEBUG 可查看完整堆疊；檢查模組 MyModule 的實作程式碼
 ```
 
-診斷資訊透過 `ErisPulse.runtime.diagnostics` 模組產生，會自動過濾掉框架內部幀，只保留你的程式碼幀。如需在自訂載入邏輯中重用：
+診斷資訊透過 `ErisPulse.runtime.diagnostics` 模組產生，會自動過濾掉框架內部框架，僅保留你的程式碼框架。如需在自訂加載邏輯中重用：
 
 ```python
 from ErisPulse.runtime import log_diagnostic
@@ -118,20 +153,20 @@ from ErisPulse.runtime import log_diagnostic
 try:
     risky_init()
 except Exception as e:
-    log_diagnostic(e)  # 自動提取用戶程式碼幀並寫入 ERROR 日誌
+    log_diagnostic(e)  # 自動提取用戶程式碼框架並寫入 ERROR 日誌
 ```
 
-該模組還提供 `extract_user_frame()`（回傳結構化幀資訊）和 `format_diagnostic_block()`（回傳多行文字）兩個底層函數。
+該模組還提供 `extract_user_frame()`（返回結構化框架資訊）和 `format_diagnostic_block()`（返回多行文字）兩個底層函數。
 
-### 3. 註冊層：register_to_manager
+### 3. 注册層：register_to_manager
 
-把 Loader 產出的物件登記到管理器，讓 `sdk.adapter` / `sdk.module` 能識別它們。
+將 Loader 產出的物件登記到管理器，讓 `sdk.adapter` / `sdk.module` 能識別它們。
 
 ```python
-# 註冊適配器（回傳 bool，表示是否全部成功）
+# 注册適配器（返回 bool，表示是否全部成功）
 await adapter_loader.register_to_manager(enabled_adapters, adapter_objs, sdk.adapter)
 
-# 註冊模組
+# 注册模組
 await module_loader.register_to_manager(enabled_modules, module_objs, sdk.module)
 ```
 
@@ -140,14 +175,14 @@ await module_loader.register_to_manager(enabled_modules, module_objs, sdk.module
 ### 4. 啟動適配器
 
 ```python
-# 啟動所有已註冊的適配器
+# 啟動所有已登記的適配器
 await sdk.adapter.startup()
 # 或指定平台
 await sdk.adapter.startup("yunhu")
 await sdk.adapter.startup(["yunhu", "telegram"])
 ```
 
-> 註冊 ≠ 啟動。`register_to_manager` 只是登記；`startup` 才會呼叫適配器的 `start()`，建立與平台的連接。
+> 登記 ≠ 啟動。`register_to_manager` 只是登記；`startup` 才會呼叫適配器的 `start()`，建立與平台的連接。
 
 ### 5. 初始化模組
 
@@ -172,11 +207,11 @@ await sdk.router.start(
 )
 ```
 
-路由伺服器負責接收適配器的 Webhook / WebSocket 回呼。不啟動它，server 模式的適配器無法收訊息。
+路由伺服器負責接收適配器的 Webhook / WebSocket 回調。不啟動它，server 模式的適配器無法接收訊息。
 
 ## 完整手動啟動範例
 
-下面這段程式碼**等價於** `await sdk.init()` 的核心流程，但每一步都暴露在你手裡，可以在任意環節插入自訂邏輯：
+下面這段程式碼**等價於** `await sdk.init()` 的核心流程，但每一步都暴露在你手裡，可以在任意環節插入自定義邏輯：
 
 ```python
 import asyncio
@@ -195,7 +230,7 @@ async def manual_startup():
     adapter_loader = AdapterLoader()
     module_loader = ModuleLoader()
 
-    # 2. 併行發現與載入（與 init() 內部一致用 gather）
+    # 2. 並行發現與載入（與 init() 內部一致用 gather）
     (adapter_objs, enabled_adapters, disabled_adapters), \
     (module_objs, enabled_modules, disabled_modules) = await asyncio.gather(
         adapter_loader.load(sdk.adapter),
@@ -240,11 +275,11 @@ if __name__ == "__main__":
 
 ### 何時該手動啟動？
 
-絕大多數情況下**不需要**手動啟動，`await sdk.run()` 已經把上面這些都做好了。手動啟動僅在這些場景才有價值：
+大多數情況下**不需要**手動啟動，`await sdk.run()` 已經把上面這些都做好了。手動啟動僅在這些場景才有價值：
 
 - **部分載入**：只載入指定的適配器/模組，跳過其他
 - **動態註冊**：執行時根據條件註冊新的適配器/模組
-- **自訂順序**：需要打亂預設的載入順序（如先啟動某模組再啟動適配器）
+- **自訂順序**：需要打亂預設的載入順序（例如先啟動某模組再啟動適配器）
 - **注入策略**：對 Loader 注入自訂的嚴格模式管理器、載入策略等
 - **除錯/診斷**：在某個環節失敗時，手動驅動以定位問題
 
@@ -252,9 +287,9 @@ if __name__ == "__main__":
 
 ### 本地插件熱重載
 
-`sdk.enable_plugin_hot_reload()` 監控本地插件目錄（`plugins/`）的原始碼變更並自動重載：
-`epsdk run` 已自動開啟，無需手動呼叫；**裸 `sdk.run()` 啟動**時如需插件熱重載，
-在 `run()` 之前呼叫一次（只覆蓋本地插件目錄，不影響 pip 安裝的模組/適配器）：
+`sdk.enable_plugin_hot_reload()` 監控本地插件目錄（`plugins/`）的源碼變更並自動重載：
+`epsdk run` 已自動開啟，無需手動調用；**裸 `sdk.run()` 啟動**時如需插件熱重載，
+在 `run()` 之前調用一次（只覆蓋本地插件目錄，不影響 pip 安裝的模塊/適配器）：
 
 ```python
 sdk.enable_plugin_hot_reload()
@@ -262,7 +297,7 @@ sdk.run()
 ```
 
 
-即使使用了 `sdk.run()` 完成啟動，你仍然可以在執行時單獨控制各子系統，而不必重啟整個 SDK：
+即使用了 `sdk.run()` 完成啟動，你仍然可以在運行時單獨控制各子系統，而不必重啟整個 SDK：
 
 ### 適配器熱啟停
 
@@ -271,7 +306,7 @@ sdk.run()
 await sdk.adapter.shutdown("yunhu")
 await sdk.adapter.startup("yunhu")
 
-# 執行中拉起一個新平台
+# 運行中拉起一個新平台
 await sdk.adapter.startup("telegram")
 
 # 臨時下線某平台
@@ -290,10 +325,10 @@ await sdk.router.stop()
 await sdk.router.start(host="0.0.0.0", port=9000)
 ```
 
-### 模組按需載入
+### 模組按需加載
 
 ```python
-# 手動載入一個（可能是懶載入的）模組
+# 手動加載一個（可能是懶加載的）模組
 await sdk.load_module("MyModule")
 ```
 
@@ -321,14 +356,14 @@ async def shutdown_after_idle():
 
 ## 卸載流程
 
-啟動的反向操作是 `await sdk.uninit()`，它按相反順序清理：
+啟動的反向操作是 `await sdk.uninit()`，它會以相反順序進行清理：
 
 1. 關閉所有適配器（`adapter.shutdown()`）
 2. 卸載所有模組
-3. 清理所有事件處理器
+3. 清理所有事件處理程式
 4. 清理管理器與 SDK 上的模組屬性
 
-手動啟動場景下，記得在退出前呼叫 `uninit()` 保證優雅關閉：
+在手動啟動的場景下，請記得在退出前呼叫 `uninit()` 以確保優雅關閉：
 
 ```python
 try:
@@ -341,13 +376,13 @@ finally:
 
 SDK 提供兩種重啟方式，都不需要你自己先卸載——框架會自行處理：
 
-| 方式 | 呼叫 | 行為 | 適用場景 |
+| 方式 | 調用 | 行為 | 適用場景 |
 |------|------|------|----------|
-| 熱重啟 | `await sdk.restart()` | 同一進程內**元件層代碼級熱重載**：全部模組走統一重載管線（整體語法預檢 / 快照回滾 / 身份核對），適配器先**重發現 entry-point**（運行中新裝/卸載的適配器即刻生效）再逐個代碼級重載 | pip 升級或安裝元件後讓代碼生效、熱更新模組 |
+| 熱重啟 | `await sdk.restart()` | 同一進程內**組件層代碼級熱重載**：全部模塊走統一重載管線（整體語法預檢 / 快照回滾 / 身份核對），適配器先**重發現 entry-point**（運行中新裝/卸載的適配器即刻生效）再逐個代碼級重載 | pip 升級或安裝組件後讓代碼生效、熱更新模塊 |
 | 硬重啟 | `await sdk.hard_restart()` | `uninit()` 後以**退出碼 42** 退出進程，由外部監督者拉起全新進程 | 框架自身升級（升級後的框架代碼只有新進程生效）、C 擴展副作用、懷疑資源泄漏 |
 
 ```python
-# 熱重啟：元件層代碼級熱重載（最常用；pip 新裝的適配器也會被拉起）
+# 熱重啟：組件層代碼級熱重載（最常用；pip 新裝的適配器也會被拉起）
 await sdk.restart()
 
 # 硬重啟：退出進程，交由外部監督者重啟（見下方「監督者指南」）
@@ -355,20 +390,20 @@ await sdk.hard_restart("sdk self-update")  # 可選 reason 供監督者展示
 ```
 
 > **兩點注意**：
-> 1. 這兩個方法都用背景任務執行重啟，**立即回傳 `True` 表示「重啟任務已排程」**，而非「重啟已完成」。實際重啟在背景進行，避免中斷目前事件鏈路。
-> 2. `hard_restart()` 的原理是：卸載並刷盤設定後，以**退出碼 42**（`HARD_RESTART_EXIT_CODE`）退出進程——**它自身不拉起新進程**，必須由外部監督者檢測到退出碼 42 後重新啟動。若直接 `python main.py` 運行且無任何監督者，進程以碼 42 退出後就結束了，**不會自動重啟**（框架會打警告提示）。
+> 1. 這兩個方法都用後台任務執行重啟，**立即返回 `True` 表示「重啟任務已排程」**，而非「重啟已完成」。實際重啟在後台進行，避免中斷當前事件鏈路。
+> 2. `hard_restart()` 的原理是：卸載並刷盤配置後，以**退出碼 42**（`HARD_RESTART_EXIT_CODE`）退出進程——**它自身不拉起新進程**，必須由外部監督者檢測到退出碼 42 後重新啟動。若直接 `python main.py` 運行且無任何監督者，進程以碼 42 退出後就結束了，**不會自動重啟**（框架會打警告提示）。
 
-> **熱重啟的互斥與合併**（2.11.1 起）：所有熱重載操作（單模組重載 / 全量重載 / 適配器重載 / 歸眠 / 新插件熱裝載）全程互斥——保存風暴下連續觸發不會併發交叉，進行中的 restart 收到新請求時自動合併（請求落在普通重載持鎖期間同樣合併排隊），完成後至多補跑一輪。保存含語法錯誤的檔案時，整輪重載會在卸載前被**彙總式語法預檢**拒絕（一次性列出全部錯誤檔案與行號），適配器層跳過本輪重載、`restart` 判定失敗，所有舊實例繼續服務；修復後再次 `restart` 即可。
+> **熱重啟的互斥與合併**（2.11.1 起）：所有熱重載操作（單模塊重載 / 全量重載 / 適配器重載 / 歸眠 / 新插件熱載入）全程互斥——保存風暴下連續觸發不會併發交叉，進行中的 restart 收到新請求時自動合併（請求落在普通重載持鎖期間同樣合併排隊），完成後至多補跑一輪。保存含語法錯誤的文件時，整輪重載會在卸載前被**總結式語法預檢**拒絕（一次性列出全部錯誤文件與行號），適配器層跳過本輪重載、`restart` 判定失敗，所有舊實例繼續服務；修復後再次 `restart` 即可。
 
 ### 什麼時候該用硬重啟？
 
-熱重啟已經涵蓋了絕大多數場景（pip 升級/安裝元件、熱更新模組代碼，**含運行中新裝的適配器**）。以下場景才需要硬重啟：
+熱重啟已經覆蓋了絕大多數場景（pip 升級/安裝組件、熱更新模塊代碼，**含運行中新裝的適配器**）。以下場景才需要硬重啟：
 
-- **框架自身升級**：升級 ErisPulse 本體後，新的框架代碼只有全新進程才會生效（Python 不會重新 import 已載入的框架代碼）。
-- **二進位庫（C 擴展）副作用**：熱重啟在同一進程內進行，無法釋放 C 擴展、打開的檔案描述符、執行緒等進程級資源；硬重啟換一個全新進程，這些副作用隨之徹底清零。
+- **框架自身升級**：升級 ErisPulse 本體後，新的框架代碼只有全新進程才會生效（Python 不會重新 import 已加載的框架代碼）。
+- **二進制庫（C 擴展）副作用**：熱重啟在同一進程內進行，無法釋放 C 擴展、打開的文件描述符、線程等進程級資源；硬重啟換一個全新進程，這些副作用隨之徹底清零。
 - **資源泄漏排查**：懷疑存在記憶體或句柄泄漏時，硬重啟能拿到一個乾淨的環境。
 
-> Dashboard 管理介面裡的「框架重啟」功能，底層呼叫的就是 `hard_restart()`。
+> Dashboard 管理面板裡的「框架重啟」功能，底層調用的就是 `hard_restart()`。
 
 ### 退出碼 42 契約
 
@@ -376,10 +411,10 @@ await sdk.hard_restart("sdk self-update")  # 可選 reason 供監督者展示
 
 | 角色 | 行為 |
 |------|------|
-| SDK（被硬重啟時） | `uninit()` → 刷盤設定 → 寫入硬重啟標記（原因 / PID，供監督者展示）→ `os._exit(42)` |
+| SDK（被硬重啟時） | `uninit()` → 刷盤配置 → 寫入硬重啟標記（原因 / PID，供監督者展示）→ `os._exit(42)` |
 | 監督者 | 檢測到子進程退出碼為 42 → 展示硬重啟原因 → 重新啟動同一命令 |
 
-> `sdk.is_supervised()` 可查詢目前進程是否由監督者啟動（檢測環境變數 `ERISPULSE_SUPERVISED`）。CLI `run` 命令啟動子進程時會自動注入該標記；systemd / Docker 等外部監督者不會注入，`is_supervised()` 回傳 `False`，此時硬重啟後框架會打「未檢測到監督者」警告。
+> `sdk.is_supervised()` 可查詢當前進程是否由監督者啟動（檢測環境變數 `ERISPULSE_SUPERVISED`）。CLI `run` 命令啟動子進程時會自動注入該標記；systemd / Docker 等外部監督者不會注入，`is_supervised()` 返回 `False`，此時硬重啟後框架會打「未檢測到監督者」警告。
 
 ### 監督者指南
 
@@ -387,34 +422,30 @@ await sdk.hard_restart("sdk self-update")  # 可選 reason 供監督者展示
 
 #### 1. CLI run 命令（開發/簡單部署，推薦）
 
-`epsdk run main.py` 內建監督迴圈：檢測子進程退出碼，42 時立即重啟（並展示硬重啟原因）；其它異常退出碼按指數退避自動重試；`Ctrl+C` 會先優雅終止子進程（碼 0 視為正常退出，不再拉起）。
+`epsdk run main.py` 內置監督循環：檢測子進程退出碼，42 時立即重啟（並展示硬重啟原因）；其它異常退出碼按指數退避自動重試；`Ctrl+C` 會先優雅終止子進程（碼 0 視為正常退出，不再拉起）。
 
 ```bash
 epsdk run main.py
 ```
 
-`epsdk run --reload`（開發熱重載模式，2.11.1 起）同樣走「監督進程 + 重載 worker 子進程」結構：worker 內保存 `.py` 檔案即觸發**元件級熱重載**（不整框架重啟）；硬重啟由監督進程重拉全新 worker，升級框架後新代碼即刻生效。
+`epsdk run --reload`（開發熱重載模式，2.11.1 起）同樣走「監督進程 + 重載 worker 子進程」結構：worker 內保存 `.py` 文件即觸發**組件級熱重載**（不整框架重啟）；硬重啟由監督進程重拉全新 worker，升級框架後新代碼即刻生效。
 
 #### 細粒度重載判定（2.12+）
 
-保存 `.py` 後按運行時原始碼歸屬選擇最小重載單元，不按路徑字串猜：
+保存 `.py` 後按運行時源碼歸屬選擇最小重載單元，不按路徑字串猜：
 
-| 變更檔案 | 處理 |
+| 變更文件 | 處理 |
 |----------|------|
 | 插件目錄（`ErisPulse.framework.plugins_dir`）內 | 由插件熱重載 watcher 處理，dev watcher 不重複觸發 |
-| 已載入模組的原始碼（含 `pip install -e` 與 site-packages） | `sdk.reload_module(模組名)` |
-| 已註冊適配器的原始碼 | `sdk.reload_adapter(平台名)` |
+| 已加載模塊的源碼（含 `pip install -e` 與 site-packages） | `sdk.reload_module(模塊名)` |
+| 已註冊適配器的源碼 | `sdk.reload_adapter(平台名)` |
 | 入口腳本 | 進程級重啟（退出碼 42，由監督者重拉） |
-| 框架自身原始碼（`ErisPulse` 包內） | 進程級重啟 |
+| 框架自身源碼（`ErisPulse` 包內） | 進程級重啟 |
 | 同時匹配多個 owner / 無法歸屬 | 保守走進程級重啟 |
 
-`epsdk upgrade` 等批量升級場景可用 `sdk.reload_all_modules()` 一次重載全部已註冊
-模組（按依賴拓撲序，單模組失敗跳過不回滾），無需重啟進程。
+`epsdk upgrade` 等批量升級場景可用 `sdk.reload_all_modules()` 一次重載全部已註冊模塊（按依賴拓撲序，單模塊失敗跳過不回滾），無需重啟進程。
 
-腳本模式（`epsdk run main.py --reload`）不把腳本 worker 化：腳本子進程內掛載
-dev watcher，並把 `component_reload_pid` 寫入 `.erispulse/runtime.json`；父進程
-看到該標記後，模組/適配器/插件變更交給子進程處理，只有入口腳本或框架源碼
-變更才重啟腳本進程。
+腳本模式（`epsdk run main.py --reload`）不把腳本 worker 化：腳本子進程內掛載 dev watcher，並把 `component_reload_pid` 寫入 `.erispulse/runtime.json`；父進程看到該標記後，模塊/適配器/插件變更交給子進程處理，只有入口腳本或框架源碼變更才重啟腳本進程。
 
 #### 2. systemd（Linux 伺服器）
 
@@ -440,14 +471,13 @@ services:
     restart: unless-stopped   # 任何退出（含 42）都重啟
 ```
 
-> 容器內 `epsdk restart` 對 PID 1 實例走 SIGUSR1 進程內熱重啟，不會退出容器；
-> 整進程重啟由 `restart` 策略承載。詳見 [部署 → 容器內重啟](../user-guide/deployment.md#容器內重啟pid-1-实例)。
+> 容器內 `epsdk restart` 對 PID 1 實例走 SIGUSR1 進程內熱重啟，不會退出容器；整進程重啟由 `restart` 策略承載。詳見 [部署 → 容器內重啟](../user-guide/deployment.md#容器內重啟pid-1-實例)。
 
-#### 4. PM2（Node 生態維運）
+#### 4. PM2（Node 生態運維）
 
 ```bash
 pm2 start main.py --name mybot --interpreter python3
-# 42 被視為退出碼，PM2 預設重啟；設定 restart_delay 防抖
+# 42 被視為退出碼，PM2 預設重啟；設置 restart_delay 防抖
 pm2 set mybot.restart_delay 2000
 ```
 
@@ -460,7 +490,7 @@ autorestart=true
 exitcodes=0,2,42    # 42 也視為"正常退出需重啟"
 ```
 
-#### 6. 純 Python 自訂監督者
+#### 6. 純 Python 自定義監督者
 
 ```python
 import subprocess, sys, time
@@ -476,10 +506,10 @@ while True:
     time.sleep(3)           # 異常退出，退避重試
 ```
 
-> **無監督者時的行為**：直接 `python main.py` 運行，呼叫 `hard_restart()` 後進程以碼 42 退出、不會重啟。此時應接入上述任一監督者。
+> **無監督者時的行為**：直接 `python main.py` 運行，調用 `hard_restart()` 後進程以碼 42 退出、不會重啟。此時應接入上述任一監督者。
 
 ## 相關文件
 
 - [建立第一個機器人](../getting-started/first-bot.md) - `keep_running` 兩種基礎模式入門
 - [生命週期管理](lifecycle.md) - 監聽 `core.init.start` / `core.init.complete` 等啟動事件
-- [懶載入系統](lazy-loading.md) - 模組懶載入機制與 `load_module`
+- [懶加載系統](lazy-loading.md) - 模組懶加載機制與 `load_module`

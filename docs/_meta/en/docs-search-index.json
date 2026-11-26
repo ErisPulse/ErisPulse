@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 2055,
+  "total_keywords": 2059,
   "keywords": {
     "0 Success (OK)": [
       {
@@ -26,12 +26,12 @@
         "title": "1. Basic Information Section"
       }
     ],
-    "1. CLI run Command (Development/Simple Deployment, Recommended)": [
+    "1. CLI run command (development/simple deployment, recommended)": [
       {
         "document": "advanced/startup.md",
-        "line": 389,
+        "line": 421,
         "level": 4,
-        "title": "1. CLI run Command (Development/Simple Deployment, Recommended)"
+        "title": "1. CLI run command (development/simple deployment, recommended)"
       }
     ],
     "1. Categorized Exception Handling": [
@@ -115,7 +115,7 @@
     "1. Discovery Layer: Finder": [
       {
         "document": "advanced/startup.md",
-        "line": 57,
+        "line": 56,
         "level": 3,
         "title": "1. Discovery Layer: Finder"
       }
@@ -599,7 +599,7 @@
     "2. Loading Layer: Loader": [
       {
         "document": "advanced/startup.md",
-        "line": 77,
+        "line": 111,
         "level": 3,
         "title": "2. Loading Layer: Loader"
       }
@@ -802,12 +802,12 @@
         "title": "2. Use Decorator to Register a Single Method"
       }
     ],
-    "2. systemd (Linux Servers)": [
+    "2. systemd (Linux servers)": [
       {
         "document": "advanced/startup.md",
-        "line": 420,
+        "line": 448,
         "level": 4,
-        "title": "2. systemd (Linux Servers)"
+        "title": "2. systemd (Linux servers)"
       }
     ],
     "2.0.x → 2.5.0 (Production Readiness Threshold)": [
@@ -1085,7 +1085,7 @@
     "3. Docker / docker-compose": [
       {
         "document": "advanced/startup.md",
-        "line": 433,
+        "line": 461,
         "level": 4,
         "title": "3. Docker / docker-compose"
       }
@@ -1197,7 +1197,7 @@
     "3. Registration Layer: register_to_manager": [
       {
         "document": "advanced/startup.md",
-        "line": 126,
+        "line": 160,
         "level": 3,
         "title": "3. Registration Layer: register_to_manager"
       }
@@ -1546,12 +1546,12 @@
         "title": "4. Modules"
       }
     ],
-    "4. PM2 (Node Ecosystem Operations)": [
+    "4. PM2 (Node ecosystem operations)": [
       {
         "document": "advanced/startup.md",
-        "line": 447,
+        "line": 474,
         "level": 4,
-        "title": "4. PM2 (Node Ecosystem Operations)"
+        "title": "4. PM2 (Node ecosystem operations)"
       }
     ],
     "4. Parameter Naming Convention": [
@@ -1578,12 +1578,12 @@
         "title": "4. Set Image to Public"
       }
     ],
-    "4. Starting Adapters": [
+    "4. Start Adapters": [
       {
         "document": "advanced/startup.md",
-        "line": 140,
+        "line": 174,
         "level": 3,
-        "title": "4. Starting Adapters"
+        "title": "4. Start Adapters"
       }
     ],
     "4. Usage": [
@@ -1778,12 +1778,12 @@
         "title": "5. Implement the Send Class"
       }
     ],
-    "5. Initializing Modules": [
+    "5. Initialize Modules": [
       {
         "document": "advanced/startup.md",
-        "line": 152,
+        "line": 186,
         "level": 3,
-        "title": "5. Initializing Modules"
+        "title": "5. Initialize Modules"
       }
     ],
     "5. Interactive Component Standards": [
@@ -1821,7 +1821,7 @@
     "5. supervisord": [
       {
         "document": "advanced/startup.md",
-        "line": 455,
+        "line": 482,
         "level": 4,
         "title": "5. supervisord"
       }
@@ -2074,12 +2074,12 @@
         "title": "6. Notes"
       }
     ],
-    "6. Pure-Python Custom Supervisor": [
+    "6. Pure Python Custom Supervisor": [
       {
         "document": "advanced/startup.md",
-        "line": 464,
+        "line": 491,
         "level": 4,
-        "title": "6. Pure-Python Custom Supervisor"
+        "title": "6. Pure Python Custom Supervisor"
       }
     ],
     "6. Response Format": [
@@ -2098,12 +2098,12 @@
         "title": "6. Reverse Conversion Convention (OneBot12 → Platform)"
       }
     ],
-    "6. Starting the Router Server": [
+    "6. Start Routing Server": [
       {
         "document": "advanced/startup.md",
-        "line": 164,
+        "line": 198,
         "level": 3,
-        "title": "6. Starting the Router Server"
+        "title": "6. Start Routing Server"
       }
     ],
     "6.1 Conversion Model": [
@@ -2945,7 +2945,7 @@
     "Adapter Hot Start/Stop": [
       {
         "document": "advanced/startup.md",
-        "line": 268,
+        "line": 300,
         "level": 3,
         "title": "Adapter Hot Start/Stop"
       }
@@ -3287,7 +3287,7 @@
     "Asynchronous Native API": [
       {
         "document": "advanced/storage-backends.md",
-        "line": 96,
+        "line": 99,
         "level": 2,
         "title": "Asynchronous Native API"
       }
@@ -3478,10 +3478,18 @@
         "title": "Back to Learning Path"
       }
     ],
+    "Backend Registration (Pluggable)": [
+      {
+        "document": "advanced/storage-backends.md",
+        "line": 167,
+        "level": 2,
+        "title": "Backend Registration (Pluggable)"
+      }
+    ],
     "Backend Selection": [
       {
         "document": "advanced/storage-backends.md",
-        "line": 21,
+        "line": 20,
         "level": 2,
         "title": "Backend Selection"
       }
@@ -5105,7 +5113,7 @@
     "Complete Manual Startup Example": [
       {
         "document": "advanced/startup.md",
-        "line": 177,
+        "line": 211,
         "level": 2,
         "title": "Complete Manual Startup Example"
       }
@@ -5565,7 +5573,7 @@
     "Connection Failure Behavior": [
       {
         "document": "advanced/storage-backends.md",
-        "line": 75,
+        "line": 74,
         "level": 2,
         "title": "Connection Failure Behavior"
       }
@@ -5615,7 +5623,7 @@
     "Connection Parameters": [
       {
         "document": "advanced/storage-backends.md",
-        "line": 42,
+        "line": 41,
         "level": 2,
         "title": "Connection Parameters"
       }
@@ -6153,7 +6161,7 @@
     "Custom SQL Backend": [
       {
         "document": "advanced/storage-backends.md",
-        "line": 163,
+        "line": 187,
         "level": 2,
         "title": "Custom SQL Backend"
       }
@@ -6444,20 +6452,20 @@
         "title": "Design Differences Comparison"
       }
     ],
-    "Detailed Breakdown of Each Stage": [
-      {
-        "document": "advanced/startup.md",
-        "line": 55,
-        "level": 2,
-        "title": "Detailed Breakdown of Each Stage"
-      }
-    ],
     "Detailed Event Handling Chain": [
       {
         "document": "architecture.md",
         "line": 108,
         "level": 3,
         "title": "Detailed Event Handling Chain"
+      }
+    ],
+    "Detailed Explanation of Each Step": [
+      {
+        "document": "advanced/startup.md",
+        "line": 54,
+        "level": 2,
+        "title": "Detailed Explanation of Each Step"
       }
     ],
     "Detailed Initialization Stages": [
@@ -6548,18 +6556,18 @@
         "title": "Diagnostic Commands"
       }
     ],
-    "Diagnostic Information on Load Failure": [
+    "Diagnostic Information on Loading Failure": [
       {
         "document": "advanced/startup.md",
-        "line": 101,
+        "line": 135,
         "level": 4,
-        "title": "Diagnostic Information on Load Failure"
+        "title": "Diagnostic Information on Loading Failure"
       }
     ],
     "Dialect Behavior Differences": [
       {
         "document": "advanced/storage-backends.md",
-        "line": 131,
+        "line": 136,
         "level": 2,
         "title": "Dialect Behavior Differences"
       }
@@ -8078,6 +8086,14 @@
         "title": "Exemption List"
       }
     ],
+    "Exit Code 42 Contract": [
+      {
+        "document": "advanced/startup.md",
+        "line": 406,
+        "level": 3,
+        "title": "Exit Code 42 Contract"
+      }
+    ],
     "Extended API (call_api)": [
       {
         "document": "platform-guide/wechatclaw.md",
@@ -8224,12 +8240,12 @@
         "title": "Failure Response Example"
       }
     ],
-    "Failure Semantics (as of 2.12)": [
+    "Failure Semantics (from 2.12)": [
       {
         "document": "advanced/storage-backends.md",
-        "line": 86,
+        "line": 89,
         "level": 2,
-        "title": "Failure Semantics (as of 2.12)"
+        "title": "Failure Semantics (from 2.12)"
       }
     ],
     "Feature Matrix": [
@@ -8300,12 +8316,20 @@
         "title": "Filtering Conditions"
       }
     ],
-    "Fine-Grained Reload Decision (2.12+)": [
+    "Fine-Grained Reload Determination (2.12+)": [
       {
         "document": "advanced/startup.md",
-        "line": 399,
+        "line": 431,
         "level": 4,
-        "title": "Fine-Grained Reload Decision (2.12+)"
+        "title": "Fine-Grained Reload Determination (2.12+)"
+      }
+    ],
+    "Fine-Grained Runtime Control": [
+      {
+        "document": "advanced/startup.md",
+        "line": 285,
+        "level": 2,
+        "title": "Fine-Grained Runtime Control"
       }
     ],
     "Five Isolation Gates": [
@@ -8821,7 +8845,7 @@
     "Graceful Shutdown": [
       {
         "document": "advanced/startup.md",
-        "line": 301,
+        "line": 333,
         "level": 2,
         "title": "Graceful Shutdown"
       }
@@ -10199,7 +10223,7 @@
     "Local Plugin Hot Reload": [
       {
         "document": "advanced/startup.md",
-        "line": 254,
+        "line": 287,
         "level": 3,
         "title": "Local Plugin Hot Reload"
       }
@@ -11456,6 +11480,14 @@
         "title": "Module Module"
       }
     ],
+    "Module On-Demand Loading": [
+      {
+        "document": "advanced/startup.md",
+        "line": 326,
+        "level": 3,
+        "title": "Module On-Demand Loading"
+      }
+    ],
     "Module Overview": [
       {
         "document": "api-reference/README.md",
@@ -11701,7 +11733,7 @@
     "MySQL (`ErisPulse.storage.mysql`)": [
       {
         "document": "advanced/storage-backends.md",
-        "line": 44,
+        "line": 43,
         "level": 3,
         "title": "MySQL (`ErisPulse.storage.mysql`)"
       }
@@ -12158,14 +12190,6 @@
         "title": "Official Client (Standalone Application)"
       }
     ],
-    "On-demand Module Loading": [
-      {
-        "document": "advanced/startup.md",
-        "line": 294,
-        "level": 3,
-        "title": "On-demand Module Loading"
-      }
-    ],
     "One-Click Installation Script (Recommended for New Environments)": [
       {
         "document": "quick-start.md",
@@ -12472,6 +12496,14 @@
         "line": 59,
         "level": 2,
         "title": "Overview"
+      }
+    ],
+    "Overview of SDK Top-Level Entry Points": [
+      {
+        "document": "advanced/startup.md",
+        "line": 12,
+        "level": 2,
+        "title": "Overview of SDK Top-Level Entry Points"
       }
     ],
     "Overview of the 17 Tools": [
@@ -12952,6 +12984,14 @@
         "title": "Platform-specific methods"
       }
     ],
+    "Pluggable Extension Point: entry-points": [
+      {
+        "document": "advanced/startup.md",
+        "line": 76,
+        "level": 4,
+        "title": "Pluggable Extension Point: entry-points"
+      }
+    ],
     "Plugin Rewrite Comparison": [
       {
         "document": "showcase/migrate-from-astrbot.md",
@@ -12979,7 +13019,7 @@
     "PostgreSQL (`ErisPulse.storage.postgres`)": [
       {
         "document": "advanced/storage-backends.md",
-        "line": 58,
+        "line": 57,
         "level": 3,
         "title": "PostgreSQL (`ErisPulse.storage.postgres`)"
       }
@@ -13038,6 +13078,14 @@
         "line": 495,
         "level": 3,
         "title": "Proactive GC Configuration"
+      }
+    ],
+    "Process Exit": [
+      {
+        "document": "advanced/storage-backends.md",
+        "line": 85,
+        "level": 2,
+        "title": "Process Exit"
       }
     ],
     "Process Supervision and Hard Restart": [
@@ -13717,7 +13765,13 @@
       },
       {
         "document": "advanced/startup.md",
-        "line": 482,
+        "line": 509,
+        "level": 2,
+        "title": "Related Documentation"
+      },
+      {
+        "document": "advanced/storage-backends.md",
+        "line": 212,
         "level": 2,
         "title": "Related Documentation"
       },
@@ -13810,12 +13864,6 @@
       {
         "document": "advanced/lazy-loading.md",
         "line": 283,
-        "level": 2,
-        "title": "Related Documents"
-      },
-      {
-        "document": "advanced/storage-backends.md",
-        "line": 189,
         "level": 2,
         "title": "Related Documents"
       },
@@ -14259,7 +14307,7 @@
     "Restart": [
       {
         "document": "advanced/startup.md",
-        "line": 341,
+        "line": 373,
         "level": 2,
         "title": "Restart"
       }
@@ -14488,12 +14536,12 @@
         "title": "Router Module"
       }
     ],
-    "Router Server": [
+    "Routing Server": [
       {
         "document": "advanced/startup.md",
-        "line": 284,
+        "line": 316,
         "level": 3,
-        "title": "Router Server"
+        "title": "Routing Server"
       }
     ],
     "Rule Form (Inline Table)": [
@@ -14584,14 +14632,6 @@
         "title": "Runtime Configuration"
       }
     ],
-    "Runtime Fine-grained Control": [
-      {
-        "document": "advanced/startup.md",
-        "line": 252,
-        "level": 2,
-        "title": "Runtime Fine-grained Control"
-      }
-    ],
     "Runtime Override API": [
       {
         "document": "advanced/transcript.md",
@@ -14630,14 +14670,6 @@
         "title": "SDK Object"
       }
     ],
-    "SDK Top-level Entry Points Overview": [
-      {
-        "document": "advanced/startup.md",
-        "line": 13,
-        "level": 2,
-        "title": "SDK Top-level Entry Points Overview"
-      }
-    ],
     "SQL Chainable Queries": [
       {
         "document": "api-reference/core-modules.md",
@@ -14657,7 +14689,7 @@
     "SQLite \"database is locked\" Troubleshooting": [
       {
         "document": "advanced/storage-backends.md",
-        "line": 145,
+        "line": 149,
         "level": 2,
         "title": "SQLite \"database is locked\" Troubleshooting"
       }
@@ -15844,12 +15876,12 @@
         "title": "Startup Adapter"
       }
     ],
-    "Startup Chain Overview": [
+    "Startup Flow Overview": [
       {
         "document": "advanced/startup.md",
-        "line": 27,
+        "line": 26,
         "level": 2,
-        "title": "Startup Chain Overview"
+        "title": "Startup Flow Overview"
       }
     ],
     "Startup Flow and Manual Control": [
@@ -16109,7 +16141,7 @@
     "Supervisor Guide": [
       {
         "document": "advanced/startup.md",
-        "line": 385,
+        "line": 417,
         "level": 3,
         "title": "Supervisor Guide"
       }
@@ -16371,7 +16403,7 @@
     "Synchronous Methods (Use with Caution)": [
       {
         "document": "advanced/storage-backends.md",
-        "line": 117,
+        "line": 120,
         "level": 2,
         "title": "Synchronous Methods (Use with Caution)"
       }
@@ -16554,14 +16586,6 @@
         "line": 58,
         "level": 3,
         "title": "The Boundary Between Waiting and Commands (Command Bypass)"
-      }
-    ],
-    "The Exit Code 42 Contract": [
-      {
-        "document": "advanced/startup.md",
-        "line": 374,
-        "level": 3,
-        "title": "The Exit Code 42 Contract"
       }
     ],
     "The LazyModule Class": [
@@ -16906,6 +16930,14 @@
         "title": "Unknown Events Are No Longer Silently Dropped"
       }
     ],
+    "Unload Process": [
+      {
+        "document": "advanced/startup.md",
+        "line": 355,
+        "level": 2,
+        "title": "Unload Process"
+      }
+    ],
     "Unload and Cleanup Semantics": [
       {
         "document": "advanced/connections.md",
@@ -16928,14 +16960,6 @@
         "line": 114,
         "level": 2,
         "title": "Unload/Disable Cleanup Sequence"
-      }
-    ],
-    "Unloading Process": [
-      {
-        "document": "advanced/startup.md",
-        "line": 323,
-        "level": 2,
-        "title": "Unloading Process"
       }
     ],
     "Unregistering Methods": [
@@ -17678,22 +17702,6 @@
         "title": "When Does Waiting Get Cancelled"
       }
     ],
-    "When Should You Start Manually?": [
-      {
-        "document": "advanced/startup.md",
-        "line": 242,
-        "level": 3,
-        "title": "When Should You Start Manually?"
-      }
-    ],
-    "When Should You Use a Hard Restart?": [
-      {
-        "document": "advanced/startup.md",
-        "line": 364,
-        "level": 3,
-        "title": "When Should You Use a Hard Restart?"
-      }
-    ],
     "When to Choose Which": [
       {
         "document": "showcase/comparison-agent-platforms.md",
@@ -17714,6 +17722,22 @@
         "line": 76,
         "level": 2,
         "title": "When to Regenerate"
+      }
+    ],
+    "When to Use Hard Restart?": [
+      {
+        "document": "advanced/startup.md",
+        "line": 396,
+        "level": 3,
+        "title": "When to Use Hard Restart?"
+      }
+    ],
+    "When to Use Manual Startup?": [
+      {
+        "document": "advanced/startup.md",
+        "line": 275,
+        "level": 3,
+        "title": "When to Use Manual Startup?"
       }
     ],
     "When to Use Which Declaration": [
@@ -18084,114 +18108,114 @@
         "title": "[BUG-034] Runtime bindings with persist=False silently overwritten by subsequent configuration writes"
       }
     ],
-    "[BUG-035] Configuration panel select options and dict fields rendered as [object Object]": [
+    "[BUG-035] Configuration panel select options and dictionary fields rendered as [object Object]": [
       {
         "document": "bug-tracker.md",
-        "line": 902,
+        "line": 905,
         "level": 3,
-        "title": "[BUG-035] Configuration panel select options and dict fields rendered as [object Object]"
+        "title": "[BUG-035] Configuration panel select options and dictionary fields rendered as [object Object]"
       }
     ],
-    "[BUG-036] Configuration write failures (ENOENT) when multiple instances share configuration directory": [
+    "[BUG-036] Occasional configuration write failures (ENOENT) when multiple instances share a configuration directory": [
       {
         "document": "bug-tracker.md",
-        "line": 920,
+        "line": 923,
         "level": 3,
-        "title": "[BUG-036] Configuration write failures (ENOENT) when multiple instances share configuration directory"
+        "title": "[BUG-036] Occasional configuration write failures (ENOENT) when multiple instances share a configuration directory"
       }
     ],
-    "[BUG-037] Commands with space-separated names can never be triggered after registration": [
+    "[BUG-037] Commands with space-separated names are never triggered after registration": [
       {
         "document": "bug-tracker.md",
-        "line": 946,
+        "line": 950,
         "level": 3,
-        "title": "[BUG-037] Commands with space-separated names can never be triggered after registration"
+        "title": "[BUG-037] Commands with space-separated names are never triggered after registration"
       }
     ],
-    "[BUG-038] Runtime bindings with persist=False are written to disk along with persistent writes, resurrecting after module unload": [
+    "[BUG-038] Runtime bindings with persist=False are written to disk along with persistent writes, reviving after module unload": [
       {
         "document": "bug-tracker.md",
-        "line": 970,
+        "line": 975,
         "level": 3,
-        "title": "[BUG-038] Runtime bindings with persist=False are written to disk along with persistent writes, resurrecting after module unload"
+        "title": "[BUG-038] Runtime bindings with persist=False are written to disk along with persistent writes, reviving after module unload"
       }
     ],
-    "[BUG-039] Inconsistent read/write when section write and dotted write coexist (dotted overwrite lost)": [
+    "[BUG-039] Inconsistent read/write when whole-section write and dot-separated write coexist (dot-separated overwrite lost)": [
       {
         "document": "bug-tracker.md",
-        "line": 994,
+        "line": 1001,
         "level": 3,
-        "title": "[BUG-039] Inconsistent read/write when section write and dotted write coexist (dotted overwrite lost)"
+        "title": "[BUG-039] Inconsistent read/write when whole-section write and dot-separated write coexist (dot-separated overwrite lost)"
       }
     ],
-    "[BUG-040] Silent loss of trailing parameters in command after message split into segments": [
+    "[BUG-040] Silent loss of trailing parameters in command when message is split into segments": [
       {
         "document": "bug-tracker.md",
-        "line": 1016,
+        "line": 1026,
         "level": 3,
-        "title": "[BUG-040] Silent loss of trailing parameters in command after message split into segments"
+        "title": "[BUG-040] Silent loss of trailing parameters in command when message is split into segments"
       }
     ],
     "[BUG-041] Rejected commands rerun entire alt_message chain: duplicate replies and permission function side effects triggered twice": [
       {
         "document": "bug-tracker.md",
-        "line": 1028,
+        "line": 1040,
         "level": 3,
         "title": "[BUG-041] Rejected commands rerun entire alt_message chain: duplicate replies and permission function side effects triggered twice"
       }
     ],
-    "[BUG-042] wait_reply registered inside command handler is immediately consumed by the same trigger message": [
+    "[BUG-042] wait_reply registered in command handler is immediately consumed by the same triggering message": [
       {
         "document": "bug-tracker.md",
-        "line": 1040,
+        "line": 1054,
         "level": 3,
-        "title": "[BUG-042] wait_reply registered inside command handler is immediately consumed by the same trigger message"
+        "title": "[BUG-042] wait_reply registered in command handler is immediately consumed by the same triggering message"
       }
     ],
-    "[BUG-043] Multiple wait paths for the same key in select() silently cancel the earlier one": [
+    "[BUG-043] Multiple wait paths for select() with the same key silently cancel the prior path": [
       {
         "document": "bug-tracker.md",
-        "line": 1052,
+        "line": 1068,
         "level": 3,
-        "title": "[BUG-043] Multiple wait paths for the same key in select() silently cancel the earlier one"
+        "title": "[BUG-043] Multiple wait paths for select() with the same key silently cancel the prior path"
       }
     ],
-    "[BUG-044] BaseConverter.at() produces OB11 legacy \"at\" segment, entire framework mention detection does not recognize": [
+    "[BUG-044] BaseConverter.at() produces legacy \"at\" segment for OB11, and the entire framework mention detection does not recognize it": [
       {
         "document": "bug-tracker.md",
-        "line": 1064,
+        "line": 1082,
         "level": 3,
-        "title": "[BUG-044] BaseConverter.at() produces OB11 legacy \"at\" segment, entire framework mention detection does not recognize"
+        "title": "[BUG-044] BaseConverter.at() produces legacy \"at\" segment for OB11, and the entire framework mention detection does not recognize it"
       }
     ],
     "[BUG-045] Interaction primitives permanently timeout and command penetration fail when alt_message is missing": [
       {
         "document": "bug-tracker.md",
-        "line": 1076,
+        "line": 1096,
         "level": 3,
         "title": "[BUG-045] Interaction primitives permanently timeout and command penetration fail when alt_message is missing"
       }
     ],
-    "[BUG-046] Declaration configuration template's nested subtable header drifts to top level": [
+    "[BUG-046] Declaration configuration template's nested sub-table header drifts to top-level table": [
       {
         "document": "bug-tracker.md",
-        "line": 1088,
+        "line": 1110,
         "level": 3,
-        "title": "[BUG-046] Declaration configuration template's nested subtable header drifts to top level"
+        "title": "[BUG-046] Declaration configuration template's nested sub-table header drifts to top-level table"
       }
     ],
-    "[BUG-047] Service directory full enumeration skips lazy-loaded modules": [
+    "[BUG-047] Full enumeration of service directory skips lazy-loaded modules": [
       {
         "document": "bug-tracker.md",
-        "line": 1102,
+        "line": 1124,
         "level": 3,
-        "title": "[BUG-047] Service directory full enumeration skips lazy-loaded modules"
+        "title": "[BUG-047] Full enumeration of service directory skips lazy-loaded modules"
       }
     ],
     "[BUG-048] Session inbox query API loses message attribution (sender and event metadata)": [
       {
         "document": "bug-tracker.md",
-        "line": 1114,
+        "line": 1138,
         "level": 3,
         "title": "[BUG-048] Session inbox query API loses message attribution (sender and event metadata)"
       }
@@ -18199,33 +18223,41 @@
     "[BUG-049] Inbound bot self-message echo recorded as user, polluting inbox attribution": [
       {
         "document": "bug-tracker.md",
-        "line": 1127,
+        "line": 1153,
         "level": 3,
         "title": "[BUG-049] Inbound bot self-message echo recorded as user, polluting inbox attribution"
       }
     ],
-    "[BUG-050] Container execution of `epsdk restart` exits container directly": [
+    "[BUG-050] Container execution of `epsdk restart` directly exits container": [
       {
         "document": "bug-tracker.md",
-        "line": 1140,
+        "line": 1168,
         "level": 3,
-        "title": "[BUG-050] Container execution of `epsdk restart` exits container directly"
+        "title": "[BUG-050] Container execution of `epsdk restart` directly exits container"
       }
     ],
-    "[BUG-051] Cross-account duplicate receipt (drop) mistakenly injures at-mention messages, causing random message loss in multi-account deployment": [
+    "[BUG-051] Cross-account duplicate receipt (drop) mistakenly injures @mention messages, causing random message loss in multi-account deployment": [
       {
         "document": "bug-tracker.md",
-        "line": 1152,
+        "line": 1182,
         "level": 3,
-        "title": "[BUG-051] Cross-account duplicate receipt (drop) mistakenly injures at-mention messages, causing random message loss in multi-account deployment"
+        "title": "[BUG-051] Cross-account duplicate receipt (drop) mistakenly injures @mention messages, causing random message loss in multi-account deployment"
       }
     ],
-    "[BUG-052] Concurrent storage first fetch deadlock freezes event loop, web site hangs and continues database is locked": [
+    "[BUG-052] Concurrent storage first fetch deadlock freezes event loop, web site hangs and continuously reports \"database is locked\"": [
       {
         "document": "bug-tracker.md",
-        "line": 1164,
+        "line": 1196,
         "level": 3,
-        "title": "[BUG-052] Concurrent storage first fetch deadlock freezes event loop, web site hangs and continues database is locked"
+        "title": "[BUG-052] Concurrent storage first fetch deadlock freezes event loop, web site hangs and continuously reports \"database is locked\""
+      }
+    ],
+    "[BUG-053] Process hangs when storage connection is not closed (aiosqlite 0.22 connection threads are no longer daemon threads)": [
+      {
+        "document": "bug-tracker.md",
+        "line": 1212,
+        "level": 3,
+        "title": "[BUG-053] Process hangs when storage connection is not closed (aiosqlite 0.22 connection threads are no longer daemon threads)"
       }
     ],
     "__init__.py": [

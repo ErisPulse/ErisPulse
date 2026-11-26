@@ -69,6 +69,13 @@
 ---
 
 
+### `_trace_probe_failure(lens: str, error: BaseException) -> None`
+
+**内部方法** 容器归因探测失败留痕（惰性取 logger：runtime 层不顶层依赖 Core.logger）
+
+---
+
+
 ### `_container_counts() -> dict[str, int]`
 
 **内部方法** 框架内部累积容器的长度归因（近零成本的 len 读取）

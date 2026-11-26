@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 2077,
+  "total_keywords": 2081,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -29,7 +29,7 @@
     "1. CLI run 命令（開發/簡單部署，推薦）": [
       {
         "document": "advanced/startup.md",
-        "line": 388,
+        "line": 423,
         "level": 4,
         "title": "1. CLI run 命令（開發/簡單部署，推薦）"
       }
@@ -499,7 +499,7 @@
     "2. systemd（Linux 伺服器）": [
       {
         "document": "advanced/startup.md",
-        "line": 419,
+        "line": 450,
         "level": 4,
         "title": "2. systemd（Linux 伺服器）"
       }
@@ -534,6 +534,14 @@
         "line": 17,
         "level": 3,
         "title": "2. 僅指定ID"
+      }
+    ],
+    "2. 加載層：Loader": [
+      {
+        "document": "advanced/startup.md",
+        "line": 112,
+        "level": 3,
+        "title": "2. 加載層：Loader"
       }
     ],
     "2. 參數規範詳解": [
@@ -740,14 +748,6 @@
         "line": 43,
         "level": 2,
         "title": "2. 請求事件欄位要求"
-      }
-    ],
-    "2. 載入層：Loader": [
-      {
-        "document": "advanced/startup.md",
-        "line": 77,
-        "level": 3,
-        "title": "2. 載入層：Loader"
       }
     ],
     "2. 輸入驗證": [
@@ -1041,7 +1041,7 @@
     "3. Docker / docker-compose": [
       {
         "document": "advanced/startup.md",
-        "line": 432,
+        "line": 463,
         "level": 4,
         "title": "3. Docker / docker-compose"
       }
@@ -1206,6 +1206,14 @@
         "title": "3. 欄位映射（入站 JSON → OneBot12 事件）"
       }
     ],
+    "3. 注册層：register_to_manager": [
+      {
+        "document": "advanced/startup.md",
+        "line": 161,
+        "level": 3,
+        "title": "3. 注册層：register_to_manager"
+      }
+    ],
     "3. 清晰的配置管理": [
       {
         "document": "developer-guide/modules/best-practices.md",
@@ -1236,14 +1244,6 @@
         "line": 329,
         "level": 3,
         "title": "3. 觸發建置"
-      }
-    ],
-    "3. 註冊層：register_to_manager": [
-      {
-        "document": "advanced/startup.md",
-        "line": 126,
-        "level": 3,
-        "title": "3. 註冊層：register_to_manager"
       }
     ],
     "3. 資源管理": [
@@ -1446,12 +1446,12 @@
         "title": "4. Event 便捷方法"
       }
     ],
-    "4. PM2（Node 生態維運）": [
+    "4. PM2（Node 生態運維）": [
       {
         "document": "advanced/startup.md",
-        "line": 446,
+        "line": 476,
         "level": 4,
-        "title": "4. PM2（Node 生態維運）"
+        "title": "4. PM2（Node 生態運維）"
       }
     ],
     "4. `self` 欄位自動發現": [
@@ -1489,7 +1489,7 @@
     "4. 啟動適配器": [
       {
         "document": "advanced/startup.md",
-        "line": 140,
+        "line": 175,
         "level": 3,
         "title": "4. 啟動適配器"
       }
@@ -1705,7 +1705,7 @@
     "5. supervisord": [
       {
         "document": "advanced/startup.md",
-        "line": 454,
+        "line": 484,
         "level": 4,
         "title": "5. supervisord"
       }
@@ -1729,7 +1729,7 @@
     "5. 初始化模組": [
       {
         "document": "advanced/startup.md",
-        "line": 152,
+        "line": 187,
         "level": 3,
         "title": "5. 初始化模組"
       }
@@ -2025,7 +2025,7 @@
     "6. 啟動路由伺服器": [
       {
         "document": "advanced/startup.md",
-        "line": 164,
+        "line": 199,
         "level": 3,
         "title": "6. 啟動路由伺服器"
       }
@@ -2070,12 +2070,12 @@
         "title": "6. 注意事項"
       }
     ],
-    "6. 純 Python 自訂監督者": [
+    "6. 純 Python 自定義監督者": [
       {
         "document": "advanced/startup.md",
-        "line": 463,
+        "line": 493,
         "level": 4,
-        "title": "6. 純 Python 自訂監督者"
+        "title": "6. 純 Python 自定義監督者"
       }
     ],
     "6. 適配器實現檢查清單": [
@@ -3882,12 +3882,12 @@
         "title": "SDK 物件"
       }
     ],
-    "SDK 頂層入口一覽": [
+    "SDK 頂層入口概覽": [
       {
         "document": "advanced/startup.md",
         "line": 13,
         "level": 2,
-        "title": "SDK 頂層入口一覽"
+        "title": "SDK 頂層入口概覽"
       }
     ],
     "SQL 串接查詢": [
@@ -3909,7 +3909,7 @@
     "SQLite \"database is locked\" 排查": [
       {
         "document": "advanced/storage-backends.md",
-        "line": 144,
+        "line": 150,
         "level": 2,
         "title": "SQLite \"database is locked\" 排查"
       }
@@ -4604,12 +4604,12 @@
         "title": "[BUG-033] wait_reply 挂起的回覆被高優先級處理器餓死"
       }
     ],
-    "[BUG-034] 作用域 persist=False 運行時綁定被任意後續配置寫入靜默沖掉": [
+    "[BUG-034] 作用域 persist=False 运行时绑定被任意后续配置写入静默冲掉": [
       {
         "document": "bug-tracker.md",
         "line": 885,
         "level": 3,
-        "title": "[BUG-034] 作用域 persist=False 運行時綁定被任意後續配置寫入靜默沖掉"
+        "title": "[BUG-034] 作用域 persist=False 运行时绑定被任意后续配置写入静默冲掉"
       }
     ],
     "[BUG-035] 配置面板 select 選項與字典字段渲染為 [object Object]": [
@@ -4636,12 +4636,12 @@
         "title": "[BUG-037] 空格子命令名註冊後永遠無法被觸發"
       }
     ],
-    "[BUG-038] persist=False 運行時綁定被持久化寫入順帶落盤，模塊卸載後從磁盤\"復活\"": [
+    "[BUG-038] persist=False 運行時綁定被持久化寫入順帶落盤，模組卸載後從磁盤\"復活\"": [
       {
         "document": "bug-tracker.md",
         "line": 973,
         "level": 3,
-        "title": "[BUG-038] persist=False 運行時綁定被持久化寫入順帶落盤，模塊卸載後從磁盤\"復活\""
+        "title": "[BUG-038] persist=False 運行時綁定被持久化寫入順帶落盤，模組卸載後從磁盤\"復活\""
       }
     ],
     "[BUG-039] 整節寫與點分寫並存時讀寫不一致（點分覆寫丟失）": [
@@ -4655,7 +4655,7 @@
     "[BUG-040] 平台切段消息的命令尾部參數靜默丟失": [
       {
         "document": "bug-tracker.md",
-        "line": 1021,
+        "line": 1019,
         "level": 3,
         "title": "[BUG-040] 平台切段消息的命令尾部參數靜默丟失"
       }
@@ -4663,7 +4663,7 @@
     "[BUG-041] 被拒絕命令經 alt_message 整鏈重跑：重複回覆與權限函數副作用雙觸發": [
       {
         "document": "bug-tracker.md",
-        "line": 1033,
+        "line": 1031,
         "level": 3,
         "title": "[BUG-041] 被拒絕命令經 alt_message 整鏈重跑：重複回覆與權限函數副作用雙觸發"
       }
@@ -4671,7 +4671,7 @@
     "[BUG-042] 命令處理器內註冊的 wait_reply 被同一條觸發消息立即消費": [
       {
         "document": "bug-tracker.md",
-        "line": 1045,
+        "line": 1043,
         "level": 3,
         "title": "[BUG-042] 命令處理器內註冊的 wait_reply 被同一條觸發消息立即消費"
       }
@@ -4679,7 +4679,7 @@
     "[BUG-043] select() 同鍵多路等待後者靜默取消前者": [
       {
         "document": "bug-tracker.md",
-        "line": 1057,
+        "line": 1055,
         "level": 3,
         "title": "[BUG-043] select() 同鍵多路等待後者靜默取消前者"
       }
@@ -4687,39 +4687,39 @@
     "[BUG-044] BaseConverter.at() 產出 OB11 遺留 \"at\" 段，全框架 mention 判定不識別": [
       {
         "document": "bug-tracker.md",
-        "line": 1069,
+        "line": 1067,
         "level": 3,
         "title": "[BUG-044] BaseConverter.at() 產出 OB11 遺留 \"at\" 段，全框架 mention 判定不識別"
       }
     ],
-    "[BUG-045] 無 alt_message 的適配器上交互原語永久超時、命令穿透失效": [
+    "[BUG-045] 無 alt_message 的适配器上交互原語永久超時、命令穿透失效": [
       {
         "document": "bug-tracker.md",
-        "line": 1081,
+        "line": 1079,
         "level": 3,
-        "title": "[BUG-045] 無 alt_message 的適配器上交互原語永久超時、命令穿透失效"
+        "title": "[BUG-045] 無 alt_message 的适配器上交互原語永久超時、命令穿透失效"
       }
     ],
     "[BUG-046] 聲明式配置模板的嵌套子表頭漂移為頂層表": [
       {
         "document": "bug-tracker.md",
-        "line": 1093,
+        "line": 1091,
         "level": 3,
         "title": "[BUG-046] 聲明式配置模板的嵌套子表頭漂移為頂層表"
       }
     ],
-    "[BUG-047] 服務目錄全量枚舉漏掉懶加載模塊": [
+    "[BUG-047] 服務目錄全量枚舉漏掉懶加載模組": [
       {
         "document": "bug-tracker.md",
-        "line": 1107,
+        "line": 1105,
         "level": 3,
-        "title": "[BUG-047] 服務目錄全量枚舉漏掉懶加載模塊"
+        "title": "[BUG-047] 服務目錄全量枚舉漏掉懶加載模組"
       }
     ],
     "[BUG-048] 會話收件箱查詢 API 丟失消息歸因（sender 與事件元數據）": [
       {
         "document": "bug-tracker.md",
-        "line": 1119,
+        "line": 1117,
         "level": 3,
         "title": "[BUG-048] 會話收件箱查詢 API 丟失消息歸因（sender 與事件元數據）"
       }
@@ -4727,7 +4727,7 @@
     "[BUG-049] 入站 bot 自發消息回聲被記為 user，污染收件箱歸因": [
       {
         "document": "bug-tracker.md",
-        "line": 1132,
+        "line": 1130,
         "level": 3,
         "title": "[BUG-049] 入站 bot 自發消息回聲被記為 user，污染收件箱歸因"
       }
@@ -4735,25 +4735,33 @@
     "[BUG-050] 容器內執行 epsdk restart 直接退出容器": [
       {
         "document": "bug-tracker.md",
-        "line": 1145,
+        "line": 1143,
         "level": 3,
         "title": "[BUG-050] 容器內執行 epsdk restart 直接退出容器"
       }
     ],
-    "[BUG-051] 跨賬戶重複受理（drop）誤傷 at 點名消息，多賬戶部署消息隨機丟失": [
+    "[BUG-051] 跨帳戶重複受理（drop）誤傷 at 點名消息，多帳戶部署消息隨機丟失": [
       {
         "document": "bug-tracker.md",
-        "line": 1157,
+        "line": 1155,
         "level": 3,
-        "title": "[BUG-051] 跨賬戶重複受理（drop）誤傷 at 點名消息，多賬戶部署消息隨機丟失"
+        "title": "[BUG-051] 跨帳戶重複受理（drop）誤傷 at 點名消息，多帳戶部署消息隨機丟失"
       }
     ],
-    "[BUG-052] 存儲並發首取死鎖凍結事件循環，web 全站掛起並持續 database is locked": [
+    "[BUG-052] 存儲併發首取死鎖凍結事件循環，web 全站掛起並持續 database is locked": [
       {
         "document": "bug-tracker.md",
-        "line": 1169,
+        "line": 1167,
         "level": 3,
-        "title": "[BUG-052] 存儲並發首取死鎖凍結事件循環，web 全站掛起並持續 database is locked"
+        "title": "[BUG-052] 存儲併發首取死鎖凍結事件循環，web 全站掛起並持續 database is locked"
+      }
+    ],
+    "[BUG-053] 存儲連接未關閉時進程退出掛死（aiosqlite 0.22 連接線程不再是 daemon 線程）": [
+      {
+        "document": "bug-tracker.md",
+        "line": 1181,
+        "level": 3,
+        "title": "[BUG-053] 存儲連接未關閉時進程退出掛死（aiosqlite 0.22 連接線程不再是 daemon 線程）"
       }
     ],
     "__init__.py": [
@@ -6731,7 +6739,7 @@
     "什麼時候該用硬重啟？": [
       {
         "document": "advanced/startup.md",
-        "line": 363,
+        "line": 398,
         "level": 3,
         "title": "什麼時候該用硬重啟？"
       }
@@ -6809,7 +6817,7 @@
     "何時該手動啟動？": [
       {
         "document": "advanced/startup.md",
-        "line": 241,
+        "line": 276,
         "level": 3,
         "title": "何時該手動啟動？"
       }
@@ -7255,7 +7263,7 @@
     "優雅關閉": [
       {
         "document": "advanced/startup.md",
-        "line": 300,
+        "line": 335,
         "level": 2,
         "title": "優雅關閉"
       }
@@ -7822,6 +7830,14 @@
         "title": "加密模式說明"
       }
     ],
+    "加載失敗時的診斷資訊": [
+      {
+        "document": "advanced/startup.md",
+        "line": 136,
+        "level": 4,
+        "title": "加載失敗時的診斷資訊"
+      }
+    ],
     "動作與錯誤碼規範": [
       {
         "document": "platform-guide/ideaura.md",
@@ -7913,7 +7929,7 @@
     "卸載流程": [
       {
         "document": "advanced/startup.md",
-        "line": 322,
+        "line": 357,
         "level": 2,
         "title": "卸載流程"
       }
@@ -8120,6 +8136,14 @@
         "title": "取消链（任务登记表）"
       }
     ],
+    "可插拔擴展點：entry-points": [
+      {
+        "document": "advanced/startup.md",
+        "line": 77,
+        "level": 4,
+        "title": "可插拔擴展點：entry-points"
+      }
+    ],
     "可用屬性": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -8208,12 +8232,12 @@
         "title": "同步初始化"
       }
     ],
-    "同步方法（請謹慎使用）": [
+    "同步方法（慎用）": [
       {
         "document": "advanced/storage-backends.md",
-        "line": 116,
+        "line": 120,
         "level": 2,
-        "title": "同步方法（請謹慎使用）"
+        "title": "同步方法（慎用）"
       }
     ],
     "同步流程": [
@@ -9369,7 +9393,7 @@
     "失敗語義（2.12 起）": [
       {
         "document": "advanced/storage-backends.md",
-        "line": 85,
+        "line": 89,
         "level": 2,
         "title": "失敗語義（2.12 起）"
       }
@@ -9735,7 +9759,7 @@
     "完整手動啟動範例": [
       {
         "document": "advanced/startup.md",
-        "line": 177,
+        "line": 212,
         "level": 2,
         "title": "完整手動啟動範例"
       }
@@ -10806,6 +10830,14 @@
         "line": 515,
         "level": 3,
         "title": "後台執行"
+      }
+    ],
+    "後端註冊（可插拔）": [
+      {
+        "document": "advanced/storage-backends.md",
+        "line": 168,
+        "level": 2,
+        "title": "後端註冊（可插拔）"
       }
     ],
     "後端選擇": [
@@ -12203,7 +12235,7 @@
     "方言行為差異": [
       {
         "document": "advanced/storage-backends.md",
-        "line": 130,
+        "line": 136,
         "level": 2,
         "title": "方言行為差異"
       }
@@ -12477,7 +12509,7 @@
     "本地插件熱重載": [
       {
         "document": "advanced/startup.md",
-        "line": 253,
+        "line": 288,
         "level": 3,
         "title": "本地插件熱重載"
       }
@@ -13322,12 +13354,12 @@
         "title": "模組層級控制"
       }
     ],
-    "模組按需載入": [
+    "模組按需加載": [
       {
         "document": "advanced/startup.md",
-        "line": 293,
+        "line": 328,
         "level": 3,
-        "title": "模組按需載入"
+        "title": "模組按需加載"
       }
     ],
     "模組擴展": [
@@ -14457,7 +14489,7 @@
       },
       {
         "document": "advanced/storage-backends.md",
-        "line": 95,
+        "line": 99,
         "level": 2,
         "title": "異步原生 API"
       }
@@ -14755,7 +14787,7 @@
     "監督者指南": [
       {
         "document": "advanced/startup.md",
-        "line": 384,
+        "line": 419,
         "level": 3,
         "title": "監督者指南"
       }
@@ -14963,13 +14995,13 @@
       },
       {
         "document": "advanced/startup.md",
-        "line": 481,
+        "line": 511,
         "level": 2,
         "title": "相關文件"
       },
       {
         "document": "advanced/storage-backends.md",
-        "line": 188,
+        "line": 214,
         "level": 2,
         "title": "相關文件"
       },
@@ -15351,7 +15383,7 @@
     "細粒度重載判定（2.12+）": [
       {
         "document": "advanced/startup.md",
-        "line": 398,
+        "line": 433,
         "level": 4,
         "title": "細粒度重載判定（2.12+）"
       }
@@ -15779,7 +15811,7 @@
     "自訂 SQL 後端": [
       {
         "document": "advanced/storage-backends.md",
-        "line": 162,
+        "line": 188,
         "level": 2,
         "title": "自訂 SQL 後端"
       }
@@ -17031,7 +17063,7 @@
     "路由伺服器": [
       {
         "document": "advanced/startup.md",
-        "line": 283,
+        "line": 318,
         "level": 3,
         "title": "路由伺服器"
       }
@@ -17058,14 +17090,6 @@
         "line": 1,
         "level": 1,
         "title": "路由管理器"
-      }
-    ],
-    "載入失敗時的診斷資訊": [
-      {
-        "document": "advanced/startup.md",
-        "line": 101,
-        "level": 4,
-        "title": "載入失敗時的診斷資訊"
       }
     ],
     "載入策略": [
@@ -17165,7 +17189,7 @@
     "退出碼 42 契約": [
       {
         "document": "advanced/startup.md",
-        "line": 373,
+        "line": 408,
         "level": 3,
         "title": "退出碼 42 契約"
       }
@@ -17522,6 +17546,14 @@
         "title": "進度監控（OnProgress / OnError）"
       }
     ],
+    "進程退出": [
+      {
+        "document": "advanced/storage-backends.md",
+        "line": 85,
+        "level": 2,
+        "title": "進程退出"
+      }
+    ],
     "遇到問題": [
       {
         "document": "quick-start.md",
@@ -17557,7 +17589,7 @@
     "運行時細粒度控制": [
       {
         "document": "advanced/startup.md",
-        "line": 251,
+        "line": 286,
         "level": 2,
         "title": "運行時細粒度控制"
       }
@@ -17675,7 +17707,7 @@
     "適配器熱啟停": [
       {
         "document": "advanced/startup.md",
-        "line": 267,
+        "line": 302,
         "level": 3,
         "title": "適配器熱啟停"
       }
@@ -18215,7 +18247,7 @@
     "重啟": [
       {
         "document": "advanced/startup.md",
-        "line": 340,
+        "line": 375,
         "level": 2,
         "title": "重啟"
       }

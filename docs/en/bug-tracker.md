@@ -881,296 +881,343 @@ Module A setConfig(immediate=True) → flush writes, mtime changes
 
 ### [BUG-034] Runtime bindings with persist=False silently overwritten by subsequent configuration writes
 
-**Issue**: `scope.set_module(..., persist=False)` and similar runtime writes only modify memory `self._data`; however, the scope subscribes to `config.set` / `config.updated` events, so any code that writes configuration (e.g., a module loading its default configuration) triggers the scope to rebuild the configuration tree from the file, silently discarding all previous runtime bindings (reverting to default allowlist), with no log warning. Scenarios depending on runtime bindings (e.g., Dashboard "runtime-only" switches, dynamic module disabling during runtime) revert behavior after unrelated module configuration writes.
+**Issue**: `scope.set_module(..., persist=False)` and similar runtime writes only modify memory `self._data`; however, the scope subscribes to `config.set` / `config.updated` events, and any code writing configuration (e.g., a module loading its default configuration) triggers the scope to rebuild the configuration tree from the configuration file, silently discarding all previous runtime bindings (reverting to default allowlist), with no log warning. Scenarios depending on runtime bindings (Dashboard "runtime-only" switches, dynamic module disablement during runtime) revert behavior after unrelated module configuration writes.
 
-**Cause**: Root cause chain: `scope.set/delete(persist=False)` only writes memory (`Core/scope.py`) → Any `setConfig` triggers `config.set` event → `_on_config_updated` unconditionally calls `_load_config()` → `_apply_tree()` replaces `self._data = {...}` entirely → Runtime bindings not present in the configuration file are discarded.
+**Root Cause**: Root cause chain: `scope.set/delete(persist=False)` only writes to memory (in `Core/scope.py`) → Any `setConfig` triggers `config.set` event → `_on_config_updated` unconditionally calls `_load_config()` → `_apply_tree()` replaces `self._data = {...}` as a whole → Runtime bindings not in the configuration file are discarded.
 
-**Affected Versions**: 2.8.0-dev.1 - 2.8.0-dev.2
-**Fixed Version**: 2.8.0-dev.2
-**Fix**: Introduced a runtime override layer `_runtime_overrides` (including deletion sentinel): `persist=False` writes/deletes are recorded in the override layer, and `_apply_tree()` rebuilds the persistent layer and replays in write order, keeping runtime rules effective after any configuration write; `persist=True` writes/deletes clear corresponding override records (user persistence semantics take precedence); `config.set` is filtered by event key, and `config.updated` compares new and old scope nodes, only rebuilding when scope actually changes (includes avoiding LRU cache flush from unrelated writes); added `unregister_by_owner()` for module unload cleanup. The `Core.Event.overrides` with `persist=False` runtime overwrites have a similar issue, fixed with the override layer architecture.
-**Fix Date**: 2026/09/09
+**Affected Versions**: 2.8.0-dev.1 - 2.8.0-dev.2  
+**Fixed Version**: 2.8.0-dev.2  
+**Fix Description**: Introduces a runtime override layer `_runtime_overrides` (including sentinel for deletion): Writes/deletes with `persist=False` are recorded in the override layer, and `_apply_tree()` rebuilds the persistent layer and replays according to write order, keeping runtime rules effective after any configuration write; `persist=True` writes/deletes clear corresponding override records (user persistence semantics take priority); `config.set` is filtered by event key, and `config.updated` compares new and old scope nodes, only rebuilding if the scope actually changes (includes avoiding LRU cache flush due to unrelated writes); `unregister_by_owner()` is added for cleanup when modules are unloaded. The `Core.Event.overrides` with `persist=False` runtime overwrites have a similar issue, which is also fixed using the override layer architecture.  
+**Fix Date**: 2026/09/09  
 
-**Reproduction Steps**: ① `scope.set_module("testplat", blocked=["TestB"], persist=False)` → returns False; ② Any module executes `config.setConfig("HelpModule", {...})` → triggers scope rebuild; ③ `scope.is_allowed("testplat", None, "TestB")` returns True (expected still False).
-**关联**: Issue #432
-**Regression Tests**: `tests/unit/test_unit_scope.py::TestRuntimeOverrideSurvival` (survival of unrelated writes / tree rebuild replay / deletion sentinel / persistence clear / precise invalidation / owner cleanup)
+**Reproduction Steps**:  
+① `scope.set_module("testplat", blocked=["TestB"], persist=False)` → returns False;  
+② Any module executes `config.setConfig("HelpModule", {...})` → triggers scope rebuild;  
+③ `scope.is_allowed("testplat", None, "TestB")` returns True (expected to still be False).  
+**关联**: Issue #432  
+**Regression Test**: `tests/unit/test_unit_scope.py::TestRuntimeOverrideSurvival` (survival of unrelated writes / tree rebuild replay / deletion sentinel / persistent clear / precise invalidation / owner cleanup)  
 
-**Severity**: 🟡 Medium
-**Type**: Configuration System / Runtime
-
----
-
-### [BUG-035] Configuration panel select options and dict fields rendered as [object Object]
-
-**Issue**: In the WebUI configuration panel, select field options display as `[object Object]` (e.g., dynamically generated color style options); dict fields (e.g., `stalker_mode`, `knowledge_base`) without declared control types display as `[object Object]` in text boxes, making them unviewable and uneditable.
-
-**Cause**: Two independent defects: ① The framework's i18n resolver `_resolve_i18n_text` only restores dictionaries with an `i18n` key; for option labels that are only `default`-only dictionaries (dynamic text without an `i18n` key), it passes through unchanged, and the frontend's `esc(label)` string coercion results in `[object Object]`; ② The Dashboard rendering branch only applies JSON textarea for array types, and dict values fall into the plain text input branch and are coerced by `String()`. Additionally, if a module declares `_schema_meta` as a regular dataclass field (missing `ClassVar` annotation), it enters the schema as a configuration field, exacerbating confusion.
-
-**Affected Versions**: 2.7.0 - 2.8.0-dev.2
-**Fixed Version**: 2.8.0-dev.2
-**Fix**: ① `_resolve_i18n_text` supports restoring text from dictionaries that only contain a `default` key; ② The framework schema/template/default value/fill/validation five places exclude fields with leading underscores (harmless for misdeclared fields); ③ Dashboard select option label objects are parsed as fallback (prioritizing `default`), and dict/table fields are rendered as JSON textarea (saving path as `tp=object` JSON.parse backwrite, complete round trip).
-**Fix Date**: 2026/09/09
-
-**Regression Tests**: `tests/unit/test_unit_config.py::TestResolveI18nDefaultOnlyDict`, `TestSchemaUnderscoreFieldExclusion`
-
-**Severity**: 🟡 Medium
-**Type**: Configuration System
+**Severity**: 🟡 Medium  
+**Type**: Configuration System / Runtime  
 
 ---
 
-### [BUG-036] Configuration write failures (ENOENT) when multiple instances share configuration directory
+### [BUG-035] Configuration panel select options and dictionary fields rendered as [object Object]
 
-**Issue**: In Docker deployment scenarios (multiple containers mounting the same host configuration directory), logs occasionally show two consecutive lines of `Failed to write configuration file ... [Errno 2] No such file or directory: '...config.toml.tmp' -> '...config.toml'`. This configuration write is discarded (old configuration preserved, no observed configuration loss), functionality is unaffected, but repeated alerts interfere with troubleshooting, and pending configuration items must wait for the next write to be written to disk.
+**Issue**: In the WebUI configuration panel, select field options dropdown displays `[object Object]` (e.g., dynamically generated color style options); dictionary fields without declared control types (e.g., `stalker_mode`, `knowledge_base`, etc., nested configuration segments) display `[object Object]` in text boxes, making them impossible to view or edit.
 
-**Cause**: Root cause chain: `_flush_config` / `setConfigTemplate` uses a **fixed-name** temporary file `config.toml.tmp` to hold new content, `write()` does not `fsync` before `rename()`. When two ErisPulse instances share the same configuration directory, instance B's `open("w")` may **truncate** the temporary file being written by instance A → when A renames, the target has been taken or truncated by B, reporting ENOENT (i.e., the two error lines in the user's log). In reported cases, only write failure alerts are shown (old configuration preserved); if the timing is more extreme, rename may output an empty/half-written `config.toml` (a potential risk not yet seen in real environments). In single-instance scenarios, ext4's delayed allocation also has a "rename metadata before data block is written" crash window (SIGKILL / power loss). `_file_lock` is a process-level `threading.RLock`, offering no constraint for cross-process/cross-container writes.
+**Root Cause**: Two independent defects: ① The framework's i18n parser `_resolve_i18n_text` only restores dictionaries with an `i18n` key, and when option labels are dictionaries with only a `default` key (no i18n key for dynamic text), they are passed through as-is, resulting in `[object Object]` from the frontend `esc(label)` string coercion; ② Dashboard rendering branches only handle JSON textarea for array types, and dict/table fields fall into the plain text input branch and are coerced by `String()`. Additionally, if a module mistakenly declares `_schema_meta` as a regular dataclass field (missing `ClassVar` annotation), it enters the schema as a configuration field, exacerbating confusion.
 
-**Affected Versions**: 2.2.0-dev.0 - 2.8.0
+**Affected Versions**: 2.7.0 - 2.8.0-dev.2  
+**Fixed Version**: 2.8.0-dev.2  
+**Fix Description**: ① `_resolve_i18n_text` supports restoration of text for dictionaries with only a `default` key; ② The framework schema/template/default value/filling/validation five places all exclude fields with underscore prefixes (harmless for misdeclared fields); ③ Dashboard select option label objects are fallback parsed (prioritizing `default`), and dict/table fields are rendered as JSON textarea (saving path as `tp=object` JSON.parse back-write, complete round-trip).  
+**Fix Date**: 2026/09/09  
 
-**Fixed Version**: 2.8.1
+**Regression Test**: `tests/unit/test_unit_config.py::TestResolveI18nDefaultOnlyDict`, `TestSchemaUnderscoreFieldExclusion`
 
-**Fix**: Unified configuration writes to `_atomic_write_text()`: generate a unique temporary file per process using `mkstemp` in the same directory (eliminating fixed-name contention, multiple instances degrade to last-writer-wins, no more ENOENT) → after writing, `flush + fsync` forces data to disk (eliminating the "rename is effective, data is not written" window) → `os.replace` atomically replaces the target (atomic on POSIX/Windows, at any moment disk either has complete old content or complete new content); additionally `fsync` the configuration directory on POSIX. All three write points (`_flush_config`, `setConfigTemplate`, root directory configuration migration) switched; cleanup logic for error paths restructured with unique temporary file names. Added **multi-instance detection**: on startup, an advisory lock (`flock` on POSIX / `msvcrt.locking` on Windows) exclusively holds the configuration directory lock file `.erispulse_config.lock`, outputs an i18n warning if occupied (does not block startup), and the lock is automatically released by the OS when the process exits, with no ghost locks.
-
-**Fix Date**: 2026/09/13
-
-**Reproduction Steps**: ① Two containers mount the same host `config/` directory and run ErisPulse simultaneously; ② Trigger configuration write in any instance (e.g., module registering default configuration); ③ Observe log showing ENOENT write failure warning, this write is discarded (old configuration preserved).
-
-**关联**: User report (1Panel container ×2)
-
-**Regression Tests**: `tests/unit/test_unit_config_atomic_write.py` (complete content write / no temporary file residue / write failure preserves original file / double instance concurrent writes always produce valid files / lock file creation / multi-instance warning / migration atomic write)
-
-**Severity**: 🟢 Minor
-
-**Type**: Configuration System
+**Severity**: 🟡 Medium  
+**Type**: Configuration System  
 
 ---
 
-### [BUG-037] Commands with space-separated names can never be triggered after registration
+### [BUG-036] Occasional configuration write failures (ENOENT) when multiple instances share a configuration directory
 
-**Issue**: After registering a subcommand with a space-separated multi-token command name (e.g., `@command("admin add")`), the command can be registered and appears in the help list, but when the user sends `/admin add`, the bot never responds—the input is matched as the parent token command `admin` with parameter `["add"]`; if the parent token is also unregistered, there is no response at all. Only when using dot notation (e.g., `admin.reload`, as a single token) can this be avoided.
+**Issue**: In Docker deployment scenarios (multiple containers mounting the same host configuration directory), logs occasionally show two consecutive lines of `Failed to write configuration file ... [Errno 2] No such file or directory: '...config.toml.tmp' -> '...config.toml'`. This configuration write is discarded (the old configuration is fully preserved, no configuration loss is observed), functionality is unaffected, but repeated alerts interfere with troubleshooting, and the pending configuration items must wait for the next write to be written to disk.
 
-**Cause**: Root cause chain: `CommandHandler.__call__` stores any command name (including space-separated forms) as-is in the flat `self.commands` dictionary → at dispatch time, `_try_execute_command` only matches the first message token (`cmd_name = parts[0]`) → multi-token command names as dictionary keys are never found. The registration and matching stages have inconsistent assumptions about command name space, and there is no registration-time warning (silently fails).
+**Root Cause**: Root cause chain: `_flush_config` / `setConfigTemplate` uses a **fixed-name** temporary file `config.toml.tmp` to hold new content, `write()` followed by `fsync` directly `rename()`. When two ErisPulse instances share the same configuration directory, instance B's `open("w")` may **truncate** the temporary file that instance A is writing → When A renames, the target has been taken by B or the content is truncated, reporting ENOENT (i.e., the two error lines in the user's log). In reported cases, only a write failure alert is shown (the old configuration is preserved); if the timing is more extreme, rename may output an empty/half-truncated `config.toml` (a potential risk, not yet realized in real environments). In single-instance scenarios, ext4 delayed allocation also has a "rename metadata before data block is written" crash window (SIGKILL / power loss). `_file_lock` is an in-process `threading.RLock`, which provides no constraint on cross-process/cross-container writes.
 
-**Affected Versions**: From introduction of command system to 2.8.0
+**Affected Versions**: 2.2.0-dev.0 - 2.8.0  
+**Fixed Version**: 2.8.1  
+**Fix Description**: All configuration writes are unified to `_atomic_write_text()`: Generate a process-unique temporary file in the same directory using `mkstemp` (eliminating fixed-name contention, multiple instances degrade to last-writer-wins, no more ENOENT) → After writing, `flush + fsync` forcibly writes data to disk (eliminating the "rename has taken effect, data has not been written" window) → `os.replace` atomically replaces the target (atomic on POSIX/Windows, at any moment the disk has either complete old content or complete new content); additionally `fsync` the configuration directory on POSIX. Three write points `_flush_config`, `setConfigTemplate`, and root directory configuration migration are all switched; the exception path cleanup logic is refactored with the unique temporary file name. Added **multi-instance detection**: On startup, an advisory lock (POSIX `flock` / Windows `msvcrt.locking`) exclusively holds the configuration directory lock file `.erispulse_config.lock`, outputs an i18n alert if occupied (does not block startup), and the lock is automatically released by the OS when the process exits, with no ghost locks.
 
-**Fixed Version**: 2.8.1
+**Fix Date**: 2026/09/13  
 
-**Fix**: The matching layer changed to **longest prefix match**: try from the longest candidate (`" ".join(parts[:n])`, n capped by the maximum token count of registered command names/aliases cached as `_max_name_tokens`) down, and execute with remaining tokens as parameters on match, with downstream scope/ACL/overwrites/master/permission chains naturally applying to the full command name. Accompanying semantics: when parent and child coexist, unregistered child commands fall back to the parent command (unchanged historical behavior); if a subcommand has no `permission` declared, it inherits the nearest ancestor command's declared permission (protecting the parent command protects all its children); only when registering single-token commands is the first match hit, and dispatch overhead is consistent with the previous. `unregister` / `unregister_by_owner` / full cleanup also maintain the token count cache.
+**Reproduction Steps**:  
+① Two containers mount the same host `config/` directory and run ErisPulse simultaneously;  
+② Trigger configuration write (e.g., module registers default configuration) on any instance;  
+③ Observe log entries showing ENOENT write failure alerts, and this write is discarded (the old configuration is preserved).  
 
-**Fix Date**: 2026/09/13
+**关联**: User report (1Panel container ×2)  
 
-**Reproduction Steps**: ① Register `@command("admin add")` in a module; ② Send `/admin add x`; ③ Before fix, no response (or caught by simultaneously registered `/admin` as a parameter), after fix, `admin add` triggers and `get_command_args()` is `["x"]`.
+**Regression Test**: `tests/unit/test_unit_config_atomic_write.py` (complete content write / no temporary file remnants / write failure preserves original file / double instance concurrent write always produces valid file / lock file creation / multi-instance alert / migration atomic write)  
 
-**Regression Tests**: `tests/unit/test_unit_command_subcommand.py` (longest prefix match / only subcommand triggers / three-level nesting / case-sensitive two modes / single and multi-token aliases / event payload full name / lifecycle hook full name / permission inheritance six cases / ACL glob full name / master / unregistration fallback and cache recalculation)
+**Severity**: 🟢 Minor  
 
-**Severity**: 🟡 Medium
-
-**Type**: Event System
-
----
-
-### [BUG-038] Runtime bindings with persist=False are written to disk along with persistent writes, resurrecting after module unload
-
-**Issue**: Runtime bindings written with `scope.set(path, value, persist=False)` (documented as not persisting, invalidating on process restart, and clearing on module unload) are written to the user's `config.toml` along with any unrelated `persist=True` write (default, e.g., module `set_module` / WebUI save configuration); after the module unloads and the runtime binding is cleared, the binding is "resurrected" from disk and continues to be effective on subsequent configuration reload, and persists after process restart—contradicting the "runtime binding does not persist" semantic contract, and extremely difficult to diagnose.
-
-**Cause**: Root cause chain: `ScopeManager.set()` first writes the value to the memory configuration tree `_data` (runtime bindings are also directly written to `_data`) → the persistence branch takes a deep copy snapshot of the entire `_data` and submits it to `update_erispulse_config` for differential writing → the snapshot mixes in the value of the `persist=False` binding. `delete(persist=True)` is the same source: the live reference (parent node) is handed to the delayed dirty queue, and during the delayed flush period, runtime modifications to sibling keys of the node are written to disk together, and the live reference remains in the dirty queue, creating a cross-write contamination window.
-
-**Affected Versions**: 2.8.0-dev.2 - 2.9.0-dev.0
-
-**Fixed Version**: 2.9.0-dev.2
-
-**Fix**: Introduced a persistent baseline `_persisted_tree` (refreshed with the disk-loaded, validated tree at configuration tree rebuild) as the mirror of disk truth: `set(persist=True)` only applies this change to the baseline and submits the differential, never including runtime bindings in persistent content; "write-and-read" is restored directly from the memory snapshot, not through `_apply_tree` rebuild to avoid contaminating the baseline. `delete(persist=True)` is the same口径: apply the deletion to the baseline and hand the deep copy of the baseline subtree to the persistence layer; `set_action` replaces semantics first delete according to the same口径 then write, old rule keys do not remain in persistent content.
-
-**Fix Date**: 2026/09/27
-
-**Reproduction Steps**: ① In a module, execute `scope.set("bots.p.debug_mode", {"blocked": ["X"]}, persist=False)`; ② Trigger any persistent write (e.g., another module calls `set_module`); ③ Open `config/config.toml`, and `debug_mode` is written (before fix); ④ After the module is unloaded (runtime binding is unregistered), trigger configuration reload, `scope.get("bots.p.debug_mode")` still returns the bound value.
-
-**Regression Tests**: `tests/unit/test_unit_scope.py::TestPersistBaseline` (runtime bindings do not persist with unrelated persistent writes / do not resurrect after module unload / delete submits baseline subtree without runtime sibling keys / set_action replacement leaves no residual keys / cache_size configuration takes effect)
-
-**Severity**: 🔴 Critical
-
-**Type**: Configuration System
+**Type**: Configuration System  
 
 ---
 
-### [BUG-039] Inconsistent read/write when section write and dotted write coexist (dotted overwrite lost)
+### [BUG-037] Commands with space-separated names are never triggered after registration
 
-**Issue**: During the delayed flush window, when both section write (`setConfig("Mod", {...})`, e.g., `BaseModule.cfg` writeback) and dotted write (`setConfig("Mod.key", v)`, e.g., configuration hot update / test tool overwrite) coexist for the same section, there are two variants: Variant A (read path) — `getConfig("Mod")` returns the old section snapshot, not seeing the later dotted overwrite (dotted read path is normal); Variant B (write path, more serious) — if dotted write occurs before section write (common test tool injection overwrite → module `self.cfg = ...` writeback sequence), flush applies dirty keys in insertion order, and the section write completely replaces the section, **permanently losing the dotted overwrite on disk**. The production environment "configuration hot update + module runtime writeback" combination can trigger this, unrelated to the test environment (ErisPulse-DailyCard test feedback exposed).
+**Issue**: After registering a sub-command with a multi-token command name separated by spaces (e.g., `@command("admin add")`), the command can be registered and appears in the help list, but when the user sends `/admin add`, the bot never responds—the input is matched as the parent token command `admin` plus the argument `["add"]`; if the parent token is also unregistered, there is no response at all. Only using dot-separated naming (e.g., `admin.reload`, as a single token) can avoid this.
 
-**Cause**: `getConfig` first segment (exact hit `_dirty_keys`) returns `self._dirty_keys[key]` early, completely bypassing the fourth segment `_dirty_overlay` descendant overlay; `_flush_config` applies dirty keys in insertion order, and if section write happens after dotted write, the dotted value is completely replaced. Additionally: the first segment returns dirty queue **original object reference**, and callers modifying the returned dict in place directly change the pending write state.
+**Root Cause**: Root cause chain: `CommandHandler.__call__` stores any command name (including space-separated forms) as-is into the flat `self.commands` dictionary → During dispatch, `_try_execute_command` only matches the first message token (`cmd_name = parts[0]`) → Multi-token command names as dictionary keys are never found. The registration and matching phases have inconsistent assumptions about command name space, and there is no registration-time warning (silent failure).
 
-**Affected Versions**: 2.6.0 - 2.9.0-dev.2
+**Affected Versions**: From the introduction of the command system to 2.8.0  
+**Fixed Version**: 2.8.1  
+**Fix Description**: The matching layer switches to **longest prefix matching**: From the longest candidate (`" ".join(parts[:n])`, n capped by the maximum token count of registered command names/aliases cache `_max_name_tokens`) try downgrading step by step, and if matched, execute with the remaining tokens as arguments, downstream scope/ACL/overriding/master/permission chain naturally applies to the full command name. Accompanying semantics: when parent and child coexist, unregistered child command inputs fall back to the parent command (history behavior unchanged); when a child command does not declare `permission`, it inherits the nearest ancestor command's declared permission (protecting the parent command protects all its child commands); only registering single-token commands matches in the first round, and dispatch overhead is consistent with before. `unregister` / `unregister_by_owner` / full cleanup also maintain the token count cache.
 
-**Fixed Version**: 2.9.0-dev.2
+**Fix Date**: 2026/09/13  
 
-**Fix**: Unified **specificity-first** semantics within the dirty window—dotted (more specific) pending write values take precedence over section (wider) pending write values, with read and write paths in the same口径: ① `getConfig` after exact hit of pending write key still overlays `_dirty_overlay` descendant pending write values (non-dict values return overlaid subtrees, consistent with ③+④ scalar edge cases); ② `_flush_config` applies dirty keys in path depth order (section/ancestor first, dotted/descendant last, stable sorting maintains insertion order within the same depth). Cost: within the same dirty window (about 5 seconds), section writeback cannot overwrite still-pending dotted writes—after read path fix, read-modify-write naturally carries dotted values, actual impact is minimal. ③ For `getConfig` involving pending write values (exact hit / ancestor subtree / overlaid merge), return `copy.deepcopy` isolated copy, no longer leaking dirty queue internal references; fast path without dirty keys and pure cache read behavior unchanged.
+**Reproduction Steps**:  
+① Register `@command("admin add")` in the module;  
+② Send `/admin add x`;  
+③ Before the fix, there is no response (or it is caught by the simultaneously registered `/admin` as an argument), after the fix, `admin add` triggers and `get_command_args()` is `["x"]`.
 
-**Fix Date**: 2026/09/28
+**Regression Test**: `tests/unit/test_unit_command_subcommand.py` (longest prefix matching / only child command triggers / three-level nesting / case-sensitive two modes / single and multi-token aliases / event payload full name / lifecycle hook full name / permission inheritance six cases / ACL glob full name / master / unregistration fallback and cache recalculation)
 
-**Reproduction Steps**: ① `setConfig("FB.y", 1)`; ② `setConfig("FB", {"z": 2})`; ③ `force_save()`—before fix, disk only has `[FB] z = 2` (y lost), after fix `{"y": 1, "z": 2}`; Variant A: after steps ①②, do not save, directly `getConfig("FB")`—before fix does not contain `y`, after fix is visible.
+**Severity**: 🟡 Medium  
 
-**Regression Tests**: `tests/unit/test_unit_config.py::TestSectionAndDottedDirtyConsistency` (Variant A two insertion orders / Variant B save and order independence / three-level mixed survival / isolated copy / ancestor subtree isolation)
+**Type**: Event System  
 
-**Severity**: 🟡 Medium
+---
 
-**Type**: Configuration System
+### [BUG-038] Runtime bindings with persist=False are written to disk along with persistent writes, reviving after module unload
 
-### [BUG-040] Silent loss of trailing parameters in command after message split into segments
+**Issue**: Runtime bindings written with `scope.set(path, value, persist=False)` (documented as not writing to disk, invalidating on process restart, cleaning up on module unload) will be written to the user's `config.toml` along with any unrelated `persist=True` write (default value, such as module `set_module` / WebUI save configuration); after the module is unloaded and the runtime binding is unregistered, the binding is "revived" from disk and continues to be effective on the next configuration reload, and persists after process restart—contrary to the "runtime binding does not write to disk" semantic contract, and extremely difficult to diagnose.
 
-**Issue**: When the platform splits a message into multiple text segments (e.g., `/kick` and parameters are separated by mention segments, or input method segmentation), command dispatch only takes the first text segment for matching—`/艾特 @xxx 123` is parsed as an empty parameter command `艾特`, and commands declared with `args=` report "missing parameters", with no trace left.
-**Cause**: In `command.py`, the text extraction loop takes the first `type=="text"` segment and `break`s, discarding the rest (including all non-text segments).
-**Affected Versions**: 2.6.0 (command dispatch introduced) - 2.10.0
-**Fixed Version**: 2.10.1-dev.0
-**Fix**: Command text is now collected by concatenating all text segments in order; mention/image layers no longer cause the command to be completely unparseable; also complete error-prone segment tolerance (if `message` is None/string/non-dict segment, do not crash the dispatcher).
-**Regression Tests**: tests/unit/test_unit_command_multiseg.py
+**Root Cause**: Root cause chain: `ScopeManager.set()` first writes the value to the memory configuration tree `_data` (runtime bindings are also directly written to `_data`) → The persistence branch makes a deep copy snapshot of the entire `_data` and submits it to `update_erispulse_config` for differential writing to disk → The snapshot mixes in the values of `persist=False` bindings. `delete(persist=True)` is the same source: the live reference (parent node) of `_data` is handed over to the delayed write dirty queue, and during the period the dirty queue lingers, runtime modifications to sibling keys of the node are written to disk together, and the live reference exists in the dirty queue period, with a cross-write contamination window.
 
-**Severity**: 🟡 Medium
-**Type**: Event System
+**Affected Versions**: 2.8.0-dev.2 - 2.9.0-dev.0  
+**Fixed Version**: 2.9.0-dev.2  
+**Fix Description**: Introduces a persistence baseline `_persisted_tree` (the configuration tree is refreshed with the disk-loaded, validated tree as the mirror of disk truth): `set(persist=True)` only applies the current change to the baseline and submits the differential, and runtime bindings never enter the persistent content; "write-and-read immediately" uses the memory final state snapshot to restore directly, no longer via `_apply_tree` rebuild to avoid contaminating the baseline. `delete(persist=True)` is the same口径: apply the deletion to the baseline and hand over a deep copy of the baseline subtree to the persistence layer; `set_action` overall replacement semantics first delete according to the same口径 and then write, old rule keys do not remain in the persistent content.
+
+**Fix Date**: 2026/09/27  
+
+**Reproduction Steps**:  
+① Execute `scope.set("bots.p.debug_mode", {"blocked": ["X"]}, persist=False)` in the module;  
+② Trigger any persistent write (e.g., another module calls `set_module`);  
+③ Open `config/config.toml`, and see that `debug_mode` has been written (before fix);  
+④ After the module is unloaded (the runtime binding is unregistered), trigger configuration reload, `scope.get("bots.p.debug_mode")` still returns the bound value.
+
+**Regression Test**: `tests/unit/test_unit_scope.py::TestPersistBaseline` (runtime bindings do not write to disk with unrelated persistent writes / do not revive after module unload and configuration reload / delete submits baseline subtree without runtime sibling keys / set_action replacement leaves no residual keys / cache_size configuration takes effect)
+
+**Severity**: 🔴 Critical  
+
+**Type**: Configuration System  
+
+---
+
+### [BUG-039] Inconsistent read/write when whole-section write and dot-separated write coexist (dot-separated overwrite lost)
+
+**Issue**: During the delayed write window, when whole-section write (`setConfig("Mod", {...})`, e.g., `BaseModule.cfg` written back) and dot-separated write (`setConfig("Mod.key", v)`, e.g., configuration hot update/test tool overwrite) coexist, there are two variants: Variant A (read path) — `getConfig("Mod")` whole-section read returns the old whole-section write snapshot, not seeing the later dot-separated overwrite (dot-separated read path normal); Variant B (write path, heavier) — dot-separated write first, whole-section write after (common timing of test tool injection overwrite → module `self.cfg = ...` written back), flush applies dirty keys in insertion order, whole-section write completely replaces the section, **dot-separated overwrite permanently lost on disk**. Production environment "configuration hot update + module runtime write back" combination can trigger, unrelated to test environment (ErisPulse-DailyCard test feedback exposed).
+
+**Root Cause**: `getConfig` first segment (precise hit `_dirty_keys`) returns `return self._dirty_keys[key]` early, completely bypassing the fourth segment `_dirty_overlay` descendant overlay; `_flush_config` applies dirty keys in `_dirty_keys` insertion order, and if whole-section write happens after dot-separated write, the dot-separated value is completely replaced. Additionally: The first segment returns dirty queue **original object reference**, and callers modifying the returned dict in place directly change the pending write state.
+
+**Affected Versions**: 2.6.0 - 2.9.0-dev.2  
+**Fixed Version**: 2.9.0-dev.2  
+**Fix Description**: In the dirty window, unify to **specificity-first** semantics — dot-separated (more specific) pending write values take precedence over whole-section (wider) pending write values, read path and flush path have the same口径: ① `getConfig` after precise hit pending write key still overlays `_dirty_overlay` descendant pending write values (non-dict values return overlay subtree, same口径 as ③+④ scalar edges); ② `_flush_config` dirty keys are applied in path depth order (parent/ancestor first, descendant/child later, stable sort maintains write order within same depth). Cost: Within the same dirty window (about 5 seconds), whole-section write back cannot overwrite pending dot-separated writes — after read path fix, read-modify-write naturally carries dot-separated values, actual impact surface is extremely small. ③ Involved pending write values `getConfig` return (precise hit / ancestor subtree / overlay merge) changed to `copy.deepcopy` isolation copy, no longer leaking dirty queue internal reference; no dirty key fast path and pure cache read behavior unchanged.
+
+**Fix Date**: 2026/09/28  
+
+**Reproduction Steps**:  
+① `setConfig("FB.y", 1)`;  
+② `setConfig("FB", {"z": 2})`;  
+③ `force_save()` — before fix, disk only has `[FB] z = 2` (y lost), after fix `{"y": 1, "z": 2}`; Variant A: after steps ①②, do not save directly `getConfig("FB")` — before fix, does not contain `y`, after fix visible.
+
+**Regression Test**: `tests/unit/test_unit_config.py::TestSectionAndDottedDirtyConsistency` (two insertion orders for Variant A / Variant B save independent of order / three-level mixed survival / isolation copy / ancestor subtree isolation)
+
+**Severity**: 🟡 Medium  
+
+**Type**: Configuration System  
+
+---
+
+### [BUG-040] Silent loss of trailing parameters in command when message is split into segments
+
+**Issue**: When the platform splits a message into multiple text segments (e.g., `/kick` with a mention segment in between, or input method segmentation), command dispatch only takes the first text segment for matching — `/艾特 @xxx 123` is parsed as `艾特` with no parameters, and commands declared with `args=` report "missing argument", with no trace left.  
+**Cause**: In `command.py`, the text extraction loop takes the first `type=="text"` segment and `break`, discarding the remaining segments (including all non-text segments).  
+**Affected Versions**: 2.6.0 (command dispatch introduced) - 2.10.0  
+**Fixed Version**: 2.10.1-dev.0  
+**Fix Description**: Command text is changed to collect all text segments in order and concatenate them with spaces; mention/image layers no longer cause the entire command to fail parsing; also complete error-prone segment tolerance (if `message` is None/string/non-dict segment, it no longer crashes the dispatcher).  
+**Regression Test**: tests/unit/test_unit_command_multiseg.py  
+
+**Severity**: 🟡 Medium  
+**Type**: Event System  
+
+---
 
 ### [BUG-041] Rejected commands rerun entire alt_message chain: duplicate replies and permission function side effects triggered twice
 
-**Issue**: When the adapter's `alt_message` is inconsistent with the message segment text (e.g., alt contains @text prefix), if a command is rejected by scope/ACL/master/permission, the dispatcher reruns the entire chain with alt_message—users receive two "insufficient permissions" replies, and custom permission functions (often with database/query/counter side effects) are called twice.
-**Cause**: The `return False` for rejection and "command not matched" share the same return value, and the dispatcher uses this to consider trying alt fallback; the event has already been claimed before rejection, and rerunning only executes the reply and permission check again.
-**Affected Versions**: 2.9.0 (governance/permission chain formed) - 2.10.0
-**Fixed Version**: 2.10.1-dev.0
-**Fix**: Text processing changed to three-state contract (unmatched/consumed/rejected) — after matching a registered command (regardless of rejection), no alt fallback is attempted; only when no command is matched is alt fallback maintained.
-**Regression Tests**: tests/unit/test_unit_command_multiseg.py::test_denied_command_not_rerun_via_alt
+**Issue**: When the adapter's `alt_message` differs from the message segment text (e.g., alt contains @text prefix), if a command is rejected by scope/ACL/master/permission, the dispatcher reruns the entire chain using alt_message — the user receives two "permission denied" replies, and custom permission functions (often with database/query/count side effects) are called twice.  
+**Cause**: The rejection path `return False` and "no command matched" share the same return value, and the dispatcher uses this to consider trying alt fallback; however, the event was already claimed before rejection, and rerunning only executes reply and permission checks again.  
+**Affected Versions**: 2.9.0 (governance/permission chain formed) - 2.10.0  
+**Fixed Version**: 2.10.1-dev.0  
+**Fix Description**: Text processing changed to three-state contract (unmatched/consumed/rejected) — after matching a registered command (regardless of rejection), alt fallback is no longer attempted; only when no command is matched does alt fallback remain.  
+**Regression Test**: tests/unit/test_unit_command_multiseg.py::test_denied_command_not_rerun_via_alt  
 
-**Severity**: 🟡 Medium
-**Type**: Event System
-
-### [BUG-042] wait_reply registered inside command handler is immediately consumed by the same trigger message
-
-**Issue**: When `wait_reply` / registering interaction wait is called inside the command execution body, the wait is immediately matched by the same command message—the first interaction step is skipped, and the "user reply" is actually the command text itself (answer mismatch/data contamination).
-**Cause**: `_handle_message` calls `interaction.resolve` once at the beginning and once at the end of the method; the second resolve at the end matches the wait registered during execution; when cmdpass is closed, the alt missing scenario is determined as an empty string and directly allowed, exacerbating the problem.
-**Affected Versions**: 2.8.0 (interactive session system introduced) - 2.10.0
-**Fixed Version**: 2.10.1-dev.0
-**Fix**: The dispatch chain is converged to a single `interaction.resolve` (at the method's beginning), and the ending second call is removed; waits are unified to be consumed by the next message.
-**Regression Tests**: tests/unit/test_unit_command_multiseg.py::test_wait_reply_not_consumed_by_command_trigger
-
-**Severity**: 🟡 Medium
-**Type**: Event System
-
-### [BUG-043] Multiple wait paths for the same key in select() silently cancel the earlier one
-
-**Issue**: When `event.select()` multiple expectations derive the same session key (same user different pattern, multiple session expectations, etc.), the later registered path cancels the earlier path with "conflict", and select directly throws `InteractionCancelled` instead of the documented timeout return `(None, None)`.
-**Cause**: Each path independently calls `interaction.register`, and its mutual exclusion semantics send `REASON_CONFLICT` to cancel the same key's old wait; the comment claims "multiple paths for the same user are independent due to event copy" is incorrect—the copy only changes `user_id`, and the same user multiple paths have identical keys.
-**Affected Versions**: 2.9.0 (select introduced) - 2.10.0
-**Fixed Version**: 2.10.1-dev.0
-**Fix**: select is changed to aggregate waits—merge all expectations into a single item with a custom matcher (register by key set, share the same future), and return the corresponding index on any path hit; multiple paths for the same key naturally coexist.
-**Regression Tests**: tests/unit/test_unit_command_multiseg.py::test_select_same_user_multi_branch
-
-**Severity**: 🟡 Medium
-**Type**: Event System
-
-### [BUG-044] BaseConverter.at() produces OB11 legacy "at" segment, entire framework mention detection does not recognize
-
-**Issue**: When adapters use `BaseConverter.at()` to assemble inbound events, `must_at_bot` / `has_mention()` / `on_at_message` all fail—@bot commands silently fail in groups.
-**Cause**: `at()` produces `{"type": "at"}` (OB11 form), while the framework's mention detection and construction side (MessageBuilder/send modifiers) are all OB12's `"mention"`, with two parallel tracks and no warnings.
-**Affected Versions**: Not earlier than 2.5.0 - 2.10.0
-**Fixed Version**: 2.10.1-dev.0
-**Fix**: `at()` changed to produce `{"type": "mention", "data": {"user_id": ...}}` (method name retained as alias, new `mention` alias added).
-**Regression Tests**: tests/unit/test_unit_command_multiseg.py::test_converter_at_produces_mention
-
-**Severity**: 🟡 Medium
-**Type**: Adapter
-
-### [BUG-045] Interaction primitives permanently timeout and command penetration fail when alt_message is missing
-
-**Issue**: When adapters fill only the message segment and not `alt_message`, `confirm` / `choose` / `collect` permanently wait for user plain text replies (e.g., "yes"); registered commands during the waiting period never execute; `Event.get_text()` returns an empty string causing scaffold examples to silently fail.
-**Cause**: All the above paths directly take `alt_message` string, with no message segment fallback—the framework's "alt_message is an optional field for adapters" contract means that only segment filling is a valid form.
-**Affected Versions**: From introduction of each interaction primitive to 2.10.0
-**Fixed Version**: 2.10.1-dev.0
-**Fix**: Uniformly use `alt_message` priority + text segment fallback `extract_text`口径 (five value/verification points for interaction primitives, cmdpass determination, `Event.get_text()/get_message_text()`).
-**Regression Tests**: tests/unit/test_unit_command_multiseg.py
-
-**Severity**: 🟡 Medium
-**Type**: Event System
-
-### [BUG-046] Declaration configuration template's nested subtable header drifts to top level
-
-**Issue**: When declaring configuration with nested dataclass (ConfigClass with nested dataclass field), during the first generation of the configuration template, the subtable header `[Nested]` falls at the top level instead of within the component section—adapters reading `cfg.嵌套字段` get no value; `config.full.example` also has misplaced headers.
-**Cause**: The template generator renders relative table headers (e.g., `[Nested]`) for nested dataclasses, but TOML table header semantics are absolute paths from root; `setConfigTemplate` old implementation moves the parsed table object into the component section, and `full.example` directly text assembles, both paths fail to anchor the relative table header to the component path.
-**Affected Versions**: 2.10.0 - 2.10.1 (nested dataclass template rendering introduced with this version)
-**Fixed Version**: 2.10.2
-**Fix**: `setConfigTemplate` precisely re-anchors table headers based on the template's parsed subtable path (e.g., `[Nested]` → `[组件名.Nested]`); `config.full.example` generation side changes to pass `_prefix` to directly produce absolute table headers.
-**Regression Tests**: tests/unit/test_unit_config.py::TestTomlclassEngineMigration::test_template_write_idempotent_and_nested_anchored
-
-**Severity**: 🟡 Medium
-**Type**: Configuration System / Adapter
+**Severity**: 🟡 Medium  
+**Type**: Event System  
 
 ---
 
-### [BUG-047] Service directory full enumeration skips lazy-loaded modules
+### [BUG-042] wait_reply registered in command handler is immediately consumed by the same triggering message
 
-**Issue**: `sdk.module.services()` full directory skips all un-instantiated (lazy-loaded) modules—modules declared `meta.services` are not included in the directory, so consumers discovering via directory (AI agents, help modules, etc.) cannot find their services; single-module precise queries `services("Name")` and topology `get_topology()` are unaffected.
-**Cause**: `ModuleManager.services()` full enumeration branch unconditionally `continue` for modules without contract cache (not loaded) after on-the-spot contract parsing—intended to skip modules not declaring services, but actually skips all un-loaded modules; loaded modules are unaffected as contract cache is written during loading.
-**Affected Versions**: 2.9.0 - 2.10.1 (module RPC and service directory introduced with 2.9.0)
-**Fixed Version**: 2.10.2
-**Fix**: Removes unconditional skipping, unified by "skip only if parse result is empty"; un-loaded modules parse `get_meta().services` on-the-spot (same口径 as `module.call()` whitelist), and modules declaring services are included in the directory as usual.
-**Regression Tests**: tests/unit/test_unit_module_rpc.py::TestServicesDirectory::test_lazy_declared_module_in_full_directory
+**Issue**: When `wait_reply` / registering an interaction wait is called within a command execution body, the wait is immediately matched by the same command message — the first interaction flow question is skipped, and the "user reply" is actually the command text itself (answer mismatch/data pollution).  
+**Cause**: `_handle_message` calls `interaction.resolve` at both the start and end of the method; the second resolve at the end matches the wait registered during execution; cmdpass closes with alt missing scenario判定为空串直接放行,加重了该问题.  
+**Affected Versions**: 2.8.0 (interaction session system introduced) - 2.10.0  
+**Fixed Version**: 2.10.1-dev.0  
+**Fix Description**: The dispatch chain converges to a single `interaction.resolve` (at the start of the method), removing the second call at the end; waits are unified to be consumed by the next message.  
+**Regression Test**: tests/unit/test_unit_command_multiseg.py::test_wait_reply_not_consumed_by_command_trigger  
 
-**Severity**: 🟡 Medium
-**Type**: Loading System
+**Severity**: 🟡 Medium  
+**Type**: Event System  
+
+---
+
+### [BUG-043] Multiple wait paths for select() with the same key silently cancel the prior path
+
+**Issue**: When `event.select()` derives multiple expectations to the same session key (same user different pattern, multiple session expectations, etc.), the later registered path cancels the earlier path with "conflict", and select directly throws `InteractionCancelled` instead of the documented timeout return `(None, None)`.  
+**Cause**: Each path independently calls `interaction.register`, and its mutual exclusion semantics send `REASON_CONFLICT` to cancel the old wait for the same key; the comment claims "multiple paths for the same user are independent event replicas and do not conflict" is incorrect — replicas only change `user_id`, and multiple paths for the same user have identical keys.  
+**Affected Versions**: 2.9.0 (select introduced) - 2.10.0  
+**Fixed Version**: 2.10.1-dev.0  
+**Fix Description**: select is changed to aggregate waits — all expectations are merged into a single entry with a custom matcher (registered by key set, sharing the same future), and any path match returns the corresponding index; multiple paths with the same key naturally coexist.  
+**Regression Test**: tests/unit/test_unit_command_multiseg.py::test_select_same_user_multi_branch  
+
+**Severity**: 🟡 Medium  
+**Type**: Event System  
+
+---
+
+### [BUG-044] BaseConverter.at() produces legacy "at" segment for OB11, and the entire framework mention detection does not recognize it
+
+**Issue**: When the adapter uses `BaseConverter.at()` to assemble inbound events, `must_at_bot` / `has_mention()` / `on_at_message` all fail — @bot commands silently fail in groups.  
+**Cause**: `at()` produces `{"type": "at"}` (OB11 form), while the framework's mention detection and construction side (MessageBuilder/send decorators) are all OB12's `"mention"`, with dual tracks and no warnings.  
+**Affected Versions**: Version not earlier than 2.5.0 - 2.10.0  
+**Fixed Version**: 2.10.1-dev.0  
+**Fix Description**: `at()` is changed to produce `{"type": "mention", "data": {"user_id": ...}}` (method name retained as alias, new `mention` alias added).  
+**Regression Test**: tests/unit/test_unit_command_multiseg.py::test_converter_at_produces_mention  
+
+**Severity**: 🟡 Medium  
+**Type**: Adapter  
+
+---
+
+### [BUG-045] Interaction primitives permanently timeout and command penetration fail when alt_message is missing
+
+**Issue**: When the adapter only fills the message segment and does not fill `alt_message`, `confirm` / `choose` / `collect` permanently wait for user plain text replies (e.g., "yes"); registered commands during the waiting period can never penetrate and execute; `Event.get_text()` returns an empty string, causing scaffold examples to silently fail.  
+**Cause**: All the above paths directly take the `alt_message` string, with no message segment fallback — the framework's "alt_message is an optional field for adapters" contract allows only segment filling as a valid form.  
+**Affected Versions**: Versions since the introduction of interaction primitives - 2.10.0  
+**Fixed Version**: 2.10.1-dev.0  
+**Fix Description**: Unify to `alt_message` priority + text segment fallback `extract_text`口径 (five interaction primitive value/verification points, cmdpass judgment, `Event.get_text()/get_message_text()`).  
+**Regression Test**: tests/unit/test_unit_command_multiseg.py  
+
+**Severity**: 🟡 Medium  
+**Type**: Event System  
+
+---
+
+### [BUG-046] Declaration configuration template's nested sub-table header drifts to top-level table
+
+**Issue**: When declaring configuration with nested dataclass (ConfigClass containing dataclass fields), the sub-table header `[Nested]` falls to the top level instead of inside the component section when generating the configuration template for the first time — the adapter cannot retrieve the value by reading `cfg.嵌套字段`; `config.full.example` also has the same misplacement.  
+**Cause**: The template generator renders relative table headers (e.g., `[Nested]`) for nested dataclass, while TOML table header semantics are absolute paths from the root; `setConfigTemplate`'s old implementation moves the parsed table object into the component section, and `full.example` directly concatenates text, with both paths not re-anchoring the relative table header under the component path.  
+**Affected Versions**: 2.10.0 - 2.10.1 (nested dataclass template rendering introduced with this version)  
+**Fixed Version**: 2.10.2  
+**Fix Description**: `setConfigTemplate` precisely re-anchors table headers (e.g., `[Nested]` → `[组件名.Nested]`) based on the template's parsed sub-table path; `config.full.example` generation side changes to pass `_prefix` to directly produce absolute table headers.  
+**Regression Test**: tests/unit/test_unit_config.py::TestTomlclassEngineMigration::test_template_write_idempotent_and_nested_anchored  
+
+**Severity**: 🟡 Medium  
+**Type**: Configuration System / Adapter  
+
+---
+
+### [BUG-047] Full enumeration of service directory skips lazy-loaded modules
+
+**Issue**: `sdk.module.services()` full directory skips all unloaded (lazy-loaded) modules — even if the module declares `meta.services`, it does not appear in the directory; single-module precise query `services("Name")` and topology `get_topology()` are unaffected.  
+**Cause**: The `ModuleManager.services()` full enumeration branch skips modules without a contract cache (unloaded) unconditionally after parsing the contract on the spot — the intention was to skip modules that did not declare services, but actually skips all unloaded modules; loaded modules are unaffected because the contract cache was written during loading.  
+**Affected Versions**: 2.9.0 - 2.10.1 (module RPC and service directory introduced with 2.9.0)  
+**Fixed Version**: 2.10.2  
+**Fix Description**: Remove the unconditional skip, unify the decision to skip only if the parsing result is empty; for unloaded modules, parse `get_meta().services` on the spot (same口径 as `module.call()` whitelist), and modules that declare services are included in the directory as usual.  
+**Regression Test**: tests/unit/test_unit_module_rpc.py::TestServicesDirectory::test_lazy_declared_module_in_full_directory  
+
+**Severity**: 🟡 Medium  
+**Type**: Loading System  
+
+---
 
 ### [BUG-048] Session inbox query API loses message attribution (sender and event metadata)
 
-**Issue**: All inbox query interfaces (`get()` / `get_by_trace()` / `event.history()`) return records with only `role/text/ts/event_id`—the `sender` column present in the storage layer is discarded by the query layer, making different members' messages in group chat indistinguishable in the API (AI mistakenly identifies member B as the previous conversation partner A); inbound records also do not archive event metadata at the moment, so post-hoc checks get "current nickname" instead of "nickname at the time."
-**Cause**: When `sender` column was added in 2.8.0, the comment explicitly stated it is for "replaying message source," but Select and return construction did not carry it (implementation oversight); metadata archiving was never designed—`append()` has no meta channel, and the table structure has no corresponding column.
-**Affected Versions**: 2.8.0 - 2.11.0 (sender column introduced with 2.8.0)
-**Fixed Version**: 2.11.1-dev.0
-**Fix**: Adds `meta` column (whitelist contract: inbound nickname/self_id/sub_type/message_id, outbound send context and module; old table automatically migrates, backend does not support ALTER silently reverts to `{}`); `append()` adds `meta` parameter to pass through memory buffer and batch write; `get` / `recent` / `get_by_trace` / `event.history` uniformly return `sender` + `meta` (JSON damage reverts to `{}`).
-**关联**: #467 (same batch #468 / #469 / #470)
-**Regression Tests**: tests/unit/test_unit_transcript_attribution.py::TestSenderMetaReadback / TestMetaMigration
+**Issue**: All inbox query interfaces (`get()` / `get_by_trace()` / `event.history()`) return records with only `role/text/ts/event_id` — the `sender` column present in the storage layer is discarded by the query layer, making it impossible to distinguish messages from different members in group chat replays (AI mistakes member B for the previous conversation partner A); inbound records also do not archive event metadata at the time of the event, so the nickname at the time of the event is not retrieved, but the "current nickname" is retrieved during post-retrieval.  
+**Cause**: When `sender` column was added in 2.8.0, the comment clearly stated it is used for "replaying message source," but the Select and return construction did not carry it (implementation oversight); metadata archiving was never designed — `append()` has no meta channel, and the table structure has no corresponding column.  
+**Affected Versions**: 2.8.0 - 2.11.0 (sender column introduced with 2.8.0)  
+**Fixed Version**: 2.11.1-dev.0  
+**Fix Description**: Add a `meta` column (whitelist contract: inbound nickname/self_id/sub_type/message_id, outbound send context and module; old table automatically migrates, silently reverts to `{}` if backend does not support ALTER); `append()` adds `meta` parameter to pass through memory buffer and batch write to disk; `get` / `recent` / `get_by_trace` / `event.history` uniformly return `sender` + `meta` (JSON damage reverts to `{}`).  
+**关联**: #467 (same batch #468 / #469 / #470)  
+**Regression Test**: tests/unit/test_unit_transcript_attribution.py::TestSenderMetaReadback / TestMetaMigration  
 
-**Severity**: 🟡 Medium
-**Type**: Session Inbox / Storage System
+**Severity**: 🟡 Medium  
+**Type**: Session Inbox / Storage System  
+
+---
 
 ### [BUG-049] Inbound bot self-message echo recorded as user, polluting inbox attribution
 
-**Issue**: Platforms/protocol ends with message echo enabled (OneBot v11 `report-self-message`, Telegram outgoing, etc.) report bot self-messages as message events, and the inbox always records `role="user"`—bot self-speech and real user input are indistinguishable, causing downstream modules to treat bot self-speech as user input (AI responds to what "user" said), and role statistics are distorted.
-**Cause**: The inbound automatic record point (`Core/adapter.py`) unconditionally records `role="user"` for all `event_type == "message"`, without consuming the `self` field for bot echo detection—while the subsequent bot self-detection logic is already consuming the same field (available at record time, record logic misses use).
-**Affected Versions**: 2.8.0 - 2.11.0 (inbox automatic record introduced with 2.8.0)
-**Fixed Version**: 2.11.1-dev.0
-**Fix**: Before recording, identifies echo by `self.user_id == user_id`, and processes according to new configuration `ErisPulse.transcript.self_echo` three modes: `"bot"` (default) records `role="bot"` + `sender=self_id` + `meta.self_echo=true`; `"skip"` does not record; `"user"` maintains old behavior. Non-echo platforms (self missing or not equal) maintain unchanged per field.
-**关联**: #470 (depends on #467's meta column to carry self_echo marker)
-**Regression Tests**: tests/unit/test_unit_transcript_attribution.py::TestSelfEcho
+**Issue**: On platforms/protocols that enable message echo (OneBot v11 `report-self-message`, Telegram outgoing, etc.), when the bot's own message is reported as a message event, the inbox always records `role="user"` — the bot's self-message and real user input are indistinguishable, and downstream modules treat the bot's self-message as user input (AI responds based on what the "user" said), causing role statistics to be distorted.  
+**Cause**: The inbound automatic recording point (in `Core/adapter.py`) unconditionally records `role="user"` for all `event_type == "message"`, without consuming the `self` field to determine bot echo — while the subsequent bot self-detection logic is already consuming the same field (available at the recording moment, but the recording logic misses using it).  
+**Affected Versions**: 2.8.0 - 2.11.0 (inbox automatic recording introduced with 2.8.0)  
+**Fixed Version**: 2.11.1-dev.0  
+**Fix Description**: Before recording, identify echo by `self.user_id == user_id`, and handle according to the new configuration `ErisPulse.transcript.self_echo` in three modes: `"bot"` (default) records `role="bot"` + `sender=self_id` + `meta.self_echo=true`; `"skip"` does not record; `"user"` keeps the old behavior. For non-echo platforms (self missing or not equal), each field returns to unchanged.  
+**关联**: #470 (depends on #467's meta column to carry self_echo marker)  
+**Regression Test**: tests/unit/test_unit_transcript_attribution.py::TestSelfEcho  
 
-**Severity**: 🟡 Medium
-**Type**: Adapter / Session Inbox
+**Severity**: 🟡 Medium  
+**Type**: Adapter / Session Inbox  
 
-### [BUG-050] Container execution of `epsdk restart` exits container directly
+---
 
-**Issue**: When the framework runs as the main container process (PID 1) (official image `CMD ["epsdk", "run"]` or direct script), after installing components with `ep i <package>` and following the prompt to execute `epsdk restart`, the container exits directly and does not restart—newly installed components do not take effect, and services are interrupted.
-**Cause**: The `epsdk restart` implementation is "terminate running instance + restart with original parameters"—restarting is managed by the epsdk CLI process. In container scenarios, the target instance is PID 1 (main container process), and SIGINT/SIGTERM causes its exit, destroying the entire PID namespace, killing the CLI itself and the child process to be restarted, so restarting never happens.
-**Affected Versions**: 2.11.0 - 2.11.2 (runtime.json instance control introduced with 2.11.0; earlier versions have no restart command)
-**Fixed Version**: 2.12.0-dev.0
-**Fix**: When `epsdk restart` detects the status file `pid == 1` (characteristic of container main process), it no longer terminates and restarts, but sends `SIGUSR1` to the framework process, which completes a module-level soft restart (the module and adapter hot-reload pipeline, with new adapters entry-point immediately effective in running new components); `sdk.run()` registers a `SIGUSR1` handler to carry this channel. Full process restart scenarios are left to container restart (e.g., `docker restart` / restart policy).
-**Regression Tests**: tests/unit/test_unit_cli_runtime.py::TestRestartContainerHot
+### [BUG-050] Container execution of `epsdk restart` directly exits container
 
-**Severity**: 🔴 Critical (container deployment restart causes service interruption)
-**Type**: CLI / Deployment
+**Issue**: When the framework runs as the main container process (PID 1) (official image `CMD ["epsdk", "run"]` or direct startup script), after installing components with `ep i <package>` and following the prompt to execute `epsdk restart`, the container exits directly and does not restart — the newly installed components are not activated, and services are interrupted.  
+**Cause**: The implementation of `epsdk restart` is "terminate running instance + restart with original parameters" — the restart is managed by the epsdk CLI process. In container scenarios, the target instance is PID 1 (main container process), and SIGINT/SIGTERM causes the entire PID namespace to be destroyed, killing both the CLI and the subprocess to be restarted, so the restart never occurs.  
+**Affected Versions**: 2.11.0 - 2.11.2 (runtime.json instance control introduced with 2.11.0; earlier versions have no restart command)  
+**Fixed Version**: 2.12.0-dev.0  
+**Fix Description**: When `epsdk restart` detects the status file `pid == 1` (characteristic of the main container process), it no longer terminates and restarts, but instead sends `SIGUSR1` to the framework process, and the framework completes the component-level soft restart (using `sdk.restart()`: module and adapter hot reload pipeline, with the entry-point of the new adapter immediately effective in the running process); `sdk.run()` registers a `SIGUSR1` handler to carry this channel. The entire process restart scenario is handled by container restart (`docker restart` / restart policy).  
+**Regression Test**: tests/unit/test_unit_cli_runtime.py::TestRestartContainerHot  
 
-### [BUG-051] Cross-account duplicate receipt (drop) mistakenly injures at-mention messages, causing random message loss in multi-account deployment
+**Severity**: 🔴 Critical (container deployment restart causes service interruption)  
+**Type**: CLI / Deployment  
 
-**Issue**: After enabling `ErisPulse.framework.cross_account_policy = "drop"` in multi-account deployment, when a user in a group @s one account, that account often does not receive the event (the event does not even appear in the framework event stream), intermittently. Real-world testing shows that out of 22 messages in the same group, only 3 reach the mentioned account, and @-driven multi-account modules randomly become deaf, with no error reported by downstream modules.
-**Cause**: The content-level deduplication key in `_cross_receipt_check` is a quadruple (same platform + same session + same sender + same `alt_message` summary), not including account and mention dimensions. When the same group message is emitted by multiple accounts connected individually, the first to arrive occupies the position, and the later ones are dropped directly at the distribution entry according to drop—often the target account is the "later arrival," and the event is swallowed with no downstream awareness.
-**Affected Versions**: 2.12.0 (cross_account_policy introduced with 2.12.0)
-**Fixed Version**: 2.12.1-dev.0
-**Fix**: When the mention target matches the receiving account's own identity (`self.user_id` / `self.account_id` dual口径), the copy is exempted from cross-account association (both mark/drop exempt)—the mentioned account is guaranteed to receive its own event, and other account copies are deduplicated as usual (modules driven by @ use `on_at_message` condition filtering, naturally responding once). Also fixes: `cross_account_policy` configuration changes do not hot-reload (lazily cached with config.set / config.updated失效); `core.adapter.event_duplicated` translation key missing (trace outputs key name as-is).
-**Regression Tests**: tests/unit/test_unit_adapter.py::TestCrossAccountReceipt (test_drop_preserves_mentioned_account_copy and six other new test cases)
+---
 
-**Severity**: 🟢 Minor (drop is an explicitly configured non-default path, only affecting @-mention message distribution)
-**Type**: Adapter
+### [BUG-051] Cross-account duplicate receipt (drop) mistakenly injures @mention messages, causing random message loss in multi-account deployment
 
-### [BUG-052] Concurrent storage first fetch deadlock freezes event loop, web site hangs and continues database is locked
+**Issue**: After enabling `ErisPulse.framework.cross_account_policy = "drop"` in multi-account deployment, when a user mentions a specific account in a group, that account often does not receive the event (the event does not even appear in the framework event stream), sometimes good, sometimes bad. Real-world testing shows that out of 22 messages in the same group, only 3 reach the mentioned account, and the @-driven multi-account module randomly becomes deaf, with no error reported by downstream modules.  
+**Cause**: The content-level deduplication key for `_cross_receipt_check` is a quadruple (same platform + same session + same sender + `alt_message` summary), which does not include account and mention dimensions. When the same group message is emitted by multiple account connections, the first arrival takes the position, and the later arrivals are dropped at the dispatch entrance — the target account is often the "later arrival," and the event is swallowed with no downstream notification.  
+**Affected Versions**: 2.12.0 (cross_account_policy introduced with 2.12.0)  
+**Fixed Version**: 2.12.1-dev.0  
+**Fix Description**: When the mention target matches the receiving account's own identity (`self.user_id` / `self.account_id` dual口径), the副本不参与跨账户关联 (mark / drop both exempt) — the mentioned account will definitely receive its own event, and the other account replicas follow the deduplication (the @-driven module filters naturally once with `on_at_message` condition). Also fix: `cross_account_policy` configuration changes do not hot-reload (lazily cached with config.set / config.updated failure); `core.adapter.event_duplicated` translation key missing (trace outputs key name as-is).  
+**Regression Test**: tests/unit/test_unit_adapter.py::TestCrossAccountReceipt (test_drop_preserves_mentioned_account_copy and 5 other new test cases)  
 
-**Issue**: After a specific window (cold start first concurrent / after connection failure automatic reconnection first concurrent), the process enters a persistent fault: all coroutines on that event loop freeze—web (including 404 and other error pages) is unresponsive, timers stop; other loops / threads' storage writes each precisely wait for busy_timeout (default 5s) and report `Setting storage item xxx failed: database is locked` (all kv / ORM / transcript backends hit), continuing until process restart. If a transaction is open on the frozen loop, its `BEGIN IMMEDIATE` never commits, holding the write lock indefinitely—this is the largest framework-held lock source for all scenarios of `database is locked`.
-**Cause**: The connection competition handling in `SQLStorageBase._get_loop_resource` has dual defects: when ≥2 coroutines concurrently first use in the same loop, each creates a connection, and the loser awaits destroying extra connections in the **class-level threading.Lock critical section**; other coroutines waiting for this lock execute **synchronous blocking acquisition**, directly freezing the event loop thread, and the destruction completion callback depends on this loop for scheduling—lock holder waits for loop, loop is frozen by lock, classic mutual deadlock.
-**Affected Versions**: 2.10.0 (connection failure fast-fail refactoring introduced this connection competition structure) - 2.12.1-dev.1
-**Fixed Version**: 2.12.1-dev.1
-**Fix**: Connection competition changed to be serialized via **per-event loop asyncio.Lock** (coroutines yield rather than freezing the loop; after obtaining the serialized lock, the loser rechecks the resource table, and if hit, reuses—no more repeated connection creation); critical sections of the resource table only contain synchronous dictionary operations, and destruction is always moved out of the lock.
-**Fix Date**: 2026/11/23
-**Reproduction Steps**: Full framework topology reproduction (phases A1-A3/B) and independent WSL topology reproduction (locked at 5.01s exact throw) have been covered in the fix verification.
-**Regression Tests**: tests/unit/test_unit_storage.py::TestConcurrentFirstAcquire (concurrent first fetch completes within 15s + exactly one resource per loop)
+**Severity**: 🟢 Minor (drop is an explicitly configured non-default path, only affecting @mention message distribution)  
+**Type**: Adapter  
 
-**Severity**: 🔴 Critical (entire loop freezes + write loss, kv/ORM/transcript shared base all hit)
+---
+
+### [BUG-052] Concurrent storage first fetch deadlock freezes event loop, web site hangs and continuously reports "database is locked"
+
+**Issue**: After a specific window (cold start first concurrent / after connection failure automatic rebuild first concurrent), the process experiences a persistent fault: all coroutines on that event loop freeze — web (including 404 error pages) is unresponsive, timers stop; storage writes on other loops / threads precisely wait for busy_timeout (default 5s) and report `Failed to set storage item xxx: database is locked` (all backend flavors of kv / ORM / transcript are hit), continuing until the process restarts. If a freeze occurs while there is an open transaction on the loop, its `BEGIN IMMEDIATE` never commits, holding the write lock indefinitely — this is the largest internal lock-holding source of `database is locked` in all scenarios.  
+**Cause**: The connection competition handling in `SQLStorageBase._get_loop_resource` has two defects: when ≥2 coroutines on the same loop concurrently fetch for the first time, they each create a connection, and the loser awaits destruction of the extra connection in the class-level `threading.Lock` critical section; other coroutines waiting for this lock execute synchronous blocking acquisition, directly freezing the event loop thread, and the destruction callback depends on the loop scheduling — the lock holder waits for the loop, and the loop is frozen by the lock, classic mutual deadlock.  
+**Affected Versions**: 2.10.0 (connection failure rapid failure refactoring introduced this connection competition structure) - 2.12.1-dev.1  
+**Fixed Version**: 2.12.1-dev.1  
+**Fix Description**: Connection competition is changed to be serialized by **per event loop asyncio.Lock** (coroutines yield rather than freeze the loop; the loser gets the serial lock and rechecks the resource table, and if hit, reuses — repeated connection creation no longer occurs); the resource table critical section only contains synchronous dictionary operations, and destruction is always executed outside the lock.  
+**Fix Date**: 2026/11/23  
+**Reproduction Steps**: Full framework topology reproduction (phases A1-A3/B) and independent WSL topology reproduction (locked at 5.01s exact throw) have been covered in the fix verification.  
+**Regression Test**: tests/unit/test_unit_storage.py::TestConcurrentFirstAcquire (concurrent first fetch completed within 15s + exactly one resource per loop)  
+
+**Severity**: 🔴 Critical (entire loop freezes + write loss, all backend flavors kv/ORM/transcript share the base)  
+**Type**: Storage  
+
+---
+
+### [BUG-053] Process hangs when storage connection is not closed (aiosqlite 0.22 connection threads are no longer daemon threads)
+
+**Issue**: Processes that end without explicitly closing storage (or calling `sdk.uninit()`) — standalone scripts, cleanup after Ctrl+C interruption, test processes — do not exit after business code finishes, permanently stopping at the interpreter exit stage; reproduced on both Windows and Linux.  
+**Cause**: CPython exits by first executing `threading._shutdown()` (joining all non-daemon threads), then executing `atexit` callbacks. Since aiosqlite 0.22, connection worker threads are no longer marked `daemon=True`, and storage close hooks and inbox exit flush are registered in `atexit`: connection threads wait for closure, closure waits for join completion, mutual wait.  
+**Affected Versions**: All versions depending on aiosqlite ≥ 0.22 (no upper limit for `aiosqlite>=0.20.0`, default SQLite backend always occurs)  
+**Fixed Version**: 2.12.1-dev.1  
+**Fix Description**: The storage layer adds an exit hook sequence before thread recycling (registered via `threading._register_atexit`): exit flush dependent on storage (inbox buffer) → Synchronously stop all live connection worker threads (not via event loop) → Stop the bridging loop. The bounded waiting semantics of synchronous bridging are also closed: after timeout, write operations are not canceled (still completed in the background, failure warnings after the fact), transaction termination is guaranteed, and transaction start timeout throws StorageOperationError — previously queued writes are canceled and discarded, and transaction termination cancellation prevents connection and write lock release.  
+**Fix Date**: 2026/11/25  
+**Regression Test**: tests/unit/test_unit_storage.py::TestStorageExitHooks (hook order / single-step failure does not block / registration channel / SQLite connection not via event loop stops), ::TestSyncBridgeTimeoutSemantics (write not lost / failure after the fact / start timeout throws error / termination guaranteed)  
+
+**Severity**: 🔴 Critical (default SQLite backend always occurs, process cannot exit normally)  
 **Type**: Storage

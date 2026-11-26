@@ -20,9 +20,9 @@
 ## 统计信息
 
 - **模块总数**: 145
-- **类总数**: 203（包括 5 个嵌套类）
-- **函数总数**: 442
-- **方法总数**: 1816
+- **类总数**: 204（包括 5 个嵌套类）
+- **函数总数**: 448
+- **方法总数**: 1824
 
 ---
 
@@ -301,12 +301,12 @@
 
 ### [ErisPulse.Core.Bases.sql_base](ErisPulse/Core/Bases/sql_base.md)
 
-5 个类 | 75 个方法 | 3 个函数
+5 个类 | 76 个方法 | 3 个函数
 
 
 ### [ErisPulse.Core.Bases.storage](ErisPulse/Core/Bases/storage.md)
 
-7 个类 | 71 个方法 | 3 个函数
+8 个类 | 78 个方法 | 5 个函数
 
 
 ### [ErisPulse.Core.Bases.websocket](ErisPulse/Core/Bases/websocket.md)
@@ -526,22 +526,22 @@
 
 ### [ErisPulse.Core.storage.__init__](ErisPulse/Core/storage/__init__.md)
 
-1 个函数
+4 个函数
 
 
 ### [ErisPulse.Core.storage.mysql](ErisPulse/Core/storage/mysql.md)
 
-2 个类 | 23 个方法
+2 个类 | 22 个方法
 
 
 ### [ErisPulse.Core.storage.postgres](ErisPulse/Core/storage/postgres.md)
 
-2 个类 | 21 个方法
+2 个类 | 20 个方法
 
 
 ### [ErisPulse.Core.storage.sqlite](ErisPulse/Core/storage/sqlite.md)
 
-2 个类 | 19 个方法
+2 个类 | 21 个方法
 
 
 ### [ErisPulse.Core.text_match](ErisPulse/Core/text_match.md)
@@ -686,7 +686,7 @@
 
 ### [ErisPulse.runtime.memory](ErisPulse/runtime/memory.md)
 
-7 个函数
+8 个函数
 
 
 ### [ErisPulse.runtime.metrics](ErisPulse/runtime/metrics.md)

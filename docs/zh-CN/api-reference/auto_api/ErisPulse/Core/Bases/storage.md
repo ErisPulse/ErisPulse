@@ -61,7 +61,67 @@ limit 个即止，采集不足 limit 个时以实际数量返回。内部帧按�
 ---
 
 
+### `_get_thread_bridge_pool() -> 'concurrent.futures.ThreadPoolExecutor'`
+
+**内部方法** 线程桥接池（进程级懒初始化，退出时随解释器回收）
+
+---
+
+
+### `_thread_bridge_worker(coro: Any) -> Any`
+
+**内部方法**
+线程桥接 worker：每线程一个独立事件循环（惰性创建、随线程存活）
+
+连接资源按循环对象缓存在 ``_loop_resources``（WeakKeyDictionary）——
+循环随线程持久存在，连接同样复用，不产生逐调用建连。
+
+---
+
+
 ## 类列表
+
+
+### `class _PreJoinExitHooks`
+
+**内部方法**
+解释器退出时先于线程 join 执行的钩子序列
+
+CPython 退出先执行 ``threading._shutdown()``——依次调用经
+``threading._register_atexit`` 登记的回调，再 join 全部非 daemon 线程——
+``atexit`` 回调排在其后。aiosqlite 0.22 起连接线程为非 daemon 线程，
+依赖 ``atexit`` 关闭连接的进程会永久停在 join 上。本序列在 join 之前
+按序执行：依赖存储的退出刷盘 → 停止全部存活后端的同步资源 → 停止桥接循环。
+
+
+#### 方法列表
+
+
+##### `register_flusher(flusher: Callable[[], None]) -> None`（classmethod）
+
+登记退出刷盘回调（须在后端连接停止之前完成的落盘）
+
+- **flusher**: 无参回调，在退出阶段的主线程内同步执行
+
+---
+
+
+##### `ensure_registered() -> None`（classmethod）
+
+**内部方法** 向 ``threading._register_atexit`` 登记本序列（幂等）
+
+---
+
+
+##### `_run() -> None`（classmethod）
+
+**内部方法**
+刷盘 → 停后端同步资源 → 停桥
+
+单步失败不阻断后续步骤与进程退出；留痕走标准库 logging（标准 logging
+的 shutdown 晚于本序列）。
+
+---
 
 
 ### `class AsyncBridge`
@@ -89,16 +149,34 @@ limit 个即止，采集不足 limit 个时以实际数量返回。内部帧按�
 ---
 
 
-##### `run(coro: Any, timeout: float | None = None) -> Any`
+##### `_watch_abandoned(future: 'concurrent.futures.Future[Any]') -> None`（staticmethod）
+
+**内部方法**
+跟进调用方已超时返回的桥接操作
+
+未取消的操作留在执行队列中继续完成，完成后在此留痕：失败 WARNING
+（调用方已拿到超时返回值，无从得知这次失败），成功 DEBUG。回调在完成
+该 future 的线程内执行——桥接循环线程内经 ``call_soon`` 投递，不占循环。
+
+- **future**: 调用方已放弃等待的 future
+
+---
+
+
+##### `run(coro: Any, timeout: float | None = None, *, cancel_on_timeout: bool = False) -> Any`
 
 在桥接事件循环上执行协程并阻塞等待结果
 
 - **coro**: 要执行的协程对象（所有权移交本方法）
 - **timeout**: 可选超时秒数（默认无限等待）
+- **cancel_on_timeout**: 等待超时后是否取消尚未完成的操作；False 时操作
 
+    留在桥接循环上继续完成（写不丢），结果经 :meth:`_watch_abandoned` 留痕
 **返回值**: 协程的返回值
 
 **异常**: `RuntimeError` - 桥接已关闭或在桥接线程内重入调用时
+
+**异常**: `concurrent.futures.TimeoutError` - 等待超时
 
 ---
 
@@ -512,6 +590,20 @@ rows = storage.Table("users").Select("name", "age").Execute()
 #### 方法列表
 
 
+##### `_register_live() -> None`
+
+**内部方法** 登记为存活后端，并确保退出钩子序列已登记
+
+---
+
+
+##### `_stop_sync_resources() -> None`
+
+**内部方法** 退出阶段不经事件循环同步停止后端资源；默认无需处理
+
+---
+
+
 ##### `_ensure_txn_state() -> None`
 
 **内部方法**
@@ -530,21 +622,40 @@ rows = storage.Table("users").Select("name", "age").Execute()
 ---
 
 
-##### `_bridge_run(coro: Any, timeout: float | None = None) -> Any`
+##### `_bridge_run(coro: Any, timeout: float | None = None, *, cancel_on_timeout: bool = False) -> Any`
 
 **内部方法**
 将协程提交到桥接事件循环并阻塞等待结果（同步兼容层的执行入口）
 
 调用方处于异步上下文时施加有界等待（``framework.sync_in_async_bridge_wait``，
-默认 10s）：超时取消桥接任务并返回 None（fail-soft）——把"无限冻结
-调用方事件循环"收敛为有界等待；操作可能仍在桥接循环上完成（写最终
-落库），仅调用方不再等待。纯同步线程调用不受限（等外事务/迁移等长
-操作合法）。
+默认 10s）：超时后调用方拿到 None 返回（fail-soft）——把"无限冻结调用方
+事件循环"收敛为有界等待。默认不取消尚未完成的操作：写操作仍在桥接
+循环上完成（写最终落库），完成后的失败另行告警；只读调用方传入
+``cancel_on_timeout=True``，超时即取消排队中的操作。纯同步线程调用不受限
+（等待事务、迁移等长操作属合法场景）。
 
 - **coro**: 要执行的协程对象
 - **timeout**: 可选超时秒数（显式传入时优先于配置上限）
+- **cancel_on_timeout**: 等待超时后是否取消尚未完成的操作
 
 **返回值**: 协程的返回值；异步上下文下桥接等待超时返回 None
+
+---
+
+
+##### `_thread_bridge_run(coro: Any, timeout: float | None, cancel_on_timeout: bool = False) -> Any`
+
+**内部方法**
+有界线程池桥接：真并发后端（``_SUPPORTS_THREAD_BRIDGE``）的同步调用
+执行路径——worker 线程各持独立事件循环（连接按循环缓存，随线程存活），
+调用间互不排队。超时语义与桥接循环一致：调用方拿到 None 返回（由
+:meth:`_bridge_run` 统一转换）；操作默认不取消，留在队列中继续完成。
+
+- **coro**: 要执行的协程对象
+- **timeout**: 等待上限秒数
+- **cancel_on_timeout**: 等待超时后是否取消尚未完成的操作
+
+**返回值**: 协程的返回值
 
 ---
 

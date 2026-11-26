@@ -160,6 +160,20 @@ SQLite 存储管理器（aiosqlite 异步原生实现）
 ---
 
 
+##### `_track_connection(conn: aiosqlite.Connection) -> None`
+
+**内部方法** 登记存活连接（弱引用），供退出阶段同步停止其工作线程
+
+---
+
+
+##### `_stop_sync_resources() -> None`
+
+**内部方法** 退出阶段不经事件循环，直接停止全部存活连接的工作线程
+
+---
+
+
 ##### `async _begin_txn(conn: Any) -> None`
 
 **内部方法** BEGIN IMMEDIATE TRANSACTION

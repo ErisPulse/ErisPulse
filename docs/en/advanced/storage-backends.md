@@ -1,21 +1,20 @@
 # Storage Backends
 
 > [!TIP]
-> **When to read this**: When switching to sqlite / mysql / postgres or a custom storage backend. Skip it otherwise—this does not affect the use of any other features.
+> **When to read this**: When switching between sqlite / mysql / postgres or customizing the storage backend. Skip if not needed, it does not affect the use of other features.
 
+ErisPulse provides three built-in asynchronous native storage backends, which can be switched with configuration in one click. **The API is completely consistent, and switching requires zero code changes**:
 
-ErisPulse ships with three natively asynchronous storage backends that can be switched with a single configuration change—**identical APIs, zero code changes when switching**:
-
-| Backend | Driver | Installation | Highlights |
-|------|------|------|------|
-| SQLite (default) | aiosqlite | Works out of the box | Zero config, single file, WAL concurrency |
-| MySQL / MariaDB | aiomysql | `pip install ErisPulse[mysql]` | Ideal for existing MySQL infrastructure, shared across multiple instances |
+| Backend | Driver | Installation | Features |
+|---------|--------|--------------|----------|
+| SQLite (default) | aiosqlite | Ready to use out-of-the-box | Zero configuration, single file, WAL concurrency |
+| MySQL / MariaDB | aiomysql | `pip install ErisPulse[mysql]` | Suitable for existing MySQL infrastructure, shared across multiple instances |
 | PostgreSQL | asyncpg | `pip install ErisPulse[postgres]` | Strong transaction support, JSONB ecosystem, high concurrency |
 
 {!--< tips >!--}
-1. The async interface is the native primary interface (`aget/aset/atransaction/aExecute`); the sync API is a compatibility layer
-2. The framework's own config persistence, session inbox, conversation checkpoints, and more all go through the same storage backend—switching the backend migrates everything at once
-3. The `[mysql]` extra already includes `cryptography`—required for MySQL 8's default `caching_sha2_password` authentication; without it, connection pool initialization fails
+1. Asynchronous is the native main interface (`aget/aset/atransaction/aExecute`), synchronous API is a compatibility layer
+2. The framework's own configuration persistence, session inbox, and conversation checkpoints all use the same storage backend—switching the backend means overall migration
+3. `[mysql]` extra includes `cryptography`—MySQL 8's default `caching_sha2_password` authentication requires it, missing it will cause the connection pool initialization to fail
 {!--< /tips >!--}
 
 ## Backend Selection
@@ -25,10 +24,10 @@ Configure in `config/config.toml`:
 ```toml
 [ErisPulse.storage]
 backend = "sqlite"        # "sqlite" (default) / "mysql" / "postgres"
-use_global_db = false     # SQLite only: use the package-level global database data/config.db
+use_global_db = false     # Only for SQLite: use the package's global database data/config.db
 ```
 
-Environment variable overrides are also supported (Docker / 12-factor):
+Environment variables are also supported for overriding (Docker / 12-factor):
 
 ```bash
 ERISPULSE_STORAGE_BACKEND=postgres
@@ -36,7 +35,7 @@ ERISPULSE_STORAGE_POSTGRES_HOST=db.example.com
 ERISPULSE_STORAGE_POSTGRES_PASSWORD=secret
 ```
 
-Environment variable naming rule: uppercase the config path and replace dots with underscores
+Environment variable naming rule: configuration path in uppercase, dots replaced with underscores
 (`ErisPulse.storage.postgres.host` → `ERISPULSE_STORAGE_POSTGRES_HOST`).
 
 ## Connection Parameters
@@ -69,29 +68,33 @@ pool_max = 10
 ```
 
 > [!NOTE]
-> Connection parameter changes require a framework restart to take effect (a restart reminder is logged during hot config reloads).
-> Connection pools are created lazily per event loop; transient creation failures (network jitter / database restart windows) are automatically retried with exponential backoff.
+> After changing connection parameters, restart the framework to take effect (configuration hot updates will output a restart reminder log).
+> Connection pools are created lazily by event loop; transient failures (network jitter / database restart window) during creation are automatically retried with exponential backoff.
 
 ## Connection Failure Behavior
 
-Framework startup and operation **do not depend on database availability**—MySQL / PostgreSQL connection failures will not crash the framework or prevent it from starting:
+The framework startup and operation **do not depend on database reachability**—MySQL / PostgreSQL connection failures do not cause framework crashes or inability to start:
 
-1. Transient pool creation failures are automatically retried with exponential backoff (3 attempts by default)
-2. Retries exhausted → a WARNING is logged (including the cause and cooldown duration); the framework starts / keeps running as usual, with only storage operations temporarily unavailable
-3. Subsequent storage operations during the cooldown period (30 seconds by default) **fail fast** (no blocking, no slowdown of other features)
-4. When the cooldown ends, an automatic reconnection attempt is made—once the database recovers, storage recovers along with it; no restart required
+1. Instant pool creation failures are automatically retried with exponential backoff (default 3 times)
+2. After exhausting retries → record a WARNING (including reason and cooldown duration), the framework starts / continues running as usual, only storage operations are temporarily unavailable
+3. During the cooldown period (default 30 seconds), subsequent storage operations **fail quickly** (do not block, do not slow down other features)
+4. After cooldown, automatic reconnection attempts are made—storage resumes when the database recovers, no restart is required
 
-Log example: `mysql connection pool creation ultimately failed (retried 3 times), auto-reconnecting in 30 seconds; storage operations will fail fast in the meantime, other framework features are unaffected`
+Log example: `mysql connection pool creation ultimately failed (retried 3 times), automatic reconnection after 30 seconds; during this period storage operations will fail quickly, other framework features are unaffected`
 
-## Failure Semantics (as of 2.12)
+## Process Exit
+
+Processes that end without calling `sdk.uninit()` (standalone scripts, cleanup after interruption) automatically close storage during interpreter shutdown: first complete storage-dependent exit flush (inbox buffer), then stop all database connections, and finally stop the background bridging loop. SQLite connection threads do not automatically end with process exit; the framework completes these three steps before the interpreter recycles threads; `atexit` callbacks run after thread recycling, so do not access storage in them.
+
+## Failure Semantics (from 2.12)
 
 | Scenario | Behavior |
-|------|------|
-| Operation execution failure (write lock timeout / SQL error / constraint violation) | **Raises `StorageOperationError`** (write paths: aset / adelete / aclear / set_multi, and the sync bridge follows the same paths)—no longer silently returns `False`; failures of important writes must be visible |
-| Connection-level unreachability (fail fast during cooldown) | Returns `False` / `None` (fails fast when the connection is unreachable, accompanied by `storage.unreachable` / `storage.recovered` events) |
-| Transaction begin timeout (>30s) | Raises `StorageOperationError` (`STORAGE_TXN_BEGIN_TIMEOUT_SECS`) |
+|----------|----------|
+| Operation execution failure (write lock timeout / SQL error / constraint conflict) | **Raise `StorageOperationError`** (write path: `aset / adelete / aclear / set_multi` and synchronous bridge same path) — no longer silently return `False`, important write failures must be visible |
+| Connection-level unreachability (fast failure during cooldown) | Return `False` / `None` (fast failure during connection-level unreachability, accompanied by `storage.unreachable` / `storage.recovered` events) |
+| Transaction begin timeout (>30s) | Raise `StorageOperationError` (`STORAGE_TXN_BEGIN_TIMEOUT_SECS`) |
 
-Wrap important writes in try/except with compensation handling; keep transaction blocks to pure DB operations only.
+Wrap important writes in try/except and handle compensations; put only pure DB operations inside transaction blocks.
 
 ## Asynchronous Native API
 
@@ -116,53 +119,74 @@ async with sdk.storage.atransaction():
 
 ## Synchronous Methods (Use with Caution)
 
-Each a-prefixed asynchronous method has a corresponding synchronous version (`aget` → `get`, `aset` → `set`, `atransaction` → `transaction`, `aExecute` → `Execute`), which internally executes via a background event loop bridge — **they block the calling thread**:
+Each asynchronous method with an `a` prefix has a corresponding synchronous form (`aget`→`get`, `aset`→`set`, `atransaction`→`transaction`, `aExecute`→`Execute`), executed internally via a background event loop bridge—**they block the calling thread**:
 
-- **Calling them within an asynchronous handler will block the entire event loop** until the storage operation completes: frequent calls can lead to handler timeouts, halted event processing, web lag, and may trigger `database is locked` (write wait timeout) as a chain reaction. The framework issues rate-limited warnings (with `file:line (function name)`) for each call site; upon receiving such warnings, you should migrate the corresponding call to its a-prefixed asynchronous method.
-- During development, you can enable `ErisPulse.framework.strict.sync_in_async = true`: synchronous calls will no longer be allowed and will directly throw a `StrictModeError` (with call site and migration guidance), exposing issues immediately rather than discovering them only after deployment through lag-induced speculation.
-- For runtime mitigation: the default timeout for bridged waiting in asynchronous contexts is 10 seconds (`ErisPulse.framework.sync_in_async_bridge_wait`); if exceeded, the operation is canceled and a fail-soft semantic is returned — but this is a fallback, not an approval.
+- **Calling them in asynchronous handlers blocks the entire event loop** until the storage operation completes: frequent calls result in handler timeouts, event processing stalling, web lag, and may chain-trigger `database is locked` (write wait timeout). The framework outputs rate-limited warnings (with `file:line number (function name)`) for each call point; receive a warning and migrate the corresponding call to an `a`-prefixed asynchronous method
+- In development, enable `ErisPulse.framework.strict.sync_in_async = true`: synchronous calls are no longer allowed, directly raising `StrictModeError` (with call point and migration guidance), exposing issues immediately rather than relying on lag after deployment
+- In runtime, for mitigation: the default maximum wait time for bridge in asynchronous contexts is 10s (`ErisPulse.framework.sync_in_async_bridge_wait`), after which the caller receives `None` as a fail-soft return; queued write operations are **not discarded** (still completed in the background, with failures reported as WARNING), and synchronous transaction commits / connection releases are completed as well; a transaction begin timeout raises `StorageOperationError`—but this is a fallback, not a permission
 
-**Please ensure you know what you are doing; otherwise, do not use synchronous forms.** Pure synchronous threads (without an event loop) are unrestricted and represent legitimate scenarios (e.g., synchronous entry scripts, bridged waiting for transaction commits).
+**Please ensure you know what you are doing, otherwise do not use synchronous forms.** In pure synchronous threads (no event loop), calls are unrestricted and are legitimate scenarios (such as synchronous entry scripts, bridging waits for transaction commits).
 
-Using `asyncio.to_thread` or thread pools to execute synchronous drivers is similarly valid and can be effective in specific scenarios: **when the backend supports true concurrent connections** (PostgreSQL / MySQL — each thread has an independent connection, server-side MVCC concurrency), moving synchronous drivers out of the event loop is a reasonable approach. However, do **not** do this with SQLite — thread connections will compete with the framework's `aiosqlite` connections for the same write lock, increasing race conditions and potentially causing write failures or even data loss.
+`asyncio.to_thread` / thread pool execution of synchronous drivers is similar, and can be effective in specific scenarios: **when the backend supports true concurrent connections** (PostgreSQL / MySQL—each thread has an independent connection, server-side MVCC concurrency), moving synchronous drivers out of the event loop is a reasonable approach. However, do **not** do this under SQLite—thread connections compete for the same write lock with the framework's aiosqlite connections, expanding the race surface and potentially causing write failures or even data loss.
 
-See the full method comparison in [SQL Query Builder](sql-builder.md).
+**MySQL / PostgreSQL backends do not require manual to_thread**: the framework automatically routes synchronous calls within asynchronous contexts to a bounded thread pool for true-concurrency backends (`_SUPPORTS_THREAD_BRIDGE` capability), with each worker having an independent event loop, not queuing each other; the main loop block duration equals the operation's own duration; the waiting limit and fail-soft semantics are the same as above. SQLite backends maintain a single bridging loop serially (write lock model required). Custom backends declare this capability based on the write lock model (single write engine defaults to False).
+
+Complete method comparison is available in [SQL Query Builder](sql-builder.md).
 
 ## Dialect Behavior Differences
 
-All dialect differences are absorbed inside the framework; calling code does not need to be aware of them:
+All dialect differences are internally consolidated, and calling code does not need to be aware:
 
 | Difference | SQLite | MySQL | PostgreSQL |
-|------|------|------|------|
-| Placeholders | `?` | `%s` (auto-translated) | `$1..$n` (auto-translated) |
+|------------|--------|-------|------------|
+| Placeholder | `?` | `%s` (automatically translated) | `$1..$n` (automatically translated) |
 | KV UPSERT | `INSERT OR REPLACE` | `ON DUPLICATE KEY UPDATE` | `ON CONFLICT DO UPDATE` |
 | KV value column type | `TEXT` | `LONGTEXT` | `TEXT` |
-| Auto-increment primary key | Natively supported | `AUTO_INCREMENT` (auto-translated) | `SERIAL` (auto-translated) |
+| Auto-increment primary key | Native support | `AUTO_INCREMENT` (automatically translated) | `SERIAL` (automatically translated) |
 
-Table creation column types are uniformly specified in SQLite style (e.g. `"INTEGER PRIMARY KEY AUTOINCREMENT"`,
-`"TEXT NOT NULL"`, `"DOUBLE DEFAULT 0.0"`), and the dialect automatically translates them into the equivalent syntax for the target backend.
+Table column types are uniformly defined in SQLite style (e.g., `"INTEGER PRIMARY KEY AUTOINCREMENT"`, `"TEXT NOT NULL"`, `"DOUBLE DEFAULT 0.0"`), and dialects automatically translate them into equivalent expressions for the target backend.
 
 ## SQLite "database is locked" Troubleshooting
 
-The framework's SQLite backend already has built in: **WAL journal mode** (reads and writes don't block each other) + **busy_timeout** (automatic waiting on write lock contention, 5000ms by default, see config option below) + autocommit connections + per-event-loop shared connections + **transactions with `BEGIN IMMEDIATE`** (as of 2.12—acquires the write lock at transaction start, eliminating the `SQLITE_BUSY_SNAPSHOT` that occurs when a deferred transaction upgrades from "read first, write later"; this busy error is not retried and `busy_timeout` cannot mitigate it—it is the in-framework root cause of intermittent locked errors under mixed high-frequency reads and writes).
+The framework's SQLite backend has built-in features: **WAL log mode** (read and write are not mutually exclusive) + **busy_timeout** (automatic wait for write lock contention, default 5000ms, see configuration item below) + autocommit connection + multiple event loops each holding shared connections + **transaction `BEGIN IMMEDIATE`** (from 2.12 onwards—acquires a write lock at transaction start, eliminating deferred transactions' "read before write" upgrade causing `SQLITE_BUSY_SNAPSHOT`, which does not retry and cannot be mitigated by `busy_timeout`, and is the root cause of intermittent locked issues in high-frequency read-write mixed scenarios within the framework).
 
-With 2.12+, pure framework usage (storage / ORM / mixed dual-path interleaved writes) should no longer produce locked errors; if you still encounter them, troubleshoot in the following order:
+In 2.12+ pure framework usage (storage / ORM / mixed dual paths interleaved writes), locked issues should no longer occur; if still encountered, follow the troubleshooting steps below:
 
 | Scenario | Diagnosis | Resolution |
-|------|------|------|
-| Slow operations within transactions | Slow work inside an `atransaction` block (external HTTP, heavy computation) holds the lock beyond busy_timeout—the framework emits a warning for transactions holding the lock longer than 1s (`STORAGE_TXN_SLOW_WARN_SECS`), including where the transaction began, allowing direct pinpointing | Keep transaction blocks to DB operations only; move slow operations out |
-| Sync API blocking the event loop | Massive event handler timeouts + per-call-site "storage sync API called in an async context" warnings | Migrate the call sites flagged by the warnings to `a`-prefixed async methods (`set` → `aset`, etc.) |
-| Mixing in a second ORM | sqlmodel / SQLAlchemy / raw sqlite3 in the same process opening their own connections to write the same database file | **Use only one ORM per database file** (the built-in one is natively async anyway); do not use a mixed setup as an interim measure |
-| Multiple processes on the same file | Multiple instances / Dashboard / database tools opening the same sqlite file | Give each instance its own `config/` directory; open admin tools in read-only mode; for high-frequency write scenarios switch to mysql / postgres (a config change migrates with zero code changes) |
-| Older framework version | Deferred transaction upgrade issues in `<2.12` | Upgrade the framework |
+|----------|-----------|------------|
+| Slow operations within transaction | `atransaction` block contains slow operations (external HTTP, large computations), holding the lock beyond `busy_timeout`—the framework outputs warnings for transactions holding locks beyond 1s (`STORAGE_TXN_SLOW_WARN_SECS`) and includes the opening location, which can be directly located | Move slow operations outside the transaction block |
+| Synchronous API blocking event loop | Frequent event handler timeouts + warnings at call points for "storage synchronous API called in asynchronous context" | Migrate the call points indicated by warnings to `a`-prefixed asynchronous methods (`set` → `aset`, etc.) |
+| Mixing a second ORM | Multiple ORMs (sqlmodel / SQLAlchemy / raw sqlite3) open connections to the same database file within the same process | **Use only one ORM for the same database file** (the built-in is already asynchronous native), do not mix them |
+| Multiple processes accessing the same file | Multiple instances / Dashboard / database tools open the same sqlite file | Each instance uses a separate `config/` directory; management tools open in read-only mode; switch to mysql / postgres for high-frequency writes (configuration change with zero code migration) |
+| Old framework version | Deferred transaction upgrade issues from `<2.12` | Upgrade the framework |
 
-Lock mutual-exclusion matrix (WAL mode): **read-read and read-write do not exclude each other**; mutual exclusion only occurs between **write and write**—the transaction-dedicated connection (holding the lock from `BEGIN IMMEDIATE` until commit) competes with the write operations of each event loop's shared connection for the same write lock; long transactions are the prime suspect for write-wait timeouts.
+Lock mutual exclusion matrix (WAL mode): **Read and read, read and write are not mutually exclusive**; mutual exclusion only occurs between **write and write**—transaction-specific connections (`BEGIN IMMEDIATE` holding locks until commit) and shared connections from each event loop compete for the same write lock; long transactions are the primary suspect for write wait timeouts.
 
-> `busy_timeout` is configured via `ErisPulse.storage.sqlite.busy_timeout` (milliseconds, default 5000); increasing it extends how long write lock requests will wait in queue. Changes require a restart to take effect (the PRAGMA is applied when the connection is established).
+> `busy_timeout` is configured via `ErisPulse.storage.sqlite.busy_timeout` (milliseconds, default 5000); increasing it extends the patience for write lock queuing, changes require a restart to take effect (PRAGMA applied at connection establishment).
+
+## Backend Registration (Pluggable)
+
+Backends are discovered through a registration table, not limited to the built-in three:
+
+```python
+from ErisPulse.Core.storage import get_registered_backends
+
+print(get_registered_backends())   # ['mysql', 'postgres', 'sqlite', ... external registered backends]
+```
+
+| Item / Item | Description / Description |
+|-------------|---------------------------|
+| Register / Register | External packages call `register_storage_backend(name, cls)` upon module import; `ErisPulse.storage.backend` enables it by filling the registered name |
+| Discovery / Discovery | External packages declare entry-points group `erispulse.storage.backends` in `pyproject.toml`, and the framework scans and loads them before creating storage instances |
+| Driver Declaration / Driver | Dialects declare the driver import name via `driver_module` (empty = zero dependency built-in driver). **Driver dependencies are declared by the backend package's `pyproject.toml` and installed with the package**—the framework does not install any dependencies at runtime, and missing dependencies directly raise errors with installation instructions |
+| Capability Declaration / Capability | Backends declare capabilities via class attributes, and the framework routes based on them: `_SUPPORTS_THREAD_BRIDGE` (true-concurrency backends, sync-in-async goes through a bounded thread pool), `_SUPPORTS_CONN_ROUTING` (synchronous transaction connection routing) |
+| Unregistered Backend | Raises an error and lists the currently available backends |
+
+Built-in backends also follow this registration table (`sqlite` / `mysql` / `postgres` self-register upon import), and external backends have the same status as built-in ones.
 
 ## Custom SQL Backend
 
-Pure SQL backends can inherit from the shared base class, needing only to provide connection management and the dialect execution funnel:
+A pure SQL backend can inherit a shared base class, only requiring connection management and dialect execution funnel:
 
 ```python
 from ErisPulse.Core.Bases.sql_base import SQLDialect, SQLStorageBase
@@ -183,11 +207,10 @@ class MyStorage(SQLStorageBase):
     async def _exec_query_on(self, kind, sql, params, conn): ...  # Execution funnel
 ```
 
-Non-SQL backends (such as Redis), after inheriting `BaseStorage` and implementing the KV async interfaces,
-can directly use `KVQueryBuilder` to gain chained table query capabilities (in-memory filtering; suitable for small to medium data volumes).
+Non-SQL backends (such as Redis) can inherit `BaseStorage` to implement asynchronous KV interfaces, and then directly use `KVQueryBuilder` to obtain chainable table query capabilities (in-memory filtering, suitable for small to medium datasets).
 
-## Related Documents
+## Related Documentation
 
-- [SQL Query Builder](sql-builder.md) - Chained query syntax and async API comparison
-- [Core Modules API](../api-reference/core-modules.md) - Complete Storage module API
-- [Storage Base Class API](../api-reference/auto_api/ErisPulse/Core/Bases/sql_base.md) - SQLStorageBase / SQLDialect abstract interfaces
+- [SQL Query Builder](sql-builder.md) - Chainable query syntax and asynchronous API comparison
+- [Core Module API](../api-reference/core-modules.md) - Complete API for Storage module
+- [Storage Base Class API](../api-reference/auto_api/ErisPulse/Core/Bases/sql_base.md) - Abstract interfaces for SQLStorageBase / SQLDialect

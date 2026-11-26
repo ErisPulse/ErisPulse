@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1995,
+  "total_keywords": 1999,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -29,7 +29,7 @@
     "1. CLI run 命令（开发/简单部署，推荐）": [
       {
         "document": "advanced/startup.md",
-        "line": 388,
+        "line": 423,
         "level": 4,
         "title": "1. CLI run 命令（开发/简单部署，推荐）"
       }
@@ -497,7 +497,7 @@
     "2. systemd（Linux 服务器）": [
       {
         "document": "advanced/startup.md",
-        "line": 419,
+        "line": 454,
         "level": 4,
         "title": "2. systemd（Linux 服务器）"
       }
@@ -545,7 +545,7 @@
     "2. 加载层：Loader": [
       {
         "document": "advanced/startup.md",
-        "line": 77,
+        "line": 112,
         "level": 3,
         "title": "2. 加载层：Loader"
       }
@@ -1037,7 +1037,7 @@
     "3. Docker / docker-compose": [
       {
         "document": "advanced/startup.md",
-        "line": 432,
+        "line": 467,
         "level": 4,
         "title": "3. Docker / docker-compose"
       }
@@ -1205,7 +1205,7 @@
     "3. 注册层：register_to_manager": [
       {
         "document": "advanced/startup.md",
-        "line": 126,
+        "line": 161,
         "level": 3,
         "title": "3. 注册层：register_to_manager"
       }
@@ -1445,7 +1445,7 @@
     "4. PM2（Node 生态运维）": [
       {
         "document": "advanced/startup.md",
-        "line": 446,
+        "line": 481,
         "level": 4,
         "title": "4. PM2（Node 生态运维）"
       }
@@ -1493,7 +1493,7 @@
     "4. 启动适配器": [
       {
         "document": "advanced/startup.md",
-        "line": 140,
+        "line": 175,
         "level": 3,
         "title": "4. 启动适配器"
       }
@@ -1701,7 +1701,7 @@
     "5. supervisord": [
       {
         "document": "advanced/startup.md",
-        "line": 454,
+        "line": 489,
         "level": 4,
         "title": "5. supervisord"
       }
@@ -1717,7 +1717,7 @@
     "5. 初始化模块": [
       {
         "document": "advanced/startup.md",
-        "line": 152,
+        "line": 187,
         "level": 3,
         "title": "5. 初始化模块"
       }
@@ -2021,7 +2021,7 @@
     "6. 启动路由服务器": [
       {
         "document": "advanced/startup.md",
-        "line": 164,
+        "line": 199,
         "level": 3,
         "title": "6. 启动路由服务器"
       }
@@ -2069,7 +2069,7 @@
     "6. 纯 Python 自定义监督者": [
       {
         "document": "advanced/startup.md",
-        "line": 463,
+        "line": 498,
         "level": 4,
         "title": "6. 纯 Python 自定义监督者"
       }
@@ -3903,7 +3903,7 @@
     "SQLite \"database is locked\" 排查": [
       {
         "document": "advanced/storage-backends.md",
-        "line": 145,
+        "line": 151,
         "level": 2,
         "title": "SQLite \"database is locked\" 排查"
       }
@@ -4746,6 +4746,14 @@
         "line": 1169,
         "level": 3,
         "title": "[BUG-052] 存储并发首取死锁冻结事件循环，web 全站挂起并持续 database is locked"
+      }
+    ],
+    "[BUG-053] 存储连接未关闭时进程退出挂死（aiosqlite 0.22 连接线程不再是 daemon 线程）": [
+      {
+        "document": "bug-tracker.md",
+        "line": 1183,
+        "level": 3,
+        "title": "[BUG-053] 存储连接未关闭时进程退出挂死（aiosqlite 0.22 连接线程不再是 daemon 线程）"
       }
     ],
     "__init__.py": [
@@ -6825,7 +6833,7 @@
     "什么时候该用硬重启？": [
       {
         "document": "advanced/startup.md",
-        "line": 363,
+        "line": 398,
         "level": 3,
         "title": "什么时候该用硬重启？"
       }
@@ -6935,7 +6943,7 @@
     "优雅关闭": [
       {
         "document": "advanced/startup.md",
-        "line": 300,
+        "line": 335,
         "level": 2,
         "title": "优雅关闭"
       }
@@ -7023,7 +7031,7 @@
     "何时该手动启动？": [
       {
         "document": "advanced/startup.md",
-        "line": 241,
+        "line": 276,
         "level": 3,
         "title": "何时该手动启动？"
       }
@@ -7973,7 +7981,7 @@
     "加载失败时的诊断信息": [
       {
         "document": "advanced/startup.md",
-        "line": 101,
+        "line": 136,
         "level": 4,
         "title": "加载失败时的诊断信息"
       }
@@ -8123,7 +8131,7 @@
     "卸载流程": [
       {
         "document": "advanced/startup.md",
-        "line": 322,
+        "line": 357,
         "level": 2,
         "title": "卸载流程"
       }
@@ -8598,6 +8606,14 @@
         "title": "取消链（任务登记表）"
       }
     ],
+    "可插拔扩展点：entry-points": [
+      {
+        "document": "advanced/startup.md",
+        "line": 77,
+        "level": 4,
+        "title": "可插拔扩展点：entry-points"
+      }
+    ],
     "可用属性": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -8689,7 +8705,7 @@
     "同步方法（慎用）": [
       {
         "document": "advanced/storage-backends.md",
-        "line": 117,
+        "line": 121,
         "level": 2,
         "title": "同步方法（慎用）"
       }
@@ -8716,6 +8732,14 @@
         "line": 515,
         "level": 3,
         "title": "后台执行"
+      }
+    ],
+    "后端注册（可插拔）": [
+      {
+        "document": "advanced/storage-backends.md",
+        "line": 169,
+        "level": 2,
+        "title": "后端注册（可插拔）"
       }
     ],
     "后端选择": [
@@ -9973,7 +9997,7 @@
     "失败语义（2.12 起）": [
       {
         "document": "advanced/storage-backends.md",
-        "line": 86,
+        "line": 90,
         "level": 2,
         "title": "失败语义（2.12 起）"
       }
@@ -10367,7 +10391,7 @@
     "完整手动启动示例": [
       {
         "document": "advanced/startup.md",
-        "line": 177,
+        "line": 212,
         "level": 2,
         "title": "完整手动启动示例"
       }
@@ -11325,7 +11349,7 @@
       },
       {
         "document": "advanced/storage-backends.md",
-        "line": 96,
+        "line": 100,
         "level": 2,
         "title": "异步原生 API"
       }
@@ -12811,7 +12835,7 @@
     "方言行为差异": [
       {
         "document": "advanced/storage-backends.md",
-        "line": 131,
+        "line": 137,
         "level": 2,
         "title": "方言行为差异"
       }
@@ -13069,7 +13093,7 @@
     "本地插件热重载": [
       {
         "document": "advanced/startup.md",
-        "line": 253,
+        "line": 288,
         "level": 3,
         "title": "本地插件热重载"
       }
@@ -14011,7 +14035,7 @@
     "模块按需加载": [
       {
         "document": "advanced/startup.md",
-        "line": 293,
+        "line": 328,
         "level": 3,
         "title": "模块按需加载"
       }
@@ -15283,7 +15307,7 @@
     "监督者指南": [
       {
         "document": "advanced/startup.md",
-        "line": 384,
+        "line": 419,
         "level": 3,
         "title": "监督者指南"
       }
@@ -15417,13 +15441,13 @@
       },
       {
         "document": "advanced/startup.md",
-        "line": 481,
+        "line": 516,
         "level": 2,
         "title": "相关文档"
       },
       {
         "document": "advanced/storage-backends.md",
-        "line": 189,
+        "line": 215,
         "level": 2,
         "title": "相关文档"
       },
@@ -15821,7 +15845,7 @@
     "细粒度重载判定（2.12+）": [
       {
         "document": "advanced/startup.md",
-        "line": 398,
+        "line": 433,
         "level": 4,
         "title": "细粒度重载判定（2.12+）"
       }
@@ -16135,7 +16159,7 @@
     "自定义 SQL 后端": [
       {
         "document": "advanced/storage-backends.md",
-        "line": 163,
+        "line": 189,
         "level": 2,
         "title": "自定义 SQL 后端"
       }
@@ -16979,7 +17003,7 @@
     "路由服务器": [
       {
         "document": "advanced/startup.md",
-        "line": 283,
+        "line": 318,
         "level": 3,
         "title": "路由服务器"
       }
@@ -17107,7 +17131,7 @@
     "运行时细粒度控制": [
       {
         "document": "advanced/startup.md",
-        "line": 251,
+        "line": 286,
         "level": 2,
         "title": "运行时细粒度控制"
       }
@@ -17230,6 +17254,14 @@
         "title": "进程监督与硬重启"
       }
     ],
+    "进程退出": [
+      {
+        "document": "advanced/storage-backends.md",
+        "line": 86,
+        "level": 2,
+        "title": "进程退出"
+      }
+    ],
     "连接事件": [
       {
         "document": "getting-started/event-handling.md",
@@ -17331,7 +17363,7 @@
     "退出码 42 契约": [
       {
         "document": "advanced/startup.md",
-        "line": 373,
+        "line": 408,
         "level": 3,
         "title": "退出码 42 契约"
       }
@@ -17473,7 +17505,7 @@
     "适配器热启停": [
       {
         "document": "advanced/startup.md",
-        "line": 267,
+        "line": 302,
         "level": 3,
         "title": "适配器热启停"
       }
@@ -18217,7 +18249,7 @@
     "重启": [
       {
         "document": "advanced/startup.md",
-        "line": 340,
+        "line": 375,
         "level": 2,
         "title": "重启"
       }

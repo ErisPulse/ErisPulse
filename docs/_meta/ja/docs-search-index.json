@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 2128,
+  "total_keywords": 2132,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -34,12 +34,12 @@
         "title": "1. BaseAdapter 層（ほとんどの場合オーバーライド不要）"
       }
     ],
-    "1. CLI run コマンド（開発/シンプルなデプロイ、推奨）": [
+    "1. CLI run コマンド（開発/簡単なデプロイ、推奨）": [
       {
         "document": "advanced/startup.md",
-        "line": 388,
+        "line": 420,
         "level": 4,
-        "title": "1. CLI run コマンド（開発/シンプルなデプロイ、推奨）"
+        "title": "1. CLI run コマンド（開発/簡単なデプロイ、推奨）"
       }
     ],
     "1. Dockerfile の作成": [
@@ -328,12 +328,12 @@
         "title": "1. 標準化原則"
       }
     ],
-    "1. 発見層：Finder": [
+    "1. 発見層: Finder": [
       {
         "document": "advanced/startup.md",
-        "line": 57,
+        "line": 56,
         "level": 3,
-        "title": "1. 発見層：Finder"
+        "title": "1. 発見層: Finder"
       }
     ],
     "1. 設定の階層と上書き": [
@@ -579,7 +579,7 @@
     "2. systemd（Linux サーバー）": [
       {
         "document": "advanced/startup.md",
-        "line": 419,
+        "line": 445,
         "level": 4,
         "title": "2. systemd（Linux サーバー）"
       }
@@ -718,12 +718,12 @@
         "title": "2. ログ記録"
       }
     ],
-    "2. ロード層：Loader": [
+    "2. ロード層: Loader": [
       {
         "document": "advanced/startup.md",
-        "line": 77,
+        "line": 111,
         "level": 3,
-        "title": "2. ロード層：Loader"
+        "title": "2. ロード層: Loader"
       }
     ],
     "2. 入力の検証": [
@@ -1081,7 +1081,7 @@
     "3. Docker / docker-compose": [
       {
         "document": "advanced/startup.md",
-        "line": 432,
+        "line": 458,
         "level": 4,
         "title": "3. Docker / docker-compose"
       }
@@ -1302,12 +1302,12 @@
         "title": "3. 特有のイベントタイプ"
       }
     ],
-    "3. 登録層：register_to_manager": [
+    "3. 登録層: register_to_manager": [
       {
         "document": "advanced/startup.md",
-        "line": 126,
+        "line": 160,
         "level": 3,
-        "title": "3. 登録層：register_to_manager"
+        "title": "3. 登録層: register_to_manager"
       }
     ],
     "3. 送信アカウントを指定": [
@@ -1534,12 +1534,12 @@
         "title": "4. Event 便利メソッド"
       }
     ],
-    "4. PM2（Node エコシステム運用）": [
+    "4. PM2（Node 生態系の運用）": [
       {
         "document": "advanced/startup.md",
-        "line": 446,
+        "line": 471,
         "level": 4,
-        "title": "4. PM2（Node エコシステム運用）"
+        "title": "4. PM2（Node 生態系の運用）"
       }
     ],
     "4. `self`フィールドの自動発見": [
@@ -1561,7 +1561,7 @@
     "4. アダプタの起動": [
       {
         "document": "advanced/startup.md",
-        "line": 140,
+        "line": 174,
         "level": 3,
         "title": "4. アダプタの起動"
       }
@@ -1809,7 +1809,7 @@
     "5. supervisord": [
       {
         "document": "advanced/startup.md",
-        "line": 454,
+        "line": 479,
         "level": 4,
         "title": "5. supervisord"
       }
@@ -1841,7 +1841,7 @@
     "5. モジュールの初期化": [
       {
         "document": "advanced/startup.md",
-        "line": 152,
+        "line": 186,
         "level": 3,
         "title": "5. モジュールの初期化"
       }
@@ -2137,7 +2137,7 @@
     "6. ルーティングサーバーの起動": [
       {
         "document": "advanced/startup.md",
-        "line": 164,
+        "line": 198,
         "level": 3,
         "title": "6. ルーティングサーバーの起動"
       }
@@ -2174,12 +2174,12 @@
         "title": "6. 注意事項"
       }
     ],
-    "6. 純 Python カスタムスーパーバイザー": [
+    "6. 純 Python のカスタム監督者": [
       {
         "document": "advanced/startup.md",
-        "line": 463,
+        "line": 488,
         "level": 4,
-        "title": "6. 純 Python カスタムスーパーバイザー"
+        "title": "6. 純 Python のカスタム監督者"
       }
     ],
     "6. 逆変換規格（OneBot12 → プラットフォーム）": [
@@ -3831,7 +3831,7 @@
     "MySQL（`ErisPulse.storage.mysql`）": [
       {
         "document": "advanced/storage-backends.md",
-        "line": 44,
+        "line": 43,
         "level": 3,
         "title": "MySQL（`ErisPulse.storage.mysql`）"
       }
@@ -4043,7 +4043,7 @@
     "PostgreSQL（`ErisPulse.storage.postgres`）": [
       {
         "document": "advanced/storage-backends.md",
-        "line": 58,
+        "line": 57,
         "level": 3,
         "title": "PostgreSQL（`ErisPulse.storage.postgres`）"
       }
@@ -4203,7 +4203,7 @@
     "SDK トップレベルエントリ一覧": [
       {
         "document": "advanced/startup.md",
-        "line": 13,
+        "line": 12,
         "level": 2,
         "title": "SDK トップレベルエントリ一覧"
       }
@@ -4235,7 +4235,7 @@
     "SQLite \"database is locked\" のトラブルシューティング": [
       {
         "document": "advanced/storage-backends.md",
-        "line": 144,
+        "line": 149,
         "level": 2,
         "title": "SQLite \"database is locked\" のトラブルシューティング"
       }
@@ -4980,156 +4980,164 @@
         "title": "[BUG-033] wait_reply の保留中の返信が高優先度ハンドラーによりスターベーション（飢餓）状態に陥る"
       }
     ],
-    "[BUG-034] スコープ persist=False の実行時バインディングが任意の後続の設定書き込みによって静かに上書きされる": [
+    "[BUG-034] persist=False のスコープの実行時バインディングが、任意の後続の設定書き込みによって静かに上書きされる": [
       {
         "document": "bug-tracker.md",
         "line": 886,
         "level": 3,
-        "title": "[BUG-034] スコープ persist=False の実行時バインディングが任意の後続の設定書き込みによって静かに上書きされる"
+        "title": "[BUG-034] persist=False のスコープの実行時バインディングが、任意の後続の設定書き込みによって静かに上書きされる"
       }
     ],
-    "[BUG-035] 設定パネルの select オプションと辞書フィールドが [object Object] にレンダリングされる": [
+    "[BUG-035] 設定パネルの select 項目と辞書フィールドが [object Object] にレンダリングされる": [
       {
         "document": "bug-tracker.md",
-        "line": 907,
+        "line": 906,
         "level": 3,
-        "title": "[BUG-035] 設定パネルの select オプションと辞書フィールドが [object Object] にレンダリングされる"
+        "title": "[BUG-035] 設定パネルの select 項目と辞書フィールドが [object Object] にレンダリングされる"
       }
     ],
-    "[BUG-036] 複数インスタンスが共有する設定ディレクトリで設定の書き込みが偶発的に失敗する（ENOENT）": [
+    "[BUG-036] 複数のインスタンスが共有する設定ディレクトリで設定の書き込みが偶発的に失敗する（ENOENT）": [
       {
         "document": "bug-tracker.md",
-        "line": 925,
+        "line": 924,
         "level": 3,
-        "title": "[BUG-036] 複数インスタンスが共有する設定ディレクトリで設定の書き込みが偶発的に失敗する（ENOENT）"
+        "title": "[BUG-036] 複数のインスタンスが共有する設定ディレクトリで設定の書き込みが偶発的に失敗する（ENOENT）"
       }
     ],
-    "[BUG-037] 空白文字を含むコマンド名でサブコマンドを登録した後、決してトリガーされない": [
+    "[BUG-037] 空白文字で区切られたコマンド名を登録した後、決してトリガーされない": [
       {
         "document": "bug-tracker.md",
-        "line": 951,
+        "line": 950,
         "level": 3,
-        "title": "[BUG-037] 空白文字を含むコマンド名でサブコマンドを登録した後、決してトリガーされない"
+        "title": "[BUG-037] 空白文字で区切られたコマンド名を登録した後、決してトリガーされない"
       }
     ],
-    "[BUG-038] persist=False の実行時バインディングが永続化書き込みによってディスクに落とされ、モジュールのアンロード後にディスクから「復活」する": [
+    "[BUG-038] persist=False の実行時バインディングが永続化書き込みによってディスクに落とされ、モジュールのアンロード後にディスクから「復活」": [
       {
         "document": "bug-tracker.md",
-        "line": 975,
+        "line": 974,
         "level": 3,
-        "title": "[BUG-038] persist=False の実行時バインディングが永続化書き込みによってディスクに落とされ、モジュールのアンロード後にディスクから「復活」する"
+        "title": "[BUG-038] persist=False の実行時バインディングが永続化書き込みによってディスクに落とされ、モジュールのアンロード後にディスクから「復活」"
       }
     ],
-    "[BUG-039] 整節書き込みと点分書き込みが共存するときの読み書きの不整合（点分覆写が失われる）": [
+    "[BUG-039] 整節書き込みとピリオド書き込みが混在する場合の読み書き不一致（ピリオド覆写が失われる）": [
       {
         "document": "bug-tracker.md",
-        "line": 999,
+        "line": 998,
         "level": 3,
-        "title": "[BUG-039] 整節書き込みと点分書き込みが共存するときの読み書きの不整合（点分覆写が失われる）"
+        "title": "[BUG-039] 整節書き込みとピリオド書き込みが混在する場合の読み書き不一致（ピリオド覆写が失われる）"
       }
     ],
-    "[BUG-040] プラットフォームがメッセージを複数のテキストセグメントに分割したとき、コマンドの末尾パラメータが静かに失われる": [
+    "[BUG-040] プラットフォームがメッセージを複数のテキストセグメントに分割した際、コマンドの末尾引数が静かに失われる": [
       {
         "document": "bug-tracker.md",
-        "line": 1023,
+        "line": 1020,
         "level": 3,
-        "title": "[BUG-040] プラットフォームがメッセージを複数のテキストセグメントに分割したとき、コマンドの末尾パラメータが静かに失われる"
+        "title": "[BUG-040] プラットフォームがメッセージを複数のテキストセグメントに分割した際、コマンドの末尾引数が静かに失われる"
       }
     ],
-    "[BUG-041] 拒否されたコマンドが alt_message で一連の再実行：重複した返信と権限関数の副作用が二度実行される": [
+    "[BUG-041] 拒否されたコマンドが alt_message で全チェーンを再実行：重複した返信と権限関数の副作用が2回実行される": [
       {
         "document": "bug-tracker.md",
-        "line": 1037,
+        "line": 1032,
         "level": 3,
-        "title": "[BUG-041] 拒否されたコマンドが alt_message で一連の再実行：重複した返信と権限関数の副作用が二度実行される"
+        "title": "[BUG-041] 拒否されたコマンドが alt_message で全チェーンを再実行：重複した返信と権限関数の副作用が2回実行される"
       }
     ],
-    "[BUG-042] コマンドハンドラ内で登録された wait_reply が同一条のトリガーメッセージで即座に消費される": [
+    "[BUG-042] コマンドハンドラ内で登録された wait_reply が、同じトリガーされたメッセージで即座に消費される": [
       {
         "document": "bug-tracker.md",
-        "line": 1051,
+        "line": 1044,
         "level": 3,
-        "title": "[BUG-042] コマンドハンドラ内で登録された wait_reply が同一条のトリガーメッセージで即座に消費される"
+        "title": "[BUG-042] コマンドハンドラ内で登録された wait_reply が、同じトリガーされたメッセージで即座に消費される"
       }
     ],
-    "[BUG-043] select() で同じキーに複数の待機ルートが後者が前者を静かにキャンセルする": [
+    "[BUG-043] select() 同一キーの複数の待機が、後者の待機によって前者を静かにキャンセルする": [
       {
         "document": "bug-tracker.md",
-        "line": 1065,
+        "line": 1056,
         "level": 3,
-        "title": "[BUG-043] select() で同じキーに複数の待機ルートが後者が前者を静かにキャンセルする"
+        "title": "[BUG-043] select() 同一キーの複数の待機が、後者の待機によって前者を静かにキャンセルする"
       }
     ],
-    "[BUG-044] BaseConverter.at() が OB11 の遺残「at」セグメントを生成し、フレームワーク全体のメンション判定が認識しない": [
+    "[BUG-044] BaseConverter.at() が OB11 の \"at\" セグメントを生成し、全フレームワークのメンション判定が認識しない": [
       {
         "document": "bug-tracker.md",
-        "line": 1079,
+        "line": 1068,
         "level": 3,
-        "title": "[BUG-044] BaseConverter.at() が OB11 の遺残「at」セグメントを生成し、フレームワーク全体のメンション判定が認識しない"
+        "title": "[BUG-044] BaseConverter.at() が OB11 の \"at\" セグメントを生成し、全フレームワークのメンション判定が認識しない"
       }
     ],
-    "[BUG-045] alt_message を持たない适配器ではインタラクション原語が永久にタイムアウトし、コマンドの透過が無効化される": [
+    "[BUG-045] alt_message が存在しない适配器では、インタラクション原語が永久にタイムアウトし、コマンドの透過が機能しない": [
       {
         "document": "bug-tracker.md",
-        "line": 1093,
+        "line": 1080,
         "level": 3,
-        "title": "[BUG-045] alt_message を持たない适配器ではインタラクション原語が永久にタイムアウトし、コマンドの透過が無効化される"
+        "title": "[BUG-045] alt_message が存在しない适配器では、インタラクション原語が永久にタイムアウトし、コマンドの透過が機能しない"
       }
     ],
-    "[BUG-046] 宣言的設定テンプレートのネストされたサブテーブルヘッダーがルートテーブルに漂移する": [
+    "[BUG-046] 宣言的設定テンプレートのネストされたサブヘッダーが、トップレベルのテーブルに漂移する": [
       {
         "document": "bug-tracker.md",
-        "line": 1107,
+        "line": 1092,
         "level": 3,
-        "title": "[BUG-046] 宣言的設定テンプレートのネストされたサブテーブルヘッダーがルートテーブルに漂移する"
+        "title": "[BUG-046] 宣言的設定テンプレートのネストされたサブヘッダーが、トップレベルのテーブルに漂移する"
       }
     ],
-    "[BUG-047] サービスディレクトリの全量列挙が遅延ロードモジュールを除外する": [
+    "[BUG-047] サービスディレクトリの全量列挙が遅延ロードモジュールを漏らす": [
       {
         "document": "bug-tracker.md",
-        "line": 1121,
+        "line": 1106,
         "level": 3,
-        "title": "[BUG-047] サービスディレクトリの全量列挙が遅延ロードモジュールを除外する"
+        "title": "[BUG-047] サービスディレクトリの全量列挙が遅延ロードモジュールを漏らす"
       }
     ],
-    "[BUG-048] 会話受信箱のクエリ API がメッセージの帰因（sender とイベントメタデータ）を失う": [
+    "[BUG-048] セッション受信箱のクエリAPIがメッセージの帰属（senderとイベントメタデータ）を失う": [
       {
         "document": "bug-tracker.md",
-        "line": 1135,
+        "line": 1118,
         "level": 3,
-        "title": "[BUG-048] 会話受信箱のクエリ API がメッセージの帰因（sender とイベントメタデータ）を失う"
+        "title": "[BUG-048] セッション受信箱のクエリAPIがメッセージの帰属（senderとイベントメタデータ）を失う"
       }
     ],
-    "[BUG-049] インバウンド bot 自発メッセージのエコーが user として記録され、受信箱の帰因を汚染する": [
+    "[BUG-049] 入力 bot 自発メッセージのエコーが user として記録され、受信箱の帰属を汚染する": [
       {
         "document": "bug-tracker.md",
-        "line": 1150,
+        "line": 1131,
         "level": 3,
-        "title": "[BUG-049] インバウンド bot 自発メッセージのエコーが user として記録され、受信箱の帰因を汚染する"
+        "title": "[BUG-049] 入力 bot 自発メッセージのエコーが user として記録され、受信箱の帰属を汚染する"
       }
     ],
-    "[BUG-050] 容器内で `epsdk restart` を実行するとコンテナが直ちに終了する": [
+    "[BUG-050] コンテナ内で `epsdk restart` を実行するとコンテナが直接終了する": [
       {
         "document": "bug-tracker.md",
-        "line": 1165,
+        "line": 1144,
         "level": 3,
-        "title": "[BUG-050] 容器内で `epsdk restart` を実行するとコンテナが直ちに終了する"
+        "title": "[BUG-050] コンテナ内で `epsdk restart` を実行するとコンテナが直接終了する"
       }
     ],
-    "[BUG-051] 複数アカウントの重複受信（drop）が @メンションメッセージを誤って破棄し、多アカウントデプロイでメッセージがランダムに失われる": [
+    "[BUG-051] 複数アカウントの重複受信（drop）が @メンションメッセージを誤って削除し、複数アカウントのデプロイでメッセージがランダムに消失する": [
       {
         "document": "bug-tracker.md",
-        "line": 1179,
+        "line": 1156,
         "level": 3,
-        "title": "[BUG-051] 複数アカウントの重複受信（drop）が @メンションメッセージを誤って破棄し、多アカウントデプロイでメッセージがランダムに失われる"
+        "title": "[BUG-051] 複数アカウントの重複受信（drop）が @メンションメッセージを誤って削除し、複数アカウントのデプロイでメッセージがランダムに消失する"
       }
     ],
-    "[BUG-052] ストレージの並行最初の取得でデッドロックがイベントループを凍結し、web 全体が停止し、database is locked が継続する": [
+    "[BUG-052] ストレージの並行初期取得でイベントループが死鎖し、ウェブサイト全体が停止し、database is locked が継続する": [
       {
         "document": "bug-tracker.md",
-        "line": 1193,
+        "line": 1168,
         "level": 3,
-        "title": "[BUG-052] ストレージの並行最初の取得でデッドロックがイベントループを凍結し、web 全体が停止し、database is locked が継続する"
+        "title": "[BUG-052] ストレージの並行初期取得でイベントループが死鎖し、ウェブサイト全体が停止し、database is locked が継続する"
+      }
+    ],
+    "[BUG-053] ストレージ接続が閉じられずにプロセスが終了するときにハングする（aiosqlite 0.22 で接続スレッドが daemon スレッドでなくなった）": [
+      {
+        "document": "bug-tracker.md",
+        "line": 1182,
+        "level": 3,
+        "title": "[BUG-053] ストレージ接続が閉じられずにプロセスが終了するときにハングする（aiosqlite 0.22 で接続スレッドが daemon スレッドでなくなった）"
       }
     ],
     "__init__.py": [
@@ -6032,28 +6040,12 @@
         "title": "あなたの道を選択してください"
       }
     ],
-    "いつハードリスタートを使うべきか？": [
+    "いつ手動起動が必要か？": [
       {
         "document": "advanced/startup.md",
-        "line": 363,
+        "line": 275,
         "level": 3,
-        "title": "いつハードリスタートを使うべきか？"
-      }
-    ],
-    "いつ手動起動を使うべきか？": [
-      {
-        "document": "advanced/startup.md",
-        "line": 241,
-        "level": 3,
-        "title": "いつ手動起動を使うべきか？"
-      }
-    ],
-    "きめ細かいリロード判定（2.12+）": [
-      {
-        "document": "advanced/startup.md",
-        "line": 398,
-        "level": 4,
-        "title": "きめ細かいリロード判定（2.12+）"
+        "title": "いつ手動起動が必要か？"
       }
     ],
     "すべてのメッセージを監視": [
@@ -6412,12 +6404,12 @@
         "title": "アダプタのホットリロードアーキテクチャ"
       }
     ],
-    "アダプタのホット起動・停止": [
+    "アダプタのホット起動/停止": [
       {
         "document": "advanced/startup.md",
-        "line": 267,
+        "line": 299,
         "level": 3,
-        "title": "アダプタのホット起動・停止"
+        "title": "アダプタのホット起動/停止"
       }
     ],
     "アダプタの停止": [
@@ -6693,7 +6685,7 @@
     "アンロードフロー": [
       {
         "document": "advanced/startup.md",
-        "line": 322,
+        "line": 354,
         "level": 2,
         "title": "アンロードフロー"
       }
@@ -7608,6 +7600,14 @@
         "title": "エラー処理"
       }
     ],
+    "エレガントなシャットダウン": [
+      {
+        "document": "advanced/startup.md",
+        "line": 332,
+        "level": 2,
+        "title": "エレガントなシャットダウン"
+      }
+    ],
     "エントリーの登録": [
       {
         "document": "advanced/router.md",
@@ -7643,7 +7643,7 @@
     "カスタム SQL バックエンド": [
       {
         "document": "advanced/storage-backends.md",
-        "line": 162,
+        "line": 187,
         "level": 2,
         "title": "カスタム SQL バックエンド"
       }
@@ -7942,14 +7942,6 @@
         "line": 74,
         "level": 3,
         "title": "グループ（サブスクリプションモデル）"
-      }
-    ],
-    "グレースフルシャットダウン": [
-      {
-        "document": "advanced/startup.md",
-        "line": 300,
-        "level": 2,
-        "title": "グレースフルシャットダウン"
       }
     ],
     "グローバルバックアップ：`default_allow`": [
@@ -8746,6 +8738,22 @@
         "title": "スコープ（scope）"
       }
     ],
+    "スタートアップフローと手動制御": [
+      {
+        "document": "advanced/startup.md",
+        "line": 1,
+        "level": 1,
+        "title": "スタートアップフローと手動制御"
+      }
+    ],
+    "スタートアップフローの概要": [
+      {
+        "document": "advanced/startup.md",
+        "line": 26,
+        "level": 2,
+        "title": "スタートアップフローの概要"
+      }
+    ],
     "ステッカー形式メッセージセグメント (yunhu_user_sticker)": [
       {
         "document": "platform-guide/yunhu_user.md",
@@ -8832,14 +8840,6 @@
         "line": 171,
         "level": 2,
         "title": "スレッド間の投递"
-      }
-    ],
-    "スーパーバイザーガイド": [
-      {
-        "document": "advanced/startup.md",
-        "line": 384,
-        "level": 3,
-        "title": "スーパーバイザーガイド"
       }
     ],
     "スーパーファイル共有イベントの例": [
@@ -9013,7 +9013,7 @@
     "ダイアレクトの動作差異": [
       {
         "document": "advanced/storage-backends.md",
-        "line": 131,
+        "line": 136,
         "level": 2,
         "title": "ダイアレクトの動作差異"
       }
@@ -9832,6 +9832,14 @@
         "title": "ハートビートメカニズム"
       }
     ],
+    "ハードリスタートが必要なのはいつか？": [
+      {
+        "document": "advanced/startup.md",
+        "line": 395,
+        "level": 3,
+        "title": "ハードリスタートが必要なのはいつか？"
+      }
+    ],
     "バインドの継承（merge）": [
       {
         "document": "advanced/scope.md",
@@ -9864,10 +9872,18 @@
         "title": "バックアップ"
       }
     ],
+    "バックエンドの登録（プラグイン対応）": [
+      {
+        "document": "advanced/storage-backends.md",
+        "line": 167,
+        "level": 2,
+        "title": "バックエンドの登録（プラグイン対応）"
+      }
+    ],
     "バックエンドの選択": [
       {
         "document": "advanced/storage-backends.md",
-        "line": 21,
+        "line": 20,
         "level": 2,
         "title": "バックエンドの選択"
       }
@@ -10504,6 +10520,14 @@
         "line": 403,
         "level": 2,
         "title": "プロジェクト管理コマンド"
+      }
+    ],
+    "プロセスの終了": [
+      {
+        "document": "advanced/storage-backends.md",
+        "line": 85,
+        "level": 2,
+        "title": "プロセスの終了"
       }
     ],
     "プロセス監視とハードリスタート": [
@@ -11553,7 +11577,7 @@
     "モジュールのオンデマンドロード": [
       {
         "document": "advanced/startup.md",
-        "line": 293,
+        "line": 325,
         "level": 3,
         "title": "モジュールのオンデマンドロード"
       }
@@ -12268,6 +12292,14 @@
         "title": "リスクと監査：制限を緩和する前に必読"
       }
     ],
+    "リスタート": [
+      {
+        "document": "advanced/startup.md",
+        "line": 372,
+        "level": 2,
+        "title": "リスタート"
+      }
+    ],
     "リッチメディア": [
       {
         "document": "platform-guide/qqbot.md",
@@ -12375,7 +12407,7 @@
     "ルーティングサーバー": [
       {
         "document": "advanced/startup.md",
-        "line": 283,
+        "line": 315,
         "level": 3,
         "title": "ルーティングサーバー"
       }
@@ -12605,7 +12637,7 @@
     "ローカルプラグインのホットリロード": [
       {
         "document": "advanced/startup.md",
-        "line": 253,
+        "line": 287,
         "level": 3,
         "title": "ローカルプラグインのホットリロード"
       }
@@ -12621,7 +12653,7 @@
     "ロード失敗時の診断情報": [
       {
         "document": "advanced/startup.md",
-        "line": 101,
+        "line": 135,
         "level": 4,
         "title": "ロード失敗時の診断情報"
       }
@@ -13330,14 +13362,6 @@
         "title": "再生成のタイミング"
       }
     ],
-    "再起動": [
-      {
-        "document": "advanced/startup.md",
-        "line": 340,
-        "level": 2,
-        "title": "再起動"
-      }
-    ],
     "再起動時の自動復元": [
       {
         "document": "advanced/conversation.md",
@@ -13750,12 +13774,12 @@
         "title": "取得方法"
       }
     ],
-    "各ステップの詳細": [
+    "各エレメントの詳細": [
       {
         "document": "advanced/startup.md",
-        "line": 55,
+        "line": 54,
         "level": 2,
-        "title": "各ステップの詳細"
+        "title": "各エレメントの詳細"
       }
     ],
     "各プラットフォームのコールバックイベントマッピング": [
@@ -13809,7 +13833,7 @@
     "同期メソッド（慎重に使用）": [
       {
         "document": "advanced/storage-backends.md",
-        "line": 117,
+        "line": 120,
         "level": 2,
         "title": "同期メソッド（慎重に使用）"
       }
@@ -14384,12 +14408,12 @@
         "title": "大小文字を区別しない呼び出し"
       }
     ],
-    "失敗セマンティクス（2.12 以降）": [
+    "失敗の意味（2.12 以降）": [
       {
         "document": "advanced/storage-backends.md",
-        "line": 86,
+        "line": 89,
         "level": 2,
-        "title": "失敗セマンティクス（2.12 以降）"
+        "title": "失敗の意味（2.12 以降）"
       }
     ],
     "失敗時のレスポンス例": [
@@ -14521,7 +14545,7 @@
     "完全な手動起動の例": [
       {
         "document": "advanced/startup.md",
-        "line": 177,
+        "line": 211,
         "level": 2,
         "title": "完全な手動起動の例"
       }
@@ -14598,12 +14622,12 @@
         "title": "実行時API"
       }
     ],
-    "実行時のきめ細かい制御": [
+    "実行時での細粒度制御": [
       {
         "document": "advanced/startup.md",
-        "line": 251,
+        "line": 285,
         "level": 2,
-        "title": "実行時のきめ細かい制御"
+        "title": "実行時での細粒度制御"
       }
     ],
     "実行時オーバーライド API": [
@@ -15420,6 +15444,14 @@
         "title": "拡張プラグイン"
       }
     ],
+    "拡張ポイント: entry-points": [
+      {
+        "document": "advanced/startup.md",
+        "line": 76,
+        "level": 4,
+        "title": "拡張ポイント: entry-points"
+      }
+    ],
     "拡張機能：追加の機能を追加": [
       {
         "document": "getting-started/first-bot.md",
@@ -15487,7 +15519,7 @@
     "接続パラメータ": [
       {
         "document": "advanced/storage-backends.md",
-        "line": 42,
+        "line": 41,
         "level": 2,
         "title": "接続パラメータ"
       }
@@ -15555,7 +15587,7 @@
     "接続失敗時の動作": [
       {
         "document": "advanced/storage-backends.md",
-        "line": 75,
+        "line": 74,
         "level": 2,
         "title": "接続失敗時の動作"
       }
@@ -17200,6 +17232,14 @@
         "title": "登録済みメソッドの照会"
       }
     ],
+    "監督者ガイド": [
+      {
+        "document": "advanced/startup.md",
+        "line": 416,
+        "level": 3,
+        "title": "監督者ガイド"
+      }
+    ],
     "監視者検索（has_handlers）": [
       {
         "document": "advanced/lifecycle.md",
@@ -17328,10 +17368,18 @@
         "title": "簡単な検索"
       }
     ],
+    "細粒度の重載判定（2.12+）": [
+      {
+        "document": "advanced/startup.md",
+        "line": 430,
+        "level": 4,
+        "title": "細粒度の重載判定（2.12+）"
+      }
+    ],
     "終了コード 42 の契約": [
       {
         "document": "advanced/startup.md",
-        "line": 373,
+        "line": 405,
         "level": 3,
         "title": "終了コード 42 の契約"
       }
@@ -18148,22 +18196,6 @@
         "title": "起動と停止"
       }
     ],
-    "起動チェーン全体像": [
-      {
-        "document": "advanced/startup.md",
-        "line": 27,
-        "level": 2,
-        "title": "起動チェーン全体像"
-      }
-    ],
-    "起動フローと手動制御": [
-      {
-        "document": "advanced/startup.md",
-        "line": 1,
-        "level": 1,
-        "title": "起動フローと手動制御"
-      }
-    ],
     "起動時間": [
       {
         "document": "advanced/performance.md",
@@ -18869,13 +18901,13 @@
       },
       {
         "document": "advanced/startup.md",
-        "line": 481,
+        "line": 506,
         "level": 2,
         "title": "関連ドキュメント"
       },
       {
         "document": "advanced/storage-backends.md",
-        "line": 187,
+        "line": 212,
         "level": 2,
         "title": "関連ドキュメント"
       },
@@ -19041,7 +19073,7 @@
     "非同期ネイティブ API": [
       {
         "document": "advanced/storage-backends.md",
-        "line": 96,
+        "line": 99,
         "level": 2,
         "title": "非同期ネイティブ API"
       }

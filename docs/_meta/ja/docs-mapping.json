@@ -563,7 +563,7 @@
           "icon": "fa-fire"
         },
         {
-          "title": "起動フローと手動制御",
+          "title": "スタートアップフローと手動制御",
           "path": "advanced/startup.md",
           "level": 1,
           "icon": "fa-fire"

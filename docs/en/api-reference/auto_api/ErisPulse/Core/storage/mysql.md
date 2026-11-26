@@ -100,14 +100,7 @@ MySQL 方言实现
 
 ### `class MySQLStorage(_SingletonMixin, SQLStorageBase)`
 
-MySQL 存储管理器（aiomysql 异步原生实现）
-
-单例模式实现，接口与 SQLite 后端完全一致，可通过
-``ErisPulse.storage.backend`` 配置项无感切换。
-
-> **提示**
-> 1. 连接参数见 ``ErisPulse.storage.mysql`` 配置节
-> 2. 缺少驱动时提示安装 ``pip install ErisPulse[mysql]``
+MySQLStorage 类提供相关功能。
 
 
 #### 方法列表
@@ -123,13 +116,6 @@ MySQL 存储管理器（aiomysql 异步原生实现）
 ##### `_init_db() -> None`
 
 **内部方法** 初始化数据库（创建默认 config 键值表）
-
----
-
-
-##### `_require_driver() -> Any`
-
-**内部方法** 惰性导入 aiomysql，缺失时给出安装指引
 
 ---
 

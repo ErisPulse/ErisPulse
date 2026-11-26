@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 2114,
+  "total_keywords": 2117,
   "keywords": {
     "0 Успех (OK)": [
       {
@@ -109,7 +109,7 @@
     "1. Команда CLI run (разработка/простое развертывание, рекомендуется)": [
       {
         "document": "advanced/startup.md",
-        "line": 385,
+        "line": 422,
         "level": 4,
         "title": "1. Команда CLI run (разработка/простое развертывание, рекомендуется)"
       }
@@ -258,6 +258,14 @@
         "title": "1. Реализация повторного подключения"
       }
     ],
+    "1. Слой обнаружения: Finder": [
+      {
+        "document": "advanced/startup.md",
+        "line": 58,
+        "level": 3,
+        "title": "1. Слой обнаружения: Finder"
+      }
+    ],
     "1. Создание Dockerfile": [
       {
         "document": "developer-guide/publishing.md",
@@ -312,14 +320,6 @@
         "line": 450,
         "level": 3,
         "title": "1. Уровень BaseAdapter (в большинстве случаев не нужно переопределять)"
-      }
-    ],
-    "1. Уровень обнаружения: Finder": [
-      {
-        "document": "advanced/startup.md",
-        "line": 56,
-        "level": 3,
-        "title": "1. Уровень обнаружения: Finder"
       }
     ],
     "1. Уровни конфигурации и переопределение": [
@@ -475,7 +475,7 @@
     "2. systemd (сервер Linux)": [
       {
         "document": "advanced/startup.md",
-        "line": 412,
+        "line": 449,
         "level": 4,
         "title": "2. systemd (сервер Linux)"
       }
@@ -676,6 +676,14 @@
         "title": "2. Регистрация отдельного метода с помощью декоратора"
       }
     ],
+    "2. Слой загрузки: Loader": [
+      {
+        "document": "advanced/startup.md",
+        "line": 113,
+        "level": 3,
+        "title": "2. Слой загрузки: Loader"
+      }
+    ],
     "2. Соглашения об именовании модулей": [
       {
         "document": "developer-guide/modules/best-practices.md",
@@ -778,14 +786,6 @@
         "line": 138,
         "level": 3,
         "title": "2. Управление состоянием подключения"
-      }
-    ],
-    "2. Уровень загрузки: Loader": [
-      {
-        "document": "advanced/startup.md",
-        "line": 76,
-        "level": 3,
-        "title": "2. Уровень загрузки: Loader"
       }
     ],
     "2. Шапка README": [
@@ -1047,7 +1047,7 @@
     "3. Docker / docker-compose": [
       {
         "document": "advanced/startup.md",
-        "line": 425,
+        "line": 462,
         "level": 4,
         "title": "3. Docker / docker-compose"
       }
@@ -1188,6 +1188,14 @@
         "title": "3. Регистрация обработчиков событий"
       }
     ],
+    "3. Слой регистрации: register_to_manager": [
+      {
+        "document": "advanced/startup.md",
+        "line": 162,
+        "level": 3,
+        "title": "3. Слой регистрации: register_to_manager"
+      }
+    ],
     "3. Событие пинга": [
       {
         "document": "developer-guide/adapters/best-practices.md",
@@ -1242,14 +1250,6 @@
         "line": 159,
         "level": 3,
         "title": "3. Управление ресурсами"
-      }
-    ],
-    "3. Уровень регистрации: register_to_manager": [
-      {
-        "document": "advanced/startup.md",
-        "line": 125,
-        "level": 3,
-        "title": "3. Уровень регистрации: register_to_manager"
       }
     ],
     "3. Условная обработка": [
@@ -1447,7 +1447,7 @@
     "4. PM2 (экосистема Node)": [
       {
         "document": "advanced/startup.md",
-        "line": 438,
+        "line": 475,
         "level": 4,
         "title": "4. PM2 (экосистема Node)"
       }
@@ -1460,12 +1460,12 @@
         "title": "4. Автоматическое обнаружение поля `self`"
       }
     ],
-    "4. Запуск адаптера": [
+    "4. Запуск адаптеров": [
       {
         "document": "advanced/startup.md",
-        "line": 139,
+        "line": 176,
         "level": 3,
-        "title": "4. Запуск адаптера"
+        "title": "4. Запуск адаптеров"
       }
     ],
     "4. Изоляция идентификаторов сессий между платформами": [
@@ -1703,7 +1703,7 @@
     "5. supervisord": [
       {
         "document": "advanced/startup.md",
-        "line": 446,
+        "line": 483,
         "level": 4,
         "title": "5. supervisord"
       }
@@ -1732,12 +1732,12 @@
         "title": "5. Запрос состояния бота"
       }
     ],
-    "5. Инициализация модуля": [
+    "5. Инициализация модулей": [
       {
         "document": "advanced/startup.md",
-        "line": 151,
+        "line": 188,
         "level": 3,
-        "title": "5. Инициализация модуля"
+        "title": "5. Инициализация модулей"
       }
     ],
     "5. Использование пользователями": [
@@ -2039,7 +2039,7 @@
     "6. Запуск сервера маршрутизации": [
       {
         "document": "advanced/startup.md",
-        "line": 163,
+        "line": 200,
         "level": 3,
         "title": "6. Запуск сервера маршрутизации"
       }
@@ -2103,7 +2103,7 @@
     "6. Чистый Python пользовательский супервайзер": [
       {
         "document": "advanced/startup.md",
-        "line": 455,
+        "line": 492,
         "level": 4,
         "title": "6. Чистый Python пользовательский супервайзер"
       }
@@ -3470,122 +3470,122 @@
         "title": "[BUG-033] Ответы, ожидающие в wait_reply, голодают из-за обработчиков с высоким приоритетом"
       }
     ],
-    "[BUG-034] Scope persist=False runtime bindings silently overwritten by any subsequent config write": [
+    "[BUG-034] Scope persist=False runtime bindings silently overridden by subsequent config writes": [
       {
         "document": "bug-tracker.md",
         "line": 884,
         "level": 3,
-        "title": "[BUG-034] Scope persist=False runtime bindings silently overwritten by any subsequent config write"
+        "title": "[BUG-034] Scope persist=False runtime bindings silently overridden by subsequent config writes"
       }
     ],
-    "[BUG-035] Configuration panel select options and dict fields rendered as [object Object]": [
+    "[BUG-035] Configuration panel select options and dict fields render as [object Object]": [
       {
         "document": "bug-tracker.md",
-        "line": 904,
+        "line": 908,
         "level": 3,
-        "title": "[BUG-035] Configuration panel select options and dict fields rendered as [object Object]"
+        "title": "[BUG-035] Configuration panel select options and dict fields render as [object Object]"
       }
     ],
-    "[BUG-036] Configuration write failures (ENOENT) when multiple instances share config directory": [
+    "[BUG-036] Configuration write failures on shared config directories in multi-instance deployments (ENOENT)": [
       {
         "document": "bug-tracker.md",
-        "line": 922,
+        "line": 926,
         "level": 3,
-        "title": "[BUG-036] Configuration write failures (ENOENT) when multiple instances share config directory"
+        "title": "[BUG-036] Configuration write failures on shared config directories in multi-instance deployments (ENOENT)"
       }
     ],
-    "[BUG-037] Commands with space-separated names never trigger after registration": [
+    "[BUG-037] Commands with space-separated names cannot be triggered after registration": [
       {
         "document": "bug-tracker.md",
-        "line": 946,
+        "line": 955,
         "level": 3,
-        "title": "[BUG-037] Commands with space-separated names never trigger after registration"
+        "title": "[BUG-037] Commands with space-separated names cannot be triggered after registration"
       }
     ],
-    "[BUG-038] Runtime bindings with persist=False are persisted and \"resurrected\" after module unload": [
+    "[BUG-038] Persist=False runtime bindings are written to disk with persistent writes, reviving after module unload": [
       {
         "document": "bug-tracker.md",
-        "line": 968,
+        "line": 982,
         "level": 3,
-        "title": "[BUG-038] Runtime bindings with persist=False are persisted and \"resurrected\" after module unload"
+        "title": "[BUG-038] Persist=False runtime bindings are written to disk with persistent writes, reviving after module unload"
       }
     ],
-    "[BUG-039] Inconsistent read/write when whole-section and dotted writes coexist (dotted overwrite lost)": [
-      {
-        "document": "bug-tracker.md",
-        "line": 990,
-        "level": 3,
-        "title": "[BUG-039] Inconsistent read/write when whole-section and dotted writes coexist (dotted overwrite lost)"
-      }
-    ],
-    "[BUG-040] Command tail parameters silently lost when platform segments message into multiple text segments": [
+    "[BUG-039] Inconsistent read/write when section write and dotted write coexist (dotted overwrite lost)": [
       {
         "document": "bug-tracker.md",
         "line": 1010,
         "level": 3,
-        "title": "[BUG-040] Command tail parameters silently lost when platform segments message into multiple text segments"
+        "title": "[BUG-039] Inconsistent read/write when section write and dotted write coexist (dotted overwrite lost)"
       }
     ],
-    "[BUG-041] Rejected commands via alt_message re-run the entire chain: duplicate replies and permission function side effects triggered twice": [
+    "[BUG-040] Command tail parameters silently lost when message is split into segments": [
       {
         "document": "bug-tracker.md",
-        "line": 1022,
+        "line": 1035,
         "level": 3,
-        "title": "[BUG-041] Rejected commands via alt_message re-run the entire chain: duplicate replies and permission function side effects triggered twice"
+        "title": "[BUG-040] Command tail parameters silently lost when message is split into segments"
       }
     ],
-    "[BUG-042] wait_reply registered inside command handler is immediately consumed by the same triggering message": [
+    "[BUG-041] Denied command reruns via alt_message: double reply and permission function side effects triggered": [
       {
         "document": "bug-tracker.md",
-        "line": 1034,
+        "line": 1047,
         "level": 3,
-        "title": "[BUG-042] wait_reply registered inside command handler is immediately consumed by the same triggering message"
+        "title": "[BUG-041] Denied command reruns via alt_message: double reply and permission function side effects triggered"
       }
     ],
-    "[BUG-043] Multiple wait paths for select() with the same key silently cancel the earlier one": [
+    "[BUG-042] wait_reply registered in command handler is immediately consumed by the same triggering message": [
       {
         "document": "bug-tracker.md",
-        "line": 1046,
+        "line": 1059,
         "level": 3,
-        "title": "[BUG-043] Multiple wait paths for select() with the same key silently cancel the earlier one"
+        "title": "[BUG-042] wait_reply registered in command handler is immediately consumed by the same triggering message"
       }
     ],
-    "[BUG-044] BaseConverter.at() produces legacy \"at\" segment for OB11, and the entire framework mention detection does not recognize it": [
+    "[BUG-043] Multiple wait paths for the same select key silently cancel the earlier one": [
       {
         "document": "bug-tracker.md",
-        "line": 1058,
+        "line": 1071,
         "level": 3,
-        "title": "[BUG-044] BaseConverter.at() produces legacy \"at\" segment for OB11, and the entire framework mention detection does not recognize it"
+        "title": "[BUG-043] Multiple wait paths for the same select key silently cancel the earlier one"
       }
     ],
-    "[BUG-045] Interaction primitives permanently timeout and command penetration fail when adapter has no alt_message": [
+    "[BUG-044] BaseConverter.at() produces OB11 legacy \"at\" segment, framework mention detection does not recognize": [
       {
         "document": "bug-tracker.md",
-        "line": 1070,
+        "line": 1083,
         "level": 3,
-        "title": "[BUG-045] Interaction primitives permanently timeout and command penetration fail when adapter has no alt_message"
+        "title": "[BUG-044] BaseConverter.at() produces OB11 legacy \"at\" segment, framework mention detection does not recognize"
       }
     ],
-    "[BUG-046] Declared configuration template's nested subtable header drifts to top-level table": [
+    "[BUG-045] Interaction primitives permanently timeout and command penetration fail when alt_message is missing": [
       {
         "document": "bug-tracker.md",
-        "line": 1082,
+        "line": 1095,
         "level": 3,
-        "title": "[BUG-046] Declared configuration template's nested subtable header drifts to top-level table"
+        "title": "[BUG-045] Interaction primitives permanently timeout and command penetration fail when alt_message is missing"
       }
     ],
-    "[BUG-047] Service directory full enumeration skips lazy-loaded modules": [
+    "[BUG-046] Nested subtable headers drift to top level in declarative configuration templates": [
       {
         "document": "bug-tracker.md",
-        "line": 1096,
+        "line": 1107,
         "level": 3,
-        "title": "[BUG-047] Service directory full enumeration skips lazy-loaded modules"
+        "title": "[BUG-046] Nested subtable headers drift to top level in declarative configuration templates"
+      }
+    ],
+    "[BUG-047] Service directory enumeration misses lazy-loaded modules": [
+      {
+        "document": "bug-tracker.md",
+        "line": 1121,
+        "level": 3,
+        "title": "[BUG-047] Service directory enumeration misses lazy-loaded modules"
       }
     ],
     "[BUG-048] Session inbox query API loses message attribution (sender and event metadata)": [
       {
         "document": "bug-tracker.md",
-        "line": 1108,
+        "line": 1133,
         "level": 3,
         "title": "[BUG-048] Session inbox query API loses message attribution (sender and event metadata)"
       }
@@ -3593,33 +3593,41 @@
     "[BUG-049] Inbound bot self-message echo recorded as user, polluting inbox attribution": [
       {
         "document": "bug-tracker.md",
-        "line": 1121,
+        "line": 1146,
         "level": 3,
         "title": "[BUG-049] Inbound bot self-message echo recorded as user, polluting inbox attribution"
       }
     ],
-    "[BUG-050] Container execution of epsdk restart directly exits container": [
+    "[BUG-050] Container execution of epsdk restart exits container directly": [
       {
         "document": "bug-tracker.md",
-        "line": 1134,
+        "line": 1159,
         "level": 3,
-        "title": "[BUG-050] Container execution of epsdk restart directly exits container"
+        "title": "[BUG-050] Container execution of epsdk restart exits container directly"
       }
     ],
     "[BUG-051] Cross-account duplicate receipt (drop) mistakenly injures at-mention messages, causing random message loss in multi-account deployment": [
       {
         "document": "bug-tracker.md",
-        "line": 1146,
+        "line": 1171,
         "level": 3,
         "title": "[BUG-051] Cross-account duplicate receipt (drop) mistakenly injures at-mention messages, causing random message loss in multi-account deployment"
       }
     ],
-    "[BUG-052] Storage concurrent first acquire deadlock freezes event loop, web site hangs and continues database is locked": [
+    "[BUG-052] Storage concurrent first acquire deadlock freezes event loop, web site hangs and continuously database is locked": [
       {
         "document": "bug-tracker.md",
-        "line": 1158,
+        "line": 1183,
         "level": 3,
-        "title": "[BUG-052] Storage concurrent first acquire deadlock freezes event loop, web site hangs and continues database is locked"
+        "title": "[BUG-052] Storage concurrent first acquire deadlock freezes event loop, web site hangs and continuously database is locked"
+      }
+    ],
+    "[BUG-053] Process hangs on exit when storage connection is not closed (aiosqlite 0.22 connection thread is no longer a daemon thread)": [
+      {
+        "document": "bug-tracker.md",
+        "line": 1197,
+        "level": 3,
+        "title": "[BUG-053] Process hangs on exit when storage connection is not closed (aiosqlite 0.22 connection thread is no longer a daemon thread)"
       }
     ],
     "__init__.py": [
@@ -4356,6 +4364,12 @@
         "line": 292,
         "level": 2,
         "title": "Асинхронный API"
+      },
+      {
+        "document": "advanced/storage-backends.md",
+        "line": 99,
+        "level": 2,
+        "title": "Асинхронный API"
       }
     ],
     "Асинхронный интерфейс": [
@@ -4364,14 +4378,6 @@
         "line": 70,
         "level": 3,
         "title": "Асинхронный интерфейс"
-      }
-    ],
-    "Асинхронный оригинальный API": [
-      {
-        "document": "advanced/storage-backends.md",
-        "line": 95,
-        "level": 2,
-        "title": "Асинхронный оригинальный API"
       }
     ],
     "Атрибутный доступ": [
@@ -5286,14 +5292,6 @@
         "title": "Глубокое понимание реализации"
       }
     ],
-    "Горячая перезагрузка адаптеров": [
-      {
-        "document": "advanced/startup.md",
-        "line": 264,
-        "level": 3,
-        "title": "Горячая перезагрузка адаптеров"
-      }
-    ],
     "Горячая перезагрузка конфигурации": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -5321,9 +5319,17 @@
     "Горячая перезагрузка локальных плагинов": [
       {
         "document": "advanced/startup.md",
-        "line": 252,
+        "line": 289,
         "level": 3,
         "title": "Горячая перезагрузка локальных плагинов"
+      }
+    ],
+    "Горячий перезапуск адаптеров": [
+      {
+        "document": "advanced/startup.md",
+        "line": 301,
+        "level": 3,
+        "title": "Горячий перезапуск адаптеров"
       }
     ],
     "Граница между ожиданием и командами (проникновение команд)": [
@@ -5348,6 +5354,14 @@
         "line": 202,
         "level": 2,
         "title": "Границы с другими механизмами"
+      }
+    ],
+    "Грациозное завершение": [
+      {
+        "document": "advanced/startup.md",
+        "line": 334,
+        "level": 2,
+        "title": "Грациозное завершение"
       }
     ],
     "Группировка в боковой панели": [
@@ -5698,12 +5712,12 @@
         "title": "Декораторы правил отправки"
       }
     ],
-    "Детальная перезагрузка при изменении (начиная с 2.12+)": [
+    "Детальное управление во время выполнения": [
       {
         "document": "advanced/startup.md",
-        "line": 395,
-        "level": 4,
-        "title": "Детальная перезагрузка при изменении (начиная с 2.12+)"
+        "line": 287,
+        "level": 2,
+        "title": "Детальное управление во время выполнения"
       }
     ],
     "Диагностика окружения": [
@@ -6244,6 +6258,14 @@
         "title": "Журналы сообщений"
       }
     ],
+    "Завершение процесса": [
+      {
+        "document": "advanced/storage-backends.md",
+        "line": 85,
+        "level": 2,
+        "title": "Завершение процесса"
+      }
+    ],
     "Завершение трёх основных компонентов адаптера": [
       {
         "document": "developer-guide/adapters/getting-started.md",
@@ -6266,6 +6288,14 @@
         "line": 92,
         "level": 3,
         "title": "Загрузка модулей"
+      }
+    ],
+    "Загрузка модулей по требованию": [
+      {
+        "document": "advanced/startup.md",
+        "line": 327,
+        "level": 3,
+        "title": "Загрузка модулей по требованию"
       }
     ],
     "Задержка активации (dormant_after)": [
@@ -6767,7 +6797,7 @@
     "Информация для диагностики при сбое загрузки": [
       {
         "document": "advanced/startup.md",
-        "line": 100,
+        "line": 137,
         "level": 4,
         "title": "Информация для диагностики при сбое загрузки"
       }
@@ -7326,20 +7356,12 @@
         "title": "Когда выбрать что"
       }
     ],
-    "Когда использовать жёсткий перезапуск?": [
+    "Когда использовать жесткий перезапуск?": [
       {
         "document": "advanced/startup.md",
-        "line": 360,
+        "line": 397,
         "level": 3,
-        "title": "Когда использовать жёсткий перезапуск?"
-      }
-    ],
-    "Когда использовать ручной запуск?": [
-      {
-        "document": "advanced/startup.md",
-        "line": 240,
-        "level": 3,
-        "title": "Когда использовать ручной запуск?"
+        "title": "Когда использовать жесткий перезапуск?"
       }
     ],
     "Когда какое объявление использовать": [
@@ -7364,6 +7386,14 @@
         "line": 76,
         "level": 2,
         "title": "Когда перегенерировать"
+      }
+    ],
+    "Когда следует использовать ручной запуск?": [
+      {
+        "document": "advanced/startup.md",
+        "line": 277,
+        "level": 3,
+        "title": "Когда следует использовать ручной запуск?"
       }
     ],
     "Кого и когда выбирать": [
@@ -7522,6 +7552,14 @@
         "line": 44,
         "level": 3,
         "title": "Контекстные токены и ответы"
+      }
+    ],
+    "Контракт выходного кода 42": [
+      {
+        "document": "advanced/startup.md",
+        "line": 407,
+        "level": 3,
+        "title": "Контракт выходного кода 42"
       }
     ],
     "Контракт сервиса: meta.services": [
@@ -8578,14 +8616,6 @@
         "title": "Модули"
       }
     ],
-    "Модули по требованию": [
-      {
-        "document": "advanced/startup.md",
-        "line": 290,
-        "level": 3,
-        "title": "Модули по требованию"
-      }
-    ],
     "Модуль": [
       {
         "document": "developer-guide/publishing.md",
@@ -9052,12 +9082,20 @@
         "title": "Обзор архитектуры"
       }
     ],
-    "Обзор верхних точек входа SDK": [
+    "Обзор главных точек входа SDK": [
       {
         "document": "advanced/startup.md",
         "line": 12,
         "level": 2,
-        "title": "Обзор верхних точек входа SDK"
+        "title": "Обзор главных точек входа SDK"
+      }
+    ],
+    "Обзор запуска": [
+      {
+        "document": "advanced/startup.md",
+        "line": 26,
+        "level": 2,
+        "title": "Обзор запуска"
       }
     ],
     "Обзор исключений": [
@@ -9742,14 +9780,6 @@
         "line": 164,
         "level": 3,
         "title": "Общий метод request"
-      }
-    ],
-    "Общий обзор цепочки запуска": [
-      {
-        "document": "advanced/startup.md",
-        "line": 26,
-        "level": 2,
-        "title": "Общий обзор цепочки запуска"
       }
     ],
     "Объединённая пересылка": [
@@ -10829,7 +10859,7 @@
     "Отладка \"database is locked\" в SQLite": [
       {
         "document": "advanced/storage-backends.md",
-        "line": 143,
+        "line": 149,
         "level": 2,
         "title": "Отладка \"database is locked\" в SQLite"
       }
@@ -10840,6 +10870,14 @@
         "line": 64,
         "level": 3,
         "title": "Отличие от материалов документации"
+      }
+    ],
+    "Отличия в диалектах": [
+      {
+        "document": "advanced/storage-backends.md",
+        "line": 136,
+        "level": 2,
+        "title": "Отличия в диалектах"
       }
     ],
     "Отмена регистрации перевода": [
@@ -11319,7 +11357,7 @@
     "Перезапуск": [
       {
         "document": "advanced/startup.md",
-        "line": 337,
+        "line": 374,
         "level": 2,
         "title": "Перезапуск"
       }
@@ -11494,12 +11532,12 @@
         "title": "Поведение при выгрузке модуля"
       }
     ],
-    "Поведение при сбое подключения": [
+    "Поведение при сбоях подключения": [
       {
         "document": "advanced/storage-backends.md",
         "line": 74,
         "level": 2,
-        "title": "Поведение при сбое подключения"
+        "title": "Поведение при сбоях подключения"
       }
     ],
     "Повтор при сбое + отмена по таймауту": [
@@ -11921,7 +11959,7 @@
     "Подробное описание этапов": [
       {
         "document": "advanced/startup.md",
-        "line": 54,
+        "line": 56,
         "level": 2,
         "title": "Подробное описание этапов"
       }
@@ -12105,7 +12143,7 @@
     "Полный пример ручного запуска": [
       {
         "document": "advanced/startup.md",
-        "line": 176,
+        "line": 213,
         "level": 2,
         "title": "Полный пример ручного запуска"
       }
@@ -12241,7 +12279,7 @@
     "Пользовательское SQL-хранилище": [
       {
         "document": "advanced/storage-backends.md",
-        "line": 161,
+        "line": 187,
         "level": 2,
         "title": "Пользовательское SQL-хранилище"
       }
@@ -13398,14 +13436,6 @@
         "title": "Процесс внесения вклада"
       }
     ],
-    "Процесс выгрузки": [
-      {
-        "document": "advanced/startup.md",
-        "line": 319,
-        "level": 2,
-        "title": "Процесс выгрузки"
-      }
-    ],
     "Процесс запуска и ручное управление": [
       {
         "document": "advanced/startup.md",
@@ -13476,6 +13506,14 @@
         "line": 400,
         "level": 3,
         "title": "Процесс синхронизации"
+      }
+    ],
+    "Процесс удаления": [
+      {
+        "document": "advanced/startup.md",
+        "line": 356,
+        "level": 2,
+        "title": "Процесс удаления"
       }
     ],
     "Прочее": [
@@ -13608,14 +13646,6 @@
         "line": 271,
         "level": 3,
         "title": "Раздельное развёртывание через uv tool (изоляция CLI от окружения проекта)"
-      }
-    ],
-    "Различия в поведении диалектов": [
-      {
-        "document": "advanced/storage-backends.md",
-        "line": 130,
-        "level": 2,
-        "title": "Различия в поведении диалектов"
       }
     ],
     "Разработка адаптеров": [
@@ -13920,6 +13950,14 @@
         "title": "Расширенные темы"
       }
     ],
+    "Расширяемые точки: entry-points": [
+      {
+        "document": "advanced/startup.md",
+        "line": 78,
+        "level": 4,
+        "title": "Расширяемые точки: entry-points"
+      }
+    ],
     "Реализация SendDSL": [
       {
         "document": "developer-guide/adapters/best-practices.md",
@@ -14028,6 +14066,14 @@
         "line": 417,
         "level": 3,
         "title": "Регистрация точки входа"
+      }
+    ],
+    "Регистрация хранилища (подключаемое)": [
+      {
+        "document": "advanced/storage-backends.md",
+        "line": 167,
+        "level": 2,
+        "title": "Регистрация хранилища (подключаемое)"
       }
     ],
     "Редактирование и отмена сообщений": [
@@ -14333,7 +14379,7 @@
     "Руководство по супервайзеру": [
       {
         "document": "advanced/startup.md",
-        "line": 381,
+        "line": 418,
         "level": 3,
         "title": "Руководство по супервайзеру"
       }
@@ -14478,12 +14524,6 @@
         "title": "Связанная документация"
       },
       {
-        "document": "advanced/storage-backends.md",
-        "line": 186,
-        "level": 2,
-        "title": "Связанная документация"
-      },
-      {
         "document": "api-reference/README.md",
         "line": 51,
         "level": 2,
@@ -14577,7 +14617,13 @@
       },
       {
         "document": "advanced/startup.md",
-        "line": 473,
+        "line": 510,
+        "level": 2,
+        "title": "Связанные документы"
+      },
+      {
+        "document": "advanced/storage-backends.md",
+        "line": 212,
         "level": 2,
         "title": "Связанные документы"
       },
@@ -14834,12 +14880,12 @@
         "title": "Семантика определения"
       }
     ],
-    "Семантика сбоев (начиная с 2.12)": [
+    "Семантика ошибок (начиная с 2.12)": [
       {
         "document": "advanced/storage-backends.md",
-        "line": 85,
+        "line": 89,
         "level": 2,
-        "title": "Семантика сбоев (начиная с 2.12)"
+        "title": "Семантика ошибок (начиная с 2.12)"
       }
     ],
     "Семантика триггеров": [
@@ -14853,7 +14899,7 @@
     "Сервер маршрутизации": [
       {
         "document": "advanced/startup.md",
-        "line": 280,
+        "line": 317,
         "level": 3,
         "title": "Сервер маршрутизации"
       }
@@ -14976,12 +15022,12 @@
         "title": "Синхронная инициализация"
       }
     ],
-    "Синхронные методы (осторожно)": [
+    "Синхронные методы (осторожно!)": [
       {
         "document": "advanced/storage-backends.md",
-        "line": 116,
+        "line": 120,
         "level": 2,
-        "title": "Синхронные методы (осторожно)"
+        "title": "Синхронные методы (осторожно!)"
       }
     ],
     "Система интерактивного диалога": [
@@ -15600,14 +15646,6 @@
         "line": 227,
         "level": 4,
         "title": "Соглашение о возвращаемых значениях промежуточного обработчика"
-      }
-    ],
-    "Соглашение об коде выхода 42": [
-      {
-        "document": "advanced/startup.md",
-        "line": 370,
-        "level": 3,
-        "title": "Соглашение об коде выхода 42"
       }
     ],
     "Соглашение по отправке": [
@@ -17460,14 +17498,6 @@
         "title": "Типы целей"
       }
     ],
-    "Тонкое управление во время выполнения": [
-      {
-        "document": "advanced/startup.md",
-        "line": 250,
-        "level": 2,
-        "title": "Тонкое управление во время выполнения"
-      }
-    ],
     "Традиционный способ регистрации": [
       {
         "document": "advanced/router.md",
@@ -18668,14 +18698,6 @@
         "title": "Экологические модули"
       }
     ],
-    "Элегантное завершение": [
-      {
-        "document": "advanced/startup.md",
-        "line": 297,
-        "level": 2,
-        "title": "Элегантное завершение"
-      }
-    ],
     "Эндпоинты для входа по QR-коду (для внешних фронтенд-интерфейсов)": [
       {
         "document": "platform-guide/wechatclaw.md",
@@ -19046,6 +19068,14 @@
         "line": 376,
         "level": 3,
         "title": "规则组合与后台执行"
+      }
+    ],
+    "详细 перезагрузка (начиная с версии 2.12)": [
+      {
+        "document": "advanced/startup.md",
+        "line": 432,
+        "level": 4,
+        "title": "详细 перезагрузка (начиная с версии 2.12)"
       }
     ],
     "账户管理": [
