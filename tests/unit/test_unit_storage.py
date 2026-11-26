@@ -1194,6 +1194,8 @@ class TestStorageObservability:
         with caplog.at_level("WARNING"):
             async with storage_manager.atransaction():
                 await storage_manager.aset("slow_key", "v")
+                # 时钟 tick 粒度因平台而异（Windows 约 15.6ms）：短睡保证持锁时长 > 0
+                await asyncio.sleep(0.02)
 
         slow_warnings = [r for r in caplog.records if prefix in r.getMessage()]
         assert len(slow_warnings) == 1
@@ -1220,6 +1222,8 @@ class TestStorageObservability:
         with caplog.at_level("WARNING"), pytest.raises(RuntimeError, match="boom"):
             async with storage_manager.atransaction():
                 await storage_manager.aset("rollback_key", "v")
+                # 时钟 tick 粒度因平台而异（Windows 约 15.6ms）：短睡保证持锁时长 > 0
+                await asyncio.sleep(0.02)
                 raise RuntimeError("boom")
 
         assert [r for r in caplog.records if prefix in r.getMessage()]
