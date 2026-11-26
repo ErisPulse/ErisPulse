@@ -52,6 +52,20 @@ def _seed_dist(tmp_path: Path, module_name: str = "dice"):
     return [ep]
 
 
+def _register_fake_module(monkeypatch, name: str = "dice") -> None:
+    """在真实 ModuleManager 上登记一个桩模块类（注册表口径：监控面据此发现组件）"""
+    from ErisPulse.Core.Bases.module import BaseModule
+
+    class _StubModule(BaseModule):
+        pass
+
+    monkeypatch.setitem(
+        __import__("ErisPulse.Core.module", fromlist=["module"]).module._module_classes,
+        name,
+        _StubModule,
+    )
+
+
 def _patch_eps(monkeypatch, eps):
     """钉住 watcher 模块的 entry-points 读取"""
     package_reload = __import__(
@@ -86,6 +100,7 @@ class TestEnableStopRoundtrip:
         """启用后监控器就位并运行；停止后清空且线程退出"""
         eps = _seed_dist(tmp_path)
         _patch_eps(monkeypatch, eps)
+        _register_fake_module(monkeypatch)
 
         assert sdk.enable_hot_reload(interval=0.05) is True
         watcher = sdk._package_reload_watcher
@@ -100,6 +115,7 @@ class TestEnableStopRoundtrip:
         """已在运行时再次启用返回 False（不重复建监控）"""
         eps = _seed_dist(tmp_path)
         _patch_eps(monkeypatch, eps)
+        _register_fake_module(monkeypatch)
 
         assert sdk.enable_hot_reload(interval=0.05) is True
         first = sdk._package_reload_watcher
@@ -117,6 +133,7 @@ class TestEnableStopRoundtrip:
 
         eps = _seed_dist(tmp_path)
         _patch_eps(monkeypatch, eps)
+        _register_fake_module(monkeypatch)
 
         frame_config = importlib.import_module("ErisPulse.runtime.frame_config")
 
@@ -143,6 +160,7 @@ class TestEnableStopRoundtrip:
         """统一开关置位后再次启用被拒（先 disable 再启用可换参数）"""
         eps = _seed_dist(tmp_path)
         _patch_eps(monkeypatch, eps)
+        _register_fake_module(monkeypatch)
         assert sdk.enable_hot_reload(interval=0.05) is True
         assert sdk.enable_hot_reload(interval=0.05) is False
         sdk.disable_hot_reload()
@@ -156,6 +174,7 @@ class TestConfigDrivenStart:
 
         eps = _seed_dist(tmp_path)
         _patch_eps(monkeypatch, eps)
+        _register_fake_module(monkeypatch)
 
         frame_config = importlib.import_module("ErisPulse.runtime.frame_config")
         values = {"auto_reload.enabled": True, "auto_reload.interval": 0.05}

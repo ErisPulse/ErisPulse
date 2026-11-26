@@ -58,11 +58,11 @@ def _make_sdk(module_names=("dice",), adapter_names=()):
 
     sdk = SimpleNamespace(
         module=SimpleNamespace(
-            list_items=lambda: dict.fromkeys(module_names, True),
+            list_registered=lambda: list(module_names),
             reload=module_reload,
         ),
         adapter=SimpleNamespace(
-            list_items=lambda: dict.fromkeys(adapter_names, True),
+            list_registered=lambda: list(adapter_names),
             reload=adapter_reload,
         ),
     )

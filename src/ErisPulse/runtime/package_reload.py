@@ -105,24 +105,26 @@ class PackageReloadWatcher(HotReloadWatcherBase):
 
     # ==================== 监控对象解析 ====================
 
+    def _registered_names(self, kind: str) -> set[str]:
+        """已注册组件名（管理器注册表口径；管理器不可用时为空集）"""
+        manager = self._sdk.module if kind == "module" else self._sdk.adapter
+        try:
+            return set(manager.list_registered())
+        except Exception:
+            return set()
+
     def _resolve_watches(self) -> dict[str, _DistWatch]:
-        """经 entry-points 反查当前已加载组件的来源发行版"""
-        try:
-            loaded_modules = set(self._sdk.module.list_items())
-        except Exception:
-            loaded_modules = set()
-        try:
-            loaded_adapters = set(self._sdk.adapter.list_items())
-        except Exception:
-            loaded_adapters = set()
+        """经 entry-points 反查当前已注册组件的来源发行版"""
+        registered_modules = self._registered_names("module")
+        registered_adapters = self._registered_names("adapter")
 
         found: dict[str, _DistWatch] = {}
-        for group, kind, loaded in (
-            (MODULE_ENTRY_POINT_GROUP, "module", loaded_modules),
-            (ADAPTER_ENTRY_POINT_GROUP, "adapter", loaded_adapters),
+        for group, kind, registered in (
+            (MODULE_ENTRY_POINT_GROUP, "module", registered_modules),
+            (ADAPTER_ENTRY_POINT_GROUP, "adapter", registered_adapters),
         ):
             for ep in _iter_entry_points(group):
-                if ep.name not in loaded:
+                if ep.name not in registered:
                     continue
                 dist = ep.dist
                 if dist is None:
