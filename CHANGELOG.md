@@ -92,6 +92,7 @@
 
 - @wsu2059q
   - `运行时` 已安装发行版热重载监控（`runtime/package_reload.py` + `framework.auto_reload` 配置节）：来源包文件变化即定向重载对应模块 / 适配器（复用既有快照回滚与依赖级联）
+  - `运行时` SDK 公开方法 `enable_package_hot_reload()` / `stop_package_hot_reload()`（显式参数优先、缺省读同名配置）；热重载监控器收敛公共基类 `runtime/hot_reload.py`（生命周期状态机 / 主循环解析 / 跨线程调度，plugin 与 package 监控器对齐继承）
 
 ---
 

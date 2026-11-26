@@ -75,6 +75,7 @@ from .resource_track import (
     untrack,
 )
 from .plugin_reload import PluginReloadWatcher
+from .package_reload import PackageReloadWatcher
 from .kernel import Kernel
 from .tasks import (
     cancel_all_background_tasks,
@@ -149,6 +150,7 @@ __all__ = [
     "off_cleanup",
     "on_cleanup",
     "owner_scope",
+    "PackageReloadWatcher",
     "PluginReloadWatcher",
     "redact_secret",
     "register_config_i18n",

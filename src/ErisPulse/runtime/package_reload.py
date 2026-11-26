@@ -16,10 +16,8 @@ ErisPulse 已安装发行版热重载监控
 
 from __future__ import annotations
 
-import asyncio
 import fnmatch
 import hashlib
-import threading
 import time
 from dataclasses import dataclass, field
 from importlib.metadata import entry_points
@@ -35,7 +33,7 @@ from ..Core.constants import (
 from ..Core.i18n import i18n
 from ..Core.logger import logger
 from .frame_config import get_framework_value
-from .tasks import _get_main_loop
+from .hot_reload import HotReloadWatcherBase
 
 if TYPE_CHECKING:
     from ..sdk import SDK
@@ -66,7 +64,7 @@ class _DistWatch:
     hashes: dict[Path, str] = field(default_factory=dict)  # 路径 → sha256
 
 
-class PackageReloadWatcher:
+class PackageReloadWatcher(HotReloadWatcherBase):
     """
     已安装发行版热重载监控器
 
@@ -90,39 +88,27 @@ class PackageReloadWatcher:
         allow: list[str] | None = None,
         deny: list[str] | None = None,
     ):
+        super().__init__(interval=interval if interval is not None else AUTO_RELOAD_POLL_INTERVAL_SECS)
         self._sdk = sdk
-        self._interval = interval if interval is not None else AUTO_RELOAD_POLL_INTERVAL_SECS
         self._allow = tuple(allow or ())
         self._deny = tuple(deny or ())
-        self._stop_event = threading.Event()
-        self._thread: threading.Thread | None = None
         self._watches: dict[str, _DistWatch] = {}  # 归一发行版名 → 监控状态
         self._last_trigger: dict[str, float] = {}
 
-    # ==================== 生命周期 ====================
+    # ==================== 生命周期钩子 ====================
 
-    def start(self) -> bool:
-        """
-        建立监控快照并启动后台线程
-
-        :return: 是否启动（已在运行或无可监控发行版时为 False）
-        """
-        if self._thread is not None:
-            return False
+    def _prepare(self) -> bool:
+        """{!--< internal-use >!--} 解析监控对象并建立文件签名；无可监控发行版时返回 False"""
         self._refresh_watches()
-        if not self._watches:
-            return False
-        self._thread = threading.Thread(target=self._loop, daemon=True, name="ErisPulse-PackageReload")
-        self._thread.start()
-        return True
+        return bool(self._watches)
 
-    def stop(self) -> None:
-        """停止后台线程（幂等）"""
-        self._stop_event.set()
-        thread = self._thread
-        if thread is not None and thread is not threading.current_thread():
-            thread.join(timeout=AUTO_RELOAD_TRIGGER_COOLDOWN_SECS)
-        self._thread = None
+    def _begin(self) -> None:
+        """{!--< internal-use >!--} 启动轮询守护线程"""
+        self._start_polling_thread("ErisPulse-PackageReload")
+
+    def _shutdown(self) -> None:
+        """{!--< internal-use >!--} 停止轮询守护线程"""
+        self._shutdown_polling_thread(AUTO_RELOAD_TRIGGER_COOLDOWN_SECS)
 
     # ==================== 监控对象解析 ====================
 
@@ -275,38 +261,26 @@ class PackageReloadWatcher:
         watch.hashes[path] = digest
         return old != digest
 
-    def _loop(self) -> None:
-        """后台轮询入口：间隔扫描 → 冷却过滤 → 主循环调度重载"""
-        while not self._stop_event.wait(self._interval):
-            try:
-                changed = self._scan_once()
-            except Exception as e:
-                logger.debug(f"package reload scan failed: {e!r}")
+    def _poll_once(self) -> None:
+        """{!--< internal-use >!--} 单轮扫描：冷却过滤 → 刷新签名 → 主循环调度重载"""
+        changed = self._scan_once()
+        for watch, components in changed:
+            now = time.monotonic()
+            if now - self._last_trigger.get(watch.dist_name, 0.0) < AUTO_RELOAD_TRIGGER_COOLDOWN_SECS:
                 continue
-            for watch, components in changed:
-                now = time.monotonic()
-                if now - self._last_trigger.get(watch.dist_name, 0.0) < AUTO_RELOAD_TRIGGER_COOLDOWN_SECS:
-                    continue
-                self._last_trigger[watch.dist_name] = now
-                # 先刷新签名（重载失败不回滚快照——保持旧值会形成失败风暴；
-                # 文件再次变化时自然重试）
-                try:
-                    self._collect_files(watch)
-                except OSError as e:
-                    logger.debug(
-                        i18n.t("runtime.package_reload.snapshot_failed", dist=watch.dist_name, error=e)
-                    )
-                self._schedule_reload(watch, components)
-
-    def _schedule_reload(self, watch: _DistWatch, components: list[tuple[str, str]]) -> None:
-        """把重载协程调度回主事件循环（循环未就绪时留痕跳过）"""
-        loop = _get_main_loop()
-        if loop is None or loop.is_closed():
-            logger.warning(
-                i18n.t("runtime.package_reload.no_loop", dist=watch.dist_name)
+            self._last_trigger[watch.dist_name] = now
+            # 先刷新签名（重载失败不回滚快照——保持旧值会形成失败风暴；
+            # 文件再次变化时自然重试）
+            try:
+                self._collect_files(watch)
+            except OSError as e:
+                logger.debug(
+                    i18n.t("runtime.package_reload.snapshot_failed", dist=watch.dist_name, error=e)
+                )
+            self._schedule(
+                self._reload(watch, components),
+                skip_log_key="runtime.package_reload.no_loop",
             )
-            return
-        asyncio.run_coroutine_threadsafe(self._reload(watch, components), loop)
 
     async def _reload(self, watch: _DistWatch, components: list[tuple[str, str]]) -> None:
         """逐组件调用对应管理器的重载（自带快照回滚与依赖级联）"""

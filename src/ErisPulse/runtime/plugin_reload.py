@@ -31,6 +31,7 @@ from ..Core.constants import (
 from ..Core.i18n import i18n
 from ..Core.logger import logger
 from .file_watcher import FileSystemEventHandler, PollingObserver
+from .hot_reload import HotReloadWatcherBase
 
 
 class _PluginChangeHandler(FileSystemEventHandler):
@@ -139,6 +140,7 @@ class _PluginChangeHandler(FileSystemEventHandler):
         return None
 
     def _dispatch(self, paths: set[str]) -> None:
+        """调度重载协程回主事件循环（循环未就绪时留痕跳过）"""
         loop = self._resolve_loop()
         if loop is None:
             logger.warning(i18n.t("runtime.plugin.reload_skipped_no_loop"))
@@ -213,11 +215,16 @@ def resolve_plugin_name(src_path: str, plugin_dirs: list[str] | None = None) -> 
     return None
 
 
-class PluginReloadWatcher:
+class PluginReloadWatcher(HotReloadWatcherBase):
     """
     本地插件热重载监控器
 
     封装轮询文件监控器，监控插件文件夹变更并触发对应插件的重载回调。
+
+    {!--< tips >!--}
+    无运行事件循环时仍可启动：事件循环经主循环注册表延迟解析
+    （``sdk.run()`` 启动后自动可用），此前触发的变更会记 warning 跳过。
+    {!--< /tips >!--}
 
     :param on_reload: 重载回调（接收插件名，返回协程），在主事件循环中执行
     :param interval: 轮询间隔（秒，默认 FILE_WATCH_POLL_INTERVAL_SECS）
@@ -236,21 +243,11 @@ class PluginReloadWatcher:
         on_reload: Callable[[str], Coroutine[Any, Any, Any]],
         interval: float = FILE_WATCH_POLL_INTERVAL_SECS,
     ):
+        super().__init__(interval=interval)
         self._on_reload = on_reload
-        self._interval = interval
         self._observer: PollingObserver | None = None
         self._handler: _PluginChangeHandler | None = None
         self._dirs: list[str] = []
-        self._loop: asyncio.AbstractEventLoop | None = None
-
-    @property
-    def is_running(self) -> bool:
-        """
-        监控器是否已启动
-
-        :return: 是否运行中
-        """
-        return self._observer is not None and self._observer.is_running
 
     def _plugin_dirs(self) -> list[str]:
         """
@@ -291,30 +288,23 @@ class PluginReloadWatcher:
             return [str(d) for d in raw]
         return None
 
-    def start(self) -> bool:
+    def _prepare(self) -> bool:
         """
-        启动插件文件监控
+        {!--< internal-use >!--}
+        解析插件目录列表并捕获当前事件循环
 
-        {!--< tips >!--}
-        无运行事件循环时仍返回 True：事件循环经主循环注册表延迟解析
-        （``sdk.run()`` 启动后自动可用），此前触发的变更会记 warning 跳过。
-        {!--< /tips >!--}
-
-        :return: 是否启动成功（无插件目录或已在运行返回 False）
+        :return: 是否存在插件目录（False 时 start 不启动）
         """
-        if self.is_running:
-            return False
-
         self._dirs = [d for d in self._plugin_dirs() if d]
         if not self._dirs:
             return False
-
-        try:
-            self._loop = asyncio.get_running_loop()
-        except RuntimeError:
-            self._loop = None
+        self._capture_loop()
+        if self._loop is None:
             logger.warning(i18n.t("runtime.plugin.watcher_no_loop"))
+        return True
 
+    def _begin(self) -> None:
+        """{!--< internal-use >!--} 建立轮询监控器并订阅全部插件目录"""
         self._handler = _PluginChangeHandler(self._loop, self._handle_change)
         observer = PollingObserver(
             interval=self._interval,
@@ -325,12 +315,9 @@ class PluginReloadWatcher:
         observer.start()
         self._observer = observer
         logger.info(i18n.t("runtime.plugin.watching", dirs=self._dirs))
-        return True
 
-    def stop(self) -> None:
-        """
-        停止插件文件监控
-        """
+    def _shutdown(self) -> None:
+        """{!--< internal-use >!--} 停止监控器并释放补发定时器"""
         if self._handler is not None:
             self._handler.close()
             self._handler = None

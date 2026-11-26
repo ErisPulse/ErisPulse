@@ -907,7 +907,8 @@ class SDK:
 
         {!--< tips >!--}
         自动监控仅覆盖本地插件目录；PyPI 安装包模块可通过
-        :meth:`reload_module` 手动热重载（pip 升级后调用即可）。
+        :meth:`reload_module` 手动热重载（pip 升级后调用即可），或启用
+        :meth:`enable_package_hot_reload` 自动监控。
         {!--< /tips >!--}
 
         :param interval: 轮询间隔（秒，默认 1.0）
@@ -929,6 +930,82 @@ class SDK:
             self._plugin_watcher = watcher
             self.logger.info(i18n.t("core.sdk.hot_reload.enabled"))
         return ok
+
+    def enable_package_hot_reload(
+        self,
+        *,
+        interval: float | None = None,
+        allow: list[str] | None = None,
+        deny: list[str] | None = None,
+    ) -> bool:
+        """
+        启用已安装发行版热重载（自动监控）
+
+        监控已加载模块 / 适配器来源发行版的文件变化（pip 升级 / 直接修改包
+        文件），变化时自动重载对应组件——升级即生效，无需重启或手动调用
+        :meth:`reload_module`。初始化完成后可随时调用；
+        ``framework.auto_reload.enabled = true`` 时 :meth:`init` 亦会按配置
+        自动启用。已在运行时返回 False（先 :meth:`stop_package_hot_reload`
+        再启用可更换参数）。
+
+        参数缺省读 ``framework.auto_reload`` 同名配置项，显式传参覆盖配置。
+
+        {!--< tips >!--}
+        仅监控经 entry-points 安装的组件（带发行版信息）；本地插件与运行时
+        注册组件不在监控面。监控范围 ACL：deny 优先于 allow，名单元素支持
+        glob（组件名 / 发行版名均可）。
+        {!--< /tips >!--}
+
+        :param interval: 轮询间隔秒数（缺省读 ``framework.auto_reload.interval``）
+        :param allow: 白名单（组件名或发行版名，glob 支持；空 = 全部；
+            缺省读 ``framework.auto_reload.allow``）
+        :param deny: 黑名单（优先于 allow；缺省读 ``framework.auto_reload.deny``）
+        :return: 是否启动成功（已在运行或无可监控发行版返回 False）
+
+        :example:
+        >>> await sdk.init()
+        >>> sdk.enable_package_hot_reload()                            # 按配置启用
+        >>> sdk.enable_package_hot_reload(deny=["ErisPulse-Dashboard"])  # 显式参数覆盖配置
+        """
+        if getattr(self, "_package_reload_watcher", None) is not None:
+            return False
+
+        from .Core.constants import AUTO_RELOAD_POLL_INTERVAL_SECS
+        from .runtime import PackageReloadWatcher
+        from .runtime.frame_config import get_framework_value
+
+        if interval is None:
+            interval = float(get_framework_value("auto_reload.interval", AUTO_RELOAD_POLL_INTERVAL_SECS))
+        if allow is None:
+            allow = get_framework_value("auto_reload.allow", [])
+        if deny is None:
+            deny = get_framework_value("auto_reload.deny", [])
+
+        watcher = PackageReloadWatcher(
+            self,
+            interval=interval or None,
+            allow=list(allow) if allow else None,
+            deny=list(deny) if deny else None,
+        )
+        ok = watcher.start()
+        if ok:
+            self._package_reload_watcher = watcher
+            self.logger.info(
+                i18n.t("core.sdk.package_hot_reload.enabled", count=len(watcher._watches))
+            )
+        return ok
+
+    def stop_package_hot_reload(self) -> None:
+        """
+        停止已安装发行版热重载监控（幂等）
+
+        :example:
+        >>> sdk.stop_package_hot_reload()
+        """
+        watcher = getattr(self, "_package_reload_watcher", None)
+        if watcher is not None:
+            watcher.stop()
+            self._package_reload_watcher = None
 
     async def reload_module(self, module_name: str, *, full: bool = True) -> bool:
         """
