@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 2532,
+  "total_keywords": 2555,
   "keywords": {
     "ErisPulse API 文档": [
       {
@@ -1082,10 +1082,18 @@
         "title": "[ErisPulse.runtime.owner_cleanup](ErisPulse/runtime/owner_cleanup.md)"
       }
     ],
-    "[ErisPulse.runtime.plugin_reload](ErisPulse/runtime/plugin_reload.md)": [
+    "[ErisPulse.runtime.package_reload](ErisPulse/runtime/package_reload.md)": [
       {
         "document": "api-reference/auto_api/README.md",
         "line": 702,
+        "level": 3,
+        "title": "[ErisPulse.runtime.package_reload](ErisPulse/runtime/package_reload.md)"
+      }
+    ],
+    "[ErisPulse.runtime.plugin_reload](ErisPulse/runtime/plugin_reload.md)": [
+      {
+        "document": "api-reference/auto_api/README.md",
+        "line": 707,
         "level": 3,
         "title": "[ErisPulse.runtime.plugin_reload](ErisPulse/runtime/plugin_reload.md)"
       }
@@ -1093,7 +1101,7 @@
     "[ErisPulse.runtime.proactive_gc](ErisPulse/runtime/proactive_gc.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 707,
+        "line": 712,
         "level": 3,
         "title": "[ErisPulse.runtime.proactive_gc](ErisPulse/runtime/proactive_gc.md)"
       }
@@ -1101,7 +1109,7 @@
     "[ErisPulse.runtime.process_state](ErisPulse/runtime/process_state.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 712,
+        "line": 717,
         "level": 3,
         "title": "[ErisPulse.runtime.process_state](ErisPulse/runtime/process_state.md)"
       }
@@ -1109,7 +1117,7 @@
     "[ErisPulse.runtime.reload_ops](ErisPulse/runtime/reload_ops.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 717,
+        "line": 722,
         "level": 3,
         "title": "[ErisPulse.runtime.reload_ops](ErisPulse/runtime/reload_ops.md)"
       }
@@ -1117,7 +1125,7 @@
     "[ErisPulse.runtime.reload_target](ErisPulse/runtime/reload_target.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 722,
+        "line": 727,
         "level": 3,
         "title": "[ErisPulse.runtime.reload_target](ErisPulse/runtime/reload_target.md)"
       }
@@ -1125,7 +1133,7 @@
     "[ErisPulse.runtime.resource_track](ErisPulse/runtime/resource_track.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 727,
+        "line": 732,
         "level": 3,
         "title": "[ErisPulse.runtime.resource_track](ErisPulse/runtime/resource_track.md)"
       }
@@ -1133,7 +1141,7 @@
     "[ErisPulse.runtime.sdk_initializer](ErisPulse/runtime/sdk_initializer.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 732,
+        "line": 737,
         "level": 3,
         "title": "[ErisPulse.runtime.sdk_initializer](ErisPulse/runtime/sdk_initializer.md)"
       }
@@ -1141,7 +1149,7 @@
     "[ErisPulse.runtime.tasks](ErisPulse/runtime/tasks.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 737,
+        "line": 742,
         "level": 3,
         "title": "[ErisPulse.runtime.tasks](ErisPulse/runtime/tasks.md)"
       }
@@ -1149,7 +1157,7 @@
     "[ErisPulse.runtime.troubleshoot](ErisPulse/runtime/troubleshoot.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 742,
+        "line": 747,
         "level": 3,
         "title": "[ErisPulse.runtime.troubleshoot](ErisPulse/runtime/troubleshoot.md)"
       }
@@ -1157,7 +1165,7 @@
     "[ErisPulse.runtime.version](ErisPulse/runtime/version.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 747,
+        "line": 752,
         "level": 3,
         "title": "[ErisPulse.runtime.version](ErisPulse/runtime/version.md)"
       }
@@ -1165,7 +1173,7 @@
     "[ErisPulse.sdk](ErisPulse/sdk.md)": [
       {
         "document": "api-reference/auto_api/README.md",
-        "line": 752,
+        "line": 757,
         "level": 3,
         "title": "[ErisPulse.sdk](ErisPulse/sdk.md)"
       }
@@ -2352,6 +2360,14 @@
         "line": 1,
         "level": 1,
         "title": "`ErisPulse.runtime.owner_cleanup` 模块"
+      }
+    ],
+    "`ErisPulse.runtime.package_reload` 模块": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/runtime/package_reload.md",
+        "line": 1,
+        "level": 1,
+        "title": "`ErisPulse.runtime.package_reload` 模块"
       }
     ],
     "`ErisPulse.runtime.plugin_reload` 模块": [
@@ -4272,6 +4288,14 @@
         "title": "`_collect_diagnosis() -> tuple[list, bool, dict]`"
       }
     ],
+    "`_collect_files(watch: _DistWatch) -> None`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/runtime/package_reload.md",
+        "line": 122,
+        "level": 5,
+        "title": "`_collect_files(watch: _DistWatch) -> None`"
+      }
+    ],
     "`_collect_keys() -> dict[str, I18nKey]`（classmethod）": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/i18n_schema.md",
@@ -5274,6 +5298,14 @@
         "title": "`_file_comment_suffix(section_key: 'str | None', field_path: str) -> str`"
       }
     ],
+    "`_file_hash(path: Path) -> str | None`（staticmethod）": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/runtime/package_reload.md",
+        "line": 143,
+        "level": 5,
+        "title": "`_file_hash(path: Path) -> str | None`（staticmethod）"
+      }
+    ],
     "`_fill_from_schema_fields(fields_dict: dict, values: dict) -> None`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/utils/config_wizard.md",
@@ -5288,6 +5320,14 @@
         "line": 133,
         "level": 5,
         "title": "`_find_adapter_class(module_obj: Any) -> type | None`（staticmethod）"
+      }
+    ],
+    "`_find_dist(dist_name: str) -> Any`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/runtime/package_reload.md",
+        "line": 129,
+        "level": 5,
+        "title": "`_find_dist(dist_name: str) -> Any`"
       }
     ],
     "`_find_entry(key: str) -> _Entry | None`": [
@@ -5805,7 +5845,7 @@
     "`_has_handler_backlog() -> bool`（staticmethod）": [
       {
         "document": "api-reference/auto_api/ErisPulse/sdk.md",
-        "line": 185,
+        "line": 202,
         "level": 5,
         "title": "`_has_handler_backlog() -> bool`（staticmethod）"
       }
@@ -5832,6 +5872,14 @@
         "line": 54,
         "level": 3,
         "title": "`_has_running_loop() -> bool`"
+      }
+    ],
+    "`_hash_changed(watch: _DistWatch, path: Path) -> bool`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/runtime/package_reload.md",
+        "line": 157,
+        "level": 5,
+        "title": "`_hash_changed(watch: _DistWatch, path: Path) -> bool`"
       }
     ],
     "`_hot_restart_target(state: dict) -> 'int | None'`": [
@@ -6380,6 +6428,14 @@
         "title": "`_item_schema(member_hint, config_class: type) -> dict | None`"
       }
     ],
+    "`_iter_entry_points(group: str) -> list[Any]`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/runtime/package_reload.md",
+        "line": 33,
+        "level": 3,
+        "title": "`_iter_entry_points(group: str) -> list[Any]`"
+      }
+    ],
     "`_iter_leaf_diff(old: dict[str, Any], new: dict[str, Any], prefix: str = '') -> list[tuple[str, Any]]`": [
       {
         "document": "api-reference/auto_api/ErisPulse/runtime/frame_config.md",
@@ -6402,6 +6458,14 @@
         "line": 695,
         "level": 5,
         "title": "`_kv_table_sql() -> tuple[str, str, str]`"
+      }
+    ],
+    "`_list_hits(component: str, dist_name: str, patterns: tuple[str, ...]) -> bool`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/runtime/package_reload.md",
+        "line": 101,
+        "level": 5,
+        "title": "`_list_hits(component: str, dist_name: str, patterns: tuple[str, ...]) -> bool`"
       }
     ],
     "`_load_accounts() -> dict | None`": [
@@ -6608,6 +6672,14 @@
         "line": 391,
         "level": 5,
         "title": "`_lookup(key: str, lang: str) -> str | None`"
+      }
+    ],
+    "`_loop() -> None`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/runtime/package_reload.md",
+        "line": 167,
+        "level": 5,
+        "title": "`_loop() -> None`"
       }
     ],
     "`_make_file_formatter() -> logging.Formatter`": [
@@ -6888,6 +6960,14 @@
         "title": "`_normalize_dist_name(name: str | None) -> str`"
       }
     ],
+    "`_normalize_dist_name(name: str) -> str`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/runtime/package_reload.md",
+        "line": 26,
+        "level": 3,
+        "title": "`_normalize_dist_name(name: str) -> str`"
+      }
+    ],
     "`_normalize_lang(lang: str) -> str | None`（staticmethod）": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/commands/language.md",
@@ -7059,7 +7139,7 @@
     "`_on_gc_config_event(_data: dict) -> None`": [
       {
         "document": "api-reference/auto_api/ErisPulse/sdk.md",
-        "line": 177,
+        "line": 194,
         "level": 5,
         "title": "`_on_gc_config_event(_data: dict) -> None`"
       }
@@ -7616,6 +7696,14 @@
         "title": "`_refresh_command_config() -> None`"
       }
     ],
+    "`_refresh_watches() -> None`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/runtime/package_reload.md",
+        "line": 136,
+        "level": 5,
+        "title": "`_refresh_watches() -> None`"
+      }
+    ],
     "`_register_atexit() -> None`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/config.md",
@@ -7689,7 +7777,7 @@
     "`_register_signal_handlers() -> None`": [
       {
         "document": "api-reference/auto_api/ErisPulse/sdk.md",
-        "line": 511,
+        "line": 528,
         "level": 5,
         "title": "`_register_signal_handlers() -> None`"
       }
@@ -8098,6 +8186,14 @@
         "title": "`_resolve_strict(strict_arg: bool | None) -> tuple[bool, int | None]`"
       }
     ],
+    "`_resolve_watches() -> dict[str, _DistWatch]`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/runtime/package_reload.md",
+        "line": 115,
+        "level": 5,
+        "title": "`_resolve_watches() -> dict[str, _DistWatch]`"
+      }
+    ],
     "`_resolve_windows_locale_name(locale_name: str) -> str | None`": [
       {
         "document": "api-reference/auto_api/ErisPulse/CLI/i18n/__init__.md",
@@ -8197,7 +8293,7 @@
     "`_run_full_gc_collection(gc_module: Any, baseline: float | None, growth_mb: int) -> tuple[int, float | None]`（staticmethod）": [
       {
         "document": "api-reference/auto_api/ErisPulse/sdk.md",
-        "line": 193,
+        "line": 210,
         "level": 5,
         "title": "`_run_full_gc_collection(gc_module: Any, baseline: float | None, growth_mb: int) -> tuple[int, float | None]`（staticmethod）"
       }
@@ -8346,6 +8442,14 @@
         "title": "`_scan_config_pollution(config_path: Path) -> 'list[tuple[str, str, str]]'`"
       }
     ],
+    "`_scan_once() -> list[tuple[_DistWatch, list[tuple[str, str]]]]`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/runtime/package_reload.md",
+        "line": 150,
+        "level": 5,
+        "title": "`_scan_once() -> list[tuple[_DistWatch, list[tuple[str, str]]]]`"
+      }
+    ],
     "`_scan_rows() -> list[tuple[int, dict]]`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/kv_builder.md",
@@ -8368,6 +8472,14 @@
         "line": 347,
         "level": 5,
         "title": "`_schedule_checkpoint_clear()`"
+      }
+    ],
+    "`_schedule_reload(watch: _DistWatch, components: list[tuple[str, str]]) -> None`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/runtime/package_reload.md",
+        "line": 174,
+        "level": 5,
+        "title": "`_schedule_reload(watch: _DistWatch, components: list[tuple[str, str]]) -> None`"
       }
     ],
     "`_schedule_write() -> None`": [
@@ -8650,6 +8762,14 @@
         "title": "`_start_config_watcher() -> None`"
       }
     ],
+    "`_start_package_reload_watcher() -> None`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/sdk.md",
+        "line": 177,
+        "level": 5,
+        "title": "`_start_package_reload_watcher() -> None`"
+      }
+    ],
     "`_start_proactive_gc() -> None`": [
       {
         "document": "api-reference/auto_api/ErisPulse/sdk.md",
@@ -8669,7 +8789,7 @@
     "`_start_script_dev_watcher() -> None`": [
       {
         "document": "api-reference/auto_api/ErisPulse/sdk.md",
-        "line": 353,
+        "line": 370,
         "level": 5,
         "title": "`_start_script_dev_watcher() -> None`"
       }
@@ -8722,6 +8842,14 @@
         "title": "`_stop_instance(state: dict, force: bool = False) -> bool`"
       }
     ],
+    "`_stop_package_reload_watcher() -> None`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/sdk.md",
+        "line": 186,
+        "level": 5,
+        "title": "`_stop_package_reload_watcher() -> None`"
+      }
+    ],
     "`_stop_proactive_gc() -> None`": [
       {
         "document": "api-reference/auto_api/ErisPulse/sdk.md",
@@ -8741,7 +8869,7 @@
     "`_stop_script_dev_watcher() -> None`": [
       {
         "document": "api-reference/auto_api/ErisPulse/sdk.md",
-        "line": 360,
+        "line": 377,
         "level": 5,
         "title": "`_stop_script_dev_watcher() -> None`"
       }
@@ -8878,6 +9006,14 @@
         "line": 64,
         "level": 3,
         "title": "`_target_from_class(kind: Literal['adapter', 'module'], name: str, cls, package = None, source = 'entrypoint') -> ConfigTarget | None`"
+      }
+    ],
+    "`_target_matches(component: str, dist_name: str) -> bool`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/runtime/package_reload.md",
+        "line": 108,
+        "level": 5,
+        "title": "`_target_matches(component: str, dist_name: str) -> bool`"
       }
     ],
     "`_terminal_height() -> int`": [
@@ -9987,7 +10123,7 @@
     "`async _do_restart() -> bool`": [
       {
         "document": "api-reference/auto_api/ErisPulse/sdk.md",
-        "line": 526,
+        "line": 543,
         "level": 5,
         "title": "`async _do_restart() -> bool`"
       }
@@ -10093,7 +10229,7 @@
     "`async _execute_restart_once() -> bool`": [
       {
         "document": "api-reference/auto_api/ErisPulse/sdk.md",
-        "line": 555,
+        "line": 572,
         "level": 5,
         "title": "`async _execute_restart_once() -> bool`"
       }
@@ -10353,7 +10489,7 @@
     "`async _prepare_environment() -> bool`": [
       {
         "document": "api-reference/auto_api/ErisPulse/sdk.md",
-        "line": 241,
+        "line": 258,
         "level": 5,
         "title": "`async _prepare_environment() -> bool`"
       }
@@ -10452,6 +10588,14 @@
         "title": "`async _release_txn_conn(conn: Any) -> None`"
       }
     ],
+    "`async _reload(watch: _DistWatch, components: list[tuple[str, str]]) -> None`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/runtime/package_reload.md",
+        "line": 181,
+        "level": 5,
+        "title": "`async _reload(watch: _DistWatch, components: list[tuple[str, str]]) -> None`"
+      }
+    ],
     "`async _reload_finalize_mount(label: str, meta_name: str, new_module: Any, manager_instance: Any, sdk_instance: Any, *, was_loaded: bool) -> bool`": [
       {
         "document": "api-reference/auto_api/ErisPulse/loaders/module.md",
@@ -10463,7 +10607,7 @@
     "`async _reload_module(module_name: str) -> bool`": [
       {
         "document": "api-reference/auto_api/ErisPulse/sdk.md",
-        "line": 487,
+        "line": 504,
         "level": 5,
         "title": "`async _reload_module(module_name: str) -> bool`"
       }
@@ -11675,7 +11819,7 @@
     "`async hard_restart(reason: str = '') -> bool`": [
       {
         "document": "api-reference/auto_api/ErisPulse/sdk.md",
-        "line": 610,
+        "line": 627,
         "level": 5,
         "title": "`async hard_restart(reason: str = '') -> bool`"
       }
@@ -11707,7 +11851,7 @@
     "`async init(*, before_init: Callable[[], Any] | None = None, after_init: Callable[[], Any] | None = None) -> bool`": [
       {
         "document": "api-reference/auto_api/ErisPulse/sdk.md",
-        "line": 210,
+        "line": 227,
         "level": 5,
         "title": "`async init(*, before_init: Callable[[], Any] | None = None, after_init: Callable[[], Any] | None = None) -> bool`"
       }
@@ -11827,7 +11971,7 @@
     "`async load_module(module_name: str) -> bool`": [
       {
         "document": "api-reference/auto_api/ErisPulse/sdk.md",
-        "line": 284,
+        "line": 301,
         "level": 5,
         "title": "`async load_module(module_name: str) -> bool`"
       }
@@ -12121,7 +12265,7 @@
     "`async reload_adapter(adapter_name: str, *, full: bool = True) -> bool`": [
       {
         "document": "api-reference/auto_api/ErisPulse/sdk.md",
-        "line": 440,
+        "line": 457,
         "level": 5,
         "title": "`async reload_adapter(adapter_name: str, *, full: bool = True) -> bool`"
       }
@@ -12153,7 +12297,7 @@
     "`async reload_all_modules() -> dict[str, bool]`": [
       {
         "document": "api-reference/auto_api/ErisPulse/sdk.md",
-        "line": 464,
+        "line": 481,
         "level": 5,
         "title": "`async reload_all_modules() -> dict[str, bool]`"
       }
@@ -12161,7 +12305,7 @@
     "`async reload_module(module_name: str, *, full: bool = True) -> bool`": [
       {
         "document": "api-reference/auto_api/ErisPulse/sdk.md",
-        "line": 411,
+        "line": 428,
         "level": 5,
         "title": "`async reload_module(module_name: str, *, full: bool = True) -> bool`"
       }
@@ -12225,7 +12369,7 @@
     "`async restart() -> bool`": [
       {
         "document": "api-reference/auto_api/ErisPulse/sdk.md",
-        "line": 563,
+        "line": 580,
         "level": 5,
         "title": "`async restart() -> bool`"
       }
@@ -12249,7 +12393,7 @@
     "`async run(keep_running: bool = True, *, before_init: Callable[[], Any] | None = None, after_init: Callable[[], Any] | None = None, on_ready: Callable[[], Any] | None = None) -> None`": [
       {
         "document": "api-reference/auto_api/ErisPulse/sdk.md",
-        "line": 301,
+        "line": 318,
         "level": 5,
         "title": "`async run(keep_running: bool = True, *, before_init: Callable[[], Any] | None = None, after_init: Callable[[], Any] | None = None, on_ready: Callable[[], Any] | None = None) -> None`"
       }
@@ -12569,7 +12713,7 @@
       },
       {
         "document": "api-reference/auto_api/ErisPulse/sdk.md",
-        "line": 669,
+        "line": 686,
         "level": 5,
         "title": "`async uninit() -> bool`"
       }
@@ -13124,6 +13268,14 @@
         "title": "`class AsyncBridge`"
       }
     ],
+    "`class AutoReloadConfig`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/runtime/frame_config_schema.md",
+        "line": 62,
+        "level": 3,
+        "title": "`class AutoReloadConfig`"
+      }
+    ],
     "`class BaseAdapter(ABC)`": [
       {
         "document": "api-reference/auto_api/ErisPulse/Core/Bases/adapter.md",
@@ -13543,7 +13695,7 @@
     "`class FrameworkConfig`": [
       {
         "document": "api-reference/auto_api/ErisPulse/runtime/frame_config_schema.md",
-        "line": 62,
+        "line": 70,
         "level": 3,
         "title": "`class FrameworkConfig`"
       }
@@ -13962,6 +14114,14 @@
         "line": 184,
         "level": 3,
         "title": "`class PackageManager`"
+      }
+    ],
+    "`class PackageReloadWatcher`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/runtime/package_reload.md",
+        "line": 66,
+        "level": 3,
+        "title": "`class PackageReloadWatcher`"
       }
     ],
     "`class PluginFolderLoader`": [
@@ -14546,6 +14706,14 @@
         "line": 47,
         "level": 3,
         "title": "`class _DevWatchdog(DevWatcher)`"
+      }
+    ],
+    "`class _DistWatch`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/runtime/package_reload.md",
+        "line": 61,
+        "level": 3,
+        "title": "`class _DistWatch`"
       }
     ],
     "`class _DualMethod`": [
@@ -15507,7 +15675,7 @@
     "`dump_state() -> dict`": [
       {
         "document": "api-reference/auto_api/ErisPulse/sdk.md",
-        "line": 201,
+        "line": 218,
         "level": 5,
         "title": "`dump_state() -> dict`"
       }
@@ -15577,7 +15745,7 @@
     "`enable_plugin_hot_reload(interval: float = 1.0) -> bool`": [
       {
         "document": "api-reference/auto_api/ErisPulse/sdk.md",
-        "line": 384,
+        "line": 401,
         "level": 5,
         "title": "`enable_plugin_hot_reload(interval: float = 1.0) -> bool`"
       }
@@ -17093,7 +17261,7 @@
       },
       {
         "document": "api-reference/auto_api/ErisPulse/sdk.md",
-        "line": 640,
+        "line": 657,
         "level": 5,
         "title": "`get_topology(*, json_safe: bool = True) -> dict[str, Any]`"
       }
@@ -17465,7 +17633,7 @@
     "`init_sync(*, before_init: Callable[[], Any] | None = None, after_init: Callable[[], Any] | None = None) -> bool`": [
       {
         "document": "api-reference/auto_api/ErisPulse/sdk.md",
-        "line": 253,
+        "line": 270,
         "level": 5,
         "title": "`init_sync(*, before_init: Callable[[], Any] | None = None, after_init: Callable[[], Any] | None = None) -> bool`"
       }
@@ -17473,7 +17641,7 @@
     "`init_task(*, before_init: Callable[[], Any] | None = None, after_init: Callable[[], Any] | None = None) -> asyncio.Task | concurrent.futures.Future`": [
       {
         "document": "api-reference/auto_api/ErisPulse/sdk.md",
-        "line": 267,
+        "line": 284,
         "level": 5,
         "title": "`init_task(*, before_init: Callable[[], Any] | None = None, after_init: Callable[[], Any] | None = None) -> asyncio.Task | concurrent.futures.Future`"
       }
@@ -17889,7 +18057,7 @@
     "`is_supervised() -> bool`": [
       {
         "document": "api-reference/auto_api/ErisPulse/sdk.md",
-        "line": 597,
+        "line": 614,
         "level": 5,
         "title": "`is_supervised() -> bool`"
       }
@@ -20395,7 +20563,7 @@
     "`shutdown() -> None`": [
       {
         "document": "api-reference/auto_api/ErisPulse/sdk.md",
-        "line": 367,
+        "line": 384,
         "level": 5,
         "title": "`shutdown() -> None`"
       }
@@ -20490,6 +20658,12 @@
     ],
     "`start() -> bool`": [
       {
+        "document": "api-reference/auto_api/ErisPulse/runtime/package_reload.md",
+        "line": 85,
+        "level": 5,
+        "title": "`start() -> bool`"
+      },
+      {
         "document": "api-reference/auto_api/ErisPulse/runtime/plugin_reload.md",
         "line": 165,
         "level": 5,
@@ -20526,6 +20700,14 @@
         "line": 25,
         "level": 3,
         "title": "`start_dispatch_trace() -> Iterator[list[dict[str, Any]]]`"
+      }
+    ],
+    "`start_package_reload(sdk: SDK) -> None`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/runtime/package_reload.md",
+        "line": 40,
+        "level": 3,
+        "title": "`start_package_reload(sdk: SDK) -> None`"
       }
     ],
     "`start_persist(whl_path: 'str | Path') -> 'dict[str, Any]'`": [
@@ -20646,6 +20828,12 @@
         "title": "`stop() -> None`"
       },
       {
+        "document": "api-reference/auto_api/ErisPulse/runtime/package_reload.md",
+        "line": 94,
+        "level": 5,
+        "title": "`stop() -> None`"
+      },
+      {
         "document": "api-reference/auto_api/ErisPulse/runtime/plugin_reload.md",
         "line": 178,
         "level": 5,
@@ -20660,10 +20848,18 @@
         "title": "`stop_all_watchers() -> int`（classmethod）"
       }
     ],
+    "`stop_package_reload(sdk: SDK) -> None`": [
+      {
+        "document": "api-reference/auto_api/ErisPulse/runtime/package_reload.md",
+        "line": 50,
+        "level": 3,
+        "title": "`stop_package_reload(sdk: SDK) -> None`"
+      }
+    ],
     "`stop_plugin_hot_reload() -> None`": [
       {
         "document": "api-reference/auto_api/ErisPulse/sdk.md",
-        "line": 504,
+        "line": 521,
         "level": 5,
         "title": "`stop_plugin_hot_reload() -> None`"
       }
@@ -21996,6 +22192,12 @@
         "title": "函数列表"
       },
       {
+        "document": "api-reference/auto_api/ErisPulse/runtime/package_reload.md",
+        "line": 23,
+        "level": 2,
+        "title": "函数列表"
+      },
+      {
         "document": "api-reference/auto_api/ErisPulse/runtime/plugin_reload.md",
         "line": 26,
         "level": 2,
@@ -22888,6 +23090,12 @@
         "title": "方法列表"
       },
       {
+        "document": "api-reference/auto_api/ErisPulse/runtime/package_reload.md",
+        "line": 82,
+        "level": 4,
+        "title": "方法列表"
+      },
+      {
         "document": "api-reference/auto_api/ErisPulse/runtime/plugin_reload.md",
         "line": 48,
         "level": 4,
@@ -23746,6 +23954,12 @@
         "title": "模块概述"
       },
       {
+        "document": "api-reference/auto_api/ErisPulse/runtime/package_reload.md",
+        "line": 5,
+        "level": 2,
+        "title": "模块概述"
+      },
+      {
         "document": "api-reference/auto_api/ErisPulse/runtime/plugin_reload.md",
         "line": 5,
         "level": 2,
@@ -24362,6 +24576,12 @@
       {
         "document": "api-reference/auto_api/ErisPulse/runtime/metrics.md",
         "line": 21,
+        "level": 2,
+        "title": "类列表"
+      },
+      {
+        "document": "api-reference/auto_api/ErisPulse/runtime/package_reload.md",
+        "line": 58,
         "level": 2,
         "title": "类列表"
       },

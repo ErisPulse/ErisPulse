@@ -174,6 +174,23 @@ print(sdk.version)
 ---
 
 
+##### `_start_package_reload_watcher() -> None`
+
+**内部方法**
+按 ``framework.auto_reload`` 配置启动发行版热重载监控
+（实现见 ``runtime/package_reload.start_package_reload``）
+
+---
+
+
+##### `_stop_package_reload_watcher() -> None`
+
+**内部方法**
+停止发行版热重载监控（实现见 ``runtime/package_reload.stop_package_reload``）
+
+---
+
+
 ##### `_on_gc_config_event(_data: dict) -> None`
 
 **内部方法**

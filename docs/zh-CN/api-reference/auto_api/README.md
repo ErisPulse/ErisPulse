@@ -19,10 +19,10 @@
 
 ## 统计信息
 
-- **模块总数**: 145
-- **类总数**: 204（包括 5 个嵌套类）
-- **函数总数**: 448
-- **方法总数**: 1824
+- **模块总数**: 146
+- **类总数**: 207（包括 5 个嵌套类）
+- **函数总数**: 452
+- **方法总数**: 1840
 
 ---
 
@@ -671,7 +671,7 @@
 
 ### [ErisPulse.runtime.frame_config_schema](ErisPulse/runtime/frame_config_schema.md)
 
-3 个类 | 2 个函数
+4 个类 | 2 个函数
 
 
 ### [ErisPulse.runtime.hints](ErisPulse/runtime/hints.md)
@@ -697,6 +697,11 @@
 ### [ErisPulse.runtime.owner_cleanup](ErisPulse/runtime/owner_cleanup.md)
 
 4 个函数
+
+
+### [ErisPulse.runtime.package_reload](ErisPulse/runtime/package_reload.md)
+
+2 个类 | 14 个方法 | 4 个函数
 
 
 ### [ErisPulse.runtime.plugin_reload](ErisPulse/runtime/plugin_reload.md)
@@ -751,5 +756,5 @@
 
 ### [ErisPulse.sdk](ErisPulse/sdk.md)
 
-1 个类 | 35 个方法 | 1 个函数
+1 个类 | 37 个方法 | 1 个函数
 

@@ -59,6 +59,14 @@ strict_mode 放行名单：名单内组件不参与严格模式校验
 严格模式作用域开关：按域开启严格校验（级别语义随 strict_mode）
 
 
+### `class AutoReloadConfig`
+
+已安装发行版热重载：来源包文件变化后自动重载对应模块 / 适配器（升级即生效）
+
+监控范围 ACL（与 strict_mode_exceptions / watch_ignore_dirs 同族）：
+deny 优先于 allow；allow 为空表示"除 deny 外全部已加载组件"。
+
+
 ### `class FrameworkConfig`
 
 框架运行参数：加载行为、严格模式、性能与主动 GC、去重与多账户策略
