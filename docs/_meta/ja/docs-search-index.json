@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 2132,
+  "total_keywords": 2152,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -24,6 +24,14 @@
         "line": 68,
         "level": 3,
         "title": "1 つでインストールするスクリプト（新規環境に推奨）"
+      }
+    ],
+    "1 つのパッケージに複数のモジュールを登録できますか？": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 208,
+        "level": 3,
+        "title": "1 つのパッケージに複数のモジュールを登録できますか？"
       }
     ],
     "1. BaseAdapter 層（ほとんどの場合オーバーライド不要）": [
@@ -208,14 +216,6 @@
         "line": 349,
         "level": 3,
         "title": "1. ログレベルの適切な使用"
-      }
-    ],
-    "1. ロボットを使いたい": [
-      {
-        "document": "README.md",
-        "line": 20,
-        "level": 3,
-        "title": "1. ロボットを使いたい"
       }
     ],
     "1. 健康チェック (GET)": [
@@ -488,14 +488,6 @@
         "title": "1xxxx 動作リクエストエラー（Request Error）"
       }
     ],
-    "1つのパッケージで複数のモジュールを登録できるか？": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 208,
-        "level": 3,
-        "title": "1つのパッケージで複数のモジュールを登録できるか？"
-      }
-    ],
     "2. 3 層 DSL の並列構造": [
       {
         "document": "standards/api-action-spec.md",
@@ -544,12 +536,12 @@
         "title": "2. Metaイベントの送信"
       }
     ],
-    "2. PyPI へのリリース": [
+    "2. PyPI への発行": [
       {
         "document": "developer-guide/publishing.md",
         "line": 78,
         "level": 3,
-        "title": "2. PyPI へのリリース"
+        "title": "2. PyPI への発行"
       }
     ],
     "2. README ヘッダー": [
@@ -662,14 +654,6 @@
         "line": 404,
         "level": 3,
         "title": "2. ブロッキング操作の回避"
-      }
-    ],
-    "2. モジュール/アダプタを開発したい": [
-      {
-        "document": "README.md",
-        "line": 35,
-        "level": 3,
-        "title": "2. モジュール/アダプタを開発したい"
       }
     ],
     "2. モジュール/コマンドが反応しない": [
@@ -1198,14 +1182,6 @@
         "title": "3. フィールドマッピング (入力 JSON → OneBot12 イベント)"
       }
     ],
-    "3. フレームワークの内部構造を理解したい": [
-      {
-        "document": "README.md",
-        "line": 47,
-        "level": 3,
-        "title": "3. フレームワークの内部構造を理解したい"
-      }
-    ],
     "3. プラットフォームタイプマッピング": [
       {
         "document": "standards/session-types.md",
@@ -1230,12 +1206,12 @@
         "title": "3. プラットフォーム固有メソッド命名"
       }
     ],
-    "3. モジュールストアに提出（ErisPulse Workbench）": [
+    "3. モジュールストアへの登録（ErisPulse Workbench）": [
       {
         "document": "developer-guide/publishing.md",
         "line": 93,
         "level": 3,
-        "title": "3. モジュールストアに提出（ErisPulse Workbench）"
+        "title": "3. モジュールストアへの登録（ErisPulse Workbench）"
       }
     ],
     "3. リソース管理": [
@@ -1518,12 +1494,12 @@
         "title": "3段階の重複防止メカニズムの役割"
       }
     ],
-    "4. ErisPulseのエコシステムと公式クライアント": [
+    "4 つの接続方法": [
       {
-        "document": "README.md",
-        "line": 94,
+        "document": "ecosystem/workbench.md",
+        "line": 86,
         "level": 3,
-        "title": "4. ErisPulseのエコシステムと公式クライアント"
+        "title": "4 つの接続方法"
       }
     ],
     "4. Event 便利メソッド": [
@@ -1566,12 +1542,12 @@
         "title": "4. アダプタの起動"
       }
     ],
-    "4. イメージを公開に設定": [
+    "4. イメージを公開する": [
       {
         "document": "developer-guide/publishing.md",
         "line": 344,
         "level": 3,
-        "title": "4. イメージを公開に設定"
+        "title": "4. イメージを公開する"
       }
     ],
     "4. カスタムタイプの拡張": [
@@ -1662,12 +1638,12 @@
         "title": "4. 接続情報の公開"
       }
     ],
-    "4. 既にリリースしたモジュールの管理": [
+    "4. 発行済みモジュールの管理": [
       {
         "document": "developer-guide/publishing.md",
         "line": 138,
         "level": 3,
-        "title": "4. 既にリリースしたモジュールの管理"
+        "title": "4. 発行済みモジュールの管理"
       }
     ],
     "4. 組み合わせて使用": [
@@ -1780,14 +1756,6 @@
         "line": 103,
         "level": 3,
         "title": "5. Botの状態の照会"
-      }
-    ],
-    "5. ErisPulseに貢献したい": [
-      {
-        "document": "README.md",
-        "line": 108,
-        "level": 3,
-        "title": "5. ErisPulseに貢献したい"
       }
     ],
     "5. HTTPルートのライフサイクル": [
@@ -3172,12 +3140,12 @@
         "title": "Discord 特有のメソッドの使用"
       }
     ],
-    "Docker Hub にも同時に公開する": [
+    "Docker Hub への同時発行": [
       {
         "document": "developer-guide/publishing.md",
         "line": 383,
         "level": 3,
-        "title": "Docker Hub にも同時に公開する"
+        "title": "Docker Hub への同時発行"
       }
     ],
     "Docker を使用する": [
@@ -3188,20 +3156,20 @@
         "title": "Docker を使用する"
       }
     ],
-    "Docker イメージ vs PyPI リリース": [
+    "Docker イメージ vs PyPI 発行": [
       {
         "document": "developer-guide/publishing.md",
         "line": 406,
         "level": 3,
-        "title": "Docker イメージ vs PyPI リリース"
+        "title": "Docker イメージ vs PyPI 発行"
       }
     ],
-    "Docker イメージでアプリケーションを配布する": [
+    "Docker イメージによるアプリケーションの配布": [
       {
         "document": "developer-guide/publishing.md",
         "line": 222,
         "level": 2,
-        "title": "Docker イメージでアプリケーションを配布する"
+        "title": "Docker イメージによるアプリケーションの配布"
       }
     ],
     "Docker 方式": [
@@ -3300,6 +3268,22 @@
         "title": "ErisPulse リクエスト操作規格"
       }
     ],
+    "ErisPulse ワークベンチ": [
+      {
+        "document": "ecosystem/workbench.md",
+        "line": 1,
+        "level": 1,
+        "title": "ErisPulse ワークベンチ"
+      }
+    ],
+    "ErisPulse ワークベンチ：モジュールストアとホスティングドメインのバックエンド": [
+      {
+        "document": "ecosystem/README.md",
+        "line": 84,
+        "level": 3,
+        "title": "ErisPulse ワークベンチ：モジュールストアとホスティングドメインのバックエンド"
+      }
+    ],
     "ErisPulse 送信メソッド規格": [
       {
         "document": "standards/send-method-spec.md",
@@ -3319,7 +3303,7 @@
     "ErisPulse-ApiMCP：AI クライアントがロボットを操作できるようにする": [
       {
         "document": "ecosystem/README.md",
-        "line": 50,
+        "line": 52,
         "level": 3,
         "title": "ErisPulse-ApiMCP：AI クライアントがロボットを操作できるようにする"
       }
@@ -3332,12 +3316,12 @@
         "title": "ErisPulse-App"
       }
     ],
-    "ErisPulse-App：スマートフォンで直接ボットを実行": [
+    "ErisPulse-App：スマホでロボットを直接実行": [
       {
         "document": "ecosystem/README.md",
-        "line": 72,
+        "line": 74,
         "level": 3,
-        "title": "ErisPulse-App：スマートフォンで直接ボットを実行"
+        "title": "ErisPulse-App：スマホでロボットを直接実行"
       }
     ],
     "ErisPulse-Cron": [
@@ -3351,7 +3335,7 @@
     "ErisPulse-Cron：定期実行": [
       {
         "document": "ecosystem/README.md",
-        "line": 30,
+        "line": 32,
         "level": 3,
         "title": "ErisPulse-Cron：定期実行"
       }
@@ -3367,7 +3351,7 @@
     "ErisPulse-Dashboard：ブラウザ内の管理パネル": [
       {
         "document": "ecosystem/README.md",
-        "line": 20,
+        "line": 22,
         "level": 3,
         "title": "ErisPulse-Dashboard：ブラウザ内の管理パネル"
       }
@@ -3383,7 +3367,7 @@
     "ErisPulse-QvQChat：汎用エージェント": [
       {
         "document": "ecosystem/README.md",
-        "line": 40,
+        "line": 42,
         "level": 3,
         "title": "ErisPulse-QvQChat：汎用エージェント"
       }
@@ -3399,7 +3383,7 @@
     "ErisPulse-Takumi：画像レンダリング": [
       {
         "document": "ecosystem/README.md",
-        "line": 60,
+        "line": 62,
         "level": 3,
         "title": "ErisPulse-Takumi：画像レンダリング"
       }
@@ -3842,6 +3826,14 @@
         "line": 204,
         "level": 2,
         "title": "Notice 通知モジュール"
+      }
+    ],
+    "OAuth アプリケーション": [
+      {
+        "document": "ecosystem/workbench.md",
+        "line": 141,
+        "level": 3,
+        "title": "OAuth アプリケーション"
       }
     ],
     "OB11 拡張アクション（Api DSL）": [
@@ -6032,14 +6024,6 @@
         "title": "③ 出站次元（制限モジュールが発信する呼び出し）"
       }
     ],
-    "あなたの道を選択してください": [
-      {
-        "document": "README.md",
-        "line": 9,
-        "level": 2,
-        "title": "あなたの道を選択してください"
-      }
-    ],
     "いつ手動起動が必要か？": [
       {
         "document": "advanced/startup.md",
@@ -6059,7 +6043,7 @@
     "その他": [
       {
         "document": "README.md",
-        "line": 139,
+        "line": 141,
         "level": 2,
         "title": "その他"
       },
@@ -6082,6 +6066,14 @@
         "line": 208,
         "level": 3,
         "title": "その他の Send 便利メソッド"
+      }
+    ],
+    "その他のページ": [
+      {
+        "document": "ecosystem/workbench.md",
+        "line": 157,
+        "level": 2,
+        "title": "その他のページ"
       }
     ],
     "その他のメッセージタイプ": [
@@ -6160,6 +6152,18 @@
       {
         "document": "ai-support/README.md",
         "line": 144,
+        "level": 2,
+        "title": "よくある質問"
+      },
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 202,
+        "level": 2,
+        "title": "よくある質問"
+      },
+      {
+        "document": "ecosystem/workbench.md",
+        "line": 162,
         "level": 2,
         "title": "よくある質問"
       },
@@ -6370,6 +6374,14 @@
         "line": 47,
         "level": 3,
         "title": "アクションとエラーコード規格"
+      }
+    ],
+    "アクセストークン": [
+      {
+        "document": "ecosystem/workbench.md",
+        "line": 128,
+        "level": 3,
+        "title": "アクセストークン"
       }
     ],
     "アクティブ状態の管理": [
@@ -7630,6 +7642,14 @@
         "line": 420,
         "level": 2,
         "title": "エンドツーエンド暗号化（E2EE）"
+      }
+    ],
+    "オープンインターフェース": [
+      {
+        "document": "ecosystem/workbench.md",
+        "line": 124,
+        "level": 2,
+        "title": "オープンインターフェース"
       }
     ],
     "カウントと存在確認": [
@@ -9770,6 +9790,22 @@
         "title": "ドキュメント構造規格"
       }
     ],
+    "ドメインの検証が一向に通らないのはなぜですか？": [
+      {
+        "document": "ecosystem/workbench.md",
+        "line": 168,
+        "level": 3,
+        "title": "ドメインの検証が一向に通らないのはなぜですか？"
+      }
+    ],
+    "ドメイン申請後、どのくらいで有効になりますか？": [
+      {
+        "document": "ecosystem/workbench.md",
+        "line": 172,
+        "level": 3,
+        "title": "ドメイン申請後、どのくらいで有効になりますか？"
+      }
+    ],
     "ネットワーククライアント": [
       {
         "document": "advanced/client.md",
@@ -9944,12 +9980,12 @@
         "title": "パス処理"
       }
     ],
-    "パッケージ名は `ErisPulse-` で始める必要があるか？": [
+    "パッケージ名は `ErisPulse-` で始める必要がありますか？": [
       {
         "document": "developer-guide/publishing.md",
         "line": 204,
         "level": 3,
-        "title": "パッケージ名は `ErisPulse-` で始める必要があるか？"
+        "title": "パッケージ名は `ErisPulse-` で始める必要がありますか？"
       }
     ],
     "パッケージ管理コマンド": [
@@ -10571,7 +10607,7 @@
     "ヘルプを得る": [
       {
         "document": "README.md",
-        "line": 145,
+        "line": 147,
         "level": 2,
         "title": "ヘルプを得る"
       }
@@ -11652,6 +11688,22 @@
         "title": "モジュールの基本概念"
       }
     ],
+    "モジュールの登録": [
+      {
+        "document": "ecosystem/workbench.md",
+        "line": 45,
+        "level": 3,
+        "title": "モジュールの登録"
+      }
+    ],
+    "モジュールを提出した後、すぐにストアに表示されないのはなぜですか？": [
+      {
+        "document": "ecosystem/workbench.md",
+        "line": 164,
+        "level": 3,
+        "title": "モジュールを提出した後、すぐにストアに表示されないのはなぜですか？"
+      }
+    ],
     "モジュールクラスでの使用": [
       {
         "document": "advanced/i18n.md",
@@ -11660,12 +11712,12 @@
         "title": "モジュールクラスでの使用"
       }
     ],
-    "モジュールストアの概要": [
+    "モジュールストア概要": [
       {
         "document": "developer-guide/publishing.md",
         "line": 8,
         "level": 2,
-        "title": "モジュールストアの概要"
+        "title": "モジュールストア概要"
       }
     ],
     "モジュールテスト（ErisPulse-Testing）": [
@@ -11746,6 +11798,14 @@
         "line": 19,
         "level": 2,
         "title": "モジュール概要"
+      }
+    ],
+    "モジュール管理": [
+      {
+        "document": "ecosystem/workbench.md",
+        "line": 41,
+        "level": 2,
+        "title": "モジュール管理"
       }
     ],
     "モジュール紹介 meta": [
@@ -12340,46 +12400,6 @@
         "title": "リフレッシュタイミング"
       }
     ],
-    "リリース": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 185,
-        "level": 3,
-        "title": "リリース"
-      }
-    ],
-    "リリースとモジュールストアのガイド": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 1,
-        "level": 1,
-        "title": "リリースとモジュールストアのガイド"
-      }
-    ],
-    "リリース前に品質を確保する": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 420,
-        "level": 3,
-        "title": "リリース前に品質を確保する"
-      }
-    ],
-    "リリース前のチェックリスト": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 152,
-        "level": 2,
-        "title": "リリース前のチェックリスト"
-      }
-    ],
-    "リリース後にユーザーが使いやすいようにする": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 425,
-        "level": 3,
-        "title": "リリース後にユーザーが使いやすいようにする"
-      }
-    ],
     "リンクトレース：trace-id": [
       {
         "document": "advanced/interaction.md",
@@ -12540,6 +12560,14 @@
         "title": "ログの記録"
       }
     ],
+    "ログインとアカウント": [
+      {
+        "document": "ecosystem/workbench.md",
+        "line": 20,
+        "level": 2,
+        "title": "ログインとアカウント"
+      }
+    ],
     "ログメッセージ": [
       {
         "document": "advanced/i18n.md",
@@ -12688,6 +12716,14 @@
         "title": "ワイルドカードと正規表現による監視"
       }
     ],
+    "一、私はロボットを使いたい": [
+      {
+        "document": "README.md",
+        "line": 20,
+        "level": 3,
+        "title": "一、私はロボットを使いたい"
+      }
+    ],
     "一回限りの登録（once）": [
       {
         "document": "advanced/lifecycle.md",
@@ -12790,14 +12826,6 @@
         "title": "一般的な設定位置"
       }
     ],
-    "一般的な質問": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 202,
-        "level": 2,
-        "title": "一般的な質問"
-      }
-    ],
     "一般的アドバイス": [
       {
         "document": "user-guide/migration.md",
@@ -12812,6 +12840,14 @@
         "line": 1,
         "level": 1,
         "title": "一般的タスクの例"
+      }
+    ],
+    "三、私は内部の仕組みを理解したい": [
+      {
+        "document": "README.md",
+        "line": 47,
+        "level": 3,
+        "title": "三、私は内部の仕組みを理解したい"
       }
     ],
     "並列と逐次": [
@@ -12838,6 +12874,14 @@
         "title": "主な相違点"
       }
     ],
+    "二、私はモジュールまたはアダプタを開発したい": [
+      {
+        "document": "README.md",
+        "line": 35,
+        "level": 3,
+        "title": "二、私はモジュールまたはアダプタを開発したい"
+      }
+    ],
     "云湖プラットフォームの特徴ドキュメント": [
       {
         "document": "platform-guide/yunhu.md",
@@ -12860,6 +12904,14 @@
         "line": 135,
         "level": 2,
         "title": "互換性契約（コンシューマーが遵守すべき事項）"
+      }
+    ],
+    "五、私はErisPulseに貢献したい": [
+      {
+        "document": "README.md",
+        "line": 109,
+        "level": 3,
+        "title": "五、私はErisPulseに貢献したい"
       }
     ],
     "交互処理": [
@@ -13266,12 +13318,20 @@
         "title": "全パラメータ一覧"
       }
     ],
-    "公式クライアント（スタンドアロンプログラム）": [
+    "公式オンラインサービス": [
       {
         "document": "ecosystem/README.md",
-        "line": 70,
+        "line": 82,
         "level": 2,
-        "title": "公式クライアント（スタンドアロンプログラム）"
+        "title": "公式オンラインサービス"
+      }
+    ],
+    "公式クライアント（独立プログラム）": [
+      {
+        "document": "ecosystem/README.md",
+        "line": 72,
+        "level": 2,
+        "title": "公式クライアント（独立プログラム）"
       }
     ],
     "公開ガイド": [
@@ -13860,6 +13920,14 @@
         "line": 247,
         "level": 3,
         "title": "問題に遭遇した場合"
+      }
+    ],
+    "四、エコシステムと公式クライアント": [
+      {
+        "document": "README.md",
+        "line": 94,
+        "level": 3,
+        "title": "四、エコシステムと公式クライアント"
       }
     ],
     "固有のイベントタイプ": [
@@ -14750,12 +14818,12 @@
         "title": "宣言的設定（推奨）"
       }
     ],
-    "審査にはどのくらい時間がかかるか？": [
+    "審査にはどのくらい時間がかかりますか？": [
       {
         "document": "developer-guide/publishing.md",
         "line": 218,
         "level": 3,
-        "title": "審査にはどのくらい時間がかかるか？"
+        "title": "審査にはどのくらい時間がかかりますか？"
       }
     ],
     "対応していないタイプの処理": [
@@ -15232,6 +15300,30 @@
         "title": "戻り値の説明"
       }
     ],
+    "所有ドメイン": [
+      {
+        "document": "ecosystem/workbench.md",
+        "line": 76,
+        "level": 2,
+        "title": "所有ドメイン"
+      }
+    ],
+    "所有権の検証": [
+      {
+        "document": "ecosystem/workbench.md",
+        "line": 105,
+        "level": 3,
+        "title": "所有権の検証"
+      }
+    ],
+    "所有権の認領": [
+      {
+        "document": "ecosystem/workbench.md",
+        "line": 69,
+        "level": 3,
+        "title": "所有権の認領"
+      }
+    ],
     "手動でRequest DSLを呼び出す": [
       {
         "document": "platform-guide/onebot11.md",
@@ -15617,7 +15709,7 @@
     "推奨モジュール": [
       {
         "document": "ecosystem/README.md",
-        "line": 18,
+        "line": 20,
         "level": 2,
         "title": "推奨モジュール"
       }
@@ -15790,12 +15882,12 @@
         "title": "方法 3: uv tool を使用したインストール（グローバル CLI、推奨）"
       }
     ],
-    "方法1：ウェブサイトから提出（初回推奨）": [
+    "方法1：Web フォームによる登録（初回推奨）": [
       {
         "document": "developer-guide/publishing.md",
         "line": 97,
         "level": 4,
-        "title": "方法1：ウェブサイトから提出（初回推奨）"
+        "title": "方法1：Web フォームによる登録（初回推奨）"
       }
     ],
     "方法1：ローカルプロセス（推奨）": [
@@ -15806,12 +15898,12 @@
         "title": "方法1：ローカルプロセス（推奨）"
       }
     ],
-    "方法2：API による自主提出（CLI / CI 環境）": [
+    "方法2：API による自主登録（CLI / CI 環境）": [
       {
         "document": "developer-guide/publishing.md",
         "line": 103,
         "level": 4,
-        "title": "方法2：API による自主提出（CLI / CI 環境）"
+        "title": "方法2：API による自主登録（CLI / CI 環境）"
       }
     ],
     "方法2：公式オンラインエンドポイント": [
@@ -15830,20 +15922,20 @@
         "title": "方法4：ErisPulse-Appクライアントを使用する（ターミナル不要）"
       }
     ],
-    "既にリリースしたモジュールの更新": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 144,
-        "level": 2,
-        "title": "既にリリースしたモジュールの更新"
-      }
-    ],
     "既に接続済みのプラットフォーム機能": [
       {
         "document": "platform-guide/wechatmp.md",
         "line": 45,
         "level": 3,
         "title": "既に接続済みのプラットフォーム機能"
+      }
+    ],
+    "既に発行済みのモジュールを更新する": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 144,
+        "level": 2,
+        "title": "既に発行済みのモジュールを更新する"
       }
     ],
     "既知の制限": [
@@ -16690,6 +16782,14 @@
         "title": "次に"
       }
     ],
+    "次にやること": [
+      {
+        "document": "ecosystem/workbench.md",
+        "line": 176,
+        "level": 2,
+        "title": "次にやること"
+      }
+    ],
     "次に進む": [
       {
         "document": "developer-guide/orm.md",
@@ -17152,6 +17252,14 @@
         "title": "生メッセージ送信"
       }
     ],
+    "申請プロセス": [
+      {
+        "document": "ecosystem/workbench.md",
+        "line": 97,
+        "level": 3,
+        "title": "申請プロセス"
+      }
+    ],
     "画像のダウンロードと保存": [
       {
         "document": "getting-started/common-tasks.md",
@@ -17190,6 +17298,46 @@
         "line": 292,
         "level": 2,
         "title": "異スレッド非同期API"
+      }
+    ],
+    "発行": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 185,
+        "level": 3,
+        "title": "発行"
+      }
+    ],
+    "発行とモジュールストアガイド": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 1,
+        "level": 1,
+        "title": "発行とモジュールストアガイド"
+      }
+    ],
+    "発行前に品質チェック": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 420,
+        "level": 3,
+        "title": "発行前に品質チェック"
+      }
+    ],
+    "発行前のチェックリスト": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 152,
+        "level": 2,
+        "title": "発行前のチェックリスト"
+      }
+    ],
+    "発行後にユーザーに使ってもらう": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 425,
+        "level": 3,
+        "title": "発行後にユーザーに使ってもらう"
       }
     ],
     "登録API": [
@@ -17326,6 +17474,14 @@
         "line": 701,
         "level": 3,
         "title": "管理インターフェース"
+      }
+    ],
+    "管理操作": [
+      {
+        "document": "ecosystem/workbench.md",
+        "line": 116,
+        "level": 3,
+        "title": "管理操作"
       }
     ],
     "管理機能": [
@@ -17472,6 +17628,14 @@
         "title": "緊急対応：router.app"
       }
     ],
+    "編集と一括操作": [
+      {
+        "document": "ecosystem/workbench.md",
+        "line": 65,
+        "level": 3,
+        "title": "編集と一括操作"
+      }
+    ],
     "群内でロボットに @ されたが、ロボットが反応しない？": [
       {
         "document": "user-guide/faq.md",
@@ -17531,7 +17695,7 @@
     "自分のモジュールもここに載せたいですか？": [
       {
         "document": "ecosystem/README.md",
-        "line": 82,
+        "line": 94,
         "level": 2,
         "title": "自分のモジュールもここに載せたいですか？"
       }
@@ -18564,12 +18728,12 @@
         "title": "通知タイプ判定"
       }
     ],
-    "速攻リリース": [
+    "速攻発行": [
       {
         "document": "developer-guide/publishing.md",
         "line": 37,
         "level": 2,
-        "title": "速攻リリース"
+        "title": "速攻発行"
       }
     ],
     "速習": [
@@ -18636,12 +18800,20 @@
         "title": "遅延送信（Defer）"
       }
     ],
-    "適用シーン": [
+    "道を選びましょう": [
+      {
+        "document": "README.md",
+        "line": 9,
+        "level": 2,
+        "title": "道を選びましょう"
+      }
+    ],
+    "適用場面": [
       {
         "document": "developer-guide/publishing.md",
         "line": 226,
         "level": 3,
-        "title": "適用シーン"
+        "title": "適用場面"
       }
     ],
     "適用対象": [
@@ -18767,7 +18939,7 @@
     "開発方法": [
       {
         "document": "README.md",
-        "line": 132,
+        "line": 134,
         "level": 2,
         "title": "開発方法"
       }
@@ -18999,7 +19171,7 @@
     "関連リンク": [
       {
         "document": "README.md",
-        "line": 151,
+        "line": 153,
         "level": 2,
         "title": "関連リンク"
       },
@@ -19151,7 +19323,7 @@
     "高度な機能のバージョン別速查表": [
       {
         "document": "README.md",
-        "line": 119,
+        "line": 121,
         "level": 2,
         "title": "高度な機能のバージョン別速查表"
       }

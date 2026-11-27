@@ -1,9 +1,9 @@
 # Ecosystem Modules
 
-The ErisPulse framework itself only provides core capabilities (event system, module system, configuration, routing, logging, etc.), and **does not include** "heavyweight" features such as GUI, image rendering, and visualization. These capabilities are provided by community-maintained **third-party modules**, which can be installed on demand.
+The ErisPulse framework itself only provides core capabilities (event system, module system, configuration, routing, logging, etc.), and does **not include** "heavyweight" features such as GUI, image rendering, or visualization. These capabilities are provided by **third-party modules** maintained by the community, which can be installed as needed.
 
 > [!IMPORTANT]
-> The documentation in this directory is divided into two categories, each with a different installation method:
+> The documentation in this section is divided into two categories, with different installation methods:
 >
 > - **Modules** (such as Dashboard / Takumi) are installed using `epsdk install`:
 >
@@ -11,7 +11,9 @@ The ErisPulse framework itself only provides core capabilities (event system, mo
 >   epsdk install <module-name>
 >   ```
 >
-> - **Standalone programs** (such as the ErisPulse-App client) can be downloaded and installed directly from the corresponding GitHub Releases, without the need for `epsdk`.
+> - **Standalone applications** (such as ErisPulse-App client) are directly downloaded and installed from their respective GitHub Releases, without the need for `epsdk`.
+>
+> - **Online services** (such as ErisPulse Workbench) do not require installation; simply open the web page and log in to use them.
 
 ---
 
@@ -67,15 +69,25 @@ epsdk install Takumi
 
 Documentation: [Takumi Image Rendering](takumi.md) | Project Homepage: [GitHub](https://github.com/ccd2s/ErispulseTakumi) (Author: [@ccd2s](https://github.com/ccd2s))
 
-## Official Client (Standalone Application)
+## Official Clients (Standalone Applications)
 
 ### ErisPulse-App: Run Bots Directly on Your Phone
 
-No always-on server, but still want to create instances, install modules, and view event streams anytime? ErisPulse-App is the official cross-platform client (Android / Windows / Linux / macOS): a native interface for creating / running / managing multiple bot instances, with a built-in module marketplace and event builder. **Runs directly on your phone**, and stays resident in the desktop tray on desktop.
+Want to create instances, install modules, and view event streams anytime without a constantly running server? ErisPulse-App is the official cross-platform client (Android / Windows / Linux / macOS): create, run, and manage multiple bot instances with a native interface, featuring an integrated module store and event builder. **Run directly on your phone** and keep it running in the desktop tray.
 
-Installation packages for all platforms can be downloaded from [GitHub Releases](https://github.com/ErisPulse/ErisPulse-App/releases); no need for `epsdk`.
+Installers for all platforms are available from [GitHub Releases](https://github.com/ErisPulse/ErisPulse-App/releases). No `epsdk` is required.
 
 Documentation: [ErisPulse-App Installation and Usage](app.md)
+
+## Official Online Services
+
+### ErisPulse Workbench: Backend for Module Store and Managed Domains
+
+Want to get your module listed in the store, assign it a `plugin-xxx.erisdev.com` website address, or automate module submission with scripts? The Workbench is the unified account center for the ecosystem: one account manages module listing and authentication, domain registration, token generation, and enables your website to support "Login with ErisPulse account." Purely online service, **no installation required**.
+
+Visit: [https://workbench.erisdev.com/](https://workbench.erisdev.com/)
+
+Documentation: [ErisPulse Workbench User Guide](workbench.md)
 
 ---
 

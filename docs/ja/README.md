@@ -6,115 +6,117 @@ ErisPulse はイベント駆動型のモジュラーアシンクロナスなロ�
 
 ---
 
-## あなたの道を選択してください
+## 道を選びましょう
 
-目的に応じて、対応する学習パスを選択してください。各パスは浅いところから深いところへ順序付けされています。
+目的に応じて、適切な学習経路を選択してください。各経路は難易度の順に並んでいます。
 
 > [!IMPORTANT]
-> **すべてのドキュメントを読む必要はありません。** 大多数の開発者は **L1コア5編**（約1〜2時間）を順番に読めば、90%の機能を独自に開発できます。残りのドキュメントは特定のシナリオで必要なときに查阅する資料です — 必要なときに翻ってください。各編の冒頭には「いつこの編を読む必要があるか」が明記されています。
+> **すべてのドキュメントを読む必要はありません。** 大多数の開発者は、**L1 コア5編**（約1–2時間）を順に読めば、90%の機能を独自に開発できます。残りのドキュメントは、特定の状況で必要なときに参照するためのものであり、各編の冒頭に「このドキュメントを読む必要があるのはいつか」が明記されています。
 >
-> **L1コア5編**: [モジュール開発入門](developer-guide/modules/getting-started.md) → [基本概念](getting-started/basic-concepts.md) → [Eventラッパークラス](developer-guide/modules/event-wrapper.md) → [設定ファイルの説明](user-guide/configuration.md) → [例外のキャッチ](advanced/errors.md)
+> **L1 コア5編**：[モジュール開発入門](developer-guide/modules/getting-started.md) → [基本概念](getting-started/basic-concepts.md) → [Event 包装クラス](developer-guide/modules/event-wrapper.md) → [設定ファイルの説明](user-guide/configuration.md) → [例外のキャッチ](advanced/errors.md)
 >
-> アダプタ作成者は、さらに以下も必要です: [アダプタ開発入門](developer-guide/adapters/getting-started.md) → [イベントコンバーター](developer-guide/adapters/converter.md) → [SendDSLの詳細](developer-guide/adapters/send-dsl.md)
+> アダプタ開発者は、さらに：[アダプタ開発入門](developer-guide/adapters/getting-started.md) → [イベント変換器](developer-guide/adapters/converter.md) → [SendDSL 詳解](developer-guide/adapters/send-dsl.md) を読む必要があります。
 
-### 1. ロボットを使いたい
+### 一、私はロボットを使いたい
 
 ロボットを起動し、モジュールをインストールし、設定を行います。
 
-| ステップ | ドキュメント | 説明 |
+| 進捗 | ドキュメント | 説明 |
 |------|------|------|
-| **① 入門** | [5分で始める](quick-start.md) | インストール、初期化、実行 — 唯一のスタート地点 |
-| App直インストール | [ErisPulse-Appクライアント](ecosystem/app.md) | 公式の全プラットフォームクライアント: スマートフォン / パソコンのグラフィカルインターフェースで直接実行・管理、ターミナルなし |
-| ② 深入 | [最初のロボットを作成する](getting-started/first-bot.md) | 最初のコマンドハンドラを書く |
+| **① 入門** | [5分で始める](quick-start.md) | インストール、初期化、実行 —— 唯一の出発点 |
+| App 直接インストール | [ErisPulse-App クライアント](ecosystem/app.md) | 公式の全プラットフォームクライアント：スマートフォン / PC グラフィカルインターフェースで直接実行・管理、ターミナル不要 |
+| ② 深入 | [最初のロボットを作成する](getting-started/first-bot.md) | 最初のコマンドハンドラの作成 |
 | ③ 概念 | [基本概念](getting-started/basic-concepts.md) | アダプタ/モジュール/イベントの設計を理解する |
-| ④ 実践 | [一般的なタスク例](getting-started/common-tasks.md) | ストレージ、定時タスク、権限制御 |
-| 参考 | [設定ファイルの説明](user-guide/configuration.md) · [CLIコマンド](user-guide/cli-reference.md) · [デプロイガイド](user-guide/deployment.md) · [アップグレード移行ガイド](user-guide/migration.md) · [よくある質問](user-guide/faq.md) | アップグレード前に移行作業を確認する；トラブルシューティングはまずFAQを参照 |
-| 参考 | [プラットフォーム特徴ガイド](platform-guide/README.md) | 各プラットフォーム（雲湖/QQ/Telegram…）の違い |
-| 選択 | [選択ガイド](showcase/README.md) | NoneBot2 / AstrBot / LangBotとの比較と移行 |
+| ④ 実践 | [一般的なタスクの例](getting-started/common-tasks.md) | ストレージ、定時タスク、権限制御 |
+| 参考 | [設定ファイルの説明](user-guide/configuration.md) · [CLI コマンド](user-guide/cli-reference.md) · [デプロイガイド](user-guide/deployment.md) · [アップグレードと移行ガイド](user-guide/migration.md) · [FAQ](user-guide/faq.md) | アップグレード前に移行操作を確認する；トラブルシューティングはまずFAQを参照 |
+| 参考 | [プラットフォームの特徴ガイド](platform-guide/README.md) | 各プラットフォーム（雲湖/QQ/Telegram…）の違い |
+| 選択 | [選択ガイド](showcase/README.md) | NoneBot2 / AstrBot / LangBot との比較と移行 |
 
-### 2. モジュール/アダプタを開発したい
+### 二、私はモジュールまたはアダプタを開発したい
 
-ErisPulse用に配布可能な拡張機能を開発します。
+ErisPulse 用に配布可能な拡張機能を開発します。
 
 | タイプ | 入門 | 深入 |
 |------|------|------|
-| **モジュール開発**（推奨） | [モジュール開発入門](developer-guide/modules/getting-started.md) | [コア概念](developer-guide/modules/core-concepts.md) · [Eventラッパークラス](developer-guide/modules/event-wrapper.md) · [ベストプラクティス](developer-guide/modules/best-practices.md) |
-| **アダプタ開発** | [アダプタ開発入門](developer-guide/adapters/getting-started.md) | [コア概念](developer-guide/adapters/core-concepts.md) · [SendDSLの詳細](developer-guide/adapters/send-dsl.md) · [イベントコンバーター](developer-guide/adapters/converter.md) · [ベストプラクティス](developer-guide/adapters/best-practices.md) |
-| **技術基準** | [標準規格概要](standards/README.md) | アダプタ開発に必須の[セッションタイプ](standards/session-types.md) · [イベント変換](standards/event-conversion.md) · [送信メソッド](standards/send-method-spec.md) · [APIレスポンス](standards/api-response.md) · [リクエスト操作](standards/request-action-spec.md)規格を遵守する |
-| **テストとトラブルシューティング** | [モジュールテスト（ErisPulse-Testing）](developer-guide/testing.md) | モジュールが配布される際の判断基準 — 「なぜコマンドがトリガーされないのか」をトラブルシューティング |
-| **公開** | [公開とモジュールストア](developer-guide/publishing.md) | 作品をPyPIやモジュールストアに公開する |
+| **モジュール開発**（推奨） | [モジュール開発入門](developer-guide/modules/getting-started.md) | [基本概念](developer-guide/modules/core-concepts.md) · [Event 包装クラス](developer-guide/modules/event-wrapper.md) · [ベストプラクティス](developer-guide/modules/best-practices.md) |
+| **アダプタ開発** | [アダプタ開発入門](developer-guide/adapters/getting-started.md) | [基本概念](developer-guide/adapters/core-concepts.md) · [SendDSL 詳解](developer-guide/adapters/send-dsl.md) · [イベント変換器](developer-guide/adapters/converter.md) · [ベストプラクティス](developer-guide/adapters/best-practices.md) |
+| **技術規格** | [規格の概要](standards/README.md) | アダプタ開発に必須の [会話タイプ](standards/session-types.md) · [イベント変換](standards/event-conversion.md) · [送信メソッド](standards/send-method-spec.md) · [API レスポンス](standards/api-response.md) · [リクエスト操作](standards/request-action-spec.md) 規格 |
+| **テストとトラブルシューティング** | [モジュールテスト（ErisPulse-Testing）](developer-guide/testing.md) | デプロイの決定に役立つ「コマンドがなぜトリガーされないか」のトラブルシューティング |
+| **公開** | [公開とモジュールストア](developer-guide/publishing.md) | 作品を PyPI とモジュールストアに公開する |
 
-### 3. フレームワークの内部構造を理解したい
+### 三、私は内部の仕組みを理解したい
 
-フレームワークの内部がどのように動作するかを理解します。まずアーキテクチャとAPIリファレンスを見て、次に以下の対照表に従って各トピックに進んでください。
+フレームワークの内部がどのように動作するかを理解します。まずアーキテクチャと API リファレンスを見て、次に下記の対照表に従って各トピックに進んでください。
 
-**アーキテクチャとAPIリファレンス**
-
-| ドキュメント | 説明 |
-|------|------|
-| [アーキテクチャ概要](architecture.md) | 可視化図: コアアーキテクチャ、初期化プロセス、イベント処理、ライフサイクル、モジュールロード戦略（`activate_on`イベント駆動による遅延起動）、ローカルプラグインフォルダとモジュールのホットリロードアーキテクチャ（全てのモジュールソースをサポート） |
-| [イベントシステム](api-reference/event-system.md) | 5大イベントの完全なAPI |
-| [アダプタシステム](api-reference/adapter-system.md) | アダプタの登録、起動・停止、API呼び出し |
-| [コアモジュール](api-reference/core-modules.md) | Storage / Config / Logger / Routerなどの基本機能 |
-
-**L2必読（プロダクションレベルのモジュールを書くには避けて通れない）**
+**アーキテクチャと API リファレンス**
 
 | ドキュメント | 説明 |
 |------|------|
-| [スコープ](advanced/scope.md) | 3次元スコープ制御: モジュールの可用性 / イベントのアクセス制限 / 出力アクションの制限（メソッドレベルの細かいルール、バインディング継承 mergeを含む） |
-| [所有権（owner）システム](advanced/ownership.md) | リソースの所有と自動回収: ownerコンテキスト、所有リソースの全貌、アンロード時のクリーンアップ、設計境界とモジュール作成者のガイド |
-| [ライフサイクル管理](advanced/lifecycle.md) | ライフサイクルイベントシステム: モジュール / アダプタのロード、アンロード、リロード、無効化時のそれぞれの処理 |
-| [インタラクションセッションシステム](advanced/interaction.md) | wait_replyの全解説、セッションタイマー（remind/escalate）、マルチウェイ待機（select）、セッション排他リース、受信箱、メッセージトランザクション、リンクトレース |
+| [アーキテクチャ概要](architecture.md) | 可視化された図表：コアアーキテクチャ、初期化プロセス、イベント処理、ライフサイクル、モジュールのロード戦略（`activate_on` イベント駆動による遅延起動）、ローカルプラグインフォルダとモジュールのホットリロードアーキテクチャ（すべてのモジュールソースをサポート） |
+| [イベントシステム](api-reference/event-system.md) | 5つのイベントタイプの完全な API |
+| [アダプタシステム](api-reference/adapter-system.md) | アダプタの登録、起動・停止、API の呼び出し |
+| [コアモジュール](api-reference/core-modules.md) | Storage / Config / Logger / Router などの基本機能 |
 
-**シーン別分類（必要に応じて查阅）**
+**L2 必読（プロダクションレベルのモジュールを開発するには避けて通れない）**
+
+| ドキュメント | 説明 |
+|------|------|
+| [スコープ](advanced/scope.md) | 3次元のスコープ制御：モジュールの可用性 / イベントのアクセス制限 / 出力アクションの制限（メソッドレベルの細かいルール、バインディング継承 merge を含む） |
+| [所有権（owner）システム](advanced/ownership.md) | リソースの所有と自動回収：owner コンテキスト、所有リソースの全貌、アンロード時のクリーンアップ、設計の境界とモジュール開発者向けガイド |
+| [ライフサイクル管理](advanced/lifecycle.md) | ライフサイクルイベントシステム：モジュール / アダプタのロード、アンロード、リロード、無効化時のそれぞれの処理 |
+| [対話セッションシステム](advanced/interaction.md) | wait_reply の全解説、セッションタイマー（remind/escalate）、マルチウェイテイング（select）、セッションの排他リース、受信箱、メッセージトランザクション、リンク追跡 |
+
+**シーン別分類（必要に応じて参照）**
 
 | 分類 | ドキュメント | 1編目が分からないとハマるポイント |
 |------|------|------|
-| 実行と起動 | [起動プロセスと手動制御](advanced/startup.md) · [遅延ロード](advanced/lazy-loading.md) | 起動の流れ（Finder / Loader / Manager / Router）が分からないと、モジュールのロード失敗時にログを眺めるだけになる |
-| 通信と接続 | [モジュール間通信](advanced/module-communication.md) · [接続プールとブロードキャスト](advanced/connections.md) · [ルーティングシステム](advanced/router.md) | サービス契約（`meta.services`）ホワイトリストが分からないと、跨モジュールの`module.call`は`ServiceNotProvidedError`で拒否され、原因が分からないままになる |
-| データストレージ | [ストレージバックエンド](advanced/storage-backends.md) · [SQLビルダー](advanced/sql-builder.md) · [ネットワーククライアント](advanced/client.md) | 接続失敗冷却期の意味が分からないと、データベースの不安定時にフレームワークが落ちたと誤解する（実際はストレージ操作が速やかに失敗し、冷却後に自動的に再接続される） |
-| メッセージと対話 | [Conversation多輪対話](advanced/conversation.md) · [セッション受信箱](advanced/transcript.md) · [MessageBuilder](advanced/message-builder.md) · [国際化](advanced/i18n.md) | セッション排他リースが分からないと、2つのモジュールが同時に同じユーザーの返信を待つと、お互いに打ち消し合う |
-| パフォーマンス観測 | [パフォーマンスベンチマークとチューニング](advanced/performance.md) | ベンチマーク数値を確認しないと、容量計画がすべて推測になる；アップグレード後にリグレッション比較をしないと、パフォーマンス低下に気づかない |
-| グレーディングと影 | [影モジュールとグレーディングプロセス](advanced/shadow.md) | 5つの隔離ゲートを知らないままプロセスを進めると、影モジュールの出力が本番ユーザーに外漏する |
+| 実行と起動 | [起動プロセスと手動制御](advanced/startup.md) · [遅延ロード](advanced/lazy-loading.md) | 起動の流れ（Finder / Loader / Manager / Router）が分からないと、モジュールのロード失敗時にログを見ていても意味不明 |
+| 通信と接続 | [モジュール間通信](advanced/module-communication.md) · [接続プールとブロードキャスト](advanced/connections.md) · [ルーティングシステム](advanced/router.md) | サービス契約（`meta.services`）のホワイトリストが分からないと、`module.call` が `ServiceNotProvidedError` で拒否され、原因が分からない |
+| データ保存 | [ストレージバックエンド](advanced/storage-backends.md) · [SQL ビルダー](advanced/sql-builder.md) · [ネットワーククライアント](advanced/client.md) | 接続失敗の冷却期間の意味が分からないと、データベースの不安定が発生したときに「フレームワークが落ちた」と誤解してしまう（実際はストレージ操作が失敗し、冷却後に自動的に再接続される） |
+| メッセージと会話 | [Conversation 多段会話](advanced/conversation.md) · [会話受信箱](advanced/transcript.md) · [MessageBuilder](advanced/message-builder.md) · [国際化](advanced/i18n.md) | 会話の排他リースが分からないと、2つのモジュールが同じユーザーの返信を同時に待つと、お互いにキャンセルしてしまう |
+| パフォーマンス観測 | [パフォーマンスのベンチマークとチューニング](advanced/performance.md) | 部署前にベンチマークの数値を確認しないと、容量計画がすべて推測になる；アップグレード後に回帰テストをしないと、パフォーマンスの低下が発見できない |
+| グレーディングと影モジュール | [影モジュールとグレーディングの転正](advanced/shadow.md) | 5つの隔離ゲートを知らないまま転正すると、影モジュールの出力が本番ユーザーに漏洩してしまう |
 
 **概念関係表**
 
-どのサブシステムが何を担当しているかが分からないときは、この表で照合してください：
+どのサブシステムが何を担当しているか分からないときは、この表で確認してください：
 
-| サブシステム | 何を回答するか | 一言口訣 |
+| サブシステム | 回答する問題 | 一言口訣 |
 |--------|------------|-----------|
-| [通信](advanced/module-communication.md)（module-communication） | モジュール間でどう呼び合うか、どうイベントを送るか？ | 跨モジュールは`module.call`を使う；相手が`meta.services`を宣言していればホワイトリスト内のメソッドしか呼べない |
-| [権限](advanced/scope.md)（scope） | 誰がこのモジュールを使えるか、誰がイベントをトリガーできるか、どのアクションが実行できるか？ | 3つのゲート — モジュールバインディング、アイデンティティのアクセス制限、出力制限、すべてはユーザーの設定で決まる |
-| [所有](advanced/ownership.md)（ownership） | モジュールがアンロードされた後、開いた接続、タイマー、サブスクリプションはどこに行くのか？ | 誰が登録したかが所有者、アンロード時は回収、未使用のリソースは残らない |
-| [遅延ロードと休眠](advanced/lazy-loading.md)（lazy-loading） | モジュールはいつ実際にロードされるのか、無使用時はどこに行くのか？ | `activate_on`で必要時に起動、`dormant_after`で無使用時は休眠 |
-| [インタラクション](advanced/interaction.md)（interaction） | ユーザーの次の返信をどう待つのか、多輪の入力をどう書くのか？ | `wait_reply`で1つを待つ、`.got()`で連鎖して複数を収集、リースで競合を防ぐ |
-| [影とグレーディング](advanced/shadow.md)（shadow） | 新しいモジュールを本番に影響を与えることなく試運転するには？ | 影モジュールはコピーを受け取り、出力は記録だけ、`promote`で人間が確認して本番に移行 |
-| [ストレージ](advanced/storage-backends.md)（storage-backends） | データはどこに保存されるのか、バックエンドはどのように変更するのか？ | 一貫したストレージAPI、sqlite / mysql / postgresは設定で切り替えられる |
+| [通信](advanced/module-communication.md)（module-communication） | モジュール間でどのように相互に呼び出し、どのようにイベントを送信するか？ | 跨モジュールは `module.call` を使う；相手が `meta.services` を宣言していると、ホワイトリスト内のメソッドしか呼び出せない |
+| [権限](advanced/scope.md)（scope） | 誰がこのモジュールを使えるか、誰がイベントをトリガーできるか、どのアクションを実行できるか？ | 3つのゲート——モジュールのバインディング、アイデンティティのアクセス制限、出力の制限、すべてユーザーの設定で決まる |
+| [所有](advanced/ownership.md)（ownership） | モジュールのアンロード後、開いた接続、タイマー、サブスクリプションはどこに行くのか？ | 誰が登録したかが所有者となり、アンロード時にリソースを回収する、ホルダーが残らないようにする |
+| [遅延ロードと休眠](advanced/lazy-loading.md)（lazy-loading） | モジュールはいつ実際にロードされるのか、無駄なときはどこに行くのか？ | `activate_on` で使用されるときに起動し、`dormant_after` で無駄なときは休眠する |
+| [対話](advanced/interaction.md)（interaction） | ユーザーの次の返信をどのように待つのか、複数段の収集はどのように書くのか？ | `wait_reply` で1つを待つ、`.got()` で連鎖的に複数段を収集、リースで競合を防ぐ |
+| [影モジュールとグレーディング](advanced/shadow.md)（shadow） | 新しいモジュールをどのようにして本番に影響を与えることなく試運転するのか？ | 影モジュールはコピーを受け取り、出力は記録するだけ、`promote` で人間が確認して転正する |
+| [ストレージ](advanced/storage-backends.md)（storage-backends） | データはどこに保存され、バックエンドはどのように切り替えるのか？ | 一貫したストレージ API で、sqlite / mysql / postgres は設定で切り替えられる |
 
-### 4. ErisPulseのエコシステムと公式クライアント
+### 四、エコシステムと公式クライアント
 
-公式クライアント + 必要に応じてインストール可能なエコシステムモジュール（フレームワークの内蔵機能ではない）。
+公式クライアント + 必要に応じてインストール可能なエコシステムモジュール（フレームワークの内蔵機能ではありません）。
 
 | ドキュメント | 説明 |
 |------|------|
-| [エコシステム概要](ecosystem/README.md) | エコシステムモジュールのインストール方法、なぜこれらが内蔵機能ではないのか |
+| [エコシステム概要](ecosystem/README.md) | エコシステムモジュールのインストール方法、なぜこれが内蔵機能ではないのか |
 | [ErisPulse-QvQChat](ecosystem/qvqchat.md) | 一般的なインテリジェントエージェントモジュール：ツールループ / MCP / 長期記憶 / 知識ベース、サービスを宣言したモジュールは自動的にAIツールになる |
-| [ErisPulse-ApiMCP](ecosystem/apimcp.md) | ロボットをMCPツールとして逆方向に公開し、ClaudeなどのAIクライアントが直接操作できるようにする |
-| [ErisPulse-App](ecosystem/app.md) | 公式の全プラットフォームクライアント（Android / Windows / Linux / macOS）：ネイティブインターフェースで複数のインスタンスを管理、**スマホで直接実行**、デスクトップのトレイに常駐 |
-| [ErisPulse-Dashboard](ecosystem/dashboard.md) | Web管理パネル + ウィンドウ登録API（モジュールはサイドバーにカスタムページを登録できる） |
-| [ErisPulse-Cron](ecosystem/cron.md) | 定時タスクスケジューラモジュール：一回限り / 間隔 / Cron式、コールバックに引数を渡せる、SQLiteで永続化、他のモジュールはタスクコールバックを委任できる |
-| [ErisPulse-Takumi](ecosystem/takumi.md) | 画像レンダリング（HTML / ノードツリー / SVG / アニメーション、内蔵中英文字体） |
+| [ErisPulse-ApiMCP](ecosystem/apimcp.md) | ロボットをMCPツールとして公開し、ClaudeなどのAIクライアントが直接操作できるようにする |
+| [ErisPulse-App](ecosystem/app.md) | 公式の全プラットフォームクライアント（Android / Windows / Linux / macOS）：ネイティブインターフェースで複数のインスタンスを管理、**スマートフォンで直接実行**、デスクトップトレイに常駐 |
+| [ErisPulse ワークベンチ](ecosystem/workbench.md) | 統一されたアカウントセンター：モジュールの収録と認証、`plugin-xxx.erisdev.com` のホストドメイン、アクセストークンとOAuthログインの接続（オンラインサービス、インストール不要） |
+| [ErisPulse ダッシュボード](ecosystem/dashboard.md) | Web管理パネル + ウィンドウのAPI登録（モジュールはサイドバーにカスタムページを登録できる） |
+| [ErisPulse クロン](ecosystem/cron.md) | 定時タスクスケジューラモジュール：一回限り / 間隔 / Cron式、コールバックに引数を渡す、SQLiteで永続化、他のモジュールが定時コールバックを委託できる |
+| [ErisPulse タクミ](ecosystem/takumi.md) | 画像レンダリング（HTML / ノードツリー / SVG / アニメーション、内蔵中英文字体） |
 
-### 5. ErisPulseに貢献したい
+### 五、私はErisPulseに貢献したい
 
 フレームワークをより良くする
 
 | ドキュメント | 説明 |
 |------|------|
-| [ErisPulseに貢献する](contributing/README.md) | 貢献方法の概要：ドキュメント / i18n / Bug / モジュール / アダプタ |
-| [初めての貢献](contributing/first-contribution.md) | forkからPRの提出まで |
+| [ErisPulseへの貢献](contributing/README.md) | 貢献方法の概要：ドキュメント / i18n / バグ / モジュール / アダプタ |
+| [初めての貢献](contributing/first-contribution.md) | fork からPRの提出まで |
 
 ---
+[English](README.md) | [简体中文](README.zh-CN.md) | [繁體中文](README.zh-TW.md) | [日本語](README.ja.md) | [Русский](README.ru.md)
 
 ## 高度な機能のバージョン別速查表
 

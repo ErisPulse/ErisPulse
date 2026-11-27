@@ -580,10 +580,10 @@
     "Модули экосистемы": {
       "description": "Сторонние модули, поддерживаемые сообществом",
       "icon": "fa-cubes",
-      "count": 7,
+      "count": 8,
       "documents": [
         {
-          "title": "Экологические модули",
+          "title": "Экосистемные модули",
           "path": "ecosystem/README.md",
           "level": 1,
           "icon": "fa-cubes"
@@ -621,6 +621,12 @@
         {
           "title": "ErisPulse-QvQChat — универсальный агент",
           "path": "ecosystem/qvqchat.md",
+          "level": 1,
+          "icon": "fa-cubes"
+        },
+        {
+          "title": "ErisPulse Workbench",
+          "path": "ecosystem/workbench.md",
           "level": 1,
           "icon": "fa-cubes"
         }

@@ -580,7 +580,7 @@
     "Ecosystem Modules": {
       "description": "Community-maintained third-party modules",
       "icon": "fa-cubes",
-      "count": 7,
+      "count": 8,
       "documents": [
         {
           "title": "Ecosystem Modules",
@@ -621,6 +621,12 @@
         {
           "title": "ErisPulse-QvQChat General Agent",
           "path": "ecosystem/qvqchat.md",
+          "level": 1,
+          "icon": "fa-cubes"
+        },
+        {
+          "title": "ErisPulse Workbench",
+          "path": "ecosystem/workbench.md",
           "level": 1,
           "icon": "fa-cubes"
         }

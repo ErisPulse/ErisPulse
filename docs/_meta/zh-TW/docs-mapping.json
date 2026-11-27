@@ -580,7 +580,7 @@
     "生態模組": {
       "description": "社群維護的第三方擴展模組",
       "icon": "fa-cubes",
-      "count": 7,
+      "count": 8,
       "documents": [
         {
           "title": "生態模組",
@@ -621,6 +621,12 @@
         {
           "title": "ErisPulse-QvQChat 通用智慧代理",
           "path": "ecosystem/qvqchat.md",
+          "level": 1,
+          "icon": "fa-cubes"
+        },
+        {
+          "title": "ErisPulse 工作台",
+          "path": "ecosystem/workbench.md",
           "level": 1,
           "icon": "fa-cubes"
         }

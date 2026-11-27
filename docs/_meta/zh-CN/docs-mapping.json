@@ -580,7 +580,7 @@
     "生态模块": {
       "description": "社区维护的第三方扩展模块",
       "icon": "fa-cubes",
-      "count": 7,
+      "count": 8,
       "documents": [
         {
           "title": "生态模块",
@@ -621,6 +621,12 @@
         {
           "title": "ErisPulse-QvQChat 通用智能体",
           "path": "ecosystem/qvqchat.md",
+          "level": 1,
+          "icon": "fa-cubes"
+        },
+        {
+          "title": "ErisPulse 工作台",
+          "path": "ecosystem/workbench.md",
           "level": 1,
           "icon": "fa-cubes"
         }

@@ -7,7 +7,7 @@
 
 ## 模組商店概述
 
-ErisPulse 模組商店是一個集中式的模組註冊表，使用者可以透過 CLI 工具瀏覽、搜尋和安裝社群貢獻的模組、配接器。
+ErisPulse 模組商店是一個集中式的模組註冊表，使用者可以透過 CLI 工具瀏覽、搜尋和安裝由社群貢獻的模組、適配器。
 
 ### 瀏覽與發現
 
@@ -15,32 +15,32 @@ ErisPulse 模組商店是一個集中式的模組註冊表，使用者可以透�
 # 列出遠端可用的所有套件
 epsdk list-remote
 
-# 只檢視模組
+# 只查看模組
 epsdk list-remote -t modules
 
-# 只檢視配接器
+# 只查看適配器
 epsdk list-remote -t adapters
 
-# 強制重新整理遠端套件清單
+# 強制刷新遠端套件列表
 epsdk list-remote -r
 ```
 
-你也可以造訪 [ErisPulse 官網](https://www.erisdev.com/#market) 或 [ErisPulse Workbench](https://workbench.erisdev.com/) 的「模組清單」線上瀏覽模組商店。
+你也可以造訪 [ErisPulse 官網](https://www.erisdev.com/#market) 或 [ErisPulse Workbench](https://workbench.erisdev.com/) 的「模組列表」線上瀏覽模組商店。工作台的帳號、模組管理與託管域名等全部功能請參閱 [ErisPulse 工作台](../ecosystem/workbench.md)。
 
 ### 支援的提交類型
 
 | 類型 | 說明 | Entry-point 組 |
 |------|------|----------------|
-| 模組 | 擴充機器人功能、實作業務邏輯 | `erispulse.module` |
-| 配接器 | 連接新的訊息平台 | `erispulse.adapter` |
+| 模組 (Module) | 擴展機器人功能、實作業務邏輯 | `erispulse.module` |
+| 適配器 (Adapter) | 連接新的訊息平台 | `erispulse.adapter` |
 
 ## 快速發布
 
-整個過程只需要三步：設定專案 → 發布到 PyPI → 提交到模組商店。
+整個過程只需要三步：配置項目 → 發佈到 PyPI → 提交到模組商店。
 
-### 1. 設定 pyproject.toml
+### 1. 配置 pyproject.toml
 
-確保專案目錄包含 `pyproject.toml`、`README.md`，並根據類型設定 entry-points：
+確保項目目錄包含 `pyproject.toml`、`README.md`，並根據類型配置 entry-points：
 
 #### 模組
 
@@ -60,31 +60,31 @@ dependencies = [
 "MyModule" = "MyModule:Main"
 ```
 
-#### 配接器
+#### 適配器
 
 ```toml
 [project]
 name = "ErisPulse-MyAdapter"
 version = "1.0.0"
-description = "配接器功能描述"
+description = "適配器功能描述"
 requires-python = ">=3.10"
 
 [project.entry-points."erispulse.adapter"]
 "myplatform" = "MyAdapter:MyAdapter"
 ```
 
-> **注意**：套件名稱建議以 `ErisPulse-` 開頭，便於使用者識別。Entry-point 的鍵名（如 `"MyModule"`）將作為模組在 SDK 中的存取名稱。
+> **注意**：包名建議以 `ErisPulse-` 開頭，便於使用者識別。Entry-point 的鍵名（如 `"MyModule"`）將作為模組在 SDK 中的存取名稱。
 
-### 2. 發布到 PyPI
+### 2. 發佈到 PyPI
 
 ```bash
-# 建置 + 發布（需要 PyPI 帳號）
+# 構建 + 發佈（需要 PyPI 帳號）
 pip install build twine
 python -m build
 python -m twine upload dist/*
 ```
 
-發布成功後驗證安裝：
+發佈成功後驗證安裝：
 
 ```bash
 pip install ErisPulse-MyModule
@@ -92,26 +92,26 @@ pip install ErisPulse-MyModule
 
 ### 3. 提交到模組商店（ErisPulse Workbench）
 
-模組收錄與認證統一由 **ErisPulse Workbench** 承載：**[https://workbench.erisdev.com/](https://workbench.erisdev.com/)**。提交後經 `repository_dispatch` 下發到模組索引儲存庫，workflow 完成即入商店（通常數分鐘）。
+模組收錄與認證統一由 **ErisPulse Workbench** 承載：**[https://workbench.erisdev.com/](https://workbench.erisdev.com/)**。提交後經 `repository_dispatch` 下發到模組索引倉庫，workflow 完成即入商店（通常數分鐘）。工作台的登入、令牌、歸屬認領與託管域名見 [ErisPulse 工作台](../ecosystem/workbench.md)。
 
 #### 方式一：網頁提交（推薦首次使用）
 
-1. 開啟工作台，用 **GitHub / Codeberg** 帳號登入（歷史時期的模組可在模組詳情頁走「認領此模組」找回歸屬）
-2. 左側「提交新模組」→ 按表單填寫：名稱 / 類型（module · adapter）/ PyPI 套件名稱 / 描述（≥10 字元）/ 作者 / 儲存庫地址（github.com 或 codeberg.org）/ 分類（1 工具 · 2 娛樂 · 3 管理 · 4 通知 · 5 AI · 6 平台 · 7 分析）/ 標籤 / 最低 SDK 版本
+1. 打開工作台，用 **GitHub / Codeberg** 帳號登入（歷史時期的模組可在模組詳情頁走「認領此模組」找歸屬）
+2. 左側「提交新模組」→ 按表單填寫：名稱 / 類型（module · adapter）/ PyPI 包名 / 描述（≥10 字符）/ 作者 / 倉庫地址（github.com 或 codeberg.org）/ 分類（1 工具 · 2 娛樂 · 3 管理 · 4 通知 · 5 AI · 6 平台 · 7 分析）/ 標籤 / 最低 SDK 版本
 3. 提交即生效並標記「未驗證」（僅表示尚未官方審核，使用者安裝時會收到風險提示需確認）；「認證審核」通過後轉為「已驗證」
 
 #### 方式二：API 自主提交（CLI / CI 場景）
 
-**① 產生存取權杖**：工作台「開放介面 → 存取權杖」頁 → 填寫名稱 →「產生權杖」。格式為 `epat_` + 40 位十六進位，**僅產生時顯示一次**；開啟兩步驟驗證的帳戶可勾選「免動態碼」，之後敏感介面不再要求 `totp_code`。
+**① 生成訪問令牌**：工作台「開放接口 → 訪問令牌」頁 → 填寫名稱 →「生成令牌」。格式為 `epat_` + 40 位十六進制，**僅生成時顯示一次**；開啟兩步驗證的帳戶可勾選「免動態碼」，之後敏感接口不再要求 `totp_code`。
 
-**② 呼叫慣例**：
+**② 調用約定**：
 
 ```http
 Authorization: Bearer epat_…
 Content-Type: application/json
 ```
 
-請求主體必須為 **UTF-8 編碼的 JSON**。Windows 終端機預設 GBK，中文會被寫成非 UTF-8 位元組，伺服器端直接拒絕（報錯 `415 ENCODING_INVALID` 並指出問題欄位）——先執行 `chcp 65001`，或把請求主體存成 UTF-8 檔案後用 `curl --data-binary @body.json` 提交。
+請求體必須為 **UTF-8 編碼的 JSON**。Windows 終端預設 GBK，中文會被寫成非 UTF-8 字節，服務端直接拒絕（報錯 `415 ENCODING_INVALID` 並指出問題字段）——先執行 `chcp 65001`，或把請求體存成 UTF-8 檔案後用 `curl --data-binary @body.json` 提交。
 
 **③ 提交模組**：
 
@@ -123,7 +123,7 @@ curl -X POST https://workbench.erisdev.com/api/modules/submit \
     "name": "MyModule",
     "type": "module",
     "package": "ErisPulse-MyModule",
-    "description": "模組描述，至少 10 字元",
+    "description": "模組描述，至少 10 字符",
     "author": "Your Name",
     "repository": "https://github.com/you/MyModule",
     "category": 1,
@@ -133,13 +133,13 @@ curl -X POST https://workbench.erisdev.com/api/modules/submit \
   }'
 ```
 
-**④ 查詢與管理**：`GET /api/modules/ops?name=MyModule&type=module` 查提交/審核進度；`POST /api/modules/manage` 編輯 / 轉正 / 刪除；`POST /api/modules/batch` 批次操作。完整端點表見工作台內建「使用文件」（權杖 / 歸屬認領 / 模組管理 / FAQ）。
+**④ 查詢與管理**：`GET /api/modules/ops?name=MyModule&type=module` 查提交/審核進度；`POST /api/modules/manage` 編輯 / 轉正 / 刪除；`POST /api/modules/batch` 批量操作。完整端點表見工作台內置「使用文件」（令牌 / 歸屬認領 / 模組管理 / FAQ）。
 
-### 4. 管理已發布的模組
+### 4. 管理已發佈的模組
 
-登入工作台「模組清單」→ 自己的模組詳情頁，可編輯描述、儲存庫、標籤等（版本號自動從 PyPI 同步）、刪除模組、發起歸屬認領；API 側走 `manage` / `batch` 端點。
+登入工作台「模組列表」→ 自己的模組詳情頁，可編輯描述、倉庫、標籤等（版本號自動從 PyPI 同步）、刪除模組、發起歸屬認領；API 側走 `manage` / `batch` 端點。
 
-> 剛提交的模組可能需要幾分鐘才會出現在清單中。
+> 剛提交的模組可能需要幾分鐘才會出現在列表中。
 
 ## 更新已發布模組
 

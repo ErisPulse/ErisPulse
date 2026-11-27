@@ -172,7 +172,7 @@
           "icon": "fa-code"
         },
         {
-          "title": "リリースとモジュールストアのガイド",
+          "title": "発行とモジュールストアガイド",
           "path": "developer-guide/publishing.md",
           "level": 1,
           "icon": "fa-upload"
@@ -580,7 +580,7 @@
     "エコシステムモジュール": {
       "description": "コミュニティが保守するサードパーティモジュール",
       "icon": "fa-cubes",
-      "count": 7,
+      "count": 8,
       "documents": [
         {
           "title": "エコシステムモジュール",
@@ -621,6 +621,12 @@
         {
           "title": "ErisPulse-QvQChat 通用インテリジェントエージェント",
           "path": "ecosystem/qvqchat.md",
+          "level": 1,
+          "icon": "fa-cubes"
+        },
+        {
+          "title": "ErisPulse ワークベンチ",
+          "path": "ecosystem/workbench.md",
           "level": 1,
           "icon": "fa-cubes"
         }

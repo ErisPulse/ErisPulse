@@ -1,25 +1,29 @@
 {
   "version": 2,
-  "hash": "9f30e5f08b2c79b9a74223c6825b7f9a",
-  "file_hash": "9f30e5f08b2c79b9a74223c6825b7f9a",
-  "translated_at": "2026-11-14T06:00:09.663038",
+  "hash": "60ffae68a159b43bbc4fe95ccc8b6d9c",
+  "file_hash": "60ffae68a159b43bbc4fe95ccc8b6d9c",
+  "translated_at": "2026-11-27T16:06:33.441157",
   "target_lang": "zh-TW",
   "chunks": [
     {
-      "hash": "23205a1b65da9c3efe1514af73c6ac22",
-      "translation": "# 生態模組\n\nErisPulse 框架本身僅提供核心能力（事件系統、模組系統、配置、路由、日誌等），**不內建** GUI、圖片渲染、可視化等「重型」功能。這些能力由社區維護的 **第三方模組** 提供，按需安裝即可。\n\n> [!IMPORTANT]\n> 本目錄下的文件分為兩類，安裝方式不同：\n>\n> - **模組**（如 Dashboard / Takumi）使用 `epsdk install` 安裝：\n>\n>   ```bash\n>   epsdk install <模組名>\n>   ```\n>\n> - **獨立程式**（如 ErisPulse-App 客戶端）直接從對應 GitHub Releases 下載安裝，無需 `epsdk`。"
+      "hash": "1126797f8acc77cf3a675a09e194ab9c",
+      "translation": "# 生態模組\n\nErisPulse 框架本身只提供核心能力（事件系統、模組系統、配置、路由、日誌等），**不內建** GUI、圖片渲染、可視化等「重型」功能。這些能力由社區維護的 **第三方模組** 提供，按需安裝即可。\n\n> [!IMPORTANT]\n> 本目錄下的文件分為兩類，安裝方式不同：\n>\n> - **模組**（如 Dashboard / Takumi）使用 `epsdk install` 安裝：\n>\n>   ```bash\n>   epsdk install <模組名>\n>   ```\n>\n> - **獨立程式**（如 ErisPulse-App 客戶端）直接從對應 GitHub Releases 下載安裝，無需 `epsdk`。\n>\n> - **線上服務**（如 ErisPulse 工作台）無需安裝，打開網頁登入即可使用。\n\n---"
     },
     {
       "hash": "5bcfffec8416636b2716ded8b45df209",
-      "translation": "## 推薦模組\n\n### ErisPulse-Dashboard：瀏覽器裡的管理面板\n\n機器人掛在伺服器上，啟停模組、改配置、看日誌還得登終端機？Dashboard 把這些搬進瀏覽器：模組啟停、配置編輯、日誌查看、事件監控；其他模組還能向側邊欄註冊自訂視窗，管理頁面集中在同一處。\n\n```bash\nepsdk install Dashboard\n```\n\n文件：[Dashboard 使用與視窗註冊](dashboard.md) ｜ 專案主頁：[PyPI](https://pypi.org/project/ErisPulse-Dashboard/)\n\n### ErisPulse-Cron：定時任務\n\n要每天定時發簽到提醒、按 Cron 表達式跑週期任務、每隔幾分鐘輪詢一次資料？Cron 提供一次性 / 間隔 / Cron 表達式三種任務類型，回呼傳參，SQLite 持久化（重啟不丟任務）。\n\n```bash\nepsdk install Cron\n```\n\n文件：[Cron 定時任務](cron.md) ｜ 專案主頁：[GitHub](https://github.com/wsu2059q/ErisPulse-Cron)\n\n### ErisPulse-QvQChat：通用智慧代理人\n\n想讓群裡有一個會做事的 AI 助手，而不是只會關鍵字回覆？QvQChat 是通用智慧代理人：工具循環涵蓋收發訊息 / 程式碼執行 / 電腦操作 / 生圖 / 語音 / MCP / 子代理人，支援串流對話與序列工具回放，內建 Dashboard 視窗。還有 QvQStalker（旁聽插話）、QvQMemes（表情包）、QvQCompanion（擬人陪伴）三個配套外掛。\n\n```bash\nepsdk install ErisPulse-QvQChat\n```\n\n文件：[QvQChat 智慧代理人](qvqchat.md) ｜ 專案主頁：[GitHub](https://github.com/wsu2059q/ErisPulse-QvQChat)\n\n### ErisPulse-ApiMCP：讓 AI 用戶端操控機器人\n\n在用 Claude Desktop、Claude Code 這類支援 MCP 的 AI 用戶端？ApiMCP 把機器人執行環境反向開放成 17 個 MCP 工具：AI 可以直接替你收發訊息、呼叫已安裝的模組、檢視平台狀態、訂閱群聊事件——機器人變成 AI 的「手和眼」。\n\n```bash\nepsdk install ErisPulse-ApiMCP\n```\n\n文件：[ApiMCP 使用指南](apimcp.md) ｜ 專案主頁：[GitHub](https://github.com/wsu2059q/ErisPulse-ApiMCP)\n\n### ErisPulse-Takumi：圖片渲染\n\n排行榜、戰報、日程卡這類要「發圖」的場景，寫個模板渲染成圖片發進群裡即可：支援 HTML / 節點樹 / Jinja / SVG / 動畫（基於 [takumi-py](https://github.com/BalconyJH/takumi-py)），內建中英文字體，開箱即用。\n\n```bash\nepsdk install Takumi\n```\n\n文件：[Takumi 圖片渲染](takumi.md) ｜ 專案主頁：[GitHub](https://github.com/ccd2s/ErispulseTakumi)（作者 [@ccd2s](https://github.com/ccd2s)）"
+      "translation": "## 推薦模組\n\n### ErisPulse-Dashboard：瀏覽器裡的管理介面\n\n機器人掛在伺服器上，啟停模組、改配置、看日誌還得登終端？Dashboard 把這些搬進瀏覽器：模組啟停、配置編輯、日誌查看、事件監控；其他模組還能向側邊欄註冊自定義視窗，管理頁面集中在同一處。\n\n```bash\nepsdk install Dashboard\n```\n\n文件：[Dashboard 使用與視窗註冊](dashboard.md) ｜ 項目首頁：[PyPI](https://pypi.org/project/ErisPulse-Dashboard/)\n\n### ErisPulse-Cron：定時任務\n\n要每天定時發簽到提醒、按 Cron 表達式跑週期任務、每隔幾分鐘輪詢一次資料？Cron 提供一次性 / 间隔 / Cron 表達式三種任務類型，回調傳參，SQLite 持久化（重啟不丟任務）。\n\n```bash\nepsdk install Cron\n```\n\n文件：[Cron 定時任務](cron.md) ｜ 項目首頁：[GitHub](https://github.com/wsu2059q/ErisPulse-Cron)\n\n### ErisPulse-QvQChat：通用智能體\n\n想讓群裡有一個會工作的 AI 助手，而不是只會關鍵詞回覆？QvQChat 是通用智能體：工具循環覆蓋收發訊息 / 程式碼執行 / 電腦操作 / 產生圖片 / 語音 / MCP / 子智能體，支援流式對話與串行工具回放，內建 Dashboard 視窗。還有 QvQStalker（旁聽插話）、QvQMemes（表情包）、QvQCompanion（擬人陪伴）三個配套插件。\n\n```bash\nepsdk install ErisPulse-QvQChat\n```\n\n文件：[QvQChat 智能體](qvqchat.md) ｜ 項目首頁：[GitHub](https://github.com/wsu2059q/ErisPulse-QvQChat)\n\n### ErisPulse-ApiMCP：讓 AI 客戶端操控機器人\n\n在用 Claude Desktop、Claude Code 這類支援 MCP 的 AI 客戶端？ApiMCP 把機器人運行時反向開放成 17 個 MCP 工具：AI 可以直接替你收發訊息、呼叫已裝模組、查看平台狀態、訂閱群聊事件——機器人變成 AI 的「手和眼」。\n\n```bash\nepsdk install ErisPulse-ApiMCP\n```\n\n文件：[ApiMCP 使用指南](apimcp.md) ｜ 項目首頁：[GitHub](https://github.com/wsu2059q/ErisPulse-ApiMCP)\n\n### ErisPulse-Takumi：圖片渲染\n\n排行榜、戰報、日程卡這類要「發圖」的場景，寫個模板渲染成圖片發進群裡即可：支援 HTML / 節點樹 / Jinja / SVG / 動畫（基於 [takumi-py](https://github.com/BalconyJH/takumi-py)），內建中英文字型，開箱即用。\n\n```bash\nepsdk install Takumi\n```\n\n文件：[Takumi 圖片渲染](takumi.md) ｜ 項目首頁：[GitHub](https://github.com/ccd2s/ErispulseTakumi)（作者 [@ccd2s](https://github.com/ccd2s)）"
     },
     {
-      "hash": "d2a7502dc7794e8136711ace59a57362",
-      "translation": "## 官方客戶端（獨立程式）\n\n### ErisPulse-App：手機上直接跑機器人\n\n沒有常開的伺服器，也想隨時建立實例、安裝模組、查看事件流？ErisPulse-App 是官方全平台客戶端（Android / Windows / Linux / macOS）：原生介面建立 / 運行 / 管理多個機器人實例，內建模組商店與事件建構器，**手機直接運行**，桌面托盤常駐。\n\n所有平台的安裝包均從 [GitHub Releases](https://github.com/ErisPulse/ErisPulse-App/releases) 下載，無需 `epsdk`。\n\n文件：[ErisPulse-App 安裝與使用](app.md)"
+      "hash": "05cffeda50bd1ad20c2eddd6393fad5e",
+      "translation": "## 官方客戶端（獨立程式）\n\n### ErisPulse-App：手機上直接跑機器人\n\n沒有常開的伺服器，也想隨時建立實例、安裝模組、看事件流？ErisPulse-App 是官方全平台客戶端（Android / Windows / Linux / macOS）：原生介面建立 / 運行 / 管理多個機器人實例，內建模組商店與事件建構器，**手機直接運行**，桌面托盤常駐。\n\n所有平台的安裝包均從 [GitHub Releases](https://github.com/ErisPulse/ErisPulse-App/releases) 下載，無需 `epsdk`。\n\n文件：[ErisPulse-App 安裝與使用](app.md)"
+    },
+    {
+      "hash": "73a1619f062d4df2eff378afebfe3987",
+      "translation": "## 官方線上服務\n\n### ErisPulse 工作台：模組商店與託管域名的後台\n\n模組要進商店、想給模組配一個 `plugin-xxx.erisdev.com` 的網站地址、或者想用腳本自動提交模組？工作台是生態的統一帳號中心：一個帳號管理模組收錄與認證、申請託管域名、產生訪問令牌，還能讓你的網站支援「用 ErisPulse 賬號登入」。純線上服務，**無需安裝**。\n\n訪問：[https://workbench.erisdev.com/](https://workbench.erisdev.com/)\n\n文件：[ErisPulse 工作台使用指南](docs/zh-TW/workbench.md)\n\n---"
     },
     {
       "hash": "c8d44851900ae891ba4d6571498d0eaa",
-      "translation": "## 我也想把自己的模組列在這裡？\n\n歡迎推薦優質的、可被廣泛重用的 ErisPulse 生態模組。要求如下：\n\n1. 已發布到 [PyPI](https://pypi.org/)，且套件名以 `ErisPulse-` 開頭\n2. 提供基本的 README 與使用範例\n3. 積極維護，對 Issue 有回應\n\n符合以上條件的模組作者可以透過 PR 在本目錄下新增 `<模組名>.md` 文件，並在上方推薦列表中補充對應的小節。"
+      "translation": "## 我也想把自己的模組列在這裡？\n\n歡迎推薦優質的、可被廣泛重用的 ErisPulse 生態模組。要求：\n\n1. 已發布到 [PyPI](https://pypi.org/)，且包名以 `ErisPulse-` 開頭\n2. 提供基本的 README 與使用範例\n3. 積極維護，對 Issue 有回應\n\n滿足以上條件的模組作者可以透過 PR 在本目錄下新增 `<模組名>.md` 文件，並在上方推薦列表中補充對應小節。"
     }
   ]
 }

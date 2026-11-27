@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 2059,
+  "total_keywords": 2079,
   "keywords": {
     "0 Success (OK)": [
       {
@@ -152,12 +152,12 @@
         "title": "1. Health Check (GET)"
       }
     ],
-    "1. I Want to Use the Bot": [
+    "1. I Want to Use a Robot": [
       {
         "document": "README.md",
         "line": 20,
         "level": 3,
-        "title": "1. I Want to Use the Bot"
+        "title": "1. I Want to Use a Robot"
       }
     ],
     "1. Implementing Connection Retry": [
@@ -1242,12 +1242,12 @@
         "title": "3. Standardization Workflow (How New Capabilities Enter the Standard)"
       }
     ],
-    "3. Submit to the Module Store (ErisPulse Workbench)": [
+    "3. Submit to Module Store (ErisPulse Workbench)": [
       {
         "document": "developer-guide/publishing.md",
         "line": 93,
         "level": 3,
-        "title": "3. Submit to the Module Store (ErisPulse Workbench)"
+        "title": "3. Submit to Module Store (ErisPulse Workbench)"
       }
     ],
     "3. Support Platform-Specific Methods": [
@@ -1482,12 +1482,12 @@
         "title": "4. Difference Handling Patterns (Adapter Layer)"
       }
     ],
-    "4. Ecosystem & Official Clients": [
+    "4. Ecosystem and Official Client": [
       {
         "document": "README.md",
         "line": 94,
         "level": 3,
-        "title": "4. Ecosystem & Official Clients"
+        "title": "4. Ecosystem and Official Client"
       }
     ],
     "4. Event Convenience Methods": [
@@ -1765,7 +1765,7 @@
     "5. I Want to Contribute to ErisPulse": [
       {
         "document": "README.md",
-        "line": 108,
+        "line": 109,
         "level": 3,
         "title": "5. I Want to Contribute to ErisPulse"
       }
@@ -2678,6 +2678,14 @@
         "title": "Abstract Types"
       }
     ],
+    "Access Tokens": [
+      {
+        "document": "ecosystem/workbench.md",
+        "line": 134,
+        "level": 3,
+        "title": "Access Tokens"
+      }
+    ],
     "Accessing Core Modules": [
       {
         "document": "developer-guide/modules/core-concepts.md",
@@ -3089,7 +3097,7 @@
     "Advanced Features Version Quick Reference": [
       {
         "document": "README.md",
-        "line": 121,
+        "line": 120,
         "level": 2,
         "title": "Advanced Features Version Quick Reference"
       }
@@ -3220,6 +3228,14 @@
         "line": 226,
         "level": 3,
         "title": "Applicable Scenarios"
+      }
+    ],
+    "Application Process": [
+      {
+        "document": "ecosystem/workbench.md",
+        "line": 101,
+        "level": 3,
+        "title": "Application Process"
       }
     ],
     "Approval via Module Side (Event-based)": [
@@ -4654,6 +4670,14 @@
         "line": 9,
         "level": 2,
         "title": "Choose Your Path"
+      }
+    ],
+    "Claiming Ownership": [
+      {
+        "document": "ecosystem/workbench.md",
+        "line": 71,
+        "level": 3,
+        "title": "Claiming Ownership"
       }
     ],
     "Claude Desktop Integration": [
@@ -6500,12 +6524,12 @@
         "title": "Development Approach Selection"
       }
     ],
-    "Development Approaches": [
+    "Development Methods": [
       {
         "document": "README.md",
-        "line": 134,
+        "line": 133,
         "level": 2,
-        "title": "Development Approaches"
+        "title": "Development Methods"
       }
     ],
     "Development Mode": [
@@ -6864,6 +6888,14 @@
         "title": "Documentation Structure Guidelines"
       }
     ],
+    "Does the package name have to start with `ErisPulse-`?": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 204,
+        "level": 3,
+        "title": "Does the package name have to start with `ErisPulse-`?"
+      }
+    ],
     "Domestic Image Acceleration": [
       {
         "document": "user-guide/deployment.md",
@@ -6948,6 +6980,14 @@
         "line": 1,
         "level": 1,
         "title": "Ecosystem Modules"
+      }
+    ],
+    "Editing and Batch Operations": [
+      {
+        "document": "ecosystem/workbench.md",
+        "line": 67,
+        "level": 3,
+        "title": "Editing and Batch Operations"
       }
     ],
     "Email Platform Features Documentation": [
@@ -7134,6 +7174,22 @@
         "title": "ErisPulse Session Type Standard"
       }
     ],
+    "ErisPulse Workbench": [
+      {
+        "document": "ecosystem/workbench.md",
+        "line": 1,
+        "level": 1,
+        "title": "ErisPulse Workbench"
+      }
+    ],
+    "ErisPulse Workbench: Backend for Module Store and Managed Domains": [
+      {
+        "document": "ecosystem/README.md",
+        "line": 84,
+        "level": 3,
+        "title": "ErisPulse Workbench: Backend for Module Store and Managed Domains"
+      }
+    ],
     "ErisPulse-ApiMCP: Control Your Bot with AI Clients": [
       {
         "document": "ecosystem/apimcp.md",
@@ -7145,7 +7201,7 @@
     "ErisPulse-ApiMCP: Let AI Clients Control the Bot": [
       {
         "document": "ecosystem/README.md",
-        "line": 50,
+        "line": 52,
         "level": 3,
         "title": "ErisPulse-ApiMCP: Let AI Clients Control the Bot"
       }
@@ -7161,7 +7217,7 @@
     "ErisPulse-App: Run Bots Directly on Your Phone": [
       {
         "document": "ecosystem/README.md",
-        "line": 72,
+        "line": 74,
         "level": 3,
         "title": "ErisPulse-App: Run Bots Directly on Your Phone"
       }
@@ -7177,7 +7233,7 @@
     "ErisPulse-Cron: Scheduled Tasks": [
       {
         "document": "ecosystem/README.md",
-        "line": 30,
+        "line": 32,
         "level": 3,
         "title": "ErisPulse-Cron: Scheduled Tasks"
       }
@@ -7193,7 +7249,7 @@
     "ErisPulse-Dashboard: Management Dashboard in the Browser": [
       {
         "document": "ecosystem/README.md",
-        "line": 20,
+        "line": 22,
         "level": 3,
         "title": "ErisPulse-Dashboard: Management Dashboard in the Browser"
       }
@@ -7209,7 +7265,7 @@
     "ErisPulse-QvQChat: General-Purpose Agent": [
       {
         "document": "ecosystem/README.md",
-        "line": 40,
+        "line": 42,
         "level": 3,
         "title": "ErisPulse-QvQChat: General-Purpose Agent"
       }
@@ -7225,7 +7281,7 @@
     "ErisPulse-Takumi: Image Rendering": [
       {
         "document": "ecosystem/README.md",
-        "line": 60,
+        "line": 62,
         "level": 3,
         "title": "ErisPulse-Takumi: Image Rendering"
       }
@@ -8508,6 +8564,14 @@
         "title": "Four Essential L2 Articles"
       }
     ],
+    "Four Ways to Connect": [
+      {
+        "document": "ecosystem/workbench.md",
+        "line": 90,
+        "level": 3,
+        "title": "Four Ways to Connect"
+      }
+    ],
     "Framework Configuration": [
       {
         "document": "user-guide/configuration.md",
@@ -8542,6 +8606,12 @@
       {
         "document": "developer-guide/publishing.md",
         "line": 202,
+        "level": 2,
+        "title": "Frequently Asked Questions"
+      },
+      {
+        "document": "ecosystem/workbench.md",
+        "line": 172,
         "level": 2,
         "title": "Frequently Asked Questions"
       }
@@ -8746,20 +8816,20 @@
         "title": "Get Adapter Instance"
       }
     ],
+    "Get Help": [
+      {
+        "document": "README.md",
+        "line": 146,
+        "level": 2,
+        "title": "Get Help"
+      }
+    ],
     "Getting Detailed Method Information": [
       {
         "document": "developer-guide/modules/core-concepts.md",
         "line": 190,
         "level": 3,
         "title": "Getting Detailed Method Information"
-      }
-    ],
-    "Getting Help": [
-      {
-        "document": "README.md",
-        "line": 147,
-        "level": 2,
-        "title": "Getting Help"
       }
     ],
     "Getting Started": [
@@ -9294,6 +9364,14 @@
         "title": "Hook Breakpoints Overview"
       }
     ],
+    "Hosted Domains": [
+      {
+        "document": "ecosystem/workbench.md",
+        "line": 80,
+        "level": 2,
+        "title": "Hosted Domains"
+      }
+    ],
     "Hot Reload Pipeline Internal Breakdown": [
       {
         "document": "user-guide/configuration.md",
@@ -9382,6 +9460,14 @@
         "line": 405,
         "level": 3,
         "title": "How WebUI Consumes"
+      }
+    ],
+    "How long does it take for a domain to become active after application?": [
+      {
+        "document": "ecosystem/workbench.md",
+        "line": 182,
+        "level": 3,
+        "title": "How long does it take for a domain to become active after application?"
       }
     ],
     "How long does the review take?": [
@@ -10320,6 +10406,14 @@
         "title": "Logic Executed After a Successful Send (Hook)"
       }
     ],
+    "Login and Account": [
+      {
+        "document": "ecosystem/workbench.md",
+        "line": 22,
+        "level": 2,
+        "title": "Login and Account"
+      }
+    ],
     "Loopback Deduplication": [
       {
         "document": "platform-guide/minecraft.md",
@@ -10400,6 +10494,14 @@
         "line": 701,
         "level": 3,
         "title": "Management Interface"
+      }
+    ],
+    "Management Operations": [
+      {
+        "document": "ecosystem/workbench.md",
+        "line": 120,
+        "level": 3,
+        "title": "Management Operations"
       }
     ],
     "Mandatory Fields": [
@@ -11142,12 +11244,12 @@
         "title": "Method 1: Local Process (Recommended)"
       }
     ],
-    "Method 1: Web Submission (Recommended for First-Time Use)": [
+    "Method 1: Web Submission (Recommended for First Use)": [
       {
         "document": "developer-guide/publishing.md",
         "line": 97,
         "level": 4,
-        "title": "Method 1: Web Submission (Recommended for First-Time Use)"
+        "title": "Method 1: Web Submission (Recommended for First Use)"
       }
     ],
     "Method 2: API Submission (CLI / CI Scenarios)": [
@@ -11464,6 +11566,14 @@
         "title": "Module Loading Strategy"
       }
     ],
+    "Module Management": [
+      {
+        "document": "ecosystem/workbench.md",
+        "line": 43,
+        "level": 2,
+        "title": "Module Management"
+      }
+    ],
     "Module Meta Information": [
       {
         "document": "developer-guide/modules/getting-started.md",
@@ -11502,6 +11612,14 @@
         "line": 143,
         "level": 3,
         "title": "Module Series — `Core/module.py` (`sdk.module.call`)"
+      }
+    ],
+    "Module Store Overview": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 8,
+        "level": 2,
+        "title": "Module Store Overview"
       }
     ],
     "Module Testing (ErisPulse-Testing)": [
@@ -11722,14 +11840,6 @@
         "title": "Multiple Account Startup"
       }
     ],
-    "Must package names start with `ErisPulse-`?": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 204,
-        "level": 3,
-        "title": "Must package names start with `ErisPulse-`?"
-      }
-    ],
     "MySQL (`ErisPulse.storage.mysql`)": [
       {
         "document": "advanced/storage-backends.md",
@@ -11878,6 +11988,12 @@
       {
         "document": "ecosystem/takumi.md",
         "line": 365,
+        "level": 2,
+        "title": "Next Steps"
+      },
+      {
+        "document": "ecosystem/workbench.md",
+        "line": 188,
         "level": 2,
         "title": "Next Steps"
       },
@@ -12158,6 +12274,14 @@
         "title": "Notification Events (notice)"
       }
     ],
+    "OAuth Applications": [
+      {
+        "document": "ecosystem/workbench.md",
+        "line": 147,
+        "level": 3,
+        "title": "OAuth Applications"
+      }
+    ],
     "OB11 Extension Actions (Api DSL)": [
       {
         "document": "platform-guide/snowluma.md",
@@ -12182,12 +12306,20 @@
         "title": "OB12 Message Segment Reverse Conversion (Raw_ob12)"
       }
     ],
-    "Official Client (Standalone Application)": [
+    "Official Clients (Standalone Applications)": [
       {
         "document": "ecosystem/README.md",
-        "line": 70,
+        "line": 72,
         "level": 2,
-        "title": "Official Client (Standalone Application)"
+        "title": "Official Clients (Standalone Applications)"
+      }
+    ],
+    "Official Online Services": [
+      {
+        "document": "ecosystem/README.md",
+        "line": 82,
+        "level": 2,
+        "title": "Official Online Services"
       }
     ],
     "One-Click Installation Script (Recommended for New Environments)": [
@@ -12332,6 +12464,14 @@
         "title": "Opcode Reference"
       }
     ],
+    "Open APIs": [
+      {
+        "document": "ecosystem/workbench.md",
+        "line": 130,
+        "level": 2,
+        "title": "Open APIs"
+      }
+    ],
     "Option 1: The `via` Parameter of reply()": [
       {
         "document": "developer-guide/adapters/send-dsl.md",
@@ -12359,7 +12499,7 @@
     "Other": [
       {
         "document": "README.md",
-        "line": 141,
+        "line": 140,
         "level": 2,
         "title": "Other"
       },
@@ -12376,6 +12516,14 @@
         "line": 182,
         "level": 3,
         "title": "Other Message Types"
+      }
+    ],
+    "Other Pages": [
+      {
+        "document": "ecosystem/workbench.md",
+        "line": 165,
+        "level": 2,
+        "title": "Other Pages"
       }
     ],
     "Other Subsystem Capabilities (after optimization)": [
@@ -12514,14 +12662,6 @@
         "title": "Overview of the 17 Tools"
       }
     ],
-    "Overview of the Module Store": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 8,
-        "level": 2,
-        "title": "Overview of the Module Store"
-      }
-    ],
     "Owned Resources Overview": [
       {
         "document": "advanced/ownership.md",
@@ -12536,6 +12676,14 @@
         "line": 1,
         "level": 1,
         "title": "Ownership (owner) System"
+      }
+    ],
+    "Ownership Verification": [
+      {
+        "document": "ecosystem/workbench.md",
+        "line": 109,
+        "level": 3,
+        "title": "Ownership Verification"
       }
     ],
     "POST": [
@@ -13539,7 +13687,7 @@
     "Recommended Modules": [
       {
         "document": "ecosystem/README.md",
-        "line": 18,
+        "line": 20,
         "level": 2,
         "title": "Recommended Modules"
       }
@@ -13877,7 +14025,7 @@
     "Related Links": [
       {
         "document": "README.md",
-        "line": 153,
+        "line": 152,
         "level": 2,
         "title": "Related Links"
       },
@@ -16098,6 +16246,14 @@
         "title": "Subcommands"
       }
     ],
+    "Submitting a Module": [
+      {
+        "document": "ecosystem/workbench.md",
+        "line": 47,
+        "level": 3,
+        "title": "Submitting a Module"
+      }
+    ],
     "Success Response": [
       {
         "document": "developer-guide/adapters/core-concepts.md",
@@ -17511,7 +17667,7 @@
     "Want to list your own module here?": [
       {
         "document": "ecosystem/README.md",
-        "line": 82,
+        "line": 94,
         "level": 2,
         "title": "Want to list your own module here?"
       }
@@ -17780,12 +17936,28 @@
         "title": "Why didn't my configuration changes take effect?"
       }
     ],
+    "Why does domain verification keep failing?": [
+      {
+        "document": "ecosystem/workbench.md",
+        "line": 178,
+        "level": 3,
+        "title": "Why does domain verification keep failing?"
+      }
+    ],
     "Why does the module \"disappear\" after hot reload?": [
       {
         "document": "user-guide/faq.md",
         "line": 50,
         "level": 3,
         "title": "Why does the module \"disappear\" after hot reload?"
+      }
+    ],
+    "Why doesn't my submitted module appear in the store immediately?": [
+      {
+        "document": "ecosystem/workbench.md",
+        "line": 174,
+        "level": 3,
+        "title": "Why doesn't my submitted module appear in the store immediately?"
       }
     ],
     "Why is I18nClass Recommended?": [

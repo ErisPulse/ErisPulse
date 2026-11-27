@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 1999,
+  "total_keywords": 2019,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -3038,6 +3038,22 @@
         "title": "ErisPulse 发送方法规范"
       }
     ],
+    "ErisPulse 工作台": [
+      {
+        "document": "ecosystem/workbench.md",
+        "line": 1,
+        "level": 1,
+        "title": "ErisPulse 工作台"
+      }
+    ],
+    "ErisPulse 工作台：模块商店与托管域名的后台": [
+      {
+        "document": "ecosystem/README.md",
+        "line": 84,
+        "level": 3,
+        "title": "ErisPulse 工作台：模块商店与托管域名的后台"
+      }
+    ],
     "ErisPulse 文档": [
       {
         "document": "README.md",
@@ -3073,7 +3089,7 @@
     "ErisPulse-ApiMCP：让 AI 客户端操控机器人": [
       {
         "document": "ecosystem/README.md",
-        "line": 50,
+        "line": 52,
         "level": 3,
         "title": "ErisPulse-ApiMCP：让 AI 客户端操控机器人"
       }
@@ -3089,7 +3105,7 @@
     "ErisPulse-App：手机上直接跑机器人": [
       {
         "document": "ecosystem/README.md",
-        "line": 72,
+        "line": 74,
         "level": 3,
         "title": "ErisPulse-App：手机上直接跑机器人"
       }
@@ -3105,7 +3121,7 @@
     "ErisPulse-Cron：定时任务": [
       {
         "document": "ecosystem/README.md",
-        "line": 30,
+        "line": 32,
         "level": 3,
         "title": "ErisPulse-Cron：定时任务"
       }
@@ -3121,7 +3137,7 @@
     "ErisPulse-Dashboard：浏览器里的管理面板": [
       {
         "document": "ecosystem/README.md",
-        "line": 20,
+        "line": 22,
         "level": 3,
         "title": "ErisPulse-Dashboard：浏览器里的管理面板"
       }
@@ -3137,7 +3153,7 @@
     "ErisPulse-QvQChat：通用智能体": [
       {
         "document": "ecosystem/README.md",
-        "line": 40,
+        "line": 42,
         "level": 3,
         "title": "ErisPulse-QvQChat：通用智能体"
       }
@@ -3153,7 +3169,7 @@
     "ErisPulse-Takumi：图片渲染": [
       {
         "document": "ecosystem/README.md",
-        "line": 60,
+        "line": 62,
         "level": 3,
         "title": "ErisPulse-Takumi：图片渲染"
       }
@@ -3548,6 +3564,14 @@
         "line": 209,
         "level": 2,
         "title": "Notice 通知模块"
+      }
+    ],
+    "OAuth 应用": [
+      {
+        "document": "ecosystem/workbench.md",
+        "line": 147,
+        "level": 3,
+        "title": "OAuth 应用"
       }
     ],
     "OB11 协议扩展（NapCat/go-cqhttp/SnowLuma 通用）": [
@@ -5752,6 +5776,12 @@
         "title": "下一步"
       },
       {
+        "document": "ecosystem/workbench.md",
+        "line": 188,
+        "level": 2,
+        "title": "下一步"
+      },
+      {
         "document": "getting-started/README.md",
         "line": 51,
         "level": 2,
@@ -6747,7 +6777,7 @@
     "五、我要为 ErisPulse 贡献": [
       {
         "document": "README.md",
-        "line": 116,
+        "line": 117,
         "level": 3,
         "title": "五、我要为 ErisPulse 贡献"
       }
@@ -7515,7 +7545,7 @@
     "其他": [
       {
         "document": "README.md",
-        "line": 147,
+        "line": 148,
         "level": 2,
         "title": "其他"
       },
@@ -7546,6 +7576,14 @@
         "line": 22,
         "level": 3,
         "title": "其它子系统能力（优化后）"
+      }
+    ],
+    "其它页面": [
+      {
+        "document": "ecosystem/workbench.md",
+        "line": 165,
+        "level": 2,
+        "title": "其它页面"
       }
     ],
     "典型流程模式": [
@@ -8996,6 +9034,14 @@
         "title": "四、生态与官方客户端"
       }
     ],
+    "四种接入方式": [
+      {
+        "document": "ecosystem/workbench.md",
+        "line": 90,
+        "level": 3,
+        "title": "四种接入方式"
+      }
+    ],
     "回到学习路径": [
       {
         "document": "developer-guide/modules/best-practices.md",
@@ -9208,6 +9254,22 @@
         "line": 14,
         "level": 2,
         "title": "场景速查"
+      }
+    ],
+    "域名申请后多久生效？": [
+      {
+        "document": "ecosystem/workbench.md",
+        "line": 182,
+        "level": 3,
+        "title": "域名申请后多久生效？"
+      }
+    ],
+    "域名验证一直不通过？": [
+      {
+        "document": "ecosystem/workbench.md",
+        "line": 178,
+        "level": 3,
+        "title": "域名验证一直不通过？"
       }
     ],
     "基本使用": [
@@ -10452,10 +10514,18 @@
         "title": "完整配置示例"
       }
     ],
+    "官方在线服务": [
+      {
+        "document": "ecosystem/README.md",
+        "line": 82,
+        "level": 2,
+        "title": "官方在线服务"
+      }
+    ],
     "官方客户端（独立程序）": [
       {
         "document": "ecosystem/README.md",
-        "line": 70,
+        "line": 72,
         "level": 2,
         "title": "官方客户端（独立程序）"
       }
@@ -10920,6 +10990,12 @@
         "title": "常见问题"
       },
       {
+        "document": "ecosystem/workbench.md",
+        "line": 172,
+        "level": 2,
+        "title": "常见问题"
+      },
+      {
         "document": "getting-started/first-bot.md",
         "line": 119,
         "level": 2,
@@ -11235,7 +11311,7 @@
     "开发方式": [
       {
         "document": "README.md",
-        "line": 140,
+        "line": 141,
         "level": 2,
         "title": "开发方式"
       }
@@ -11278,6 +11354,14 @@
         "line": 1,
         "level": 1,
         "title": "开发者指南"
+      }
+    ],
+    "开放接口": [
+      {
+        "document": "ecosystem/workbench.md",
+        "line": 130,
+        "level": 2,
+        "title": "开放接口"
       }
     ],
     "异常体系": [
@@ -11430,6 +11514,14 @@
         "line": 1,
         "level": 1,
         "title": "归属权（owner）系统"
+      }
+    ],
+    "归属认领": [
+      {
+        "document": "ecosystem/workbench.md",
+        "line": 71,
+        "level": 3,
+        "title": "归属认领"
       }
     ],
     "归属资源全景": [
@@ -11747,7 +11839,7 @@
     "我也想把自己的模块列在这里？": [
       {
         "document": "ecosystem/README.md",
-        "line": 82,
+        "line": 94,
         "level": 2,
         "title": "我也想把自己的模块列在这里？"
       }
@@ -11758,6 +11850,14 @@
         "line": 415,
         "level": 3,
         "title": "房间邀请"
+      }
+    ],
+    "所有权验证": [
+      {
+        "document": "ecosystem/workbench.md",
+        "line": 109,
+        "level": 3,
+        "title": "所有权验证"
       }
     ],
     "手动创建项目": [
@@ -11828,6 +11928,14 @@
         "line": 202,
         "level": 2,
         "title": "手动部署（pip）"
+      }
+    ],
+    "托管域名": [
+      {
+        "document": "ecosystem/workbench.md",
+        "line": 80,
+        "level": 2,
+        "title": "托管域名"
       }
     ],
     "扩展 API（call_api）": [
@@ -12185,7 +12293,7 @@
     "推荐模块": [
       {
         "document": "ecosystem/README.md",
-        "line": 18,
+        "line": 20,
         "level": 2,
         "title": "推荐模块"
       }
@@ -12196,6 +12304,22 @@
         "line": 267,
         "level": 3,
         "title": "推荐禁用懒加载的场景（lazy_load=False）"
+      }
+    ],
+    "提交后模块没有立刻出现在商店里？": [
+      {
+        "document": "ecosystem/workbench.md",
+        "line": 174,
+        "level": 3,
+        "title": "提交后模块没有立刻出现在商店里？"
+      }
+    ],
+    "提交模块": [
+      {
+        "document": "ecosystem/workbench.md",
+        "line": 47,
+        "level": 3,
+        "title": "提交模块"
       }
     ],
     "插件重写对照": [
@@ -14092,6 +14216,14 @@
         "title": "模块生命周期"
       }
     ],
+    "模块管理": [
+      {
+        "document": "ecosystem/workbench.md",
+        "line": 43,
+        "level": 2,
+        "title": "模块管理"
+      }
+    ],
     "模块级别控制": [
       {
         "document": "advanced/lazy-loading.md",
@@ -15232,12 +15364,28 @@
         "title": "用户：使用平台扩展方法"
       }
     ],
+    "申请流程": [
+      {
+        "document": "ecosystem/workbench.md",
+        "line": 101,
+        "level": 3,
+        "title": "申请流程"
+      }
+    ],
     "界面": [
       {
         "document": "ecosystem/qvqchat.md",
         "line": 144,
         "level": 2,
         "title": "界面"
+      }
+    ],
+    "登录与账号": [
+      {
+        "document": "ecosystem/workbench.md",
+        "line": 22,
+        "level": 2,
+        "title": "登录与账号"
       }
     ],
     "监听 Bot 生命周期": [
@@ -15539,7 +15687,7 @@
     "相关链接": [
       {
         "document": "README.md",
-        "line": 159,
+        "line": 160,
         "level": 2,
         "title": "相关链接"
       },
@@ -15778,6 +15926,14 @@
         "title": "管理接口"
       }
     ],
+    "管理操作": [
+      {
+        "document": "ecosystem/workbench.md",
+        "line": 120,
+        "level": 3,
+        "title": "管理操作"
+      }
+    ],
     "类型分类": [
       {
         "document": "bug-tracker.md",
@@ -15948,6 +16104,14 @@
         "line": 356,
         "level": 2,
         "title": "缓存与热更新"
+      }
+    ],
+    "编辑与批量操作": [
+      {
+        "document": "ecosystem/workbench.md",
+        "line": 67,
+        "level": 3,
+        "title": "编辑与批量操作"
       }
     ],
     "网络客户端": [
@@ -16255,7 +16419,7 @@
     "获取帮助": [
       {
         "document": "README.md",
-        "line": 153,
+        "line": 154,
         "level": 2,
         "title": "获取帮助"
       }
@@ -16442,6 +16606,14 @@
         "line": 307,
         "level": 2,
         "title": "设计边界：哪些资源不随卸载清理"
+      }
+    ],
+    "访问令牌": [
+      {
+        "document": "ecosystem/workbench.md",
+        "line": 134,
+        "level": 3,
+        "title": "访问令牌"
       }
     ],
     "访问核心模块": [
@@ -18833,7 +19005,7 @@
     "高级特性版本速查表": [
       {
         "document": "README.md",
-        "line": 127,
+        "line": 128,
         "level": 2,
         "title": "高级特性版本速查表"
       }

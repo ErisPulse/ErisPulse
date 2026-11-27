@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "total_keywords": 2081,
+  "total_keywords": 2101,
   "keywords": {
     "0 成功（OK）": [
       {
@@ -320,14 +320,6 @@
         "title": "1. 缺少 `{platform}_raw` 字段"
       }
     ],
-    "1. 設定 pyproject.toml": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 41,
-        "level": 3,
-        "title": "1. 設定 pyproject.toml"
-      }
-    ],
     "1. 設計背景": [
       {
         "document": "standards/api-action-spec.md",
@@ -342,6 +334,14 @@
         "line": 6,
         "level": 2,
         "title": "1. 說明"
+      }
+    ],
+    "1. 配置 pyproject.toml": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 41,
+        "level": 3,
+        "title": "1. 配置 pyproject.toml"
       }
     ],
     "1. 配置層級與覆蓋": [
@@ -718,12 +718,12 @@
         "title": "2. 正確的非同步操作"
       }
     ],
-    "2. 發布到 PyPI": [
+    "2. 發佈到 PyPI": [
       {
         "document": "developer-guide/publishing.md",
         "line": 78,
         "level": 3,
-        "title": "2. 發布到 PyPI"
+        "title": "2. 發佈到 PyPI"
       }
     ],
     "2. 結構化日誌": [
@@ -1550,12 +1550,12 @@
         "title": "4. 模組"
       }
     ],
-    "4. 管理已發布的模組": [
+    "4. 管理已發佈的模組": [
       {
         "document": "developer-guide/publishing.md",
         "line": 138,
         "level": 3,
-        "title": "4. 管理已發布的模組"
+        "title": "4. 管理已發佈的模組"
       }
     ],
     "4. 組合使用": [
@@ -3030,6 +3030,22 @@
         "title": "ErisPulse PlatformFeatures 文件"
       }
     ],
+    "ErisPulse 工作台": [
+      {
+        "document": "ecosystem/workbench.md",
+        "line": 1,
+        "level": 1,
+        "title": "ErisPulse 工作台"
+      }
+    ],
+    "ErisPulse 工作台：模組商店與託管域名的後台": [
+      {
+        "document": "ecosystem/README.md",
+        "line": 84,
+        "level": 3,
+        "title": "ErisPulse 工作台：模組商店與託管域名的後台"
+      }
+    ],
     "ErisPulse 文件": [
       {
         "document": "README.md",
@@ -3078,12 +3094,12 @@
         "title": "ErisPulse-ApiMCP 用 AI 客戶端操控機器人"
       }
     ],
-    "ErisPulse-ApiMCP：讓 AI 用戶端操控機器人": [
+    "ErisPulse-ApiMCP：讓 AI 客戶端操控機器人": [
       {
         "document": "ecosystem/README.md",
-        "line": 48,
+        "line": 52,
         "level": 3,
-        "title": "ErisPulse-ApiMCP：讓 AI 用戶端操控機器人"
+        "title": "ErisPulse-ApiMCP：讓 AI 客戶端操控機器人"
       }
     ],
     "ErisPulse-App": [
@@ -3097,7 +3113,7 @@
     "ErisPulse-App：手機上直接跑機器人": [
       {
         "document": "ecosystem/README.md",
-        "line": 70,
+        "line": 74,
         "level": 3,
         "title": "ErisPulse-App：手機上直接跑機器人"
       }
@@ -3113,7 +3129,7 @@
     "ErisPulse-Cron：定時任務": [
       {
         "document": "ecosystem/README.md",
-        "line": 28,
+        "line": 32,
         "level": 3,
         "title": "ErisPulse-Cron：定時任務"
       }
@@ -3126,12 +3142,12 @@
         "title": "ErisPulse-Dashboard"
       }
     ],
-    "ErisPulse-Dashboard：瀏覽器裡的管理面板": [
+    "ErisPulse-Dashboard：瀏覽器裡的管理介面": [
       {
         "document": "ecosystem/README.md",
-        "line": 18,
+        "line": 22,
         "level": 3,
-        "title": "ErisPulse-Dashboard：瀏覽器裡的管理面板"
+        "title": "ErisPulse-Dashboard：瀏覽器裡的管理介面"
       }
     ],
     "ErisPulse-QvQChat 通用智慧代理": [
@@ -3142,12 +3158,12 @@
         "title": "ErisPulse-QvQChat 通用智慧代理"
       }
     ],
-    "ErisPulse-QvQChat：通用智慧代理人": [
+    "ErisPulse-QvQChat：通用智能體": [
       {
         "document": "ecosystem/README.md",
-        "line": 38,
+        "line": 42,
         "level": 3,
-        "title": "ErisPulse-QvQChat：通用智慧代理人"
+        "title": "ErisPulse-QvQChat：通用智能體"
       }
     ],
     "ErisPulse-Takumi": [
@@ -3161,7 +3177,7 @@
     "ErisPulse-Takumi：圖片渲染": [
       {
         "document": "ecosystem/README.md",
-        "line": 58,
+        "line": 62,
         "level": 3,
         "title": "ErisPulse-Takumi：圖片渲染"
       }
@@ -3552,6 +3568,14 @@
         "line": 209,
         "level": 2,
         "title": "Notice 通知模組"
+      }
+    ],
+    "OAuth 應用": [
+      {
+        "document": "ecosystem/workbench.md",
+        "line": 141,
+        "level": 3,
+        "title": "OAuth 應用"
       }
     ],
     "OB11 協定擴充（NapCat/go-cqhttp/SnowLuma 通用）": [
@@ -5764,6 +5788,12 @@
         "title": "下一步"
       },
       {
+        "document": "ecosystem/workbench.md",
+        "line": 178,
+        "level": 2,
+        "title": "下一步"
+      },
+      {
         "document": "getting-started/README.md",
         "line": 51,
         "level": 2,
@@ -6624,12 +6654,12 @@
         "title": "事務操作"
       }
     ],
-    "二、我要開發模組 / 轉接器": [
+    "二、我要開發模組 / 適配器": [
       {
         "document": "README.md",
         "line": 43,
         "level": 3,
-        "title": "二、我要開發模組 / 轉接器"
+        "title": "二、我要開發模組 / 適配器"
       }
     ],
     "互動式安裝": [
@@ -6691,7 +6721,7 @@
     "五、我要為 ErisPulse 貢獻": [
       {
         "document": "README.md",
-        "line": 116,
+        "line": 117,
         "level": 3,
         "title": "五、我要為 ErisPulse 貢獻"
       }
@@ -7505,7 +7535,7 @@
     "其他": [
       {
         "document": "README.md",
-        "line": 147,
+        "line": 148,
         "level": 2,
         "title": "其他"
       },
@@ -7536,6 +7566,14 @@
         "line": 22,
         "level": 3,
         "title": "其它子系統能力（優化後）"
+      }
+    ],
+    "其它頁面": [
+      {
+        "document": "ecosystem/workbench.md",
+        "line": 157,
+        "level": 2,
+        "title": "其它頁面"
       }
     ],
     "典型流程模式": [
@@ -8486,12 +8524,20 @@
         "title": "嚴重性分級"
       }
     ],
-    "四、生態與官方用戶端": [
+    "四、生態與官方客戶端": [
       {
         "document": "README.md",
         "line": 102,
         "level": 3,
-        "title": "四、生態與官方用戶端"
+        "title": "四、生態與官方客戶端"
+      }
+    ],
+    "四種接入方式": [
+      {
+        "document": "ecosystem/workbench.md",
+        "line": 86,
+        "level": 3,
+        "title": "四種接入方式"
       }
     ],
     "回傳值處理示例": [
@@ -8754,6 +8800,22 @@
         "line": 157,
         "level": 4,
         "title": "在適配器中使用"
+      }
+    ],
+    "域名申請後多久生效？": [
+      {
+        "document": "ecosystem/workbench.md",
+        "line": 174,
+        "level": 3,
+        "title": "域名申請後多久生效？"
+      }
+    ],
+    "域名驗證一直不通過？": [
+      {
+        "document": "ecosystem/workbench.md",
+        "line": 170,
+        "level": 3,
+        "title": "域名驗證一直不通過？"
       }
     ],
     "執行時熱重載伺服器設定": [
@@ -9825,9 +9887,17 @@
     "官方客戶端（獨立程式）": [
       {
         "document": "ecosystem/README.md",
-        "line": 68,
+        "line": 72,
         "level": 2,
         "title": "官方客戶端（獨立程式）"
+      }
+    ],
+    "官方線上服務": [
+      {
+        "document": "ecosystem/README.md",
+        "line": 82,
+        "level": 2,
+        "title": "官方線上服務"
       }
     ],
     "定向事件：lifecycle.emit 的 to 參數": [
@@ -10442,6 +10512,12 @@
       {
         "document": "developer-guide/publishing.md",
         "line": 202,
+        "level": 2,
+        "title": "常見問題"
+      },
+      {
+        "document": "ecosystem/workbench.md",
+        "line": 164,
         "level": 2,
         "title": "常見問題"
       },
@@ -11141,7 +11217,7 @@
     "我也想把自己的模組列在這裡？": [
       {
         "document": "ecosystem/README.md",
-        "line": 78,
+        "line": 94,
         "level": 2,
         "title": "我也想把自己的模組列在這裡？"
       }
@@ -11152,6 +11228,14 @@
         "line": 413,
         "level": 3,
         "title": "房間邀請"
+      }
+    ],
+    "所有权驗證": [
+      {
+        "document": "ecosystem/workbench.md",
+        "line": 105,
+        "level": 3,
+        "title": "所有权驗證"
       }
     ],
     "手動創建項目": [
@@ -11222,6 +11306,14 @@
         "line": 202,
         "level": 2,
         "title": "手動部署（pip）"
+      }
+    ],
+    "托管域名": [
+      {
+        "document": "ecosystem/workbench.md",
+        "line": 76,
+        "level": 2,
+        "title": "托管域名"
       }
     ],
     "扩展 API（call_api）": [
@@ -11487,7 +11579,7 @@
     "推薦模組": [
       {
         "document": "ecosystem/README.md",
-        "line": 16,
+        "line": 20,
         "level": 2,
         "title": "推薦模組"
       }
@@ -11498,6 +11590,22 @@
         "line": 266,
         "level": 3,
         "title": "推薦禁用懶載入的場景（lazy_load=False）"
+      }
+    ],
+    "提交後模組沒有立刻出現在商店裡？": [
+      {
+        "document": "ecosystem/workbench.md",
+        "line": 166,
+        "level": 3,
+        "title": "提交後模組沒有立刻出現在商店裡？"
+      }
+    ],
+    "提交模組": [
+      {
+        "document": "ecosystem/workbench.md",
+        "line": 45,
+        "level": 3,
+        "title": "提交模組"
       }
     ],
     "插入資料": [
@@ -13438,6 +13546,14 @@
         "title": "模組端審核（事件方式）"
       }
     ],
+    "模組管理": [
+      {
+        "document": "ecosystem/workbench.md",
+        "line": 41,
+        "level": 2,
+        "title": "模組管理"
+      }
+    ],
     "模組設計": [
       {
         "document": "developer-guide/modules/best-practices.md",
@@ -13628,6 +13744,14 @@
         "line": 206,
         "level": 3,
         "title": "正式環境設定"
+      }
+    ],
+    "歸屬認領": [
+      {
+        "document": "ecosystem/workbench.md",
+        "line": 69,
+        "level": 3,
+        "title": "歸屬認領"
       }
     ],
     "歸屬資源全景": [
@@ -14297,7 +14421,7 @@
     "獲取幫助": [
       {
         "document": "README.md",
-        "line": 153,
+        "line": 154,
         "level": 2,
         "title": "獲取幫助"
       }
@@ -14426,6 +14550,14 @@
         "title": "用戶使用指南"
       }
     ],
+    "申請流程": [
+      {
+        "document": "ecosystem/workbench.md",
+        "line": 97,
+        "level": 3,
+        "title": "申請流程"
+      }
+    ],
     "異常層級": [
       {
         "document": "advanced/client.md",
@@ -14516,6 +14648,14 @@
         "line": 462,
         "level": 2,
         "title": "異步處理機制"
+      }
+    ],
+    "登入與帳號": [
+      {
+        "document": "ecosystem/workbench.md",
+        "line": 22,
+        "level": 2,
+        "title": "登入與帳號"
       }
     ],
     "發布": [
@@ -15093,7 +15233,7 @@
     "相關連結": [
       {
         "document": "README.md",
-        "line": 159,
+        "line": 160,
         "level": 2,
         "title": "相關連結"
       },
@@ -15310,6 +15450,14 @@
         "title": "管理員檢查"
       }
     ],
+    "管理操作": [
+      {
+        "document": "ecosystem/workbench.md",
+        "line": 116,
+        "level": 3,
+        "title": "管理操作"
+      }
+    ],
     "節點樹範例": [
       {
         "document": "ecosystem/takumi.md",
@@ -15466,6 +15614,14 @@
         "line": 401,
         "level": 2,
         "title": "網關連接"
+      }
+    ],
+    "編輯與批量操作": [
+      {
+        "document": "ecosystem/workbench.md",
+        "line": 65,
+        "level": 3,
+        "title": "編輯與批量操作"
       }
     ],
     "緩存與熱更新": [
@@ -16464,6 +16620,14 @@
         "line": 66,
         "level": 2,
         "title": "記憶體診斷"
+      }
+    ],
+    "訪問令牌": [
+      {
+        "document": "ecosystem/workbench.md",
+        "line": 128,
+        "level": 3,
+        "title": "訪問令牌"
       }
     ],
     "訪問核心模組": [
@@ -17642,6 +17806,14 @@
         "title": "適用對象"
       }
     ],
+    "適配器": [
+      {
+        "document": "developer-guide/publishing.md",
+        "line": 63,
+        "level": 4,
+        "title": "適配器"
+      }
+    ],
     "適配器中使用": [
       {
         "document": "advanced/client.md",
@@ -17900,14 +18072,6 @@
         "line": 132,
         "level": 2,
         "title": "配套外掛"
-      }
-    ],
-    "配接器": [
-      {
-        "document": "developer-guide/publishing.md",
-        "line": 63,
-        "level": 4,
-        "title": "配接器"
       }
     ],
     "配接器完善之後": [
@@ -18698,6 +18862,14 @@
         "title": "链式修饰方法（可组合使用）"
       }
     ],
+    "開放介面": [
+      {
+        "document": "ecosystem/workbench.md",
+        "line": 124,
+        "level": 2,
+        "title": "開放介面"
+      }
+    ],
     "開發工具": [
       {
         "document": "developer-guide/README.md",
@@ -18709,7 +18881,7 @@
     "開發方式": [
       {
         "document": "README.md",
-        "line": 140,
+        "line": 141,
         "level": 2,
         "title": "開發方式"
       }
@@ -19017,7 +19189,7 @@
     "高級特性版本速查表": [
       {
         "document": "README.md",
-        "line": 127,
+        "line": 128,
         "level": 2,
         "title": "高級特性版本速查表"
       }
