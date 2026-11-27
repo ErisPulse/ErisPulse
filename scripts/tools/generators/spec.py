@@ -198,6 +198,7 @@ SECTION_ECOSYSTEM = Section(
     title="生态模块",
     entries=[
         DocEntry("ErisPulse-App 安装与使用", "ecosystem/app.md"),
+        DocEntry("工作台使用指南", "ecosystem/workbench.md"),
         DocEntry("Dashboard 使用与视窗注册", "ecosystem/dashboard.md"),
         DocEntry("Cron 定时任务", "ecosystem/cron.md"),
         DocEntry("Takumi 图片渲染", "ecosystem/takumi.md"),
@@ -607,6 +608,7 @@ SKILL_SPECS: list[SkillSpec] = [
         audience="了解生态组件（Dashboard/Cron/AI 模块等）与各平台适配器的接入差异",
         docs=[
             SkillDoc("生态总览", "ecosystem/README.md"),
+            SkillDoc("工作台", "ecosystem/workbench.md"),
             SkillDoc("Dashboard", "ecosystem/dashboard.md"),
             SkillDoc("定时任务", "ecosystem/cron.md"),
             SkillDoc("AI 对话模块", "ecosystem/qvqchat.md"),

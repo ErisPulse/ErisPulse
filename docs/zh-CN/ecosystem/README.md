@@ -12,6 +12,8 @@ ErisPulse 框架本身只提供核心能力（事件系统、模块系统、配�
 >   ```
 >
 > - **独立程序**（如 ErisPulse-App 客户端）直接从对应 GitHub Releases 下载安装，无需 `epsdk`。
+>
+> - **在线服务**（如 ErisPulse 工作台）无需安装，打开网页登录即可使用。
 
 ---
 
@@ -76,6 +78,16 @@ epsdk install Takumi
 所有平台的安装包均从 [GitHub Releases](https://github.com/ErisPulse/ErisPulse-App/releases) 下载，无需 `epsdk`。
 
 文档：[ErisPulse-App 安装与使用](app.md)
+
+## 官方在线服务
+
+### ErisPulse 工作台：模块商店与托管域名的后台
+
+模块要进商店、想给模块配一个 `plugin-xxx.erisdev.com` 的网站地址、或者想用脚本自动提交模块？工作台是生态的统一账号中心：一个账号管理模块收录与认证、申请托管域名、生成访问令牌，还能让你的网站支持「用 ErisPulse 账号登录」。纯在线服务，**无需安装**。
+
+访问：[https://workbench.erisdev.com/](https://workbench.erisdev.com/)
+
+文档：[ErisPulse 工作台使用指南](workbench.md)
 
 ---
 

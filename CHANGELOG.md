@@ -93,6 +93,7 @@
 - @wsu2059q
   - `运行时` 热重载自动监控统一入口 `sdk.enable_hot_reload()` / `sdk.disable_hot_reload()`：一个开关覆盖两个监控面（本地插件 `plugins/` 目录 + 已加载模块/适配器的来源发行版——组件注册名在框架内互斥，监控按组件维度统一）；来源包文件变化（pip 升级 / 修改包文件）即定向重载对应组件（复用既有快照回滚与依赖级联）；`framework.auto_reload` 配置节（enabled / interval / allow / deny ACL 双名单，deny 优先，glob 支持）驱动 `init` 自动启用，显式参数覆盖配置
   - `运行时` 热重载监控器收敛公共基类 `runtime/hot_reload.py`（生命周期状态机 / 主循环解析 / 跨线程调度 / 监控范围 ACL，plugin 与 package 监控器对齐继承）；既有 `sdk.enable_plugin_hot_reload()` 保留（仅插件目录面）
+  - `文档` 新增 `docs/zh-CN/ecosystem/workbench.md`：ErisPulse 工作台（账号、模块管理、托管域名、访问令牌与 OAuth 应用接入）使用指南，并同步 AI 提示词 / 技能生成清单
 
 ---
 

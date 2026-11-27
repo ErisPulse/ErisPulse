@@ -109,6 +109,7 @@ ErisPulse 是事件驱动的模块化异步机器人框架——业务代码只�
 | [ErisPulse-QvQChat](ecosystem/qvqchat.md) | 通用智能体模块：工具循环 / MCP / 长期记忆 / 知识库，声明服务的模块自动成为 AI 工具 |
 | [ErisPulse-ApiMCP](ecosystem/apimcp.md) | 把机器人反向开放为 MCP 工具，让 Claude 等 AI 客户端直接操控 |
 | [ErisPulse-App](ecosystem/app.md) | 官方全平台客户端（Android / Windows / Linux / macOS）：原生界面管理多个实例，**手机直接运行**，桌面托盘常驻 |
+| [ErisPulse 工作台](ecosystem/workbench.md) | 统一账号中心：模块收录与认证、`plugin-xxx.erisdev.com` 托管域名、访问令牌与 OAuth 登录接入（在线服务，无需安装） |
 | [ErisPulse-Dashboard](ecosystem/dashboard.md) | Web 管理面板 + 视窗注册 API（模块可向侧边栏注册自定义页面） |
 | [ErisPulse-Cron](ecosystem/cron.md) | 定时任务调度模块：一次性 / 间隔 / Cron 表达式，回调传参，SQLite 持久化，其他模块可托管定时回调 |
 | [ErisPulse-Takumi](ecosystem/takumi.md) | 图片渲染（HTML / 节点树 / SVG / 动画，内置中英文字体） |

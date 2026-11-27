@@ -26,7 +26,7 @@ epsdk list-remote -t adapters
 epsdk list-remote -r
 ```
 
-你也可以访问 [ErisPulse 官网](https://www.erisdev.com/#market) 或 [ErisPulse Workbench](https://workbench.erisdev.com/) 的「模块列表」在线浏览模块商店。
+你也可以访问 [ErisPulse 官网](https://www.erisdev.com/#market) 或 [ErisPulse Workbench](https://workbench.erisdev.com/) 的「模块列表」在线浏览模块商店。工作台的账号、模块管理与托管域名等全部功能见 [ErisPulse 工作台](../ecosystem/workbench.md)。
 
 ### 支持的提交类型
 
@@ -93,7 +93,7 @@ pip install ErisPulse-MyModule
 
 ### 3. 提交到模块商店（ErisPulse Workbench）
 
-模块收录与认证统一由 **ErisPulse Workbench** 承载：**[https://workbench.erisdev.com/](https://workbench.erisdev.com/)**。提交后经 `repository_dispatch` 下发到模块索引仓库，workflow 完成即入商店（通常数分钟）。
+模块收录与认证统一由 **ErisPulse Workbench** 承载：**[https://workbench.erisdev.com/](https://workbench.erisdev.com/)**。提交后经 `repository_dispatch` 下发到模块索引仓库，workflow 完成即入商店（通常数分钟）。工作台的登录、令牌、归属认领与托管域名见 [ErisPulse 工作台](../ecosystem/workbench.md)。
 
 #### 方式一：网页提交（推荐首次使用）
 
