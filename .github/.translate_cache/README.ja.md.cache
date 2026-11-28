@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "f5652856997f719585c62a094bcdd6a3",
-  "file_hash": "f5652856997f719585c62a094bcdd6a3",
-  "translated_at": "2026-11-18T09:18:19.822065",
+  "hash": "ca867a01ce4ce420c5252fa7b4839f63",
+  "file_hash": "ca867a01ce4ce420c5252fa7b4839f63",
+  "translated_at": "2026-11-28T07:07:48.691846",
   "target_lang": "ja",
   "chunks": [
     {
@@ -60,6 +60,10 @@
     {
       "hash": "b174c979c42ae3a021b3ed55710d462d",
       "translation": "## コミュニティ\n\n私たちと交流しましょう：\n\n- Telegram: <https://t.me/ErisPulse>\n- QQ グループ: <https://qm.qq.com/q/TOwnCmypcy>\n- 雲湖グループ: <https://yhfx.jwznb.com/share?key=VWJL4fTWXepa&ts=1781889199>\n\nプロジェクトが役立つと思われましたら、ぜひ[愛发电](https://ifdian.net/a/YingXinche)で継続的な開発を支援してください！\n\n---"
+    },
+    {
+      "hash": "a34c6d5cf10ca822a47172febdd21dac",
+      "translation": "## 賛助\n\nErisPulse は MIT ライセンスのオープンソースプロジェクトです。すべてのコードとドキュメントは常に無料でオープンソースであり、賛助によってこの状態が変わることはありません。\n\n[![ErisPulse Sponsors](https://raw.githubusercontent.com/ErisPulse/ErisPulse/Develop/v2/.github/assets/sponsors/sponsor-card.png)](https://ifdian.net/a/YingXinche)\n\n---"
     },
     {
       "hash": "8657f19c36520f17964ce22797c25f46",

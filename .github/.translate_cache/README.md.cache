@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "hash": "f5652856997f719585c62a094bcdd6a3",
-  "file_hash": "f5652856997f719585c62a094bcdd6a3",
-  "translated_at": "2026-11-18T09:18:01.921193",
+  "hash": "ca867a01ce4ce420c5252fa7b4839f63",
+  "file_hash": "ca867a01ce4ce420c5252fa7b4839f63",
+  "translated_at": "2026-11-28T07:07:29.696796",
   "target_lang": "en",
   "chunks": [
     {
@@ -60,6 +60,10 @@
     {
       "hash": "b174c979c42ae3a021b3ed55710d462d",
       "translation": "## Community\n\nConnect with us:\n\n- Telegram: <https://t.me/ErisPulse>\n- QQ Group: <https://qm.qq.com/q/TOwnCmypcy>\n- Yunhu Group: <https://yhfx.jwznb.com/share?key=VWJL4fTWXepa&ts=1781889199>\n\nFound the project useful? Consider supporting us on [Ifdian](https://ifdian.net/a/YingXinche) to help us continue development!\n\n---"
+    },
+    {
+      "hash": "a34c6d5cf10ca822a47172febdd21dac",
+      "translation": "## Sponsorship\n\nErisPulse is an open-source project under the MIT license— all code and documentation will always be free and open source, and sponsorship will never change this.\n\n[![ErisPulse Sponsors](https://raw.githubusercontent.com/ErisPulse/ErisPulse/Develop/v2/.github/assets/sponsors/sponsor-card.png)](https://ifdian.net/a/YingXinche)\n\n---"
     },
     {
       "hash": "8657f19c36520f17964ce22797c25f46",

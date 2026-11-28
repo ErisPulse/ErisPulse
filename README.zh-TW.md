@@ -6,7 +6,7 @@
 
 **一次編寫，部署到 QQ / Telegram / Kook / 雲湖 / 微信公眾號 / OneBot12 / ... 多個平台。**
 
-基於 OneBot12 標準介面，事件驅動的模組化非同步機器人框架。業務程式碼只需撰寫一次，配接器負責屏蔽各平台差異；外掛系統、熱重載與完整開發者工具鏈開箱即用。
+基於 OneBot12 標準介面，事件驅動的模組化異步機器人框架。業務程式碼只寫一次，適配器負責屏蔽各平台差異；插件系統、熱重載與完整開發者工具鏈開箱即用。
 
 <p>
   <a href="https://pypi.org/project/ErisPulse/"><img src="https://img.shields.io/pypi/v/ErisPulse?style=for-the-badge&logo=pypi&logoColor=white" alt="PyPI"></a>
@@ -19,7 +19,7 @@
   <a href="https://github.com/ErisPulse/ErisPulse/stargazers"><img src="https://img.shields.io/github/stars/ErisPulse/ErisPulse?style=for-the-badge&logo=github&color=yellow" alt="Stars"></a>
   <a href="https://github.com/astral-sh/ruff"><img src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json&style=for-the-badge" alt="Ruff"></a>
   <a href="https://socket.dev/pypi/package/erispulse"><img src="https://img.shields.io/badge/Socket-Secure-2ea043?style=for-the-badge&logo=socket&logoColor=white" alt="Socket"></a>
-  <a href="https://www.erisdev.com"><img src="https://img.shields.io/badge/文件-erisdev.com-FF6B9D?style=for-the-badge&logo=bookstack&logoColor=white" alt="文件"></a>
+  <a href="https://www.erisdev.com"><img src="https://img.shields.io/badge/文檔-erisdev.com-FF6B9D?style=for-the-badge&logo=bookstack&logoColor=white" alt="文檔"></a>
   <a href="https://deepwiki.com/ErisPulse/ErisPulse"><img src="https://img.shields.io/badge/DeepWiki-ErisPulse-8A2BE2?style=for-the-badge&logo=readthedocs&logoColor=white" alt="DeepWiki"></a>
   <a href="https://www.erisdev.com/#market"><img src="https://img.shields.io/badge/模組市場-erisdev.com-C724B1?style=for-the-badge&logo=webpack&logoColor=white" alt="模組市場"></a>
   <a href="https://github.com/ErisPulse/ErisPulse/discussions"><img src="https://img.shields.io/badge/GitHub-Discussions-181717?style=for-the-badge&logo=github" alt="討論"></a>
@@ -31,7 +31,7 @@
 
 <div align="center">
 
-### 核心特色
+### 核心特性
 
 </div>
 
@@ -44,7 +44,7 @@
 
 ### 事件驅動架構
 
-基於 OneBot12 的統一事件模型，一份 handler 即可適配所有配接器
+基於 OneBot12 的統一事件模型，一份 handler 適配所有適配器
 
 </td>
 <td width="33%" align="center" valign="top">
@@ -64,7 +64,7 @@ QQ / Telegram / Kook / 雲湖 等 15+ 平台，業務程式碼零修改
 
 ### 模組化設計
 
-外掛熱插拔無需重新啟動，作用域按平台 / Bot / 對話管控
+插件熱插拔無需重啟，作用域按平台 / Bot / 會話管控
 
 </td>
 </tr>
@@ -86,7 +86,7 @@ QQ / Telegram / Kook / 雲湖 等 15+ 平台，業務程式碼零修改
 
 ### AI 輔助
 
-以自然語言描述需求，直接生成可用模組
+自然語言描述需求，直接生成可用模組
 
 </td>
 <td width="33%" align="center" valign="top">
@@ -96,7 +96,7 @@ QQ / Telegram / Kook / 雲湖 等 15+ 平台，業務程式碼零修改
 
 ### 簡潔優雅
 
-鏈式 API：@ 使用者、回覆、重試、批次傳送一行完成
+鏈式 API：@ 用戶、回覆、重試、批量發送一行完成
 
 </td>
 </tr>
@@ -104,22 +104,22 @@ QQ / Telegram / Kook / 雲湖 等 15+ 平台，業務程式碼零修改
 
 ---
 
-## 運作原理
+## 工作原理
 
-ErisPulse 透過配接器層屏蔽平台差異，讓業務程式碼只需專注於事件本身：
+ErisPulse 透過適配器層屏蔽平台差異，讓業務程式碼只關心事件本身：
 
 ```mermaid
 graph LR
     P["15+ 平台<br/>QQ · Telegram · Kook · 雲湖 · 微信公眾號 · 郵件 · Webhook ..."]
-    A["配接器層<br/>原生協定 → OneBot12 標準事件"]
-    Event["Event 事件匯流排<br/>中介層 → 派發 command/message/notice/request/meta"]
+    A["適配器層<br/>原生協定 → OneBot12 標準事件"]
+    Event["Event 事件總線<br/>中間件 → 分發 command/message/notice/request/meta"]
     M["業務模組<br/>@command / @message 處理器 · 你的模組"]
     P --> A --> Event --> M
     M -.->|"event.reply() / SendDSL"| Event
 ```
 
-- **配接器層**將各平台原生協定轉換為 OneBot12 標準事件，業務模組看不到平台差異
-- **Event 匯流排**先執行中介層鏈，再按事件類型派發到五類處理器
+- **適配器層**將各平台原生協定轉換為 OneBot12 標準事件，業務模組看不到平台差異
+- **Event 總線**先執行中間件鏈，再按事件類型分發到五類處理器
 - **你的程式碼**透過裝飾器訂閱事件，用 `event.reply()` 或 SendDSL 回覆——回覆訊息沿同一條路徑逆流回平台
 
 完整的模組組成、初始化流程、生命週期事件等設計詳情，見[架構概覽](docs/zh-TW/architecture.md)。
@@ -130,7 +130,7 @@ graph LR
 
 ### 一鍵安裝腳本（推薦）
 
-安裝腳本會自動偵測您的環境（Docker、Python、uv），引導您選擇最合適的安裝方式，支援多種語言（中文/English/日本語/Русский/繁體中文）。
+安裝腳本會自動偵測您的環境（Docker、Python、uv），引導選擇最適合的安裝方式，支援多語言（中文/English/日本語/Русский/繁體中文）。
 
 Windows (PowerShell):
 ```powershell
@@ -168,7 +168,7 @@ docker pull erispulse/erispulse:latest
 ```
 
 <details>
-<summary>Docker Hub 無法使用？</summary>
+<summary>Docker Hub不可用？</summary>
 
 如果 Docker Hub 無法存取，可以使用 GitHub Container Registry：
 
@@ -176,7 +176,7 @@ docker pull erispulse/erispulse:latest
 docker pull ghcr.io/erispulse/erispulse:latest
 ```
 
-使用 ghcr.io 映像時，需要修改 `docker-compose.yml` 中的 image：
+使用 ghcr.io 鏡像時，需要修改 `docker-compose.yml` 中的 image：
 ```yaml
 image: ghcr.io/erispulse/erispulse:latest
 ```
@@ -190,15 +190,15 @@ image: ghcr.io/erispulse/erispulse:latest
 # 下載 docker-compose.yml
 curl -O https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/docker-compose.yml
 
-# 設定 Dashboard 登入權杖並啟動
+# 設置 Dashboard 登入令牌並啟動
 ERISPULSE_DASHBOARD_TOKEN=your-token docker compose up -d
 ```
 
-啟動後存取 `http://<host>:8000/Dashboard`，使用設定的權杖登入 Dashboard 管理面板。
+啟動後訪問 `http://<host>:8000/Dashboard`，使用設定的令牌登入 Dashboard 管理面板。
 
-> 映像內建 ErisPulse 框架和 Dashboard 管理面板，支援 `linux/amd64` 和 `linux/arm64` 架構。
+> 鏡像內建 ErisPulse 框架和 Dashboard 管理面板，支援 `linux/amd64` 和 `linux/arm64` 架構。
 >
-> **持久化**：設定檔與已安裝的模組/配接器透過磁碟區掛載持久化至主機，容器重新啟動後不會遺失。框架自身的更新透過 Dashboard 熱更新完成。
+> **持久化**：配置檔案和已安裝的模組/適配器透過卷掛載持久化到主機，容器重啟後不會遺失。框架自身的更新透過 Dashboard 熱更新完成。
 
 </details>
 
@@ -207,9 +207,9 @@ ERISPULSE_DASHBOARD_TOKEN=your-token docker compose up -d
 
 | 變數 | 預設值 | 說明 |
 |------|--------|------|
-| `ERISPULSE_DASHBOARD_TOKEN` | 空 | Dashboard 登入權杖（設定後自動寫入設定）|
-| `ERISPULSE_PORT` | `8000` | Dashboard 連接埠映射 |
-| `ERISPULSE_TAG` | `latest` | 映像 tag，可設為 `dev` 以使用預發布映像 |
+| `ERISPULSE_DASHBOARD_TOKEN` | 空 | Dashboard 登入令牌（設定後自動寫入配置）|
+| `ERISPULSE_PORT` | `8000` | Dashboard 端口映射 |
+| `ERISPULSE_TAG` | `latest` | 鏡像 tag，可設為 `dev` 使用預發布鏡像 |
 | `CONTAINER_NAME` | `erispulse` | 容器名稱 |
 | `TZ` | `Asia/Shanghai` | 容器時區 |
 | `LANG` | `en_US.UTF-8` | 系統語言，自動偵測啟動介面語言 |
@@ -217,15 +217,15 @@ ERISPULSE_DASHBOARD_TOKEN=your-token docker compose up -d
 
 </details>
 
-### 1Panel 應用程式商店
+### 1Panel 應用商店
 
-透過 [1Panel](https://1panel.cn) 應用程式商店一鍵安裝 ErisPulse，詳見 [ErisPulse-1Panel](https://github.com/ErisPulse/ErisPulse-1Panel)。
+透過 [1Panel](https://1panel.cn) 應用商店一鍵安裝 ErisPulse，詳見 [ErisPulse-1Panel](https://github.com/ErisPulse/ErisPulse-1Panel)。
 
 ```bash
 bash <(curl -sL https://get-1panel.erisdev.com/install.sh)
 ```
 
-ErisPulse 已上架 1Panel 第三方應用程式商店，可使用 [okxlin/appstore](https://github.com/okxlin/appstore) 第三方儲存庫安裝。
+ErisPulse 已上架 1Panel 第三方應用商店，可使用 [okxlin/appstore](https://github.com/okxlin/appstore) 第三方倉庫安裝。
 
 ### 使用 pip 安裝
 
@@ -233,13 +233,13 @@ ErisPulse 已上架 1Panel 第三方應用程式商店，可使用 [okxlin/appst
 pip install ErisPulse
 ```
 
-想將 `epsdk` 當作全域命令列工具、不進入虛擬環境使用時，推薦使用 `uv tool install`：
+想把 `epsdk` 當全域命令列工具、不進虛擬環境使用時，推薦 `uv tool install`：
 
 ```bash
 uv tool install ErisPulse
 ```
 
-> 也可以使用上方的一鍵安裝腳本，自動偵測環境並引導設定（腳本選單中同樣提供「全域 CLI 安裝（uv tool）」方式）。
+> 也可以使用上方的一鍵安裝腳本，自動偵測環境並引導配置（腳本選單中同樣提供「全域 CLI 安裝（uv tool）」方式）。
 
 ### 初始化專案
 
@@ -265,14 +265,14 @@ epsdk init -q -n my_bot
 from ErisPulse import sdk
 from ErisPulse.Core.Event import command
 
-@command("hello", help="傳送問候訊息")
+@command("hello", help="發送問候訊息")
 async def hello_handler(event):
     user_name = event.get_user_nickname() or "朋友"
     await event.reply(f"你好，{user_name}！")
 
 @command("ping", help="測試機器人是否在線")
 async def ping_handler(event):
-    await event.reply("Pong！機器人運作正常。")
+    await event.reply("Pong！機器人運行正常。")
 
 if __name__ == "__main__":
     import asyncio
@@ -284,19 +284,19 @@ if __name__ == "__main__":
 
 **效果說明**
 
-傳送 `/hello`
+發送 `/hello`
 
 機器人回覆：`你好，{使用者名稱}！`
 
 ---
 
-傳送 `/ping`
+發送 `/ping`
 
-機器人回覆：`Pong！機器人運作正常。`
+機器人回覆：`Pong！機器人運行正常。`
 
 ---
 
-**執行方式**
+**運行方式**
 
 ```bash
 epsdk run main.py
@@ -324,21 +324,21 @@ epsdk run main.py --reload
 
 **Kook**
 
-<img src=".github/assets/demo-kook.png" alt="Kook 示範" />
+<img src=".github/assets/demo-kook.png" alt="Kook 演示" />
 
 </td>
 <td align="center" width="33%">
 
 **QQ**
 
-<img src=".github/assets/demo-qq.png" alt="QQ 示範" />
+<img src=".github/assets/demo-qq.png" alt="QQ 演示" />
 
 </td>
 <td align="center" width="33%">
 
 **雲湖**
 
-<img src=".github/assets/demo-yunhu.png" alt="雲湖 示範" />
+<img src=".github/assets/demo-yunhu.png" alt="雲湖 演示" />
 
 </td>
 </tr>
@@ -346,13 +346,13 @@ epsdk run main.py --reload
 
 ## 生態模組
 
-由官方與社群共同維護的模組生態——[Dashboard](https://github.com/ErisPulse/ErisPulse-Dashboard) 管理面板、[MyServer](https://github.com/wsu2059q/ErisPulse-MyServer) 聊天裡的 AI 原生機房、[QvQChat](https://github.com/wsu2059q/ErisPulse-QvQChat) AI 代理人模組，以及數十個社群貢獻的功能模組：
+官方與社群共同維護的模組生態——[Dashboard](https://github.com/ErisPulse/ErisPulse-Dashboard) 管理介面、[MyServer](https://github.com/wsu2059q/ErisPulse-MyServer) 聊天裡的 AI 原生機房、[QvQChat](https://github.com/wsu2059q/ErisPulse-QvQChat) AI 智能體模組，以及數十個社群貢獻的功能模組：
 
 <table>
 <tr>
 <td align="center" width="33%">
 
-**Dashboard** — Web 管理面板
+**Dashboard** — Web 管理介面
 
 <img src="https://raw.githubusercontent.com/ErisPulse/ErisPulse-Dashboard/main/.github/assets/overview.png" alt="Dashboard" />
 
@@ -366,7 +366,7 @@ epsdk run main.py --reload
 </td>
 <td align="center" width="33%">
 
-**QvQChat** — AI 代理人模組
+**QvQChat** — AI 智能體模組
 
 <img src="https://raw.githubusercontent.com/wsu2059q/ErisPulse-QvQChat/main/.github/assets/fleet-demo.png" alt="QvQChat" />
 
@@ -378,33 +378,32 @@ epsdk run main.py --reload
 
 ---
 
-
 ---
 
-## 鏈式傳送 DSL
+## 鏈式發送 DSL
 
-@ 使用者、回覆、重試、逾時、成功回呼——複雜的傳送邏輯，一條鏈寫完：
+@ 用戶、回覆、重試、超時、成功回調——複雜的發送邏輯，一條鏈寫完：
 
 ```python
 yunhu = sdk.adapter.get("yunhu")
 
-# 單發：@使用者 + 回覆 + 重試 + 成功回呼
+# 單發：@使用者 + 回覆 + 重試 + 成功回調
 await (yunhu.Send.To("group", "123").At("456").Reply("msg_789")
        .Retry(3).Timeout(10)
-       .Hook(lambda r: print("傳送成功！")).Text("你好"))
+       .Hook(lambda r: print("發送成功！")).Text("你好"))
 
-# 批次：一條鏈傳送多則訊息
+# 批量：一條鏈發多條訊息
 results = await (yunhu.Send.To("user", "123").Build()
                  .Text("通知一").Image("pic.jpg").Retry(2).send_all())
 ```
 
-> Hook / Retry / Timeout / OnProgress / Defer / Build 等全部鏈式方法，見 [SendDSL 文件](docs/zh-TW/developer-guide/adapters/send-dsl.md)。
+> Hook / Retry / Timeout / OnProgress / Defer / Build 等全部鏈式方法，見 [SendDSL 文檔](docs/zh-TW/developer-guide/adapters/send-dsl.md)。
 
 ---
 
 ## 多輪對話範例
 
-收集資訊、驗證輸入、確認提交，不必自行管理對話狀態：
+收集資訊、校驗輸入、確認提交，不用自己管對話狀態：
 
 ```python
 from ErisPulse.Core.Event import command
@@ -440,38 +439,38 @@ graph LR
 | 模組 | 說明 |
 |------|------|
 | **Event** | 事件系統，提供 command / message / notice / request / meta 五類事件 + Conversation 多輪對話 |
-| **Adapter** | 配接器管理，BaseAdapter 基底類別統一事件轉換與 SendDSL 傳送，支援 QQ / Telegram / Kook / 雲湖 / 微信公眾號 等 15+ 平台 |
-| **Module** | 模組管理，BaseModule 基底類別 + 相依性宣告與拓撲排序載入 |
-| **SendDSL** | 鏈式傳送，@/回覆/重試/逾時/批次等複雜邏輯一行完成 |
+| **Adapter** | 適配器管理，BaseAdapter 基類統一事件轉換與 SendDSL 發送，支援 QQ / Telegram / Kook / 雲湖 / 微信公眾號 等 15+ 平台 |
+| **Module** | 模組管理，BaseModule 基類 + 依賴聲明與拓撲排序加載 |
+| **SendDSL** | 鏈式發送，@/回覆/重試/超時/批量等複雜邏輯一行完成 |
 | **Router** | HTTP/WebSocket 路由系統（FastAPI + Uvicorn）|
 | **Storage** | 基於 SQLite 的鍵值儲存 + 通用 SQL 鏈式查詢 |
-| **Config** | TOML 設定管理 |
-| **Lifecycle** | 生命週期事件掛鉤（core.init / adapter.* / module.*）|
+| **Config** | TOML 配置管理 |
+| **Lifecycle** | 生命週期事件鉤子（core.init / adapter.* / module.*）|
 | **Logger** | 模組化日誌系統，支援子日誌器 |
-| **HttpClient** | 統一 HTTP/WS 用戶端（基於 aiohttp），內建重試與 ErisPulse 例外體系 |
+| **HttpClient** | 統一 HTTP/WS 客戶端（基於 aiohttp），內建重試與 ErisPulse 異常體系 |
 
-更多設計詳情（初始化流程、生命週期事件、模組載入策略），見[架構概覽](docs/zh-TW/architecture.md)。
+更多設計詳情（初始化流程、生命週期事件、模組加載策略），見[架構概覽](docs/zh-TW/architecture.md)。
 
 ---
 
 ## 作用域（Scope）——三維權限控制面
 
-不改任何模組程式碼，在設定中統一宣告「什麼範圍內生效」：
+不改任何模組程式碼，在配置中統一聲明"什麼範圍內生效"：
 
 ```toml
 [ErisPulse.scope.platforms.onebot11]
-modules = ["Chat", "Tool*"]           # ① 模組維度：該平台只開放這些模組（glob / 正規表示式）
+modules = ["Chat", "Tool*"]           # ① 模組維度：該平台只開放這些模組（glob / 正則）
 
 [ErisPulse.scope.identity.users.onebot11]
-deny = ["u_bad", "spam_*"]            # ② 身分維度：黑名單使用者的事件直接捨棄
+deny = ["u_bad", "spam_*"]            # ② 身份維度：黑名單使用者的事件直接丟棄
 
 [ErisPulse.scope.actions.MyModule]
-send = { allow = ["Text"] }           # ③ 出站維度：該模組僅允許傳送文字
+send = { allow = ["Text"] }           # ③ 出站維度：該模組只許發文本
 api = { deny = ["set_*", "leave_*"] } #    並禁止管理類 API
 ```
 
 ```python
-# 執行階段同樣可調整，立即生效（支援點分路徑的字典式讀寫）
+# 運行時同樣可調，立即生效（支援點分路徑的字典式讀寫）
 sdk.scope.set_action("MyModule", "api", deny=["set_*"])
 ```
 
@@ -481,14 +480,14 @@ sdk.scope.set_action("MyModule", "api", deny=["set_*"])
 
 ## 事件覆寫——不改模組程式碼，覆寫任意事件類型的行為
 
-換個觸發詞、為命令加上管理員限制，不動模組原始碼，設定即生效：
+換個觸發詞、給命令加管理員限制，不動模組原始碼，配置即生效：
 
 ```toml
 # 覆寫訊息處理器觸發條件（與程式碼內條件 AND；meta/message/notice/request/command 全類型支援）
 [ErisPulse.event.overrides.message.ChatModule]
 pattern = "閒聊*"
 
-# 覆寫命令實作參數（master / hidden / aliases / prefix 等，使用者優先）
+# 覆寫命令實現參數（master / hidden / aliases / prefix 等，使用者優先）
 [ErisPulse.event.overrides.command.MyModule.restart]
 master = true
 ```
@@ -499,7 +498,7 @@ master = true
 
 ## 生態
 
-ErisPulse 不僅僅是框架。裝上即可開始，不需要從零造輪子。
+ErisPulse 不僅是框架。裝上就能開始，不需要從零造輪子。
 
 <table>
 <tr>
@@ -507,7 +506,7 @@ ErisPulse 不僅僅是框架。裝上即可開始，不需要從零造輪子。
 
 **框架**
 
-核心執行環境
+核心執行時
 
 統一事件 & 訊息模型
 
@@ -518,7 +517,7 @@ ErisPulse 不僅僅是框架。裝上即可開始，不需要從零造輪子。
 
 視覺化管理
 
-外掛 · 日誌 · 設定
+插件 · 日誌 · 配置
 
 [線上示範 →](https://dashdemo.erisdev.com/)
 
@@ -536,7 +535,7 @@ ErisPulse 不僅僅是框架。裝上即可開始，不需要從零造輪子。
 
 **模組市場**
 
-即裝即用的外掛
+即裝即用的插件
 
 [瀏覽模組 →](https://www.erisdev.com/#market)
 
@@ -545,7 +544,7 @@ ErisPulse 不僅僅是框架。裝上即可開始，不需要從零造輪子。
 <tr>
 <td align="center" width="25%">
 
-**配接器**
+**適配器**
 
 15+ 平台接入
 
@@ -554,9 +553,9 @@ ErisPulse 不僅僅是框架。裝上即可開始，不需要從零造輪子。
 
 **ErisPulse-App**
 
-官方多端用戶端
+官方多端客戶端
 
-手機直接執行 · 桌面系統匣常駐
+手機直接運行 · 桌面托盤常駐
 
 [下載安裝 →](https://github.com/ErisPulse/ErisPulse-App/releases)
 
@@ -572,7 +571,7 @@ ErisPulse 不僅僅是框架。裝上即可開始，不需要從零造輪子。
 </td>
 <td align="center" width="25%">
 
-**文件 & CLI**
+**文檔 & CLI**
 
 [erisdev.com](https://www.erisdev.com)
 
@@ -586,37 +585,37 @@ ErisPulse 不僅僅是框架。裝上即可開始，不需要從零造輪子。
 
 ## 支援的平台
 
-歡迎您貢獻配接器！不知道從哪裡開始？請看 [貢獻指南](docs/zh-TW/contributing/README.md)。
+歡迎您貢獻適配器！不知道從哪入手？看 [貢獻指南](docs/zh-TW/contributing/README.md)。
 
-| 配接器 | 說明 |
+| 適配器 | 說明 |
 |--------|------|
 | <img src=".github/assets/adapter_logo/kook.svg" height="20" alt="Kook" /> [Kook](https://github.com/shanfishapp/ErisPulse-KookAdapter) | Kook（開黑啦）即時通訊平台 |
 | <img src=".github/assets/adapter_logo/matrix.svg" height="20" alt="Matrix" /> [Matrix](https://github.com/ErisPulse/ErisPulse-MatrixAdapter) | Matrix 去中心化通訊協定 |
 | <img src=".github/assets/adapter_logo/onebot.png" height="20" alt="OneBot" /> [OneBot11](https://github.com/ErisPulse/ErisPulse-OneBot11Adapter) | OneBot v11 通用機器人協定 |
 | <img src=".github/assets/adapter_logo/onebot.png" height="20" alt="OneBot" /> [OneBot12](https://github.com/ErisPulse/ErisPulse-OneBot12Adapter) | OneBot v12 標準協定 |
-| <img src=".github/assets/adapter_logo/onebot.png" height="20" alt="OneBot" /> [SnowLuma](https://github.com/ErisPulse/ErisPulse-SnowLumaAdapter) | 基於 SnowLuma 後端（NTQQ hook）的 OneBot v11 配接器 |
+| <img src=".github/assets/adapter_logo/onebot.png" height="20" alt="OneBot" /> [SnowLuma](https://github.com/ErisPulse/ErisPulse-SnowLumaAdapter) | 基於 SnowLuma 後端（NTQQ hook）的 OneBot v11 適配器 |
 | <img src=".github/assets/adapter_logo/qqbot.svg" height="20" alt="QQ" /> [QQ](https://github.com/ErisPulse/ErisPulse-QQBotAdapter) | QQ 官方機器人平台 |
-| <img src=".github/assets/adapter_logo/sandbox.png" height="20" alt="Sandbox" /> [沙箱](https://github.com/ErisPulse/ErisPulse-SandboxAdapter) | 網頁端偵錯，無需接入真實平台 |
-| <img src=".github/assets/adapter_logo/terminal.svg" height="20" alt="Terminal" /> [終端](https://github.com/ErisPulse/ErisPulse-TerminalAdapter) | 命令列即聊天，零設定開發偵錯 |
+| <img src=".github/assets/adapter_logo/sandbox.png" height="20" alt="Sandbox" /> [沙箱](https://github.com/ErisPulse/ErisPulse-SandboxAdapter) | 網頁端調試，無需接入真實平台 |
+| <img src=".github/assets/adapter_logo/terminal.svg" height="20" alt="Terminal" /> [終端](https://github.com/ErisPulse/ErisPulse-TerminalAdapter) | 命令列即聊天，零配置開發調試 |
 | <img src=".github/assets/adapter_logo/telegram.svg" height="20" alt="Telegram" /> [Telegram](https://github.com/ErisPulse/ErisPulse-TelegramAdapter) | 全球性即時通訊平台 |
-| [Bilibili](https://github.com/ErisPulse/ErisPulse-BilibiliAdapter) | B 站私訊，支援 Cookie / 掃碼雙重登入 |
-| <img src=".github/assets/adapter_logo/email.svg" height="20" alt="Email" /> [郵件](https://github.com/ErisPulse/ErisPulse-EmailAdapter) | 郵件協定收發配接器 |
+| [Bilibili](https://github.com/ErisPulse/ErisPulse-BilibiliAdapter) | B 站私信，支援 Cookie / 掃碼雙登入 |
+| <img src=".github/assets/adapter_logo/email.svg" height="20" alt="Email" /> [郵件](https://github.com/ErisPulse/ErisPulse-EmailAdapter) | 郵件協定收發適配器 |
 | <img src=".github/assets/adapter_logo/yunhu.png" height="20" alt="Yunhu" /> [雲湖](https://github.com/ErisPulse/ErisPulse-YunhuAdapter) | 企業級即時通訊平台（機器人接入） |
-| <img src=".github/assets/adapter_logo/yunhu.png" height="20" alt="Yunhu" /> [雲湖使用者](https://github.com/wsu2059q/ErisPulse-YunhuUserAdapter) | 基於雲湖使用者協定的接入配接器 |
-| [Oopz](https://github.com/ErisPulse/ErisPulse-OopzAdapter) | Oopz 語音社群（社群協定，使用者帳號接入，建議使用分身帳號） |
+| <img src=".github/assets/adapter_logo/yunhu.png" height="20" alt="Yunhu" /> [雲湖使用者](https://github.com/wsu2059q/ErisPulse-YunhuUserAdapter) | 基於雲湖使用者協定的接入適配器 |
+| [Oopz](https://github.com/ErisPulse/ErisPulse-OopzAdapter) | Oopz 语音社區（社區協定，使用者帳號接入，建議使用小號） |
 | [花楓咖啡館](https://github.com/ErisPulse/ErisPulse-Ideaura/) | Allons! \(・ω・) / |
-| <img src=".github/assets/adapter_logo/discord.svg" height="20" alt="Discord" /> [Discord](https://github.com/ErisPulse/ErisPulse-DiscordAdapter) | 全球性社群通訊平台，支援伺服器、頻道、私訊 |
+| <img src=".github/assets/adapter_logo/discord.svg" height="20" alt="Discord" /> [Discord](https://github.com/ErisPulse/ErisPulse-DiscordAdapter) | 全球性社區通訊平台，支援伺服器、頻道、私信 |
 | [Minecraft](https://github.com/ErisPulse/ErisPulse-MinecraftAdapter) | Minecraft Java 版伺服器（RCON），命令執行與日誌監聽 |
-| <img src=".github/assets/adapter_logo/webhook.svg" height="20" alt="Webhook" /> [Webhook](https://github.com/ErisPulse/ErisPulse-WebhookAdapter) | 通用 HTTP 橋接配接器，對接任意系統 |
+| <img src=".github/assets/adapter_logo/webhook.svg" height="20" alt="Webhook" /> [Webhook](https://github.com/ErisPulse/ErisPulse-WebhookAdapter) | 通用 HTTP 橋接適配器，對接任意系統 |
 | <img src=".github/assets/adapter_logo/wechatmp.svg" height="20" alt="WechatMp" /> [微信公眾號](https://github.com/ErisPulse/ErisPulse-WechatMpAdapter) | 微信官方公眾號平台 |
-| [企業微信](https://github.com/ErisPulse/ErisPulse-WeComAdapter) | 企業微信自建應用機器人，回呼接收與主動訊息 |
+| [企業微信](https://github.com/ErisPulse/ErisPulse-WeComAdapter) | 企業微信自建應用機器人，回調接收與主動訊息 |
 | [微信 ClawBot](https://github.com/ErisPulse/ErisPulse-WechatClaw) | 微信官方 ClawBot 通道（iLink Bot API），掃碼綁定個人號 |
 
-查看 [配接器詳細介紹](docs/zh-TW/platform-guide/README.md)
+查看 [適配器詳情介紹](docs/zh-TW/platform-guide/README.md)
 
 ---
 
-## 社群
+## 社區
 
 與我們交流：
 
@@ -624,13 +623,13 @@ ErisPulse 不僅僅是框架。裝上即可開始，不需要從零造輪子。
 - QQ 群：<https://qm.qq.com/q/TOwnCmypcy>
 - 雲湖群：<https://yhfx.jwznb.com/share?key=VWJL4fTWXepa&ts=1781889199>
 
-覺得這個專案有用？歡迎在[愛發電](https://ifdian.net/a/YingXinche)支持我們持續開發！
+覺得專案有用？歡迎在[愛發電](https://ifdian.net/a/YingXinche)支持我們持續開發！
 
 ---
 
 ## 贊助
 
-ErisPulse 是 MIT 授權的開源專案——所有程式碼與文件永遠免費開源，贊助絕對不會改變這一點。
+ErisPulse 是 MIT 協議的開源專案——所有程式碼與文件永遠免費開源，贊助絕對不會改變這一點。
 
 [![ErisPulse Sponsors](https://raw.githubusercontent.com/ErisPulse/ErisPulse/Develop/v2/.github/assets/sponsors/sponsor-card.png)](https://ifdian.net/a/YingXinche)
 
@@ -646,16 +645,16 @@ ErisPulse 是 MIT 授權的開源專案——所有程式碼與文件永遠免�
 
 ### 貢獻指南
 
-ErisPulse 專案的健全還需要您的一份力！我們歡迎各種形式的貢獻：
+ErisPulse 專案的健全性還需要您的一份力！我們歡迎各種形式的貢獻：
 
-1. **回報問題** — 在 [GitHub Issues](https://github.com/ErisPulse/ErisPulse/issues) 提交 bug 報告
-2. **功能請求** — 透過 [社群討論](https://github.com/ErisPulse/ErisPulse/discussions) 提出新想法
+1. **報告問題** — 在 [GitHub Issues](https://github.com/ErisPulse/ErisPulse/issues) 提交 bug 報告
+2. **功能請求** — 透過 [社區討論](https://github.com/ErisPulse/ErisPulse/discussions) 提出新想法
 3. **程式碼貢獻** — 提交 PR 前請閱讀 [程式碼風格](docs/zh-TW/styleguide/) 及 [貢獻指南](CONTRIBUTING.md)
-4. **文件改進** — 協助完善文件與範例程式碼
+4. **文件改進** — 幫助完善文件和示例程式碼
 
 **第一次貢獻？** 從這裡開始 👉 [首次貢獻實戰](docs/zh-TW/contributing/first-contribution.md)
 
-[加入社群討論](https://github.com/ErisPulse/ErisPulse/discussions)
+[加入社區討論](https://github.com/ErisPulse/ErisPulse/discussions)
 
 ---
 
@@ -665,9 +664,9 @@ ErisPulse 專案的健全還需要您的一份力！我們歡迎各種形式的�
 
 <img src=".github/assets/thanks.png" width="200" alt="感謝" />
 
-核心配接器標準化層參考並受益於 [OneBot12 規範](https://12.onebot.dev/)。
+核心適配器標準化層參考並受益於 [OneBot12 規範](https://12.onebot.dev/)。
 
-ErisPulse 的早期探索與成長離不開雲湖開發者社群的支持，許多想法、配接器與實務經驗都誕生於此。
+ErisPulse 的早期探索與成長離不開雲湖開發者社群的支持，許多想法、適配器和實踐經驗都誕生於此。
 
 同時感謝所有為 ErisPulse、OneBot 生態以及開源社群做出貢獻的開發者與專案作者。
 

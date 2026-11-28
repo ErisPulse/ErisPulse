@@ -626,9 +626,9 @@ ErisPulse は単なるフレームワークではありません。ゼロから�
 
 ---
 
-## スポンサー
+## 賛助
 
-ErisPulse は MIT ライセンスのオープンソースです——すべてのコードとドキュメントは永久に無料・公開であり、スポンサーシップによってそれが変わることはありません。
+ErisPulse は MIT ライセンスのオープンソースプロジェクトです。すべてのコードとドキュメントは常に無料でオープンソースであり、賛助によってこの状態が変わることはありません。
 
 [![ErisPulse Sponsors](https://raw.githubusercontent.com/ErisPulse/ErisPulse/Develop/v2/.github/assets/sponsors/sponsor-card.png)](https://ifdian.net/a/YingXinche)
 
