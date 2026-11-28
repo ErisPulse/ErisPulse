@@ -626,6 +626,14 @@ Found the project useful? Consider supporting us on [Ifdian](https://ifdian.net/
 
 ---
 
+## Sponsors
+
+ErisPulse is MIT-licensed open source — all code and documentation will always be free and open, and sponsorship will never change that.
+
+[![ErisPulse Sponsors](https://raw.githubusercontent.com/ErisPulse/ErisPulse/Develop/v2/.github/assets/sponsors/sponsor-card.png)](https://ifdian.net/a/YingXinche)
+
+---
+
 ## Star History
 
 If ErisPulse has helped you, please give it a Star ⭐—it's the most direct way to help more developers discover the project.

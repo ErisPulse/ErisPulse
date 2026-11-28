@@ -628,6 +628,14 @@ ErisPulse — это больше, чем фреймворк. Установил
 
 ---
 
+## Спонсоры
+
+ErisPulse — открытый проект под лицензией MIT: весь код и документация навсегда останутся бесплатными и открытыми, и спонсорство этого не изменит.
+
+[![ErisPulse Sponsors](https://raw.githubusercontent.com/ErisPulse/ErisPulse/Develop/v2/.github/assets/sponsors/sponsor-card.png)](https://ifdian.net/a/YingXinche)
+
+---
+
 ## Star History
 
 Если ErisPulse вам помог, поставьте Star ⭐ — это самый прямой способ показать проект большему числу разработчиков.

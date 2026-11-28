@@ -218,6 +218,12 @@ Chat with us on:
 - QQ Group: <https://qm.qq.com/q/TOwnCmypcy>
 - Yunhu Group: <https://yhfx.jwznb.com/share?key=VWJL4fTWXepa&ts=1781889199>
 
+Found ErisPulse useful? Support continued development on [Ifdian](https://ifdian.net/a/YingXinche) — every amount is fuel. All code and docs stay free and open source, always.
+
+**Sponsors**
+
+[![ErisPulse Sponsors](https://raw.githubusercontent.com/ErisPulse/ErisPulse/Develop/v2/.github/assets/sponsors/sponsor-card.png)](https://ifdian.net/a/YingXinche)
+
 ---
 
 **Why ErisPulse?** Because platform differences should never be your bottleneck — focus on business logic, and let the framework handle the rest. Write once, deploy everywhere.

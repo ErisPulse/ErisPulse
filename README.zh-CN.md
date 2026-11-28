@@ -629,6 +629,14 @@ ErisPulse 不仅仅是框架。装上就能开始，不需要从零造轮子。
 
 ---
 
+## 赞助
+
+ErisPulse 是 MIT 协议的开源项目——所有代码与文档永远免费开源，赞助绝对不会改变这一点。
+
+[![ErisPulse Sponsors](https://raw.githubusercontent.com/ErisPulse/ErisPulse/Develop/v2/.github/assets/sponsors/sponsor-card.png)](https://ifdian.net/a/YingXinche)
+
+---
+
 ## Star History
 
 如果 ErisPulse 帮到了你，欢迎点个 Star ⭐——这是让更多开发者看到项目的最直接方式。
