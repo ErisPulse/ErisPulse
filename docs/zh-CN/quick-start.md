@@ -1,0 +1,251 @@
+# 快速开始
+
+> **这是你的第一步。** 5 分钟从零跑起一个 ErisPulse 机器人——先看效果，再展开每一步。
+
+## 60 秒效果：先让机器人回你一句话
+
+**1. 安装**（Python >= 3.10）：
+
+```bash
+pip install ErisPulse
+```
+
+**2. 初始化项目**。向导会让你设置项目名、选择要接入的平台适配器并完成配置，然后生成 `main.py` 和 `config/config.toml`：
+
+```bash
+epsdk init
+```
+
+**3. 打开 `main.py`，替换为这 9 行代码**：
+
+```python
+from ErisPulse import sdk
+from ErisPulse.Core.Event import command
+
+@command("ping", help="测试机器人是否在线")
+async def ping_handler(event):
+    await event.reply("Pong！机器人运行正常。")
+
+if __name__ == "__main__":
+    import asyncio
+    asyncio.run(sdk.run(keep_running=True))
+```
+
+**4. 运行**：
+
+```bash
+epsdk run main.py
+```
+
+终端会输出框架启动日志和适配器的连接信息。这时在你接入的平台里给机器人发 `/ping`，它会回复：
+
+> Pong！机器人运行正常。
+
+看到这条回复，说明框架、适配器、事件处理这条链路已经打通。没跑通？直接翻到文末[遇到问题](#遇到问题)；跑通了，往下看每一步还有哪些选择。
+
+## 安装 ErisPulse：三种方式
+
+上面用的是最直接的 pip。按你的环境选择：
+
+### 使用 pip 安装
+
+确保你的 Python 版本 >= 3.10，然后使用 pip 安装：
+
+```bash
+pip install ErisPulse
+```
+
+如果你已安装 [uv](https://github.com/astral-sh/uv)，也可以使用 `uv pip install ErisPulse`，安装速度更快。
+
+只想把 `epsdk` 命令行工具装到全局、不污染项目环境时，推荐 `uv tool install`：
+
+```bash
+uv tool install ErisPulse
+```
+
+安装后 `epsdk` 全局可用：在项目目录内运行时会自动感知项目 `.venv`（`epsdk install` 装进项目环境、`epsdk run` 用项目环境运行），框架本体由工具环境提供。详见[安装参考](user-guide/installation.md)。
+
+### 一键安装脚本（新环境推荐）
+
+安装脚本会自动检测您的环境（Docker、Python、uv），并引导您选择最适合的安装方式，支持多语言（中文/English/日本語/Русский/繁體中文）。
+
+Windows (PowerShell):
+```powershell
+irm https://get.erisdev.com/install.ps1 -OutFile install.ps1; powershell -ExecutionPolicy Bypass -File install.ps1
+```
+
+macOS / Linux:
+```bash
+curl -fsSL https://get.erisdev.com/install.sh -o install.sh && chmod +x install.sh && ./install.sh
+```
+
+脚本会引导您完成：
+
+- **Docker 安装**（检测到 Docker 时推荐）：选择镜像源（Docker Hub / GHCR）、版本通道（稳定版 / 预发布版）、Dashboard 管理面板配置、端口设置
+- **全局 CLI 安装（uv tool，推荐）**：将 `epsdk` 安装为全局命令，无需虚拟环境，uv 自动管理 Python（系统版本过低亦可）；项目目录内运行时自动感知项目 `.venv`
+- **传统安装**：自动创建虚拟环境、选择 ErisPulse 版本、可选安装 Dashboard 管理面板模块
+
+### 使用 Docker
+
+Docker 镜像已内置 ErisPulse 框架和 Dashboard 管理面板，支持 `linux/amd64` 和 `linux/arm64` 架构。
+
+```bash
+# 下载 docker-compose.yml
+curl -O https://raw.githubusercontent.com/ErisPulse/ErisPulse/main/docker-compose.yml
+
+# 设置 Dashboard 令牌并启动
+ERISPULSE_DASHBOARD_TOKEN=your-token docker compose up -d
+```
+
+<details>
+<summary>Docker Hub 不可用？</summary>
+
+使用 GitHub Container Registry 镜像，修改 `docker-compose.yml` 中的 image：
+
+```yaml
+image: ghcr.io/erispulse/erispulse:latest
+```
+
+</details>
+
+启动后访问 `http://<host>:8000/Dashboard`，使用设置的令牌登录。
+
+## 初始化项目
+
+### 交互式初始化（推荐）
+
+```bash
+epsdk init
+```
+
+这将启动一个交互式向导，引导您完成：
+- 项目名称设置
+- 日志级别配置
+- 服务器配置（主机和端口）
+- 适配器选择和配置
+- 项目结构创建
+
+### 快速初始化
+
+```bash
+# 指定项目名称的快速模式
+epsdk init -q -n my_bot
+
+# 或者只指定项目名称
+epsdk init -n my_bot
+```
+
+### 手动创建项目
+
+如果更喜欢手动创建项目：
+
+```bash
+mkdir my_bot && cd my_bot
+epsdk init
+```
+
+## 安装模块
+
+### 通过 CLI 安装
+
+```bash
+epsdk install Yunhu AIChat
+```
+
+### 查看可用模块
+
+```bash
+epsdk list-remote
+```
+
+### 交互式安装
+
+不指定包名时进入交互式安装界面：
+
+```bash
+epsdk install
+```
+
+## 运行项目
+
+```bash
+# 普通运行
+epsdk run main.py
+
+# 热重载模式（开发时推荐）
+epsdk run main.py --reload
+```
+
+## 启用 IDE 补全（可选）
+
+ErisPulse 动态发现模块/适配器，IDE 默认无法补全平台特有方法。
+运行以下命令生成类型存根：
+
+```bash
+epsdk types
+```
+
+生成后用导入的类型作为变量标注即可获得精确补全（详见 [IDE 补全指南](./getting-started/ide-completion.md)）：
+
+```python
+from _ep_types import Yunhu
+from ErisPulse import sdk
+
+adapter: Yunhu = sdk.adapter.get("yunhu")
+await adapter.Send.To("group", "123").Board(...)  # 补全平台特有方法
+```
+
+## 项目结构
+
+初始化后的项目结构：
+
+```
+my_bot/
+├── config/
+│   └── config.toml          # 配置文件
+└── main.py                  # 入口文件
+
+```
+
+## 配置文件
+
+基本的 `config.toml` 配置：
+
+```toml
+[ErisPulse.server]
+host = "0.0.0.0"
+port = 8000
+
+[ErisPulse.logger]
+level = "INFO"
+
+[Yunhu_Adapter]
+# 适配器配置
+```
+
+## 下一步
+
+机器人跑起来后，按你的目标选路：
+
+### 想做群机器人（处理消息、群管、通知）
+
+- [事件处理入门](getting-started/event-handling.md) — 消息、通知、请求事件的写法
+- [常见任务示例](getting-started/common-tasks.md) — 存储、定时任务、权限控制
+
+### 想写自己的模块 / 适配器
+
+- [基础概念](getting-started/basic-concepts.md) — 先理解适配器 / 模块 / 事件 的设计
+- [模块开发入门](developer-guide/modules/getting-started.md)
+- [适配器开发入门](developer-guide/adapters/getting-started.md)
+- [架构概览](architecture.md) — 可视化架构图
+
+### 想把机器人长期跑起来
+
+- [部署指南](user-guide/deployment.md)
+- [配置文件说明](user-guide/configuration.md)
+
+### 遇到问题
+
+- [创建第一个机器人](getting-started/first-bot.md) — 第一个机器人的逐步详解
+- [启动流程与手动控制](advanced/startup.md) — 模块 / 适配器加载失败的诊断
+- [CLI 命令参考](user-guide/cli-reference.md) — `epsdk` 全部子命令
